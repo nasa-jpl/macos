@@ -45,6 +45,33 @@ ADD_MET  Emit Stewart-truss laser metrology into a segmented Rx.  out = macos.de
 <!-- BEGIN NOTES hl-add-met -->
 <!-- END NOTES hl-add-met -->
 
+#### design.append_rx
+
+`macos.design.info = append_rx(base_in, add_in, out_in, opts)`
+
+APPEND_RX  Splice one prescription's elements onto the end of another's.  info = MACOS.DESIGN.APPEND_RX(BASE_IN, ADD_IN, OUT_IN) writes OUT_IN: the BASE deck's header and source, then the BASE deck's elements, then the ADD deck's elements renumbered to follow them, then the standard
+
+<!-- BEGIN NOTES hl-append-rx -->
+<!-- END NOTES hl-append-rx -->
+
+#### design.assert_draw_frame_global
+
+`macos.design.assert_draw_frame_global(plane, caller)`
+
+ASSERT_DRAW_FRAME_GLOBAL  Refuse to read draw_rays' U/V as global x,y,z unless the deck's source frame actually is the global frame.  macos.draw_rays does NOT return global coordinates.  It projects each crossing onto the SOURCE / RAY-GRID basis -- DRAW sets
+
+<!-- BEGIN NOTES hl-assert-draw-frame-global -->
+<!-- END NOTES hl-assert-draw-frame-global -->
+
+#### design.configs_from_table
+
+`macos.design.cfgs = configs_from_table(T, opts)`
+
+MACOS.DESIGN.CONFIGS_FROM_TABLE  Build a configuration array from a schedule. cfgs = macos.design.configs_from_table(T) turns a zoom / compensation SCHEDULE -- the shape one naturally arrives in, a spreadsheet with one row per configuration -- into the 'configs' struct array the macos.dw_d*_multi supervisors and run_sensitivities take.
+
+<!-- BEGIN NOTES hl-configs-from-table -->
+<!-- END NOTES hl-configs-from-table -->
+
 #### design.dldx_analytic
 
 `macos.design.dldx = dldx_analytic(bodies, src_pts, tgt_pts, src_body, tgt_body, unit_to_m)`
@@ -171,6 +198,15 @@ MET_VIEW  3-D visualization of a segmented-primary laser-MET setup. fig = macos.
 <!-- BEGIN NOTES hl-met-view -->
 <!-- END NOTES hl-met-view -->
 
+#### design.pbs_macneille
+
+`macos.design.S = pbs_macneille(opts)`
+
+MACOS.DESIGN.PBS_MACNEILLE  MacNeille polarizing-beamsplitter cube coating.  S = MACOS.DESIGN.PBS_MACNEILLE(...) returns the layer stack and the substrate index of a MacNeille-type polarizing beamsplitter: a quarter-wave H/L stack cemented between two glass prisms, designed so
+
+<!-- BEGIN NOTES hl-pbs-macneille -->
+<!-- END NOTES hl-pbs-macneille -->
+
 #### design.pie_rings
 
 `macos.design.R = pie_rings(C2, w)`
@@ -188,6 +224,33 @@ PIE_WEDGE_GEOM  Physical pie-wedge edge geometry with UNIFORM gaps. W = macos.de
 
 <!-- BEGIN NOTES hl-pie-wedge-geom -->
 <!-- END NOTES hl-pie-wedge-geom -->
+
+#### design.promote_segments_freeform
+
+`macos.design.out = promote_segments_freeform(rx_in, rx_out, opts)`
+
+PROMOTE_SEGMENTS_FREEFORM  Turn conic optics into inert FreeForm carriers.  out = macos.design.promote_segments_freeform(RX_IN, RX_OUT) rewrites every  Element= Segment  block of RX_IN into a  Surface= FreeForm (SrfType 14) block that carries a MonZernike figure CHANNEL -- so the
+
+<!-- BEGIN NOTES hl-promote-segments-freeform -->
+<!-- END NOTES hl-promote-segments-freeform -->
+
+#### design.prop_layout
+
+`macos.design.info = prop_layout(src, kinds, opts)`
+
+PROP_LAYOUT  Turn a geometric deck into a DIFFRACTION deck.  info = MACOS.DESIGN.PROP_LAYOUT(SRC, KINDS) reads a bare geometric prescription, traces it for the chief-ray geometry, and writes a deck that carries the complex field: focal-mask QUARTETS at the
+
+<!-- BEGIN NOTES hl-prop-layout -->
+<!-- END NOTES hl-prop-layout -->
+
+#### design.psri_bench
+
+`macos.design.G = psri_bench(opts)`
+
+MACOS.DESIGN.PSRI_BENCH  A buildable phase-shifting self-referenced interferometer (P/SRI, Dube et al. 2024) on the DM-gauge bench: the TG96 front end (source, collimator, 7 deg splitter, the 96 mm DM on its leg, back through the splitter) followed by a Mach-Zehnder whose REFERENCE arm carries the point-diffraction pinhole (the waveguide
+
+<!-- BEGIN NOTES hl-psri-bench -->
+<!-- END NOTES hl-psri-bench -->
 
 #### design.seg_apertures
 
@@ -254,12 +317,30 @@ SEGMIRMAKER_RUN  Drive the SegMirMaker generator non-interactively.  out = macos
 
 #### design.seidel_seed
 
-`macos.design.[K, t_focus, EFL] = seidel_seed(R, t_between, D, convex)`
+`macos.design.[K, t_focus, EFL, S] = seidel_seed(R, t_between, D, convex, opts)`
 
-SEIDEL_SEED  Korsch-anastigmat conic seed for a coaxial mirror train. [K, t_focus, EFL] = macos.design.seidel_seed(R, t_between, D) solves the conic constants K (1xN) that null the 3rd-order Seidel spherical, coma and astigmatism sums (S_I, S_II, S_III) for an N-mirror coaxial reflective layout, using the n-flip unfolded paraxial model (ported
+SEIDEL_SEED  Third-order anastigmat conic seed for a coaxial mirror train. [K, t_focus, EFL] = macos.design.seidel_seed(R, t_between, D) solves the conic constants K (1xN) that null the Seidel spherical, coma and astigmatism sums (S_I, S_II, S_III) of an N-mirror coaxial reflective train, and returns the paraxial focus distance t_focus (last mirror ->
 
 <!-- BEGIN NOTES hl-seidel-seed -->
 <!-- END NOTES hl-seidel-seed -->
+
+#### design.seidel_seed_nflip
+
+`macos.design.[K, t_focus, EFL] = seidel_seed_nflip(R, t_between, D, convex)`
+
+SEIDEL_SEED_NFLIP  The 2026-06 n-flip Seidel seed, kept VERBATIM for the record (do not call). [K, t_focus, EFL] = macos.design.seidel_seed(R, t_between, D) solves the conic constants K (1xN) that null the 3rd-order Seidel spherical, coma and astigmatism sums (S_I, S_II, S_III) for an N-mirror coaxial reflective layout, using the n-flip unfolded paraxial model (ported
+
+<!-- BEGIN NOTES hl-seidel-seed-nflip -->
+<!-- END NOTES hl-seidel-seed-nflip -->
+
+#### design.thinfilm_rt
+
+`macos.design.out = thinfilm_rt(layers, n_inc, n_sub, aoi_deg, lambda)`
+
+MACOS.DESIGN.THINFILM_RT  Amplitude/power r and t of a multilayer stack.  OUT = MACOS.DESIGN.THINFILM_RT(LAYERS, N_INC, N_SUB, AOI_DEG, LAMBDA)  Characteristic-matrix (Abeles) solution for a stratified stack, written
+
+<!-- BEGIN NOTES hl-thinfilm-rt -->
+<!-- END NOTES hl-thinfilm-rt -->
 
 #### design.tma_layout
 
@@ -274,7 +355,7 @@ TMA_LAYOUT  Generic on-axis Korsch TMA first-order layout (j18 / JWST form), wit
 
 `macos.design.G = twyman_green(opts)`
 
-MACOS.DESIGN.TWYMAN_GREEN  Build a compensated Twyman-Green IFO rig. G = macos.design.twyman_green(...) builds BOTH arms of the generic Twyman-Green interferometer (the examples/design/bench_ifo layout) with the Bench add-optic utilities and returns them ready to emit: 
+MACOS.DESIGN.TWYMAN_GREEN  Build a compensated Twyman-Green IFO rig. G = macos.design.twyman_green(...) builds BOTH arms of the generic Twyman-Green interferometer (the templates/40_benches/bench_ifo layout) with the Bench add-optic utilities and returns them ready to emit: 
 
 <!-- BEGIN NOTES hl-twyman-green -->
 <!-- END NOTES hl-twyman-green -->

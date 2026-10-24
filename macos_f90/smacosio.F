@@ -33,7 +33,8 @@ C***********************************************************************
 	use loh_I2
 	use loh_I3
 	use dopt_mod
-        use validate_prescription_mod, only: ValidatePrescription
+        use validate_prescription_mod, only: ValidatePrescription,
+     &      RxNormalizeEOL, RxTmpCleanup, RxTmpFile
         ! --------------------------------------
         IMPLICIT NONE
 
@@ -159,7 +160,8 @@ C	File setup and initial conditions read
         ! ----------------------------------------------------------
         ! 'NEW' cmd is not supported
         IF (.NOT.ifOld) THEN
-          WRITE(*,*)' SMACOS does not support the NEW command.'
+          WRITE(emsgRec,*)' SMACOS does not support the NEW command.'
+          CALL emsg_put
           RETURN
         END IF
 
@@ -187,7 +189,14 @@ C       Get file name
         INQUIRE (file=infil(1:L), exist=exist)
 	IF (exist) THEN
 	!   IF (ifOld) THEN
-	    WRITE (*,*) ' Input file ',infil(1:L),' being loaded.'
+	    WRITE(emsgRec,*) ' Input file ',infil(1:L),' being loaded.'
+	    CALL emsg_put
+!-->  (f): remember the deck's folder for GridFile= (GridInit)
+	    RxDir = ' '
+	    iRxSep = MAX(INDEX(infil(1:L),'/',BACK=.TRUE.),
+     &                   INDEX(infil(1:L),CHAR(92),BACK=.TRUE.))
+	    IF (iRxSep > 0) RxDir = infil(1:iRxSep)
+!<--
 ! 	  ELSE
 ! 	    WRITE (*,*) ' Input file ',infil(1:L),
 !      &	    ' already exists. Please use a new name or use OLD.'
@@ -196,8 +205,9 @@ C       Get file name
 	  iopt=1
 	ELSE
 	!   IF (ifOld) THEN
-	    WRITE (*,*) ' Input file ',infil(1:L),
+	    WRITE(emsgRec,*) ' Input file ',infil(1:L),
      &	    ' does not exist. Check name/path or use NEW.'
+	    CALL emsg_put
 	!     GO TO 43
 	!   END IF
 	  iopt=0   ! ifOLD = .false. - jzlou
@@ -216,18 +226,41 @@ C
 	  ! Pre-validate the .in file before the parser opens it; on failure
 	  ! abort cleanly with LOAD_SUCCESS=.FALSE. so callers get a clear
 	  ! error instead of a half-initialized model.
+!-->  a deck with any CR is loaded from an LF copy in the system temp
+!     dir (RxNormalizeEOL; PLAN_CONSOLIDATION item 5, 2026-10-09)
+	  CALL RxTmpCleanup()
 	  BLOCK
 	    INTEGER :: vios
 	    CHARACTER(LEN=256) :: vmsg
-	    CALL ValidatePrescription(infil(1:L),vios,vmsg)
+	    LOGICAL :: hascr, nok
+	    CHARACTER(LEN=1024) :: tmpf
+	    CALL ValidatePrescription(infil(1:L),vios,vmsg,hascr)
+	    IF (hascr) THEN
+	      CALL RxNormalizeEOL(infil(1:L),tmpf,nok)
+	      IF (nok) THEN
+	        WRITE(emsgRec,'(A,A,A)') '  ',infil(1:L),
+     &          ': CR line endings normalized for this load'
+	        CALL emsg_put
+	        CALL ValidatePrescription(TRIM(tmpf),vios,vmsg)
+	      END IF
+	    END IF
 	    IF (vios /= 0) THEN
-	      WRITE(*,*)' ** Prescription validation failed:'
-	      WRITE(*,*)'    ',TRIM(vmsg)
+	      WRITE(emsgRec,*)' ** Prescription validation failed:'
+	      CALL emsg_put
+	      WRITE(emsgRec,*)'    ',TRIM(vmsg)
+	      CALL emsg_put
+	      CALL RxTmpCleanup()
 	      LOAD_SUCCESS = .FALSE.
 	      GO TO 99
 	    END IF
 	  END BLOCK
-	  OPEN (UNIT=RX_FID, FILE=infil(1:L), STATUS='OLD', ACTION='READ')
+	  IF (LEN_TRIM(RxTmpFile) > 0) THEN
+	    OPEN (UNIT=RX_FID, FILE=TRIM(RxTmpFile), STATUS='OLD',
+     &            ACTION='READ')
+	  ELSE
+	    OPEN (UNIT=RX_FID, FILE=infil(1:L), STATUS='OLD', ACTION='READ')
+	  END IF
+!<--
 	  REWIND(RX_FID)
 
 #include "msmacosio.inc"
@@ -239,31 +272,42 @@ C
         !     RETURN
         !   End If
 
-	  CALL LOHIN3()    ! def in iosub.inc
+	  CALL LOHIN3()
+!-->  no nOutCord=/Tout= in the deck: ChkDf3 proposes the frame (1.2 (u))
+	  IF (LOutCordAbsent) GO TO 72
+!<--    ! def in iosub.inc
 
-	  READ(VALUE,*)nOutCord
+	  READ(VALUE,*,IOSTAT=iosRx) nOutCord
+
+	  IF (RxBad(iosRx,VAR_NAM,0,VALUE)) GO TO 99
 	  nOutCord_FLG=.TRUE.
 
 	  READ(RX_FID, 123, END=99)STRING
 	  CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,RX_FID)
 
 	  IF (LCMP(VAR_NAM,'Tout',4)) THEN
-	    READ(VALUE,*)(Tout(1,j),j=1,7)
+	    READ(VALUE,*,IOSTAT=iosRx)(Tout(1,j),j=1,7)
+
+	    IF (RxBad(iosRx,VAR_NAM,0,VALUE)) GO TO 99
 	    IF (nOutCord .GT. 1) THEN
 	      DO 71, k=2,nOutCord
 	 	READ(RX_FID, 123, END=99)STRING
-	        READ(STRING,*)(Tout(k,j),j=1,7)
+	        READ(STRING,*,IOSTAT=iosRx)(Tout(k,j),j=1,7)
+
+	        IF (RxBad(iosRx,VAR_NAM,0,STRING)) GO TO 99
    71         CONTINUE
 	    END IF
 	    Tout_FLG=.TRUE.
 	  END IF
 
+   72	  CONTINUE
 	  CALL ChkDf3(EXIT_OK)
 
 	  IF (EXIT_OK) THEN
 	    GO TO 80
 	  ELSE
-	    WRITE(*,*)'  Input file not properly loaded'
+	    WRITE(emsgRec,*)'  Input file not properly loaded'
+	    CALL emsg_put
 	    GO TO 99
 	  END IF
 
@@ -272,7 +316,8 @@ C
 	  CALL SumData(GridType,npts)
 
           IF (nGridpts.GT.mpts) THEN
-	    WRITE(*,121)mpts
+	    WRITE(emsgRec,121)mpts
+	    CALL emsg_put
 	    nGridpts=mpts
 	    npts=nGridpts-1
 	    if (.not.opt_npts_flg) then
@@ -283,14 +328,17 @@ C
 
 	  ! ToDo: this might cause indexing faults
           IF ((GridType.GE.3).AND.(nSeg.GT.mElt)) THEN
-	    WRITE(*,*) ' Too many segments.'
-	    WRITE(*,*) '  MODIFY or use another version. '
+	    WRITE(emsgRec,*) ' Too many segments.'
+	    CALL emsg_put
+	    WRITE(emsgRec,*) '  MODIFY or use another version. '
+	    CALL emsg_put
 	  END IF
 
 C       Create new input file
 
 	ELSE
-	  WRITE(*,*)' SMACOS does not support the NEW command.'
+	  WRITE(emsgRec,*)' SMACOS does not support the NEW command.'
+	  CALL emsg_put
           GO TO 99
 	END IF
 
@@ -298,6 +346,26 @@ C       Create new input file
         ! Close input file
         INQUIRE(UNIT=RX_FID, OPENED=isRxOpen)
         IF (isRxOpen) CLOSE(UNIT=RX_FID)
+        CALL RxTmpCleanup()      ! the LF copy, if one was loaded
+!-->  zGrid is not deck state: set it to the z OrthoSrcFrame derives
+!     (sign of xGrid x yGrid against ChfRayDir, unitised), so the first
+!     grid setup after a load sees a consistent frame and its dead band
+!     keeps the deck's x/y.  It was 0 or the PREVIOUS deck's, the band
+!     test failed at order 1 and the frame was rebuilt from cross
+!     products on every load: SAVE -> load -> SAVE never reached a fixed
+!     point on a frame with round-off-sized components (PLAN_CONSOLIDATION
+!     6a, 2026-10-09: the dyson5 roll-180 joins, 33 corpus decks).
+        BLOCK
+          REAL*8 :: zc(3)
+          CALL DXPROD(zc,xGrid,yGrid)
+          IF (DOT_PRODUCT(zc,ChfRayDir).GT.0d0) THEN
+            zGrid=ChfRayDir
+          ELSE
+            zGrid=-ChfRayDir
+          END IF
+          CALL DUNITIZE(zGrid)
+        END BLOCK
+!<--
 
 
         ! Finalise Configuration
@@ -331,6 +399,7 @@ C       Create new input file
 
         INQUIRE(UNIT=RX_FID, OPENED=isRxOpen)
         IF (isRxOpen) CLOSE(UNIT=RX_FID)
+        CALL RxTmpCleanup()      ! the LF copy, if one was loaded
 
         nElt = 0
         LOAD_SUCCESS = .FALSE.
@@ -483,6 +552,7 @@ C       BY A SEMICOLON or a blank.  COMMENTS ARE DELIMITED BY A PERCENT
 C       SIGN. A COMMAND LINE MAY BE 1000 CHARACTERS LONG.
 C
 	use lohpars_mod
+	use emsg_mod
 
 	IMPLICIT NONE
 
@@ -515,7 +585,7 @@ c	  len_max=ls
 	  END IF
 
 CSCOMP
-	  DO i=1,10
+	  DO i=1,mLohTok
 	    var_store(i,pstack)=' '
 	  END DO
 
@@ -545,12 +615,12 @@ C  Check for % sign, semicolon, blank space...
 	    IF (var(i:i) .EQ. '%') THEN
 C           Comment follows, no more input DATA
 csws        add a blank
-               var_store(j,pstack)(k:k) = ' '
+               IF (j.LE.mLohTok) var_store(j,pstack)(k:k) = ' '
                k = k + 1
 	      GO TO 2
 	    ELSE IF (var(i:i) .EQ. ';') THEN
 C  END of command
-               var_store(j,pstack)(k:k) = ' '
+               IF (j.LE.mLohTok) var_store(j,pstack)(k:k) = ' '
 c  now prepare for next command
 	      j=j+1
 	      k=1
@@ -562,7 +632,7 @@ c  now prepare for next command
 	        l=i-1
 	        IF ((var(l:l).NE.' ').AND.(var(l:l).NE.';')) THEN
 C  END of command
-                   var_store(j,pstack)(k:k) = ' '
+                   IF (j.LE.mLohTok) var_store(j,pstack)(k:k) = ' '
 c  now prepare for next command
 	          j=j+1
 	          k=1
@@ -575,7 +645,7 @@ C  GO TO next CHARACTER
 	    i=i+1
 	      GO TO 1
 	    ELSE
-	      var_store(j,pstack)(k:k)=var(i:i)
+	      IF (j.LE.mLohTok) var_store(j,pstack)(k:k)=var(i:i)
 	      k=k+1
 	      i=i+1
 	      last_flag=.FALSE.
@@ -587,6 +657,18 @@ C  GO TO next CHARACTER
 	IF (last_flag) THEN
 	  j=j-1
 	END IF
+!-->  More tokens than var_store holds (PLAN_CONSOLIDATION 1.2 (aaa)):
+!     refuse the line by its command.  A journal reads its next line; the
+!     one-line STACK returns nothing (re-reading it would loop).
+	IF (j.GT.mLohTok) THEN
+	  WRITE(emsgRec,'(3A,I0,A,I0,A)') ' ** Command line refused (',
+     &      TRIM(var_store(1,pstack)),'): ',j,' tokens, at most ',
+     &      mLohTok,' on a line'
+	  CALL emsg_put
+	  IF (bat_task .NE. 1) GO TO 10
+	  j=0
+	END IF
+!<--
 	read_len(pstack)=j
 	read_cur(pstack)=1
 
@@ -617,8 +699,9 @@ c we've done that, so just return
 	  GO TO 200
 	ELSE
 c shouldn't get here
-	  WRITE(*,*) '[parse_loh]',
+	  WRITE(emsgRec,*) '[parse_loh]',
      &	  ' error, pstack = ',pstack, ' bat_task = ',bat_task
+	  CALL emsg_put
 c go back to console
 	  bat_task=1
 	END IF
@@ -633,8 +716,9 @@ c input STACK empty, quit
 
 c sws    error RETURN in reading input
  300	CONTINUE
-	WRITE(*,*) '[parse_loh]',
+	WRITE(emsgRec,*) '[parse_loh]',
      &	' file error during READ, bat_task = ',bat_task
+	CALL emsg_put
 c       Treat the read error as end-of-file: pop the journal stack and
 c       return to the console.  Without this, the cmd loop would call
 c       PARSE_LOH again, hit the same broken READ, and spin forever.
@@ -937,6 +1021,9 @@ c we're building a journal file, write out the default
 	IVAR = ivar_arr(1)
 	END SUBROUTINE IACCEPT_S
 
+!-->  iosub.inc routines that prompt take the no-prompt branch here
+#define SMACOS_IO
+!<--
 #include "iosub.inc"
 	End Module smacosio_mod
 

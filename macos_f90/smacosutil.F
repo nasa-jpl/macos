@@ -47,7 +47,10 @@ C  Load CARG(1 and 2) for some commands
 	IF (LCMP(command,'SAVE',3).OR.LCMP(command,'JOURNAL',3))
      &	THEN
 	  CALL C2CW(CARG(1),ls,STACK,' ')
-	  CALL C2CW(CARG(2),ls,STACK,' ')
+!-->  PLAN 1.2 (v): a blank second token is no token (C2CW would scan
+!     past its buffer for one); save_rx passes none for a new file.
+	  IF (LEN_TRIM(CARG(2)) > 0) CALL C2CW(CARG(2),ls,STACK,' ')
+!<--
 	  GO TO 110
 	END IF
 
@@ -61,7 +64,8 @@ C  Load IARG(1) for other commands
      &	  LCMP(command,'DMBUILD',3).OR.LCMP(command,'COORD',3).OR.
      &	  LCMP(command,'BUILD',3).OR.LCMP(command,'INTENSITY',3).OR.
      &	  LCMP(command,'GAIN',3).OR.LCMP(command,'LOG',3).OR.
-     &    LCMP(command,'DVAR',4)) THEN
+     &    LCMP(command,'DVAR',4).OR.
+     &    LCMP(command,'SEGRAYTRACE',7)) THEN
       	  CALL I2C(IARG(1),ls,STACK,' ')
 	  GO TO 110
 	END IF

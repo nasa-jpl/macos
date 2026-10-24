@@ -20,6 +20,76 @@ C***********************************************************************
          INTEGER :: nZPFailMsg = 0
          INTEGER, PARAMETER :: mZPFailMsg = 20
 !<--
+!-->  Forward (sequential) root pick -- FwdRoot, 2026-10-04.  Until then the
+!     .NOT.ifLNsrf branch of ConSrf / AsphSrf / AsphGridSrf / FreeFormSrf
+!     / UDSrf (and IntSrf, RefSrf, ObsSrf, PolElt, ReturnSrf) chose between
+!     the quadratic's two roots by the |L^2 - mpr| proximity metric,
+!     mpr = |pin - pv|^2: "the root whose |L| best matches the ray's
+!     distance from the VERTEX" -- lateral height included, no sense of
+!     which SHEET of the conic the hit is on (the same metric LNsrfRoot
+!     replaced on the ifLNsrf branch 2026-10-03).  On a two-sheet
+!     hyperboloid it takes the FAR sheet whenever the ray's vertex distance
+!     happens to lie nearer that root: dyson5's eccentric TMA section
+!     (M3 K=-15.8, sheets 22 mm apart) sent 40 of 1185 rays onto M3's far
+!     sheet (dz = +22.0 mm = 2a at h 7-8 mm from the vertex), 44 mm of
+!     extra path and a 10 mm spot tail, every ray "passing" -- read as
+!     8 mm rms OPD at the FP and as CALIB's mm-scale per-field WFE
+!     (addendum 38).
+!     THE RULE IS THE SHEET, NOT THE ORDER OF CROSSING.  The real surface
+!     is the sheet the vertex is on.  With p the hit relative to the
+!     vertex and z = psi.p, the conic is |p|^2 + 2 Kr z + Kc z^2 = 0 and
+!     the normal's axial component Nvec.psi = Kr + (1+Kc) z has the SIGN
+!     OF Kr on the vertex sheet and the opposite sign on the other sheet
+!     (the two meet where the normal is perpendicular to the axis: the
+!     hyperboloid's asymptotes at infinity, an ellipsoid's equator).  A
+!     forward root (L > 0) on the vertex sheet is taken; if both roots
+!     qualify, the first crossing.  "First forward crossing" alone is
+!     WRONG and was measured so: on the same deck M2's far sheet (a bowl
+!     opening toward M1, 37 mm in front of the mirror) is crossed by 125
+!     rays BEFORE the real surface -- min-positive put them on it and lost
+!     350 rays at M3.  When no forward vertex-sheet root exists the legacy
+!     choice is kept to the bit (a ray hitting only the far sheet keeps
+!     its old, spurious hit -- counted, not failed; Dave's guards-warn
+!     rule).  Every pick that differs from the legacy one is counted in
+!     nFwdRootFlip (reset per trace with nZPFailMsg, read by the api
+!     fwd_root_flips_get, summarised by WARN) and the first such pick of a
+!     RUN prints ONE note (a per-trace note floods a CALIB run) -- a
+!     nonzero count on a legacy deck means that deck was tracing onto the
+!     wrong sheet.
+         INTEGER :: nFwdRootFlip = 0
+         LOGICAL :: LFwdRootNoted = .FALSE.   ! the note prints ONCE per run
+!<--
+!-->  Grid-index out-of-range guard (surfsub.F SFFSrf / FreeFormSrf grid
+!     term).  The bilinear pixel index xi/yj is clamped to the grid with
+!     an INTEGER test (i0=IDFLOOR(xi), i1=i0+1, reject i0<1 .OR. i1>nGridMat).
+!     When the composite-surface bracket solver EXPLORES a ray that misses
+!     the grid, L (hence rho, hence xi/yj) can grow without bound: at
+!     xi > 2^31, INT(xi) in IDFLOOR SATURATES to INT_MAX and i1=i0+1 then
+!     WRAPS to INT_MIN, so the integer test reads all-false and GridMat is
+!     indexed hugely out of bounds -> SIGSEGV (an NS-grid deck whose
+!     NSCount round-trip is broken sends dozens of rays into this regime;
+!     the IRIS instrument deck, 2026-10-10).  Fix: test xi/yj for FINITE +
+!     in-range in floating point BEFORE IDFLOOR, so an out-of-grid ray gets
+!     fh=0 (no figure) and the solver reports a clean bracket failure
+!     instead of a crash.  A finite in-range index is bit-identical to the
+!     old path.  Each rejected sample is counted (nGridIdxOvf, api
+!     grid_idx_ovf_get, summarised by WARN); the first of a RUN prints ONE
+!     note (a per-trace note floods a trace).  Reset per trace with
+!     nZPFailMsg / nFwdRootFlip.
+         INTEGER :: nGridIdxOvf = 0
+         LOGICAL :: LGridIdxOvfNoted = .FALSE.  ! the note prints ONCE per run
+!<--
+!-->  A gradient-index (GradInd=) model the Refractor cannot integrate
+!     (2026-10-10): only model 5 is implemented, and every other model
+!     returned rays built from UNINITIALISED integrator state -- NaN
+!     (tst_save_keys.in, GradInd 6).  Now the ray is LOST (Refractor sets
+!     LROK false and LGrinUnsup, CTRACE / CPROPAGATE record RayStat_Undef
+!     'GRIN model not implemented'), counted (nGrinUnsup, reset per trace,
+!     WARN) and ONE note prints per run.
+         LOGICAL :: LGrinUnsup = .FALSE.
+         INTEGER :: nGrinUnsup = 0
+         LOGICAL :: LGrinUnsupNoted = .FALSE.
+!<--
 !-->  Non-sequential candidate probes need FLOW-OF-LIGHT root selection:
 !     when LNSFlowL is set, the base-conic root pick in ConSrf / AsphSrf
 !     / AsphGridSrf / FreeFormSrf / UDSrf takes the SMALLEST POSITIVE
@@ -31,6 +101,27 @@ C***********************************************************************
 !     (the LZPFailed pattern).
          LOGICAL :: LNSFlowL = .FALSE.
 !<--
+!-->  ifLNsrf root pick (a surface ON or right AFTER a Reference / Return,
+!     where the intersection may legitimately lie BEHIND the ray, e.g. the
+!     FEX exit-pupil sphere traced back from the focus): until 2026-10-03
+!     it was the |L^2 - mpr| proximity metric, mpr = |pin - pv|^2, i.e.
+!     "the root whose |L| best matches the ray's distance from the
+!     VERTEX" -- which includes the ray's LATERAL height.  A ray 90 mm off
+!     axis starting 5.3 mm ahead of a convex hyperboloid (TO's R2c
+!     Schwarzschild, EP Reference just ahead of M1) has mpr = 8.3e-3 and
+!     roots -0.107 / +0.011: the metric picked the sheet BEHIND the ray
+!     (93 mm rms spot, every ray).  LNsrfRoot picks the root whose HIT
+!     POINT is nearest the element's REFERENCE point prot (RptElt -- the
+!     vertex for an ordinary element, the POLE for an off-axis section):
+!     +0.011 here (the vertex is 5 mm ahead); the FEX sphere about the
+!     focus has roots +-R with its vertex behind -> -R, a strict choice
+!     where the old metric relied on an exact tie; a 90-deg OAP (tBench)
+!     takes the side of the paraboloid its pole is on.  A first cut used
+!     the axial distance to the VERTEX plane, which is degenerate when the
+!     ray runs parallel to that plane -- the OAP case -- and sent tBench's
+!     chief 600 mm off the pole.  Forward trains never reach this branch
+!     (ifLNsrf is false there).
+!<--
 !-->  ZernType to gate ZerntoMon1's RMS normalisation on.  ZerntoMon1 is
 !     shared by the element-Zern, FF and Mon coefficient paths, so it cannot
 !     infer the governing type from the element id alone.  Each dispatch path
@@ -41,6 +132,71 @@ C***********************************************************************
 !<--
 
       CONTAINS
+
+!-->  See the LNsrfRoot note at the top of the module.  The root whose HIT
+!     POINT pin + L*ihat is nearest the element's reference point prot
+!     (RptElt): d^2(L) = L^2 - 2 L q + const, q = ihat.(prot - pin).
+         REAL*8 FUNCTION LNsrfRoot(kp,km,ihat,pin,prot)
+            IMPLICIT NONE
+            REAL*8, INTENT(IN) :: kp,km,ihat(3),pin(3),prot(3)
+            REAL*8 :: q
+            q=ihat(1)*(prot(1)-pin(1))+ihat(2)*(prot(2)-pin(2))
+     &       +ihat(3)*(prot(3)-pin(3))
+            IF (kp*(kp-2d0*q).LE.km*(km-2d0*q)) THEN
+               LNsrfRoot=kp
+            ELSE
+               LNsrfRoot=km
+            END IF
+         END FUNCTION LNsrfRoot
+!<--
+
+!-->  See the FwdRoot note at the top of the module.  Legacy pick kept
+!     verbatim as Lold; a forward root on the VERTEX sheet (sign of
+!     Kr + (1+Kc) z equal to the sign of Kr) wins, first crossing on a tie.
+         REAL*8 FUNCTION FwdRoot(kp,km,mpr,Kr,Kc,psitprel,itpsi)
+            IMPLICIT NONE
+            REAL*8, INTENT(IN) :: kp,km,mpr,Kr,Kc,psitprel,itpsi
+            REAL*8 :: Lold
+            LOGICAL :: okp,okm
+            IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
+               IF (kp.GT.0D0) THEN
+                  Lold=kp
+               ELSE
+                  Lold=km
+               END IF
+            ELSE
+               IF (km.GT.0D0) THEN
+                  Lold=km
+               ELSE
+                  Lold=kp
+               END IF
+            END IF
+            okp=(kp.GT.0d0).AND.
+     &          ((Kr+(1d0+Kc)*(psitprel+kp*itpsi))*Kr.GE.0d0)
+            okm=(km.GT.0d0).AND.
+     &          ((Kr+(1d0+Kc)*(psitprel+km*itpsi))*Kr.GE.0d0)
+            IF (okp.AND.okm) THEN
+               FwdRoot=MIN(kp,km)
+            ELSE IF (okp) THEN
+               FwdRoot=kp
+            ELSE IF (okm) THEN
+               FwdRoot=km
+            ELSE
+               FwdRoot=Lold
+            END IF
+            ! ABS(..).GT.0 is FALSE on NaN roots (a dead ray is not a flip)
+            IF (ABS(FwdRoot-Lold).GT.0d0) THEN
+               nFwdRootFlip=nFwdRootFlip+1
+               IF (.NOT.LFwdRootNoted) THEN
+                  LFwdRootNoted=.TRUE.
+                  WRITE(*,'(A/A)')
+     &  ' ** Note: a ray intersection moved to the VERTEX sheet of a '//
+     &  'two-sheet conic (legacy root pick took the other sheet);',
+     &  '    per-trace count: WARN / fwd_root_flips_get (noted once).'
+               END IF
+            END IF
+         END FUNCTION FwdRoot
+!<--
 
 C***********************************************************************
 
@@ -177,25 +333,9 @@ C***********************************************************************
                   END IF
 !<--
                ELSE IF (ifLNsrf) THEN
-                  IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-                     L=kp
-                  ELSE
-                     L=km
-                  END IF
+                  L=LNsrfRoot(kp,km,ihat,pin,prot)
                ELSE
-                  IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-                     IF (kp.GT.0D0) THEN
-                        L=kp
-                     ELSE
-                        L=km
-                     END IF
-                  ELSE
-                     IF (km.GT.0D0) THEN
-                        L=km
-                     ELSE
-                        L=kp
-                     END IF
-                  END IF
+                  L=FwdRoot(kp,km,mpr,Kr,Kc,psitprel,itpsi) ! sheet
                   IF (L.LT.0d0) GO TO 98
                END IF
             END IF
@@ -953,25 +1093,9 @@ C	Compute intersection point and normal vector
                   END IF
 !<--
                ELSE IF (ifLNsrf) THEN
-                  IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-                     L=kp
-                  ELSE
-                     L=km
-                  END IF
+                  L=LNsrfRoot(kp,km,ihat,pin,prot)
                ELSE
-                  IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-                     IF (kp.GT.0D0) THEN
-                        L=kp
-                     ELSE
-                        L=km
-                     END IF
-                  ELSE
-                     IF (km.GT.0D0) THEN
-                        L=km
-                     ELSE
-                        L=kp
-                     END IF
-                  END IF
+                  L=FwdRoot(kp,km,mpr,Kr,Kc,psitprel,itpsi) ! sheet
                   IF (L.LT.0d0) GO TO 98
                END IF
             END IF
@@ -1235,25 +1359,9 @@ C       Compute intersection point and normal vector
                   END IF
 !<--
                ELSE IF (ifLNsrf) THEN
-                  IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-                     L=kp
-                  ELSE
-                     L=km
-                  END IF
+                  L=LNsrfRoot(kp,km,ihat,pin,prot)
                ELSE
-                  IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-                     IF (kp.GT.0D0) THEN
-                        L=kp
-                     ELSE
-                        L=km
-                     END IF
-                  ELSE
-                     IF (km.GT.0D0) THEN
-                        L=km
-                     ELSE
-                        L=kp
-                     END IF
-                  END IF
+                  L=FwdRoot(kp,km,mpr,Kr,Kc,psitprel,itpsi) ! sheet
                   IF (L.LT.0d0) GO TO 98
                END IF
             END IF
@@ -1874,7 +1982,14 @@ C  Computes surface function for gridded data surface
 
             ! Compute excess surface height
 
-            IF ((i0.LT.1).OR.(i1.GT.nGridMat).OR.(j0.LT.1).OR.
+!-->        Reject a non-finite / out-of-INT-range index first (overflow).
+            IF ((xi.NE.xi).OR.(yj.NE.yj).OR.
+     &      (ABS(xi).GE.2.0d9).OR.(ABS(yj).GE.2.0d9)) THEN
+               CALL GridIdxOvf
+               fh=0d0
+               tiltx=0d0
+               tilty=0d0
+            ELSE IF ((i0.LT.1).OR.(i1.GT.nGridMat).OR.(j0.LT.1).OR.
      &      (j1.GT.nGridMat)) THEN
                fh=0d0
                tiltx=0d0
@@ -2098,7 +2213,19 @@ C  Determine active terms from sentinels
 
             ifMon  = (lMon      .GT. 0d0)
             ifFF   = (LFF      .GT. 0d0)
-            ifGridTerm = (nGridMat .GT.  0 )
+!-->        A declared grid with NO data (GridFile= none / missing, the
+!           IRIS "nGridMat= 99" idiom) leaves GridSrfdx at 0: the pixel
+!           index xi = (xData.rhom)/dAct then divides by zero and the
+!           NaN index reads GridMat out of bounds (SIGSEGV on macOS, NaN
+!           OPD on Linux, 2026-09-09).  A zero pitch cannot index a grid,
+!           so the grid term is INACTIVE without one.
+            ifGridTerm = (nGridMat .GT. 0) .AND. (GridSrfdx .GT. 0d0)
+!           ... nor a grid DECLARED larger than this model's mGridMat
+!           (2026-10-10: Rx_Coro_DM's nGridMat= 1024, its data installed
+!           by the bindings at run time; a CLI load traced the phantom
+!           and indexed GridMat past mGridMat).  Inert, as above.
+     &        .AND. (nGridMat .LE. mGridMat)
+!<--
 
 C----------------------------------------------------------------------------
 C	Compute incidence point of ray on the base conic surface
@@ -2157,25 +2284,9 @@ C	Compute incidence point of ray on the base conic surface
                   END IF
 !<--
                ELSE IF (ifLNsrf) THEN
-                  IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-                     L=kp
-                  ELSE
-                     L=km
-                  END IF
+                  L=LNsrfRoot(kp,km,ihat,pin,prot)
                ELSE
-                  IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-                     IF (kp.GT.0D0) THEN
-                        L=kp
-                     ELSE
-                        L=km
-                     END IF
-                  ELSE
-                     IF (km.GT.0D0) THEN
-                        L=km
-                     ELSE
-                        L=kp
-                     END IF
-                  END IF
+                  L=FwdRoot(kp,km,mpr,Kr,Kc,psitprel,itpsi) ! sheet
                   IF (L.LT.0d0) GO TO 98
                END IF
             END IF
@@ -2296,7 +2407,15 @@ C  Evaluate grid data and add grid contribution to normal vector (if active)
                x=xi-DBLE(i0)
                y=yj-DBLE(j0)
 
-               IF ((i0.LT.1).OR.(i1.GT.nGridMat).OR.
+!-->          Reject a non-finite / out-of-INT-range index BEFORE the
+!             integer test (i1=i0+1 would wrap past INT_MAX); off-grid.
+               IF ((xi.NE.xi).OR.(yj.NE.yj).OR.
+     &             (ABS(xi).GE.2.0d9).OR.(ABS(yj).GE.2.0d9)) THEN
+                  CALL GridIdxOvf
+                  fh=0d0
+                  tiltx=0d0
+                  tilty=0d0
+               ELSE IF ((i0.LT.1).OR.(i1.GT.nGridMat).OR.
      &             (j0.LT.1).OR.(j1.GT.nGridMat)) THEN
                   fh=0d0
                   tiltx=0d0
@@ -2307,6 +2426,7 @@ C  Evaluate grid data and add grid contribution to normal vector (if active)
      &            GridMat(i1,j0),GridMat(i1,j1),
      &            fh,tiltx,tilty)
                END IF
+!<--
 
                Fgrid = fh
                tiltx = tiltx/dAct
@@ -2459,7 +2579,15 @@ C***********************************************************************
 
             ifMon  = (lMon      .GT. 0d0)
             ifFF   = (LFF      .GT. 0d0)
-            ifGridTerm = (nGridMat .GT.  0 )
+!-->        A declared grid with NO data (GridFile= none / missing, the
+!           IRIS "nGridMat= 99" idiom) leaves GridSrfdx at 0: the pixel
+!           index xi = (xData.rhom)/dAct then divides by zero and the
+!           NaN index reads GridMat out of bounds (SIGSEGV on macOS, NaN
+!           OPD on Linux, 2026-09-09).  A zero pitch cannot index a grid,
+!           so the grid term is INACTIVE without one.
+            ifGridTerm = (nGridMat .GT. 0) .AND. (dAct .GT. 0d0)
+     &        .AND. (nGridMat .LE. mGridMat)   ! as SFFSrf (2026-10-10)
+!<--
 
 C  Compute rho and Sconic
 
@@ -2520,7 +2648,13 @@ C  Compute dSgrid (if active)
                j1=j0+1
                x=xi-DBLE(i0)
                y=yj-DBLE(j0)
-               IF ((i0.LT.1).OR.(i1.GT.nGridMat).OR.
+!-->          Reject a non-finite / out-of-INT-range index BEFORE the
+!             integer test (i1=i0+1 would wrap past INT_MAX); off-grid.
+               IF ((xi.NE.xi).OR.(yj.NE.yj).OR.
+     &             (ABS(xi).GE.2.0d9).OR.(ABS(yj).GE.2.0d9)) THEN
+                  CALL GridIdxOvf
+                  fh=0d0
+               ELSE IF ((i0.LT.1).OR.(i1.GT.nGridMat).OR.
      &             (j0.LT.1).OR.(j1.GT.nGridMat)) THEN
                   fh=0d0
                ELSE
@@ -2529,6 +2663,7 @@ C  Compute dSgrid (if active)
      &            GridMat(i1,j0),GridMat(i1,j1),
      &            fh,tiltx,tilty)
                END IF
+!<--
                CALL ConicDeltaS(rho,fh,zhat,psi,Kc,Kr,Sconic,
      &                          zc,psitzc,deltaS)
                dSgrid = deltaS
@@ -2941,7 +3076,14 @@ C***********************************************************************
             x=xi-DBLE(i0)
             y=yj-DBLE(j0)
 
-            IF ((i0.LT.1).OR.(i1.GT.nGridMat).OR.(j0.LT.1).OR.
+!-->        Reject a non-finite / out-of-INT-range index first (overflow).
+            IF ((xi.NE.xi).OR.(yj.NE.yj).OR.
+     &      (ABS(xi).GE.2.0d9).OR.(ABS(yj).GE.2.0d9)) THEN
+               CALL GridIdxOvf
+               fh=0d0
+               tiltx=0d0
+               tilty=0d0
+            ELSE IF ((i0.LT.1).OR.(i1.GT.nGridMat).OR.(j0.LT.1).OR.
      &      (j1.GT.nGridMat)) THEN
                fh=0d0
                tiltx=0d0
@@ -3050,25 +3192,9 @@ C	Compute incidence point of ray on the surface
                   END IF
 !<--
                ELSE IF (ifLNsrf) THEN
-                  IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-                     L=kp
-                  ELSE
-                     L=km
-                  END IF
+                  L=LNsrfRoot(kp,km,ihat,pin,prot)
                ELSE
-                  IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-                     IF (kp.GT.0D0) THEN
-                        L=kp
-                     ELSE
-                        L=km
-                     END IF
-                  ELSE
-                     IF (km.GT.0D0) THEN
-                        L=km
-                     ELSE
-                        L=kp
-                     END IF
-                  END IF
+                  L=FwdRoot(kp,km,mpr,Kr,Kc,psitprel,itpsi) ! sheet
                   IF (L.LT.0d0) GO TO 98
                END IF
             END IF
@@ -3298,6 +3424,7 @@ C***********************************************************************
             LOGICAL exist,ifGridInit
             Logical :: isBinFil
             INTEGER jGridSrf,nGridMatS,i,j,iDat,ICLEN
+            CHARACTER(len=1100) :: fpath
 
   103       FORMAT(' Grid surface array is of dimension',i5,' by ',i5)
 
@@ -3307,11 +3434,40 @@ C   If no file, zero matrix and return
      &          (GridFile(1:ICLEN(GridFile)).EQ.'NONE') .OR.
      &          (GridFile(1:ICLEN(GridFile)).EQ.'None')) THEN
                GridFile='none'
-               WRITE(*,*)' No grid matrix provided'
+               WRITE(emsgRec,*)' No grid matrix provided'
+               CALL emsg_put
                CALL DZERO(GridMat(1,1,jGridSrf),mGridMat*mGridMat)
                ifGridInit=.FALSE.
                RETURN
             END IF
+
+!-->        Backstop for every caller (the Rx path refuses first): a
+!           grid larger than mGridMat is never read into GridMat.
+            IF (GridTooBig(GridFile,nGridMatS,0)) THEN
+               ifGridInit=.FALSE.
+               RETURN
+            END IF
+!<--
+!-->        A zero-sized read is NEVER a success.  GridInit sizes its
+!           read with DO j=1,nGridMatS, so nGridMatS<=0 reads no rows,
+!           falls through to label 1 and reports "dimension 0 by 0"
+!           with ifGridInit=.TRUE. -- the caller then traces an all-zero
+!           grid and the surface is silently flat.  Callers must set
+!           nGridMat BEFORE the grid is read (the prescription parser
+!           defers GridFile= until it has).  Backstop only.
+            IF (nGridMatS.LE.0) THEN
+               WRITE(emsgRec,*)' GridInit: nGridMat =',nGridMatS,
+     &           ' for grid file ',GridFile(1:ICLEN(GridFile))
+               CALL emsg_put
+               WRITE(emsgRec,*)' nGridMat must be set BEFORE the grid is',
+     &           ' read -- grid NOT loaded.'
+               CALL emsg_put
+               IF (jGridSrf.GE.1)
+     &           CALL DZERO(GridMat(1,1,jGridSrf),mGridMat*mGridMat)
+               ifGridInit=.FALSE.
+               RETURN
+            END IF
+!<--
 
             ! Check file existence
 
@@ -3326,28 +3482,45 @@ C   If no file, zero matrix and return
               GridFile(i:i)=' '
             END DO
 !<--
-            INQUIRE (FILE=GridFile,EXIST=exist)
+!-->        (f), Dave 2026-10-22: a relative name not found in the
+!           working directory is looked for beside the deck (RxDir,
+!           elt_mod); GridFile itself is kept as written (SAVE).
+            fpath = GridFile
+            INQUIRE (FILE=fpath,EXIST=exist)
+            IF (.NOT.exist .AND. GridFile(1:1).NE.'/' .AND.
+     &          LEN_TRIM(RxDir) > 0) THEN
+               fpath = TRIM(RxDir)//TRIM(ADJUSTL(GridFile))
+               INQUIRE (FILE=fpath,EXIST=exist)
+               IF (exist) WRITE(emsgRec,'(4A)') '  Grid file ',
+     &           GridFile(1:ICLEN(GridFile)),' found beside the deck: ',
+     &           TRIM(fpath)
+               CALL emsg_put
+            END IF
             IF (exist) THEN
                if (.not.isBinFil) then
-                  OPEN (UNIT=94,FILE=GridFile,STATUS='OLD',
+                  OPEN (UNIT=94,FILE=fpath,STATUS='OLD',
      &                  FORM='FORMATTED')
                else
                   ! binary input
-                  OPEN (UNIT=94,FILE=GridFile,STATUS='OLD',
+                  OPEN (UNIT=94,FILE=fpath,STATUS='OLD',
      &                    FORM='UNFORMATTED')
                end if
+!<--
             ELSE
-               WRITE(*,*)' File ',GridFile(1:ICLEN(GridFile)),
+               WRITE(emsgRec,*)' File ',GridFile(1:ICLEN(GridFile)),
      &         ' does not exist -sub GridInit in surfsub.f'
+               CALL emsg_put
                CALL DZERO(GridMat(1,1,jGridSrf),(mGridMat*mGridMat))
                ifGridInit=.FALSE.
                RETURN
             END IF
 
 C  Read input data
-            WRITE(*,*)' Reading surface grid data file ',
+            WRITE(emsgRec,*)' Reading surface grid data file ',
      &                  GridFile(1:ICLEN(GridFile))
-            WRITE(*,*)' mGridMat,nGridMatS =', mGridMat,nGridMatS
+            CALL emsg_put
+            WRITE(emsgRec,*)' mGridMat,nGridMatS =', mGridMat,nGridMatS
+            CALL emsg_put
             iDat=0
             !DO j=1,mGridMat
             DO j=1,nGridMatS
@@ -3357,7 +3530,8 @@ C  Read input data
      &                (GridMat(i,j,jGridSrf),i=1,nGridMatS)
                else
                   ! read binary data
-                  print*,'* Bin read: reading a line'
+                  WRITE(emsgRec,*) '* Bin read: reading a line'
+                  CALL emsg_put
                   !READ(94,ERR=2,END=1)
                   READ(94,END=1)
      &                 GridMat(1:nGridMatS,j,jGridSrf)
@@ -3366,14 +3540,16 @@ C  Read input data
 
     1       CONTINUE
             ifGridInit=.TRUE.
-            WRITE(*,103) nGridMatS,iDat
+            WRITE(emsgRec,103) nGridMatS,iDat
+            CALL emsg_put
             CLOSE(94)
             !print*,'**** GridMat=',GridMat(1:96,1:96,jGridSrf)
             RETURN
 
     2       CONTINUE
             ifGridInit=.FALSE.
-            WRITE(*,*) ' Error during read GridData file!'
+            WRITE(emsgRec,*) ' Error during read GridData file!'
+            CALL emsg_put
             CALL DZERO(GridMat(1,1,jGridSrf),(mGridMat*mGridMat))
             CLOSE(94)
             RETURN
@@ -4200,6 +4376,22 @@ C***********************************************************************
             End Do
             Return
          End Subroutine ZerntoMon7
+
+C***********************************************************************
+C  GridIdxOvf -- record a grid pixel index that is non-finite or beyond
+C  the INTEGER range (the SFFSrf / FreeFormSrf / SGSrf / NGSrf guard).
+C  Counts the event and prints ONE note per run (per-trace floods).
+C***********************************************************************
+
+         SUBROUTINE GridIdxOvf
+            nGridIdxOvf = nGridIdxOvf + 1
+            IF (.NOT.LGridIdxOvfNoted) THEN
+               LGridIdxOvfNoted = .TRUE.
+               WRITE(*,*)' ** Note: a grid pixel index was non-finite '//
+     &           'or out of integer range; the ray is treated as '//
+     &           'off-grid.  Per-run count: WARN / grid_idx_ovf_get.'
+            END IF
+         END SUBROUTINE GridIdxOvf
 
 C***********************************************************************
 C***********************************************************************

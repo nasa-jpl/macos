@@ -1,0 +1,5 @@
+# Corpus A/B for the STATUS session-mode lines (PLAN_CONSOLIDATION 3.3 audit), 2026-10-11.
+# pre = macos 4ac0fa2 (gated); post = this commit; ifx + gfortran; 406 decks; record columns + first SAVE bytes.
+== ifx: 406 decks compared; 404 SAVE pairs (231 declare a stop); column movers 0; SAVE diffs 0
+== gf: 406 decks compared; 403 SAVE pairs (231 declare a stop); column movers 0; SAVE diffs 0
+# RESULT: 0 movers (STATUS is never run by a load; the change only prints).

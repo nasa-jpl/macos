@@ -1,0 +1,44 @@
+{
+ "section": "40_benches",
+ "entry": "out = cophi_run('stages',{'bench','figs'});",
+ "siblings": [
+  "tg_psi_dm96_oap",
+  "dm_gauge_lib",
+  "90_polarization/tg_psi_dm"
+ ],
+ "figure": "runs/cophi/cophi_vlayout.png",
+ "run": {
+  "from": "=== COPHI on the TG96 bench",
+  "to": "null < 1 nm\\)"
+ },
+ "pins": [
+  {
+   "name": "contrast",
+   "pattern": "Fringe contrast g over the test pupil: median (\\S+),",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "overfill",
+   "pattern": "the LO overfills by (\\S+) px",
+   "rule": "printed",
+   "format": "%.1f"
+  },
+  {
+   "name": "magratio",
+   "pattern": "\\(ratio (\\S+)\\)\\nFootprints",
+   "rule": "printed",
+   "format": "%.6f"
+  }
+ ],
+ "caption": "The COPHI bench from above (`runs/cophi/cophi_vlayout.png`, drawn by `tg96_run`): the TG96 lens rig with the reference flat's seat taken by the traced, fiber-fed local-oscillator arm (purple), the camera leg green. The title says the test arm (DM) is blue; it is drawn red, like the source arm, the mislabel `tg_psi_dm96_oap`'s figure carries too (the open questions list).",
+ "number": "The bench stage registers the LO arm on the test arm before any reading, and gates it: the chief rays land on the same pixel, the LO overfills the test pupil's image by %pin:p2_cophi_dm96_overfill% px, the two arms' magnifications agree to a ratio of %pin:p2_cophi_dm96_magratio%, and the fringe contrast over the pupil is %pin:p2_cophi_dm96_contrast% (median). The report's last line is the gate: REGISTRATION PASS.",
+ "prompt": "Using templates/40_benches/cophi_dm96, run the bench stage on the mirror rig of record (bench.optics 'oap') and tell me whether the LO arm registers, with its overfill and fringe contrast.",
+ "knobs": {
+  "file": "cophi_params.m",
+  "from": "^P\\.tag = 'cophi'",
+  "to": "^P\\.bench\\.LO_DX"
+ },
+ "fig_attr": "{height=7in}",
+ "run_note": "The bench stage with its figures, the README's `cophi_run('stages',{'bench','figs','clearance'})` without the clearance table. The manual copies the template with the siblings it reads by relative location: `tg_psi_dm96_oap` (the runner it builds on), `dm_gauge_lib`, and `90_polarization/tg_psi_dm`."
+}

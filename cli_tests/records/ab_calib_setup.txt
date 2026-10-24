@@ -1,0 +1,6 @@
+# Corpus A/B for PLAN_CONSOLIDATION 3.3 (one CALIB setup: calib_setup_vars), 2026-10-11.
+# pre = macos f901d36; post = this commit; ifx + gfortran; 406 decks; record columns + first SAVE bytes.
+== ifx: 406 decks compared; 404 SAVE pairs (231 declare a stop); column movers 0; SAVE diffs 0
+== gf: 406 decks compared; 403 SAVE pairs (231 declare a stop); column movers 0; SAVE diffs 0
+# RESULT: 0 movers.  No corpus deck sets OptNomSens= Y, so the LOAD handler's nominal path is
+# exercised only by ZGD tst_calib_nomsens.in (CLI transcript byte-identical pre/post, both compilers).

@@ -1,0 +1,29 @@
+# DOPD of two identical OPDs (PLAN_CONSOLIDATION 1.2 (k), 2026-10-22).  The finding read "DOPD after ZABERR / ZRM
+#   reports RMS dOPD = -1.0"; measured, the Zernike commands are not involved: any two identical OPD runs give an
+#   all-zero difference map, and RMS2 returns -1 -- its no-nonzero-cell sentinel -- for that (`opd; opd; dopd`
+#   read -1.0 too).  DOPD now reports 0 and says why.  Legs: OPD, ZABERR (no save), OPD, DOPD = the brief's
+#   sequence; then a perturbed OPD so the difference is real (2.454e-11, the ZABERR_ZRM_DOPD value).  Red on the
+#   pre-fix binary (-1.0).
+# PIN POLICY (CC 2026-10-23, TO's question): the 3.5664D-11 after the tilt is a RESPONSE (28x the 1.29D-12
+#   baseline, which is bounded), so it is pinned to five figures under rule 2 as a deliberate exception to the
+#   1e-9 magnitude threshold of rule 1; arm64 shares the five figures (CCMac gate 10).  If arm64 ever moves it,
+#   that is a cross-architecture trace difference at 1e-5 relative, worth a finding -- do not widen blindly.
+old $ROOT/docs/macos-manual/examples/Cassegrain.in
+none
+opd 5
+zaberr
+3
+4,5,6
+no
+opd 5
+dopd
+perturb 3
+global
+1e-4,0,0
+0,0,0
+opd 5
+dopd
+# EXPECT: RMS dOPD =\s+0\.0+(E\+0+)?\s+\(the two OPDs are identical\)\s+P-V dOPD =\s+0\.0+(E\+0+)?\s+0\.0+(E\+0+)?\s
+# EXPECT: RMS OPD error is\s+3\.5664\d*D-11\s+[\s\S]*?RMS dOPD =\s+2\.454\d*E-011
+# EXPECT-NOT: RMS dOPD =\s+-1\.0
+# EXPECT-NOT: forrtl

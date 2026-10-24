@@ -352,10 +352,13 @@ c		 warning messages when you have nObs=0
 	use loh_I2
         use macos_mod, only: ifStopSet
         use Constants, only: INF
+        use surfsub, only: GridInit
+        use cfiles_mod, only: GridFile
 
 	IMPLICIT NONE
 
 	INTEGER i,iElt
+	LOGICAL ifGridInitL
 
 C   Check for things user must specify
 C   Setup for new input scheme
@@ -375,7 +378,9 @@ C   Setup for new input scheme
 C       Set defaults, if necessary
 
         ! ApStop -- cannot be placed at NS-Surfaces or at the Object Location
-        if (RxStopSet .and. EltStopSet) then
+        ! (guard the STOP element only: unscoped, any Segment/NS elt
+        ! ANYWHERE in the deck cancelled a valid element stop)
+        if (RxStopSet .and. EltStopSet .and. iElt==StopElt) then
           if (EltID(iElt)==0 .OR.
      &          EltID(iElt) == NSRefractorElt .OR.
      &          EltID(iElt) == NSReflectorElt .OR.
@@ -390,27 +395,31 @@ C       Set defaults, if necessary
 	ELSE
 	  EltName(iElt)='Elt'
 	  EltName_FLG=.TRUE.
-	  WRITE(*,112)'EltName',iElt
+	  WRITE(emsgRec,112)'EltName',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (EltType_FLG) THEN
 	  CONTINUE
 	ELSE
-	  WRITE(*,111)' EltType',iElt
+	  WRITE(emsgRec,111)' EltType',iElt
+	  CALL emsg_put
 	  ELEM_OK = .FALSE.
 	END IF
 
 	IF (EltID_FLG) THEN
 	  CONTINUE
 	ELSE
-	  WRITE(*,111)' Element',iElt
+	  WRITE(emsgRec,111)' Element',iElt
+	  CALL emsg_put
 	  ELEM_OK = .FALSE.
 	END IF
 
 	IF (SrfType_FLG) THEN
 	  CONTINUE
 	ELSE
-	  WRITE(*,111)' Surface',iElt
+	  WRITE(emsgRec,111)' Surface',iElt
+	  CALL emsg_put
 	  ELEM_OK = .FALSE.
 	END IF
 
@@ -419,7 +428,8 @@ C       Set defaults, if necessary
 	ELSE
 	  fElt(iElt)=1D22
 	  fElt_FLG=.TRUE.
-	  WRITE(*,112)'fElt',iElt
+	  WRITE(emsgRec,112)'fElt',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (eElt_FLG) THEN
@@ -427,7 +437,8 @@ C       Set defaults, if necessary
 	ELSE
 	  eElt(iElt)=0.0D0
 	  eElt_FLG=.TRUE.
-	  WRITE(*,112)'eElt',iElt
+	  WRITE(emsgRec,112)'eElt',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (psiElt_FLG) THEN
@@ -435,7 +446,8 @@ C       Set defaults, if necessary
 	ELSE
 	  CALL DNEGATE(psiElt(1,iElt),ChfRayDir(1),3)
 	  psiElt_FLG=.TRUE.
-	  WRITE(*,112)'psiElt',iElt
+	  WRITE(emsgRec,112)'psiElt',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (AsphCoef_FLG) THEN
@@ -443,7 +455,8 @@ C       Set defaults, if necessary
 	ELSE
 	  CALL DZERO(AsphCoef(1,iElt),4)
 	  AsphCoef_FLG=.TRUE.
-	  WRITE(*,112)'AsphCoef',iElt
+	  WRITE(emsgRec,112)'AsphCoef',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (AnaCoef_FLG) THEN
@@ -451,7 +464,8 @@ C       Set defaults, if necessary
 	ELSE
 	  CALL DZERO(AnaCoef(1,iElt),4)
 	  AnaCoef_FLG=.TRUE.
-	  WRITE(*,112)'AnaCoef',iElt
+	  WRITE(emsgRec,112)'AnaCoef',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (ZernCoef_FLG) THEN
@@ -459,7 +473,8 @@ C       Set defaults, if necessary
 	ELSE
 	  CALL DZERO(ZernCoef(1,iElt),45)
 	  ZernCoef_FLG=.TRUE.
-	  WRITE(*,112)'ZernCoef',iElt
+	  WRITE(emsgRec,112)'ZernCoef',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (ZernTypeL_FLG) THEN
@@ -467,15 +482,94 @@ C       Set defaults, if necessary
 	ELSE
 	  ZernTypeL_FLG=.TRUE.
 	  ZernTypeL(iElt)=1
-	  WRITE(*,112)'ZernType',iElt
+	  WRITE(emsgRec,112)'ZernType',iElt
+	  CALL emsg_put
 	END IF
+!-->  PLAN item 7 (Dave 2026-10-10): EVERY Zernike-carrying surface
+!     gets the ANSI default when it declares no ZernType=, whatever
+!     the element type.  The FLG above is pre-set .TRUE. at Surface=/
+!     Element= for any surface that is not SrfType_Zernike and for
+!     most element types, so a ZrnGrData surface, or a Zernike
+!     surface on an NS element, kept
+!     ZernTypeL 0: its ZernCoef never reached the trace (no ZerntoMon
+!     branch for 0) and its SAVE was unreloadable.  ANSI = the manual's
+!     Table 8 (the legacy Malacara ordering), the default where reached.
+	IF ((SrfType(iElt).EQ.SrfType_Zernike .OR.
+     &       SrfType(iElt).EQ.SrfType_ZrnGrData) .AND.
+     &      ZernTypeL(iElt).LT.1) THEN
+	  ZernTypeL(iElt)=ZernType_ANSI
+	  WRITE(emsgRec,112)'ZernType',iElt
+	  CALL emsg_put
+	END IF
+!<--
+!-->	(tt): an ExtFringe coefficient the converter drops is refused by
+!	mode (PLAN_CONSOLIDATION 1.2, Dave 2026-10-20); zeros there load
+	BLOCK
+	  INTEGER :: kInert, kPast
+	  kInert = ZernCoefInert(ZernTypeL(iElt), ZernCoef(:,iElt),
+     &	                         mZernModes)
+	  IF (kInert .GT. 0) THEN
+	    WRITE(emsgRec,'(A,I4,A,I3,A)') ' ** Rx load refused: ZernCoef (elt',
+     &	      iElt, ') mode', kInert, ': '//ZernInertMsg
+	    CALL emsg_put
+	    ELEM_OK = .FALSE.
+	  END IF
+!	  (xx): a coefficient past the type's mode count, refused by mode
+	  kPast = ZernCoefPastMax(ZernTypeL(iElt), ZernCoef(:,iElt), mZernModes)
+	  IF (kPast .GT. 0) THEN
+	    WRITE(emsgRec,'(A,I4,A,I3,A,I3,A)') ' ** Rx load refused: ZernCoef (elt',
+     &	      iElt, ') mode', kPast, ': '//
+     &	      TRIM(ZernTypeNameL(ZernTypeL(iElt)))//' has',
+     &	      ZernType_MaxMode(ZernTypeL(iElt)), ' modes'
+	    CALL emsg_put
+	    ELEM_OK = .FALSE.
+	  END IF
+	  kInert = ZernCoefInert(MonZernTypeL(iElt), MonZernCoef(:,iElt),
+     &	                         mMonCoef)
+	  IF (kInert .GT. 0) THEN
+	    WRITE(emsgRec,'(A,I4,A,I3,A)') ' ** Rx load refused: MonZernCoef (elt',
+     &	      iElt, ') mode', kInert, ': '//ZernInertMsg
+	    CALL emsg_put
+	    ELEM_OK = .FALSE.
+	  END IF
+!	  (xx): a coefficient past the type's mode count, refused by mode
+	  kPast = ZernCoefPastMax(MonZernTypeL(iElt), MonZernCoef(:,iElt), mMonCoef)
+	  IF (kPast .GT. 0) THEN
+	    WRITE(emsgRec,'(A,I4,A,I3,A,I3,A)') ' ** Rx load refused: MonZernCoef (elt',
+     &	      iElt, ') mode', kPast, ': '//
+     &	      TRIM(ZernTypeNameL(MonZernTypeL(iElt)))//' has',
+     &	      ZernType_MaxMode(MonZernTypeL(iElt)), ' modes'
+	    CALL emsg_put
+	    ELEM_OK = .FALSE.
+	  END IF
+	  kInert = ZernCoefInert(FFZernTypeL(iElt), FFZernCoef(:,iElt),
+     &	                         mFFCoef)
+	  IF (kInert .GT. 0) THEN
+	    WRITE(emsgRec,'(A,I4,A,I3,A)') ' ** Rx load refused: FFZernCoef (elt',
+     &	      iElt, ') mode', kInert, ': '//ZernInertMsg
+	    CALL emsg_put
+	    ELEM_OK = .FALSE.
+	  END IF
+!	  (xx): a coefficient past the type's mode count, refused by mode
+	  kPast = ZernCoefPastMax(FFZernTypeL(iElt), FFZernCoef(:,iElt), mFFCoef)
+	  IF (kPast .GT. 0) THEN
+	    WRITE(emsgRec,'(A,I4,A,I3,A,I3,A)') ' ** Rx load refused: FFZernCoef (elt',
+     &	      iElt, ') mode', kPast, ': '//
+     &	      TRIM(ZernTypeNameL(FFZernTypeL(iElt)))//' has',
+     &	      ZernType_MaxMode(FFZernTypeL(iElt)), ' modes'
+	    CALL emsg_put
+	    ELEM_OK = .FALSE.
+	  END IF
+	END BLOCK
+!<--
 
 	IF (MonCoef_FLG) THEN
 	  CONTINUE
 	ELSE
 	  CALL DZERO(MonCoef(1,iElt),120)
 	  MonCoef_FLG=.TRUE.
-	  WRITE(*,112)'MonCoef',iElt
+	  WRITE(emsgRec,112)'MonCoef',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (UDSrfCoef_FLG) THEN
@@ -483,7 +577,8 @@ C       Set defaults, if necessary
 	ELSE
 	  CALL DZERO(UDSrfCoef(1,iElt),mUDScoef)
 	  UDSrfCoef_FLG=.TRUE.
-	  WRITE(*,112)'UDSrfCoef',iElt
+	  WRITE(emsgRec,112)'UDSrfCoef',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (UDSrfType_FLG) THEN
@@ -492,7 +587,8 @@ C       Set defaults, if necessary
 	  IF (SrfType(iElt).EQ.7) THEN
 	    UDSrfType(iElt)=1
 	    UDSrfType_FLG=.TRUE.
-	    WRITE(*,112)'UDSrfType',iElt
+	    WRITE(emsgRec,112)'UDSrfType',iElt
+	    CALL emsg_put
 	  ELSE
 	    UDSrfType(iElt)=0
 	    UDSrfType_FLG=.TRUE.
@@ -543,7 +639,8 @@ C	Param order = beta,dact or drad,dq,minrad
 	      UDSrfParam(1,iElt)=0d0
 	      UDSrfParam(2,iElt)=1.380435d0
 	    END IF
-	    WRITE(*,112)'UDSrfParam',iElt
+	    WRITE(emsgRec,112)'UDSrfParam',iElt
+	    CALL emsg_put
 	  END IF
 	  UDSrfParam_FLG=.TRUE.
 	END IF
@@ -553,7 +650,8 @@ C	Param order = beta,dact or drad,dq,minrad
 	ELSE
 	  KrElt(iElt)=-1D22
 	  KrElt_FLG=.TRUE.
-	  WRITE(*,112)'KrElt',iElt
+	  WRITE(emsgRec,112)'KrElt',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (KcElt_FLG) THEN
@@ -561,7 +659,8 @@ C	Param order = beta,dact or drad,dq,minrad
 	ELSE
 	  KcElt(iElt)=0.0D0
 	  KcElt_FLG=.TRUE.
-	  WRITE(*,112)'KcElt',iElt
+	  WRITE(emsgRec,112)'KcElt',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (pMon_FLG) THEN
@@ -570,7 +669,8 @@ C	Param order = beta,dact or drad,dq,minrad
 	  IF (VptElt_FLG) THEN
 	    CALL DEQUATE(pMon(1,iElt),VptElt(1,iElt),3)
 	    pMon_FLG=.TRUE.
-	    WRITE(*,112)'pMon',iElt
+	    WRITE(emsgRec,112)'pMon',iElt
+	    CALL emsg_put
 	  ELSE
 	    ELEM_OK=.FALSE.
 	  END IF
@@ -587,6 +687,18 @@ C	Param order = beta,dact or drad,dq,minrad
 	    zData_FLG=.TRUE.
 	  END IF
 	END IF
+!-->  a LensArray without a grid has no use for the grid frame either:
+!     SAVE writes pData..zData for every LensArray element (the SAVE
+!     audit's widening), and a 3.2-era deck without them printed four
+!     'Default used for' lines per element (Dave's lens_array.in: 20;
+!     macos-fd 2026-10-19).  Defaulted silently, as for FreeForm.
+	IF ((EltID(iElt).EQ.LensArrayElt).AND.(nGridMat(iElt).EQ.0)) THEN
+	  pData_FLG=.TRUE.
+	  xData_FLG=.TRUE.
+	  yData_FLG=.TRUE.
+	  zData_FLG=.TRUE.
+	END IF
+!<--
 
 	IF (pData_FLG) THEN
 	  CONTINUE
@@ -594,7 +706,8 @@ C	Param order = beta,dact or drad,dq,minrad
 	  IF (VptElt_FLG) THEN
 	    CALL DEQUATE(pData(1,iElt),VptElt(1,iElt),3)
 	    pData_FLG=.TRUE.
-	    WRITE(*,112)'pData',iElt
+	    WRITE(emsgRec,112)'pData',iElt
+	    CALL emsg_put
 	  ELSE
 	    ELEM_OK=.FALSE.
 	  END IF
@@ -607,7 +720,8 @@ C	Param order = beta,dact or drad,dq,minrad
 	  xData(2,iElt)=psiElt(1,iElt)
 	  xData(3,iElt)=psiElt(2,iElt)
 	  xData_FLG=.TRUE.
-	  WRITE(*,112)'xData',iElt
+	  WRITE(emsgRec,112)'xData',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (yData_FLG) THEN
@@ -615,7 +729,8 @@ C	Param order = beta,dact or drad,dq,minrad
 	ELSE
 	  CALL DXPROD(yData(1,iElt),psiElt(1,iElt),xData)
 	  yData_FLG=.TRUE.
-	  WRITE(*,112)'yData',iElt
+	  WRITE(emsgRec,112)'yData',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (zData_FLG) THEN
@@ -624,7 +739,8 @@ C	Param order = beta,dact or drad,dq,minrad
 	  IF (psiElt_FLG) THEN
 	    CALL DEQUATE(zData(1,iElt),psiElt(1,iElt),3)
 	    zData_FLG=.TRUE.
-	    WRITE(*,112)'zData',iElt
+	    WRITE(emsgRec,112)'zData',iElt
+	    CALL emsg_put
 	  ELSE
 	    ELEM_OK=.FALSE.
 	  END IF
@@ -635,7 +751,8 @@ C	Param order = beta,dact or drad,dq,minrad
 	ELSE
 	  lData(iElt)=Aperture
 	  lData_FLG=.TRUE.
-	  WRITE(*,112)'lData',iElt
+	  WRITE(emsgRec,112)'lData',iElt
+	  CALL emsg_put
 	END IF
 	!-->
 
@@ -646,7 +763,8 @@ C	Param order = beta,dact or drad,dq,minrad
 	  xMon(2,iElt)=psiElt(1,iElt)
 	  xMon(3,iElt)=psiElt(2,iElt)
 	  xMon_FLG=.TRUE.
-	  WRITE(*,112)'xMon',iElt
+	  WRITE(emsgRec,112)'xMon',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (yMon_FLG) THEN
@@ -654,7 +772,8 @@ C	Param order = beta,dact or drad,dq,minrad
 	ELSE
 	  CALL DXPROD(yMon(1,iElt),psiElt(1,iElt),xMon)
 	  yMon_FLG=.TRUE.
-	  WRITE(*,112)'yMon',iElt
+	  WRITE(emsgRec,112)'yMon',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (zMon_FLG) THEN
@@ -663,7 +782,8 @@ C	Param order = beta,dact or drad,dq,minrad
 	  IF (psiElt_FLG) THEN
 	    CALL DEQUATE(zMon(1,iElt),psiElt(1,iElt),3)
 	    zMon_FLG=.TRUE.
-	    WRITE(*,112)'zMon',iElt
+	    WRITE(emsgRec,112)'zMon',iElt
+	    CALL emsg_put
 	  ELSE
 	    ELEM_OK=.FALSE.
 	  END IF
@@ -674,7 +794,8 @@ C	Param order = beta,dact or drad,dq,minrad
 	ELSE
 	  lMon(iElt)=Aperture
 	  lMon_FLG=.TRUE.
-	  WRITE(*,112)'lMon',iElt
+	  WRITE(emsgRec,112)'lMon',iElt
+	  CALL emsg_put
 	END IF
 
 C  FreeForm surface: set FF coordinate frame defaults; mark FF flags
@@ -683,49 +804,58 @@ C  as satisfied for all other surface types.
 	  IF (.NOT.lFF_FLG) THEN
 	    lFF(iElt) = 0d0
 	    lFF_FLG = .TRUE.
-	    WRITE(*,112)'lFF',iElt
+	    WRITE(emsgRec,112)'lFF',iElt
+	    CALL emsg_put
 	  END IF
 	  IF (.NOT.pFF_FLG) THEN
 	    CALL DEQUATE(pFF(1,iElt),VptElt(1,iElt),3)
 	    pFF_FLG = .TRUE.
-	    WRITE(*,112)'pFF',iElt
+	    WRITE(emsgRec,112)'pFF',iElt
+	    CALL emsg_put
 	  END IF
 	  IF (.NOT.xFF_FLG) THEN
 	    xFF(1,iElt) = psiElt(3,iElt)
 	    xFF(2,iElt) = psiElt(1,iElt)
 	    xFF(3,iElt) = psiElt(2,iElt)
 	    xFF_FLG = .TRUE.
-	    WRITE(*,112)'xFF',iElt
+	    WRITE(emsgRec,112)'xFF',iElt
+	    CALL emsg_put
 	  END IF
 	  IF (.NOT.yFF_FLG) THEN
 	    CALL DXPROD(yFF(1,iElt),psiElt(1,iElt),xFF(1,iElt))
 	    yFF_FLG = .TRUE.
-	    WRITE(*,112)'yFF',iElt
+	    WRITE(emsgRec,112)'yFF',iElt
+	    CALL emsg_put
 	  END IF
 	  IF (.NOT.zFF_FLG) THEN
 	    CALL DEQUATE(zFF(1,iElt),psiElt(1,iElt),3)
 	    zFF_FLG = .TRUE.
-	    WRITE(*,112)'zFF',iElt
+	    WRITE(emsgRec,112)'zFF',iElt
+	    CALL emsg_put
 	  END IF
 	  IF (.NOT.FFZernTypeL_FLG) THEN
 	    FFZernTypeL(iElt) = ZernType_ANSI
 	    FFZernTypeL_FLG = .TRUE.
-	    WRITE(*,112)'FFZernTypeL',iElt
+	    WRITE(emsgRec,112)'FFZernTypeL',iElt
+	    CALL emsg_put
 	  END IF
 	  IF (.NOT.FFZernCoef_FLG) THEN
 	    FFZernCoef(:,iElt) = 0d0
 	    FFZernCoef_FLG = .TRUE.
-	    WRITE(*,112)'FFZernCoef',iElt
+	    WRITE(emsgRec,112)'FFZernCoef',iElt
+	    CALL emsg_put
 	  END IF
 	  IF (.NOT.MonZernTypeL_FLG) THEN
 	    MonZernTypeL(iElt) = ZernType_ANSI
 	    MonZernTypeL_FLG = .TRUE.
-	    WRITE(*,112)'MonZernTypeL',iElt
+	    WRITE(emsgRec,112)'MonZernTypeL',iElt
+	    CALL emsg_put
 	  END IF
 	  IF (.NOT.MonZernCoef_FLG) THEN
 	    MonZernCoef(:,iElt) = 0d0
 	    MonZernCoef_FLG = .TRUE.
-	    WRITE(*,112)'MonZernCoef',iElt
+	    WRITE(emsgRec,112)'MonZernCoef',iElt
+	    CALL emsg_put
 	  END IF
 	  CALL SetFreeFormFlags(iElt)
 	ELSE
@@ -745,7 +875,8 @@ C  as satisfied for all other surface types.
 	ELSE
 	  LensArrayType(iElt)=1
 	  LensArrayType_FLG=.TRUE.
-	  WRITE(*,112)'LensArrayType',iElt
+	  WRITE(emsgRec,112)'LensArrayType',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (LensArrayWidth_FLG) THEN
@@ -753,20 +884,23 @@ C  as satisfied for all other surface types.
 	ELSE
 	  LensArrayWidth(iElt)=1
 	  LensArrayWidth_FLG=.TRUE.
-	  WRITE(*,112)'LensArrayWidth',iElt
+	  WRITE(emsgRec,112)'LensArrayWidth',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (h1HOE_FLG) THEN
 	  CONTINUE
 	ELSE
-	  WRITE(*,111)' h1HOE',iElt
+	  WRITE(emsgRec,111)' h1HOE',iElt
+	  CALL emsg_put
 	  ELEM_OK = .FALSE.
 	END IF
 
 	IF (h2HOE_FLG) THEN
 	  CONTINUE
 	ELSE
-	  WRITE(*,111)' h2HOE',iElt
+	  WRITE(emsgRec,111)' h2HOE',iElt
+	  CALL emsg_put
 	  ELEM_OK = .FALSE.
 	END IF
 
@@ -775,7 +909,8 @@ C  as satisfied for all other surface types.
 	ELSE
 	  OrderHOE(iElt)=1.0
 	  OrderHOE_FLG=.TRUE.
-	  WRITE(*,112)' OrderHOE',iElt
+	  WRITE(emsgRec,112)' OrderHOE',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (RuleWidth_FLG) THEN
@@ -783,7 +918,8 @@ C  as satisfied for all other surface types.
 	ELSE
 	  RuleWidth(iElt)=1.0
 	  RuleWidth_FLG=.TRUE.
-	  WRITE(*,112)'RuleWidth',iElt
+	  WRITE(emsgRec,112)'RuleWidth',iElt
+	  CALL emsg_put
 	END IF
 
 !--> polarizing elements (PLAN_POLARIZATION Phase 3).  Both keywords
@@ -796,14 +932,16 @@ C  as satisfied for all other surface types.
 	IF ((EltID(iElt).EQ.TrPolarizerElt).OR.
      &	    (EltID(iElt).EQ.WavePlateElt)) THEN
 	  IF (.NOT.PolAxis_FLG) THEN
-	    WRITE(*,111)' PolAxis',iElt
+	    WRITE(emsgRec,111)' PolAxis',iElt
+	    CALL emsg_put
 	    ELEM_OK = .FALSE.
 	  END IF
 	END IF
 
 	IF (EltID(iElt).EQ.WavePlateElt) THEN
 	  IF (.NOT.PolRet_FLG) THEN
-	    WRITE(*,111)' Retardance',iElt
+	    WRITE(emsgRec,111)' Retardance',iElt
+	    CALL emsg_put
 	    ELEM_OK = .FALSE.
 	  END IF
 	END IF
@@ -815,7 +953,8 @@ C  as satisfied for all other surface types.
 !    convention (a reflective polarizer is inherently off-normal) --
 !    see REVIEW_POL_ELEMENTS_2026-07-27.md.
 	IF (EltID(iElt).EQ.RfPolarizerElt) THEN
-	  WRITE(*,115) iElt
+	  WRITE(emsgRec,115) iElt
+	  CALL emsg_put
 	  ELEM_OK = .FALSE.
 	END IF
 !<--
@@ -825,13 +964,15 @@ C  as satisfied for all other surface types.
 	ELSE
 	  WaveHOE(iElt)=1d-7
 	  WaveHOE_FLG=.TRUE.
-	  WRITE(*,112)'WaveHOE',iElt
+	  WRITE(emsgRec,112)'WaveHOE',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (VptElt_FLG) THEN
 	  CONTINUE
 	ELSE
-	  WRITE(*,111)' VptElt',iElt
+	  WRITE(emsgRec,111)' VptElt',iElt
+	  CALL emsg_put
 	  ELEM_OK = .FALSE.
 	END IF
 
@@ -840,7 +981,8 @@ C  as satisfied for all other surface types.
 	ELSE
 	  CALL DEQUATE(RptElt(1,iElt),VptElt(1,iElt),3)
 	  RptElt_FLG=.TRUE.
-	  WRITE(*,112)'RptElt',iElt
+	  WRITE(emsgRec,112)'RptElt',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (IndRefE_FLG) THEN
@@ -848,7 +990,8 @@ C  as satisfied for all other surface types.
 	ELSE
 	  IndRef(iElt)=1.0D0
 	  IndRefE_FLG=.TRUE.
-	  WRITE(*,112)'IndRef',iElt
+	  WRITE(emsgRec,112)'IndRef',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (GlassElt_FLG) THEN
@@ -856,7 +999,8 @@ C  as satisfied for all other surface types.
 	ELSE
 	  GlassElt(iElt)='Air'
 	  GlassElt_FLG=.TRUE.
-	  WRITE(*,112)'GlassElt',iElt
+	  WRITE(emsgRec,112)'GlassElt',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (GlassCoef_FLG) THEN
@@ -864,7 +1008,8 @@ C  as satisfied for all other surface types.
 	ELSE
 	  CALL DZERO(GlassCoef(1,iElt),6)
 	  GlassCoef_FLG=.TRUE.
-	  WRITE(*,112)'GlassCoef',iElt
+	  WRITE(emsgRec,112)'GlassCoef',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (ExtincE_FLG) THEN
@@ -889,15 +1034,15 @@ c	  WRITE(*,112)'Extinc',iElt
 	IF (CoatIndx_FLG) THEN
 	  CONTINUE
 	ELSE
-	  CALL DZERO(CoatIndxElt(1,iElt),20)
+	  CALL DZERO(CoatIndxElt(1,iElt),mLegacyCoat)
 	  CoatIndx_FLG=.TRUE.
 	END IF
 
 	IF (CoatThk_FLG) THEN
 	  CONTINUE
 	ELSE
-	  CALL DZERO(CoatThkElt(1,iElt),20)
-	  CoatIndx_FLG=.TRUE.
+	  CALL DZERO(CoatThkElt(1,iElt),mLegacyCoat)
+	  CoatThk_FLG=.TRUE.   ! (zz): was CoatIndx_FLG
 	END IF
 
 	IF (zElt_FLG) THEN
@@ -905,7 +1050,8 @@ c	  WRITE(*,112)'Extinc',iElt
 	ELSE
 	  zElt(iElt)=fElt(iElt)
 	  zElt_FLG=.TRUE.
-	  WRITE(*,112)'zElt',iElt
+	  WRITE(emsgRec,112)'zElt',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (PropType_FLG) THEN
@@ -917,7 +1063,8 @@ c	  WRITE(*,112)'Extinc',iElt
 	    PropType(iElt)=1
 	  END IF
 	  PropType_FLG=.TRUE.
-	  WRITE(*,112)'PropType',iElt
+	  WRITE(emsgRec,112)'PropType',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (PinHole_FLG) THEN
@@ -927,7 +1074,8 @@ c	  WRITE(*,112)'Extinc',iElt
 	  PinHole(iElt)=1d22
 	  IF ((PropType(iElt).EQ.7).OR.(PropType(iElt).EQ.8))
      &	  THEN
-	    WRITE(*,112)'PinHole',iElt
+	    WRITE(emsgRec,112)'PinHole',iElt
+	    CALL emsg_put
 	  END IF
 	END IF
 
@@ -936,7 +1084,8 @@ c	  WRITE(*,112)'Extinc',iElt
 	ELSE
 	  nECoord(iElt)=-6
 	  nECoord_FLG=.TRUE.
-	  WRITE(*,112)'nECoord',iElt
+	  WRITE(emsgRec,112)'nECoord',iElt
+	  CALL emsg_put
 	END IF
 
 	IF (ApType_FLG) THEN
@@ -977,7 +1126,8 @@ C	  WRITE(*,112)'nObs',iElt
 	IF (nObs(iElt) .NE. 0) THEN
 	  IF (nObs(iElt).GT.mObs) THEN
 	    nObs(iElt)=mObs
-	    WRITE(*,113)mObs
+	    WRITE(emsgRec,113)mObs
+	    CALL emsg_put
 	  END IF
 	  DO 11 I=1,nObs(iElt)
 	    IF (ObsType_FLG(I)) THEN
@@ -985,7 +1135,8 @@ C	  WRITE(*,112)'nObs',iElt
 	    ELSE
 	      ObsType(I,iElt)=1
 	      ObsType_FLG(I) =.TRUE.
-	      WRITE(*,112)'ObsType',iElt
+	      WRITE(emsgRec,112)'ObsType',iElt
+	      CALL emsg_put
 	    END IF
    11     CONTINUE
 	END IF
@@ -997,7 +1148,8 @@ C	  WRITE(*,112)'nObs',iElt
 	    ELSE
 	      CALL DZERO(ObsVec(1,I,iElt),4)
 	      ObsVec_FLG(I) =.TRUE.
-	      WRITE(*,112)'ObsVec',iElt
+	      WRITE(emsgRec,112)'ObsVec',iElt
+	      CALL emsg_put
 	    END IF
    12     CONTINUE
 	END IF
@@ -1011,9 +1163,11 @@ C	  WRITE(*,112)'nObs',iElt
 	      xObs(2,iElt)=psiElt(1,iElt)
 	      xObs(3,iElt)=psiElt(2,iElt)
 	      xObs_FLG=.TRUE.
-	      WRITE(*,112)' xObs',iElt
+	      WRITE(emsgRec,112)' xObs',iElt
+	      CALL emsg_put
 	    ELSE
-	      WRITE(*,111)' xObs',iElt
+	      WRITE(emsgRec,111)' xObs',iElt
+	      CALL emsg_put
 	      ELEM_OK=.FALSE.
 	    END IF
 	  END IF
@@ -1032,13 +1186,50 @@ C	  WRITE(*,112)'nObs',iElt
      &                1:nPolyObsVtx3DPending(i,iElt),i,iElt),i)
 	      Call SetCvxPolyObsBound(i,iElt)
 	    ELSE
-	      WRITE(*,*)' xObs missing for PolyObsVec/Poly3DObsVec',
+	      WRITE(emsgRec,*)' xObs missing for PolyObsVec/Poly3DObsVec',
      &                 ', iElt=',iElt,', iObs=',i
+	      CALL emsg_put
 	      ELEM_OK=.FALSE.
 	    END IF
 	    nPolyObsVtx3DPending(i,iElt) = 0
 	  END IF
 	END DO
+
+!-->  The obscuration frame the TRACE uses, built once here at load
+!     (2026-10-12; OrthoObsFrame, math_mod) so that SAVE before a trace
+!     equals SAVE after one.  After the polygon projections above, which
+!     orthogonalise their own local copy and are unchanged by this.
+	IF ((EltID(iElt).EQ.7).OR.(nObs(iElt).GT.0).OR.
+     &	    (ApType(iElt).GT.0)) THEN
+	  IF (xObs_FLG) CALL OrthoObsFrameLoad(psiElt(1,iElt),
+     &	    xObs(1,iElt),yObs(1,iElt),zObs(1,iElt))
+	END IF
+!<--
+
+!-->  Resolve a GridFile= that was parsed before nGridMat= was known.
+!     GridInit sizes its read from nGridMat, so the read was deferred;
+!     this is the last chance.  If nGridMat= never arrived, FAIL -- a
+!     zero-sized read would otherwise be announced as a successful
+!     "dimension 0 by 0" load and leave the surface silently flat.
+	IF (GridFilePending(iElt)) THEN
+	  IF (nGridMat(iElt).GT.0) THEN
+	    CALL GridInit(GridFile(iElt),iEltToGridSrf(iElt),
+     &                    nGridMat(iElt),ifGridInitL,
+     &                    GridFileBin(iElt))
+	    ifGridDataDefined(iEltToGridSrf(iElt)) = ifGridInitL
+	    IF (.NOT.ifGridInitL) THEN
+	      WRITE(emsgRec,*)' GridFile not loaded correctly, iELT=',iElt
+	      CALL emsg_put
+	    END IF
+	  ELSE
+	    WRITE(emsgRec,*)' GridFile= given but nGridMat= never set,',
+     &                ' iElt=',iElt
+	    CALL emsg_put
+	    ELEM_OK=.FALSE.
+	  END IF
+	  GridFilePending(iElt) = .FALSE.
+	END IF
+!<--
 
 	IF (TElt_FLG) THEN
 	  CONTINUE
@@ -1048,7 +1239,8 @@ C	  WRITE(*,112)'nObs',iElt
 	      TElt(I,I,iElt)=1.0D0
    13     CONTINUE
 	  TElt_FLG=.TRUE.
-	  WRITE(*,112)'TElt',iElt
+	  WRITE(emsgRec,112)'TElt',iElt
+	  CALL emsg_put
 	END IF
 
 	IF ((fElt(iElt) .EQ. 0.0) .AND. (eElt(iElt) .EQ. 0.0)) THEN
@@ -1119,20 +1311,12 @@ C       Set defaults, if necessary
 	  CONTINUE
 	ELSE
 	  IF (nOutCord.EQ.5) THEN
-	    CALL DZERO(Tout(1,1),49)
-	    Tout(1,1)=-psiElt(3,nElt)
-	    Tout(1,2)=-psiElt(1,nElt)
-	    Tout(1,3)=-psiElt(2,nElt)
-	    Tout(3,4)=-psiElt(3,nElt)
-	    Tout(3,5)=-psiElt(1,nElt)
-	    Tout(3,6)=-psiElt(2,nElt)
-	    Tout(2,1)=-psiElt(2,nElt)
-	    Tout(2,2)=-psiElt(3,nElt)
-	    Tout(2,3)=-psiElt(1,nElt)
-	    Tout(4,4)=-psiElt(2,nElt)
-	    Tout(4,5)=-psiElt(3,nElt)
-	    Tout(4,6)=-psiElt(1,nElt)
-	    Tout(5,7)=1
+!-->  The candidate is the beam frame at the last element (Dave
+!     2026-10-18, 1.2 (u)); it replaces a cyclic permutation of -psiElt
+!     that was orthonormal only for an axis-aligned element (no corpus
+!     deck reached it: all 1464 carry Tout=).
+	    CALL OutCordCandidate()
+!<--
 	  ELSE
  	    WRITE(*,111)' Tout'
 	    EXIT_OK = .FALSE.
@@ -1141,6 +1325,316 @@ C       Set defaults, if necessary
 
 	RETURN
 	END SUBROUTINE ChkDf3
+
+!-->  The proposed output coordinates when the deck gives none (2026-10-18,
+!     PLAN_CONSOLIDATION 1.2 (u)): the BEAM frame at the last element.
+!     z = the beam direction into the last element, taken from the
+!     geometry (the previous element's vertex to the last element's
+!     vertex; the source chief-ray direction when there is one element
+!     or the vertices coincide) -- not from psiElt, whose sign runs
+!     against the beam on a reflector and along it on a FocalPlane;
+!     x from the element's xObs (the global axis least aligned with z
+!     when xObs is zero), orthonormalized: y = z x x, x = y x z.  Rows
+!     1-2 are the transverse position, 3-4 the transverse direction,
+!     5 the OPL (nOutCord = 5).  The CLI asks before keeping it
+!     (OutCordQuery, macosio.F); the api takes it, says so, and SAVE
+!     writes the block.
+!-->  SAVE writes the CALIB setup (Dave 2026-10-18, PLAN_CONSOLIDATION
+!     section 4 item 1): every Table 13 keyword whose value differs from
+!     its load default -- header keys in the source block, element keys
+!     in their element's block -- so a saved deck carries the
+!     optimization set up on it, and the next LOAD says so
+!     (CalibInForceNote).  The field list and the wavelengths follow the
+!     reader's counting: the source's own ChfRayDir/ChfRayPos and
+!     Wavelen are field 1 / wavelength 1 (PrtSourceInfo writes them),
+!     fields 2..n are OptChfRayDir/OptChfRayPos pairs here and
+!     wavelengths 2..n are the ArrWaveLen= line above.  OptTgtElt is
+!     resolved to nElt-1 at LOAD, so only another value is written.
+	SUBROUTINE PrtCalibHeader()
+	use param_mod
+	use src_mod
+	use elt_mod
+	use dopt_mod
+	use macos_IO
+	use constants, only: EPS
+	IMPLICIT NONE
+	INTEGER k, iv(1+max_fov)
+	LOGICAL anyKey, anyWt
+
+	anyKey = .FALSE.
+	IF (OptTarget.NE.WFE_TARGET) THEN
+	  CALL CalibSep(anyKey)
+	  IF (OptTarget.EQ.SPOT_TARGET) THEN
+	    CALL PrintFmt('OptTarget', "2x,A", 'SPOT')
+	  ELSE IF (OptTarget.EQ.WFE_ZMODE_TARGET) THEN
+	    CALL PrintFmt('OptTarget', "2x,A", 'ZWF')
+	  ELSE IF (OptTarget.EQ.BEAM_TARGET) THEN
+	    CALL PrintFmt('OptTarget', "2x,A", 'Beam')
+	  END IF
+	END IF
+	IF (OptTgtElt.GT.0 .AND. OptTgtElt.NE.nElt-1) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmt('OptTgtElt', "i4", OptTgtElt)
+	END IF
+	IF (tgtWF_flg .AND. LEN_TRIM(tgtWF_fn).GT.0) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmt('OptTgtWF', "2x,A", TRIM(tgtWF_fn))
+	END IF
+	IF (OptSpotSize.NE.0d0) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmt('OptSpotSize', "1PD23.15", OptSpotSize)
+	END IF
+	IF (nWFZern.GT.0) THEN
+	  CALL CalibSep(anyKey)
+	  iv(1) = nWFZern
+	  iv(2:nWFZern+1) = WFZernMode(1:nWFZern)
+	  CALL PrintFmtArray('OptZernModes', '2x,i3', nWFZern+1,
+     &                       iv(1:nWFZern+1))
+	END IF
+	IF (opt_npts.NE.nGridpts/2-1 .AND. opt_npts.GT.0) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmt('OptRayGrid', "i4", opt_npts+1)
+	END IF
+	IF (nOptFov.GT.1) THEN
+	  CALL CalibSep(anyKey)
+	  DO k=2,nOptFov
+	    CALL PrintFmtArray('OptChfRayDir','1PD23.15',3,opt_fov(1:3,1,k))
+	    CALL PrintFmtArray('OptChfRayPos','1PD23.15',3,opt_fov(1:3,2,k))
+	  END DO
+	END IF
+	anyWt = .FALSE.
+	DO k=1,nOptFov
+	  IF (fov_weight(k).NE.1d0) anyWt = .TRUE.
+	END DO
+	IF (anyWt) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmtArray('OptFOVWt','1PD23.15',nOptFov,
+     &                       fov_weight(1:nOptFov))
+	END IF
+	IF (nitrs_dopt.NE.10) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmt('OptMaxItrs', "i4", nitrs_dopt)
+	END IF
+	IF (dopt_tol.NE.1d-12) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmt('OptTol', "1PD23.15", dopt_tol)
+	END IF
+	IF (LOptIfFEX) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmt('OptFEX', "2x,A", 'Y')
+	END IF
+	IF (OptAlg.EQ.Linear) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmt('OptAlg', "2x,A", 'Lin')
+	END IF
+	IF (SvdSvCut.NE.EPS) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmt('OptSvdSvCut', "1PD23.15", SvdSvCut)
+	END IF
+	IF (LOptNomSens) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmt('OptNomSens', "2x,A", 'Y')
+	END IF
+	IF (save_pinv) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmt('OptSavePinv', "2x,A", 'Y')
+	END IF
+	IF (use_saved_pinv) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmt('OptUseSavedPinv', "2x,A", 'Y')
+	END IF
+	IF (TRIM(PinvFile).NE.'dady0_saved.txt' .AND.
+     &      LEN_TRIM(PinvFile).GT.0) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmt('OptPinvFile', "2x,A", TRIM(PinvFile))
+	END IF
+	IF (isVarElt(0)) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmtArray('VarSrc', '2x,i2', 6, varEltDOF(1:6,0))
+	END IF
+	IF (OptSrcRpt_FLG) THEN
+	  CALL CalibSep(anyKey)
+	  CALL PrintFmtArray('OptSrcRpt','1PD23.15',3,OptSrcRpt(1:3))
+	END IF
+	END SUBROUTINE PrtCalibHeader
+
+	SUBROUTINE CalibSep(anyKey)
+	use macos_IO
+	IMPLICIT NONE
+	LOGICAL anyKey
+	IF (.NOT.anyKey) CALL PrintMsg('')
+	anyKey = .TRUE.
+	END SUBROUTINE CalibSep
+
+!     The element-bound CALIB keys: VarElt= (then VarCons= and OptAsph=,
+!     which the reader requires after it), OptZern=, and the beam-row
+!     targets at the element they name; OptBeamWt= / OptBeamCentroid=
+!     ride with the first beam key written.
+	SUBROUTINE PrtCalibElt(iElt)
+	use param_mod
+	use elt_mod
+	use dopt_mod
+	use macos_IO
+	IMPLICIT NONE
+	INTEGER, INTENT(IN) :: iElt
+	INTEGER i, n, ibeam
+	REAL*8 cons(2*mVarDOF)
+	LOGICAL anyCons
+
+	IF (iElt.LT.1) RETURN
+!     VarElt= goes out whenever the element is marked variable, flags
+!     all zero included (Rx_AsphCalib: `VarElt= 0 0 0 0 0 0 0 0` then
+!     `OptAsph= 1 1` -- the reader keys OptAsph= on the VarElt= line).
+	IF (isVarElt(iElt)) THEN
+	  CALL PrintFmtArray('VarElt', '2x,i2', mVarDOF,
+     &                       varEltDOF(1:mVarDOF,iElt))
+	  IF (LOptCons) THEN
+	    n = 0; anyCons = .FALSE.
+	    DO i=1,mVarDOF
+	      IF (varEltDOF(i,iElt).NE.0) THEN
+	        cons(n+1:n+2) = EltCons(1:2,i,iElt)
+	        IF (ANY(EltCons(1:2,i,iElt).NE.0d0)) anyCons = .TRUE.
+	        n = n+2
+	      END IF
+	    END DO
+	    IF (anyCons) CALL PrintFmtArray('VarCons','1PD23.15',n,cons(1:n))
+	  END IF
+	  IF (nOptEltAsph(iElt).GT.0) THEN
+	    n = nOptEltAsph(iElt)
+	    CALL PrintFmtArray('OptAsph', '2x,i3', n+1,
+     &                         OptEltAsphTerm(0:n,iElt))
+	  END IF
+	END IF
+	IF (nOptEltZern(iElt).GT.0) THEN
+	  n = nOptEltZern(iElt)
+	  CALL PrintFmtArray('OptZern', '2x,i3', n+1,
+     &                       OptEltZernTerm(0:n,iElt))
+	END IF
+	ibeam = 0
+	IF (beamOpt%ifOptBeamPos) THEN
+	  ibeam = beamOpt%beamPosElt
+	ELSE IF (beamOpt%ifOptBeamDir) THEN
+	  ibeam = beamOpt%beamDirElt
+	ELSE IF (beamOpt%ifOptBeamSize) THEN
+	  ibeam = beamOpt%beamSizeElt
+	ELSE IF (beamOpt%ifOptBeamRefRayDir) THEN
+	  ibeam = beamOpt%beamRefRayElt
+	END IF
+	IF (beamOpt%ifOptBeamDir .AND. beamOpt%beamDirElt.EQ.iElt)
+     &    CALL PrintFmtArray('OptBeamDir','1PD23.15',3,
+     &                       beamOpt%nomBeamDir(1:3))
+	IF (beamOpt%ifOptBeamPos .AND. beamOpt%beamPosElt.EQ.iElt) THEN
+	  CALL PrintFmtArray('OptBeamPos','1PD23.15',3,
+     &                       beamOpt%nomBeamPos(1:3))
+	  DO i=1,beamOpt%nBeamPosFov
+	    CALL PrintFmtArray('OptBeamPosFov','1PD23.15',3,
+     &                         beamOpt%nomBeamPosFov(1:3,i))
+	  END DO
+	END IF
+	IF (beamOpt%ifOptBeamSize .AND. beamOpt%beamSizeElt.EQ.iElt)
+     &    CALL PrintFmt('OptBeamSize','1PD23.15',beamOpt%nomBeamSize)
+	IF (beamOpt%ifOptBeamRefRayDir .AND.
+     &      beamOpt%beamRefRayElt.EQ.iElt)
+     &    CALL PrintFmtArray('OptBeamRefRayDir','1PD23.15',3,
+     &                       beamOpt%nomBeamRefRayDir(1:3))
+	IF (ibeam.EQ.iElt) THEN
+	  IF (beamOpt%beamWt.NE.1d0 .AND. beamOpt%beamWt.GT.0d0)
+     &      CALL PrintFmt('OptBeamWt','1PD23.15',beamOpt%beamWt)
+	  IF (beamOpt%ifBeamCentroid)
+     &      CALL PrintFmt('OptBeamCentroid', "2x,A", 'Y')
+	END IF
+	END SUBROUTINE PrtCalibElt
+
+!     The LOAD notice: one line when the prescription carries a CALIB
+!     setup (variable elements or source, a non-WFE target, Zernike
+!     modes, a target wavefront, beam targets), so a setup that
+!     transfers through SAVE is never silent (Dave 2026-10-18:
+!     "transfer, loudly").  VARS / FOVS / WLENS list the details.
+	SUBROUTINE CalibInForceNote()
+	use param_mod
+	use elt_mod
+	use dopt_mod
+	IMPLICIT NONE
+	CHARACTER(len=200) :: line
+	CHARACTER(len=8)   :: tgt
+	LOGICAL inForce, anyBeam
+	anyBeam = beamOpt%ifOptBeamDir .OR. beamOpt%ifOptBeamPos .OR.
+     &            beamOpt%ifOptBeamSize .OR. beamOpt%ifOptBeamRefRayDir
+	inForce = nVarElt.GT.0 .OR. isVarElt(0) .OR.
+     &            OptTarget.NE.WFE_TARGET .OR. nWFZern.GT.0 .OR.
+     &            tgtWF_flg .OR. anyBeam
+	IF (.NOT.inForce) RETURN
+	tgt = 'WFE'
+	IF (OptTarget.EQ.SPOT_TARGET) tgt = 'SPOT'
+	IF (OptTarget.EQ.WFE_ZMODE_TARGET) tgt = 'ZWF'
+	IF (OptTarget.EQ.BEAM_TARGET) tgt = 'Beam'
+	WRITE(line,'(3A,I4,A,I3,A,I2,A,I3,A,I4,A)')
+     &    '  LOAD: CALIB setup in force from the prescription: target ',
+     &    TRIM(tgt),' at element',OptTgtElt,',',MAX(nOptFov,1),
+     &    ' field(s),',MAX(nOptWavelen,1),' wavelength(s),',nVarElt,
+     &    ' variable element(s), OptMaxItrs',nitrs_dopt,
+     &    ' -- VARS/FOVS/WLENS list them; SAVE writes them'
+	WRITE(*,'(A)') TRIM(line)
+	END SUBROUTINE CalibInForceNote
+!<--
+
+	SUBROUTINE OutCordCandidate()
+	use param_mod
+	use src_mod
+	use elt_mod
+	IMPLICIT NONE
+	REAL*8 x(3),y(3),z(3),xo(3),d
+	INTEGER i,imin
+	CHARACTER(len=40) :: zrule
+
+	CALL DZERO(Tout(1,1),49)
+	z = 0d0
+	IF (nElt.GE.2) THEN
+	  z = VptElt(1:3,nElt)-VptElt(1:3,nElt-1)
+	  zrule = 'previous vertex to last vertex'
+	END IF
+	d = SQRT(z(1)**2+z(2)**2+z(3)**2)
+	IF (d.LE.1d-12*MAX(1d0,MAXVAL(ABS(VptElt(1:3,nElt))))) THEN
+	  z = ChfRayDir(1:3)
+	  zrule = 'the source chief-ray direction'
+	  d = SQRT(z(1)**2+z(2)**2+z(3)**2)
+	END IF
+	IF (d.LE.0d0) THEN
+	  z = (/0d0,0d0,1d0/)
+	  zrule = 'global z (no geometry)'
+	  d = 1d0
+	END IF
+	z = z/d
+	xo = xObs(1:3,nElt)
+	CALL DXPROD(y,z,xo)
+	d = SQRT(y(1)**2+y(2)**2+y(3)**2)
+	IF (d.LE.1d-6) THEN
+	  ! xObs absent or along the beam: the global axis least aligned with z
+	  imin = 1
+	  DO i=2,3
+	    IF (ABS(z(i)).LT.ABS(z(imin))) imin = i
+	  END DO
+	  xo = 0d0; xo(imin) = 1d0
+	  CALL DXPROD(y,z,xo)
+	  d = SQRT(y(1)**2+y(2)**2+y(3)**2)
+	END IF
+	y = y/d
+	CALL DXPROD(x,y,z)
+	Tout(1,1:3) = x
+	Tout(2,1:3) = y
+	Tout(3,4:6) = x
+	Tout(4,4:6) = y
+	Tout(5,7)   = 1d0
+	LOutCordCandidate = .TRUE.
+	WRITE(*,'(A,I4,3A)') '  Output coordinates proposed: the beam'//
+     &    ' frame at element',nElt,' (',
+     &    TRIM(EltTypeName(EltID(nElt))),'), z = '//TRIM(zrule)
+	WRITE(*,'(A,3F11.6)') '    x =',x
+	WRITE(*,'(A,3F11.6)') '    y =',y
+	WRITE(*,'(A,3F11.6)') '    z =',z
+	WRITE(*,'(A)') '    (nOutCord= 5; SAVE writes the block)'
+	END SUBROUTINE OutCordCandidate
+!<--
 
 C***********************************************************************
 
@@ -1257,7 +1751,8 @@ C***********************************************************************
           use param_mod
 !-->
           use macos_mod, only: ifStopSet,zcoType,ZernAnnular,ZernHex
-          use traceutil_mod, only: OPDRefRayLen,OPDRefRayLen_FLG
+          use traceutil_mod, only: OPDRefRayLen,OPDRefRayLen_FLG,
+     &                             LUseChfRayIfOK
           use dopt_mod, only: nOptWavelen,opt_wavelen,max_wl
 !<--
 
@@ -1374,6 +1869,14 @@ C***********************************************************************
             CALL PrintMsg('')
             CALL PrintFmt('OPDRefRayLen', "1PD23.15", OPDRefRayLen)
           END IF
+!-->      OPD reference: the chief ray is the default and is not
+!         written; the aperture MEAN in force (deck keyword, OPDREF or
+!         opd_ref_set) is, so the saved deck reproduces the OPD.
+          IF (.NOT.LUseChfRayIfOK) THEN
+            CALL PrintMsg('')
+            CALL PrintFmt('UseChfRay4OPD', "2x,A", 'N')
+          END IF
+!<--
           ! ZCO wavefront-decomposition basis (default ZernCircular
           ! is implied; only the non-default settings are parsed)
           IF (zcoType.EQ.ZernAnnular) THEN
@@ -1385,6 +1888,9 @@ C***********************************************************************
           END IF
 !<--
 
+!-->  the CALIB setup (Table 13 header keys; Dave 2026-10-18)
+          CALL PrtCalibHeader()
+!<--
 !--> captured whole-line Rx comments from the header section
           CALL RxCommentEmit(0)
 !<--
@@ -1445,7 +1951,7 @@ C***********************************************************************
           ! --------------------------------------------
           ! Elt. Grouping Info
           ! --------------------------------------------
-          ! ToDo:
+          ! not printed by SHOW (notes/rx_io.md):
           !    EltGrp=  -3 5 7
           !      where -3 indicates a group of 3 elements, with starting element 5 and ending
           !      element 7, so the group has elements 5, 6 and 7. Note that the last value in
@@ -1454,10 +1960,38 @@ C***********************************************************************
           IF (EltGrp(0,iElt)/=0)
      &      CALL PrintFmtArray('EltGrp','2x,i0',EltGrp(0,iElt)+1,EltGrp(0:EltGrp(0,iElt),iElt))
 
+!-->  Linked-element (rigid-group) perturbation target.  "Link= iElt" (alias
+!     "DpElt=") makes a PERTURB / optimize of THIS element also move element
+!     iElt as a rigid unit (funcsub.F CPERTURB -> LnkEltCPERTURB).  LnkElt
+!     inits to -1 (elt_mod.F), so emit only a real (>0) target -- unlinked
+!     elements write nothing.  This round-trips the linkage that an explicit
+!     "Link=" OR a DuplElt/CopyElt block macro both record in LnkElt; on reload
+!     the keyword just restores LnkElt (no re-duplication -- the full element
+!     block is already written), so a loaded linked Rx survives SAVE.  Was
+!     previously dropped on SAVE (SAVE_KEYWORD_AUDIT.md).
+          IF (LnkElt(iElt) > 0)
+     &      CALL PrintFmt('Link', "2x,i0", LnkElt(iElt))
+!<--
+
+!-->  Non-sequential hit budget.  "NSCount= N" caps the number of surface
+!     hits a ray may take inside this element's non-sequential group:
+!     N absent / 0 = UNLIMITED (a CornerCube's repeated bounces need this),
+!     N = 1 = single-hit segmented groups.  NSCnt inits to 0 (elt_mod.F),
+!     so emit only a real (>0) budget -- unlimited/unset elements write
+!     nothing and reload unlimited.  Was DROPPED on SAVE: an NS group with a
+!     grid surface, whose unbounded search can diverge the surface-solve
+!     bracket and overflow the grid pixel index, lost its single-hit budget
+!     on round-trip and SIGSEGV'd on reload (iris instrument deck,
+!     2026-10-10; the surfsub grid-index guard now contains the crash, this
+!     restores the correct trace).
+          IF (NSCnt(iElt) > 0)
+     &      CALL PrintFmt('NSCount', "2x,i0", NSCnt(iElt))
+!<--
+
           ! --------------------------------------------
           ! Srf. dependent parameters
           ! --------------------------------------------
-          ! include: fElt(iElt),eElt(iElt)  ???? ToDo
+          ! fElt(iElt), eElt(iElt) are not printed (notes/rx_io.md)
 
           SELECT CASE (SrfType(iElt))
             CASE (SrfType_Anamorphic)
@@ -1532,8 +2066,19 @@ C***********************************************************************
             ! ---------------------------- User Defined SArf. (7)
             CASE (SrfType_UserDefined)
               CALL PrintFmt('UDSrfType', "2x,i0", UDSrfType(iElt))
+!-->  UDSrfParam BEFORE UDSrfFile: the reader loads the file when it
+!     meets the key, with the parameters then in force ('Must specify
+!     UDSrfParam before loading UDSrfFile'), so the emitted order
+!     re-initialized every DM from the defaults on reload (AOExample.in
+!     opd 16: 1.2675e-6 -> 3.1638e-7, the May refresh).  PLAN 1.2 (hh).
+!     Six values, the ones the engine reads and uses (UDSrfParam(1:6)
+!     in the reader, UDSrfParam(6) in elemsub): all ten slots printed
+!     six per line put an orphaned '0 0 0 0' continuation line in the
+!     deck, 'MBFile6: Unidentified string' on every reload.
+              CALL PrintFmtArray('UDSrfParam','1PD23.15',6,
+     &                           UDSrfParam(1:6,iElt))
               CALL PrintFmt('UDSrfFile', "2x,A", TRIM(UDSrfFile(iElt)))
-              CALL PrintFmtArray('UDSrfParam','1PD23.15',6,UDSrfParam(:,iElt))
+!<--
 
             ! ---------------------------- Zernikes (8)
             CASE (SrfType_Zernike)
@@ -1545,7 +2090,7 @@ C***********************************************************************
               CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
               CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
 
-            ! ---------------------------- Toric (10)  ToDo
+            ! ---------------------------- Toric (10): AnaCoef 1-4 (ToricSrf takes the 4th as 0)
             CASE (SrfType_Toric)
               CALL PrintFmtArray('AnaCoef','1PD23.15', 4, AnaCoef(1:4,iElt))
 
@@ -1603,8 +2148,17 @@ C***********************************************************************
 !<--
               IF (nGridMat(iElt).GT.0) THEN
                 CALL PrintFmt('nGridMat', "2x,i0", nGridMat(iElt))
-                CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
-                CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
+!-->            a declared-but-empty grid has a blank name in memory;
+!               write the 'none' sentinel GridInit already accepts, so
+!               the SAVE re-loads (a blank value trips the validator)
+                IF (LEN_TRIM(GridFile(iElt)).GT.0) THEN
+                  CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
+                ELSE
+                  CALL PrintFmt('GridFile', "2x,A", 'none')
+                END IF
+!<--
+                IF (GridDefinedElt(iElt))
+     &            CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
               END IF
 
             ! ---------------------------- undefined Special Srf.
@@ -1624,8 +2178,17 @@ C***********************************************************************
      &         (SrfType(iElt).EQ.SrfType_ZrnGrData).OR.
      &         (SrfType(iElt).EQ.SrfType_FreeForm))) THEN
             CALL PrintFmt('nGridMat', "2x,i0", nGridMat(iElt))
-            CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
-            CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
+            IF (LEN_TRIM(GridFile(iElt)).GT.0) THEN
+              CALL PrintFmt('GridFile', "2x,A", TRIM(GridFile(iElt)))
+            ELSE
+              CALL PrintFmt('GridFile', "2x,A", 'none')
+            END IF
+!-->        the pitch only for a DEFINED grid: a declared-but-empty
+!           grid (GridFile= none) has no pitch, and writing its 0 hard-
+!           codes a division by zero into the reload (IRIS 2026-09-09)
+            IF (GridDefinedElt(iElt))
+     &        CALL PrintFmt('GridSrfdx', "1PD23.15", GridSrfdx(iElt))
+!<--
           END IF
 !<--
 
@@ -1638,7 +2201,14 @@ C***********************************************************************
             CALL PrintFmtArray('yFF', "1PD23.15", 3, yFF(:,iElt))
             CALL PrintFmtArray('zFF', "1PD23.15", 3, zFF(:,iElt))
           END IF
-          IF (ANY((SrfType(iElt).EQ.SrfTypes_LCSYS)).OR.(EltID(iElt).EQ.LensArrayElt)) THEN
+!-->  a UserDefined surface (7) traces in the monomial frame too (every
+!     UDSrf call takes pmon, xhat, yhat, zhat) but was not in the set, so
+!     SAVE dropped the frame: AOExample.in's DM lost its 3.2 frame in the
+!     May refresh (opd 16 1.2675e-6 -> 3.1638e-7).  PLAN_CONSOLIDATION
+!     1.2 (hh), macos-fd's transcript diff; Dave 2026-10-19: fix.
+          IF (ANY((SrfType(iElt).EQ.SrfTypes_LCSYS)).OR.(EltID(iElt).EQ.LensArrayElt)
+     &        .OR.(SrfType(iElt).EQ.SrfType_UserDefined)) THEN
+!<--
             CALL PrintFmtArray('pMon', "1PD23.15", 3, pMon(:,iElt))
             CALL PrintFmtArray('xMon', "1PD23.15", 3, xMon(:,iElt))
             CALL PrintFmtArray('yMon', "1PD23.15", 3, yMon(:,iElt))
@@ -1648,9 +2218,12 @@ C***********************************************************************
 !    SrfType 9/11 use the same pData/xData/yData/zData frame in the
 !    trace (GridSrf null-frame fix), so dropping it on SAVE moved
 !    the grid figure to the ChkDf2 default frame on reload
+!    Only for a DEFINED grid (GridDefinedElt): the 38 IRIS elements
+!    that declare nGridMat= 99 with GridFile= None carried no frame in
+!    the source deck and must not gain one on SAVE (2026-09-09).
           IF ((SrfType(iElt).EQ.SrfType_MonGrData).OR.
      &        (SrfType(iElt).EQ.SrfType_ZrnGrData).OR.
-     &        (nGridMat(iElt).GT.0)) THEN
+     &        GridDefinedElt(iElt)) THEN
             CALL PrintFmtArray('pData', "1PD23.15", 3, pData(:,iElt))
             CALL PrintFmtArray('xData', "1PD23.15", 3, xData(:,iElt))
             CALL PrintFmtArray('yData', "1PD23.15", 3, yData(:,iElt))
@@ -1806,7 +2379,7 @@ C***********************************************************************
           ! --------------------------------------------
           ! Coating
           ! --------------------------------------------
-          ! problem: nCoatElt might be different then size of nCoatElt(iElt) !!!!!!  (ToDo)
+          ! nCoatElt is bounded by mLegacyCoat at load (PLAN_CONSOLIDATION 1.2 (zz))
           CALL PrintFmt('nCoat', "2x,i0", nCoatElt(iElt))
           IF (nCoatElt(iElt).GT.0) THEN
             CALL PrintFmtArray('CoatIndx','1PD23.15',5,CoatIndxElt(1:nCoatElt(iElt),iElt))
@@ -1904,7 +2477,14 @@ C***********************************************************************
           ! --------------------------------------------
           ! Propagation
           ! --------------------------------------------
-          CALL PrintFmt('PropType', "2x,A", TRIM(PropTypeName(PropType(iElt))))
+!-->  SAVE writes the NAME; a value outside the table (the legacy
+!     numeric 0 before 2026-10-18) is Geometric, never bytes past it.
+          IF (PropType(iElt).GE.1 .AND. PropType(iElt).LE.15) THEN
+            CALL PrintFmt('PropType', "2x,A", TRIM(PropTypeName(PropType(iElt))))
+          ELSE
+            CALL PrintFmt('PropType', "2x,A", 'Geometric')
+          END IF
+!<--
           CALL PrintFmt('zElt', "1PD23.15", zElt(iElt))
 
           ! Special Elements: Pinhole
@@ -1919,6 +2499,9 @@ C***********************************************************************
           IF (nECoord(iElt).GT.0) CALL PrintFmtArray('TElt','1PD23.15',nECoord(iElt),
      &                                          PACK(TRANSPOSE(TElt(:,1:nECoord(iElt),iElt)),MASK=.TRUE.))
 
+!-->  the CALIB setup bound to this element (Table 13 element keys)
+          CALL PrtCalibElt(iElt)
+!<--
 !--> captured whole-line Rx comments from this element's block
 !    (a comment preceding "iElt= k+1" in the file is read while
 !    element k's block is being parsed, so emitting at the end of
@@ -1938,6 +2521,7 @@ C***********************************************************************
             LOGICAL  :: nonzero(mMonCoef)
             REAL(pr) :: Coefs(mMonCoef)
             ! - - - - - - - - - - - - - - - - - - - - - - -
+            IF (MonZernTypeL(iElt) < 1) RETURN   ! none declared
             CALL PrintFmt('MonZernType', "2x,A",
      &           TRIM(ZernTypeNameL(MonZernTypeL(iElt))))
             mCoef = MIN(ZernType_MaxMode(MonZernTypeL(iElt)), mMonCoef)
@@ -1982,6 +2566,7 @@ C***********************************************************************
             LOGICAL  :: nonzero(mFFCoef)
             REAL(pr) :: Coefs(mFFCoef)
             ! - - - - - - - - - - - - - - - - - - - - - - -
+            IF (FFZernTypeL(iElt) < 1) RETURN   ! none declared
             CALL PrintFmt('FFZernType', "2x,A",
      &           TRIM(ZernTypeNameL(FFZernTypeL(iElt))))
             mCoef = MIN(ZernType_MaxMode(FFZernTypeL(iElt)), mFFCoef)
@@ -2028,6 +2613,17 @@ C***********************************************************************
             REAL(pr) :: Coefs(mZernModes)
             ! - - - - - - - - - - - - - - - - - - - - - - - - -
 
+!-->        Nothing declared, nothing written (2026-10-10): with no
+!           ZernType= in force (ZernTypeL 0 -- e.g. a ZrnGrData
+!           NSReflector, which the ChkDf2 default never reaches) the
+!           block was written with a BLANK name and sized by
+!           ZernType_MaxMode(0), out of the array, and the reload
+!           refused it.  The normalisation radius is still the deck's.
+            IF (ZernTypeL(iElt) < 1) THEN
+              CALL PrintFmt('lMon', "1PD23.15", lMon(iElt))
+              RETURN
+            END IF
+!<--
             CALL PrintFmt('ZernType', "2x,A", TRIM(ZernTypeNameL(ZernTypeL(iElt))))
 !--> was written misspelled ('ZernAnnualRatio') since the writer was
 !    born -- the parser key is 'ZernAnnularRatio', so the ratio was
@@ -2116,9 +2712,9 @@ C***********************************************************************
                 CASE (5)
                   CALL PrintFmtArray('ObsVec', "1PD23.15", 4, ObsVec(1:4,iObs,iElt))
 
-                ! ------ Matrix ------  ToDo
+                ! ------ Matrix ------  not printed (notes/rx_io.md)
                 CASE (6)
-                  CALL PrintMsg("Obs Matrix is a ToDo item ")
+                  CALL PrintMsg("Obs Matrix: not shown ")
 
                 ! ------ Tapered Ellipse ------
                 CASE (7)
@@ -2198,7 +2794,6 @@ C***********************************************************************
 
                CASE DEFAULT ! all others: Tapered_Circular, Elliptical, Tapered_Elliptical, SunBlades
                  CALL PrintFmtArray('ApVec', "1PD23.15", 5, ApVec(1:5,iElt))
-              ! ToDo
 
               END SELECT
 
@@ -2306,7 +2901,7 @@ C	and (if iComputeDZ=0) the x and y slopes at that point.
 	CHARACTER*8 CInteger
 	CHARACTER(len=MacosCharLen) :: newFilNam
 	!CHARACTER*132 newFilNam
-	LOGICAL exist,ifIntSrfSet(mElt),ifBin,LCMP
+	LOGICAL exist,ifIntSrfSet(mElt),ifBin,LCMP,ifAlt
 	INTEGER i,j,iElt,iSrf,iIntSrf,L,nDatPts,iDP,jDP,ICLEN,IERROR,
      &	        IDNDP(31),iComputeDZ,nRead,IMODE
 	REAL*8 xIDES,yIDES,wVec(6,3,30),dDatPts,SURFACE(mDP,5)
@@ -2317,6 +2912,9 @@ C  Formats
  101	FORMAT(2x,5D23.15)
  102	FORMAT(' Interpolated surface data not correctly set for ',
      &	'element',i4)
+ 103	FORMAT(' ** Interpolated surface data, element',i4,': ',A,
+     &	' declares ',I0,' points, ',I0,' read; the points read',
+     &	' are used')
 
 C  Loop through each element to find interpolated surfaces
 
@@ -2333,6 +2931,7 @@ C  Obtain file name for surface data
 	    newFilNam=filnam
 	    j=ICLEN(newFilNam)
 	    SrfFil=newFilNam(1:j)//'.srf'//Cinteger(1:i)//'.bin'
+	    ifAlt=.FALSE.
   1	    CONTINUE
 	      INQUIRE (FILE=SrfFil,EXIST=exist)
 	      IF (.NOT.exist) THEN
@@ -2340,13 +2939,38 @@ C  Obtain file name for surface data
 	        SrfFil=SrfFil(1:(L-4))//'.txt'
 	        INQUIRE (FILE=SrfFil,EXIST=exist)
 	        IF (.NOT.exist) THEN
-	          WRITE(*,*)'File '//SrfFil(1:L)//' does not exist.'
+	          WRITE(emsgRec,*)'File '//SrfFil(1:L)//' does not exist.'
+	          CALL emsg_put
+!-->  SINT (PLAN 1.4b): the CLI's filnam keeps the deck's '.in', the
+!     bindings' (SMACOS) does not, so each front end looked for its own
+!     spelling only; now the other spelling is tried second
+	          IF (.NOT.ifAlt) THEN
+	            ifAlt=.TRUE.
+	            L=ICLEN(filnam)
+	            newFilNam=filnam(1:L)//'.in'
+	            IF (L.GT.3) THEN
+	              IF (filnam(L-2:L).EQ.'.in'.OR.filnam(L-2:L).EQ.'.IN')
+     &	              newFilNam=filnam(1:L-3)
+	            END IF
+	            j=ICLEN(newFilNam)
+	            SrfFil=newFilNam(1:j)//'.srf'//Cinteger(1:i)//'.bin'
+	            GO TO 1
+	          END IF
+!<--
+#ifdef SMACOS_IO
+!-->  SINT (PLAN 1.4b): no prompt under SMACOS (the bindings) -- an
+!     empty SMACOS stack re-parses the command line, so the answer
+!     read back was 'SINT', never QUIT, and the loop never ended
+	          GO TO 2
+!<--
+#else
 	          CALL CACCEPT(newFilNam,'QUIT',
      &	          'Enter new .srf-file root name or QUIT to exit:')
 	          IF (LCMP(newFilNam,'QUIT',4)) GO TO 2
 	          j=ICLEN(newFilNam)
 	          SrfFil=newFilNam(1:j)//'.srf'//Cinteger(1:i)//'.bin'
 	          GO TO 1
+#endif
 	        ELSE
 	          ifBin=.FALSE.
 	        END IF
@@ -2368,17 +2992,22 @@ C  Read surface datafile
 	        nRead=5
 	      END IF
 	      IF (nDatPts.GT.mDP) THEN
-	        WRITE(*,*)' Too many data points.'
+	        WRITE(emsgRec,*)' Too many data points.'
+	        CALL emsg_put
 	        GO TO 2
 	      END IF
 	      IF (nDatPts.LT.3) THEN
-	        WRITE(*,*)' Too few data points.'
+	        WRITE(emsgRec,*)' Too few data points.'
+	        CALL emsg_put
 	        GO TO 2
 	      END IF
 	      jDP=0
 	      DO iDP=1,nDatPts
-	        jDP=jDP+1
+!-->  SINT (PLAN 1.4b): count the rows READ -- the increment ran before
+!     the READ, so a file shorter than its header kept one unread row
 	        READ(43,ERR=2,END=4)(SURFACE(iDP,i),i=1,nRead)
+	        jDP=jDP+1
+!<--
 	      END DO
 	    ELSE
 	      OPEN (43,FILE=SrfFil,STATUS='OLD',FORM='FORMATTED')
@@ -2392,17 +3021,22 @@ C  Read surface datafile
 	        nRead=5
 	      END IF
 	      IF (nDatPts.GT.mDP) THEN
-	        WRITE(*,*)' Too many data points.'
+	        WRITE(emsgRec,*)' Too many data points.'
+	        CALL emsg_put
 	        GO TO 2
 	      END IF
 	      IF (nDatPts.LT.3) THEN
-	        WRITE(*,*)' Too few data points.'
+	        WRITE(emsgRec,*)' Too few data points.'
+	        CALL emsg_put
 	        GO TO 2
 	      END IF
 	      jDP=0
 	      DO iDP=1,nDatPts
-	        jDP=jDP+1
+!-->  SINT (PLAN 1.4b): count the rows READ -- the increment ran before
+!     the READ, so a file shorter than its header kept one unread row
 	        READ(43,*,ERR=2,END=4)(SURFACE(iDP,i),i=1,nRead)
+	        jDP=jDP+1
+!<--
   	      END DO
 	    END IF
 
@@ -2410,6 +3044,18 @@ C  Here if data successfully read
 
   4	    CONTINUE
 	    CLOSE(43)
+!-->  SINT (PLAN 1.4b): a file shorter than its header warns (it was
+!     silent and traced an unread row); fewer than 3 read is too few
+	    IF (jDP.LT.nDatPts) THEN
+	      WRITE(emsgRec,103)iElt,TRIM(SrfFil),nDatPts,jDP
+	      CALL emsg_put
+	      IF (jDP.LT.3) THEN
+	        WRITE(emsgRec,*)' Too few data points.'
+	        CALL emsg_put
+	        GO TO 2
+	      END IF
+	    END IF
+!<--
 	    iIntSrf=iIntSrf+1
 	    nDP(iIntSrf)=jDP
 	    iEltToIntSrf(iElt)=iIntSrf
@@ -2446,7 +3092,8 @@ C  Here if data not correctly set
 
   2	    CONTINUE
 	    CLOSE(43)
-	    WRITE(*,102)iElt
+	    WRITE(emsgRec,102)iElt
+	    CALL emsg_put
 	    iEltToIntSrf(iElt)=0
 	    ifIntSrfSet(iElt)=.FALSE.
 	  END IF
@@ -2545,8 +3192,13 @@ C       BEGIN PARSING THE STRING
 	  ELSE IF (STRING(I:I) .EQ. '%') THEN
 	    in_tok=.false.
 	    IF (NO_LET) THEN
-!--> whole-line comment: keep it for the SAVE round-trip
-	      CALL RxCommentCapture(STRING)
+!--> whole-line comment: keep it for the SAVE round-trip.  Inside a
+!    /* */ block the line belongs to the BLOCK and is kept verbatim.
+	      IF (LInCommentMode) THEN
+	        CALL RxCommentCaptureRaw(STRING)
+	      ELSE
+	        CALL RxCommentCapture(STRING)
+	      END IF
 !<--
 	      SP_FLG=.TRUE.
 	      GO TO 20
@@ -2601,19 +3253,34 @@ C       BEGIN PARSING THE STRING
    15   CONTINUE
 
 	IF (VAR_NAM(1:1) .EQ. ' ') THEN
+!--> a blank line inside a /* */ block is part of the block
+	  IF (LInCommentMode) CALL RxCommentCaptureRaw(STRING)
+!<--
 	  SP_FLG=.TRUE.
 	  GO TO 20
 	END IF
 
 	IF (LCMP(VAR_NAM,'CommentBegin',12) .or.
      &      LCMP(VAR_NAM,'/*',2)) THEN
+!--> the block's opening line, kept verbatim for the SAVE round-trip
+!    (block comments were LOST on SAVE until 2026-09-29: the lines
+!    inside never reached RxCommentCapture, which sees only '%')
+	  CALL RxCommentCaptureRaw(STRING)
+!<--
 	  LInCommentMode=.TRUE.
 	  VAR_NAM(1:1)=' '; SP_FLG=.TRUE.
 	ELSE IF (LCMP(VAR_NAM,'CommentEnd',10) .OR.
      &           LCMP(VAR_NAM,'*/',2)) THEN
+!--> the closing line
+	  CALL RxCommentCaptureRaw(STRING)
+!<--
 	  LInCommentMode=.FALSE.
 	  VAR_NAM(1:1)=' '; SP_FLG=.TRUE.
           GO TO 20
+	ELSE IF (LInCommentMode) THEN
+!--> a line INSIDE the block: whatever it says, it is kept as text
+	  CALL RxCommentCaptureRaw(STRING)
+!<--
 	END IF
 	IF (LInCommentMode) GO TO 20
 
@@ -2636,14 +3303,18 @@ C     load(SAVE'd Rx) -> SAVE cycle stays idempotent.  Inline
 C     comments (key= value % note) are deliberately NOT preserved --
 C     that is the fragile case behind the GridFile-tab bug.
 	use elt_mod, only: mRxComment,nRxComment,RxCommentLine,
-     &	    RxCommentAnchor,RxCommentCtx,LRxCommentCapture
+     &	    RxCommentAnchor,RxCommentCtx,LRxCommentCapture,
+     &	    nRxCommentDropped
 	IMPLICIT NONE
 	CHARACTER(len=*) :: line
 	INTEGER :: L,i
 	LOGICAL :: furniture
 
 	IF (.NOT.LRxCommentCapture) RETURN
-	IF (nRxComment.GE.mRxComment) RETURN
+	IF (nRxComment.GE.mRxComment) THEN
+	  nRxCommentDropped=nRxCommentDropped+1
+	  RETURN
+	END IF
 	L=LEN_TRIM(line)
 	IF (L.EQ.0) RETURN
 	furniture=.TRUE.
@@ -2666,16 +3337,50 @@ C     that is the fragile case behind the GridFile-tab bug.
 	END SUBROUTINE RxCommentCapture
 
 
+	SUBROUTINE RxCommentCaptureRaw(line)
+C     Keep one line of a /* */ (CommentBegin/CommentEnd) block VERBATIM
+C     for the SAVE round-trip.  No furniture filter and blank lines
+C     allowed: inside a block the text can be anything -- typically
+C     keywords commented out -- and the block is re-emitted whole, so a
+C     reload of the SAVEd file skips it exactly as the source was.
+	use elt_mod, only: mRxComment,nRxComment,RxCommentLine,
+     &	    RxCommentAnchor,RxCommentCtx,LRxCommentCapture,
+     &	    nRxCommentDropped
+	IMPLICIT NONE
+	CHARACTER(len=*) :: line
+
+	IF (.NOT.LRxCommentCapture) RETURN
+	IF (nRxComment.GE.mRxComment) THEN
+	  nRxCommentDropped=nRxCommentDropped+1
+	  RETURN
+	END IF
+	nRxComment=nRxComment+1
+	RxCommentLine(nRxComment)=line
+	RxCommentAnchor(nRxComment)=RxCommentCtx
+	END SUBROUTINE RxCommentCaptureRaw
+
+
 	SUBROUTINE RxCommentEmit(ctx)
 C     Re-emit the captured whole-line comments anchored to ctx
 C     (0 = header/source section, iElt = that element's block).
 C     Called by PrtSourceInfo (ctx=0) and PrtSingleEltInfo (iElt).
-	use elt_mod, only: nRxComment,RxCommentLine,RxCommentAnchor
+	use elt_mod, only: nRxComment,RxCommentLine,RxCommentAnchor,
+     &	    mRxComment,nRxCommentDropped
 	use macos_IO, only: PrintMsg
 	IMPLICIT NONE
 	INTEGER, INTENT(IN) :: ctx
 	INTEGER :: i
 
+!--> capture is capped at mRxComment lines: say so once, on the
+!    console (not into the file being written), rather than lose
+!    comments silently
+	IF (nRxCommentDropped.GT.0) THEN
+	  WRITE(*,'(A,I0,A,I0,A)') ' SAVE: ',nRxCommentDropped,
+     &	    ' comment line(s) of the loaded Rx were not kept (limit ',
+     &	    mRxComment,' lines)'
+	  nRxCommentDropped=0
+	END IF
+!<--
 	DO i=1,nRxComment
 	  IF (RxCommentAnchor(i).EQ.ctx)
      &	    CALL PrintMsg(TRIM(RxCommentLine(i)))
@@ -2733,7 +3438,10 @@ C      THIS SUBROUTINE OPENS AND CLOSES THE JOU FILE
 
 	 IMPLICIT NONE
 
-	 CHARACTER(len=MacosCharLen) :: filnamjou
+!-->  SAVE: the closing call (task 2) prints the name the opening call
+!     (task 1) read; without SAVE it printed stack garbage (2026-10-10).
+	 CHARACTER(len=MacosCharLen), SAVE :: filnamjou = ' '
+!<--
 	 LOGICAL exist
 	 INTEGER ICLEN,l,task
 
@@ -3083,6 +3791,10 @@ C       A routine to read filter data.
 	LOGICAL ifFilterData,exist
 	INTEGER i,j,ICLEN
 	CHARACTER*132 FiltName
+!-->  header line parse (PLAN_CONSOLIDATION 1.2 (o), 2026-10-18)
+	CHARACTER(len=2*MacosCharLen) :: hdr
+	INTEGER kb
+!<--
 
  100	FORMAT(' Filter includes information for ',i3,
      &	' wavelengths and ',i2,' star types.')
@@ -3098,7 +3810,17 @@ C  Read .filt file
 	  RETURN
 	ELSE
 	  OPEN (44,FILE=filtfil,STATUS='OLD',FORM='FORMATTED')
-	  READ (44,*,ERR=3,END=3)FiltName,nWavelen
+!-->  The header is '<name> <nWavelen>' on one line.  A list-directed
+!     READ of the name stopped at the first '/' (a path), which ends a
+!     list-directed record, so nWavelen was never read.  The count is
+!     the LAST token; the name is everything before it.
+	  READ (44,'(A)',ERR=3,END=3)hdr
+	  hdr=ADJUSTL(hdr)
+	  kb=INDEX(TRIM(hdr),' ',BACK=.TRUE.)
+	  IF (kb.LE.0) GO TO 3
+	  FiltName=hdr(1:kb-1)
+	  READ (hdr(kb+1:),*,ERR=3,END=3)nWavelen
+!<--
 	  IF (nWavelen.GT.mWavelen) GO TO 2
 	  nStarType=0
 	  READ(44,*,ERR=3,END=3)(FiltWavelen(j),j=1,nWavelen)
@@ -3204,8 +3926,13 @@ C  Save filter data
 
 	  FiltName=filtfil
 	  OPEN (44,FILE=filtfil,STATUS='NEW',FORM='FORMATTED')
-	  WRITE (44,*,ERR=3)FiltName,nWavelen
-	  nStarType=0
+!-->  One header line '<name> <nWavelen>' (the list-directed form wrote
+!     the 256-wide name, which a reader cannot delimit), and the flux
+!     rows of every star type: a stray 'nStarType=0' here wrote none
+!     and zeroed the session's count, so RFILT read 0 star types and
+!     MULTISPEC refused every one (PLAN_CONSOLIDATION 1.2 (o)).
+	  WRITE (44,'(A,1X,I0)',ERR=3)TRIM(FiltName),nWavelen
+!<--
 	  WRITE(44,*,ERR=3)(FiltWavelen(j),j=1,nWavelen)
 	  DO 1 i=1,nStarType
 	    WRITE(44,*,ERR=3)(FiltFlux(j,i),j=1,nWavelen)
@@ -3412,28 +4139,60 @@ C***********************************************************************
 
         nextTok=.true. ! when true, 'state' is outside of a token
         tok(1:100)=' '; c=1; j=1; nVal=0
+!-->    Bound the scan by the BUFFER's length, not the command length:
+!       ValBuf is MacosValLen (220) chars, MacosCharLen is 256, so the
+!       old loop read 36 bytes past the actual argument and tokenized
+!       whatever sat there -- a non-blank byte became a bogus token and
+!       Read(tok,*) failed "Bad real number" NONDETERMINISTICALLY
+!       (tst_save_keys.in loaded 3 of 5 times, 2026-09-09).  Only the
+!       ArrWaveLen=/ArrIndRef= lines reach here.  Also cap the token and
+!       the output array so a malformed line cannot overrun either.
         Do
-          If (c==MacosCharLen) exit  ! done
-          If (ValBuf(c:c)==' ' .and. c<MacosCharLen) Then
+          If (c>=LEN(ValBuf)) exit  ! done
+          If (ValBuf(c:c)==' ') Then
             If (.not.nextTok) Then
               ! a token is complete
               !print*,'** tok = ',tok
+              If (j>SIZE(ValArr)) exit
               Read(tok,*) ValArr(j)
               !print*,'** ValArr(j) =',ValArr(j)
               j=j+1; tok(1:100)=' '; nextTok=.true.
 	      nVal=nVal+1
             End If
-            If (c<MacosCharLen) c=c+1
+            c=c+1
           Else
             If (nextTok) Then
               i=1; nextTok=.false.
             End If
             !print*,'** i =',i
-            tok(i:i)=ValBuf(c:c); i=i+1; c=c+1
+            If (i<=LEN(tok)) tok(i:i)=ValBuf(c:c)
+            i=i+1; c=c+1
           End If
         End Do
+        ! a token still open at the buffer's end (no trailing blank)
+        If ((.not.nextTok) .and. (j<=SIZE(ValArr))) Then
+          Read(tok,*) ValArr(j)
+          nVal=nVal+1
+        End If
+!<--
         End Subroutine Get_Values
 
+C***********************************************************************
+!-->  Does element iElt carry a DEFINED grid (data actually read)?  A
+!     declared-but-empty grid (nGridMat>0 with GridFile= none or a
+!     file that failed to load) has a slot but ifGridDataDefined false.
+        LOGICAL FUNCTION GridDefinedElt(iElt)
+        use elt_mod, only: nGridMat,iEltToGridSrf,ifGridDataDefined
+        Implicit none
+        Integer, intent(in) :: iElt
+        GridDefinedElt = .FALSE.
+        If (nGridMat(iElt).GT.0) Then
+          If (iEltToGridSrf(iElt).GT.0) Then
+            GridDefinedElt = ifGridDataDefined(iEltToGridSrf(iElt))
+          End If
+        End If
+        END FUNCTION GridDefinedElt
+!<--
 C***********************************************************************
 C*******End file iosub.inc**********************************************
 C***********************************************************************

@@ -1,0 +1,354 @@
+# Section 4, "Obscurations and Apertures": NEW entering the section's three examples, each as element 1
+# of the Cassegrain of the NEW tutorial (s04_new_cass.jou) in place of its SecMirObs: (1) Sq_Ap, a
+# Flat Obscuring element at z=-5.4 with a Rectangular aperture -1.5,1.5,-1.5,1.5 and no obscurations;
+# (2) 4CircObs, a Conic Obscuring element at z=-.01 with the primary's f=5.4, e=1, a Circular aperture
+# 2,0,0 and four Circle pads 0.2 at (+-1,+-1); (3) SpiderObs, a Flat Obscuring element at z=-5.4 with a
+# Circular aperture 2,0,0, a Circle 0.5,0,0 and two Rectangle spider arms.  The element answers are
+# 3.2's.  3.2 printed only the element's dialog (Sq_Ap from its name prompt, the other two from "Enter
+# Element 1 Data:") and then the element's prescription lines; NEW needs a complete deck, so the source
+# and elements 2-5 (the tutorial's Primary, Secondary, Ref_surf, foc_pln) are entered as setup and not
+# printed, and the prescription lines are SHOW's.  Differences from 3.2's dialog: NEW prints the element
+# back and asks "Is this correct?" (default YES); the element, surface and obscuration type lists are
+# longer; the aperture defaults follow the source aperture ([2.00000,0,0] and [-2,2,-2,2]; 3.2 printed
+# 0.5 and +-0.5); the obscuration prompts print "y[no default]" with no blank; xObs is still asked
+# when nObs is 0; the element lists xObs before nObs (3.2: after the obscurations).  NONE turns
+# plotting off, so the three OPD traces draw nothing; each pins the rays the element obscures.
+cd $TMP
+none
+new
+CassSqAp
+0,0,1
+0,0,-5
+1d22
+1
+0
+none
+1d-6
+1
+Circular
+4
+15
+-1,0,0
+0,-1,0
+5
+# TRANSCRIPT: s04_obscuration_1 upto=Enter\sElement\s+2\sData
+Sq_Ap
+Obscuring
+Flat
+0,0,-5.4
+0,0,-5.4
+0,0,-1
+yes
+Rectangular
+-1.5,1.5,-1.5,1.5
+0
+1,0,0
+1d22
+Geometric
+
+
+# TRANSCRIPT-OFF
+Primary
+Reflector
+Conic
+0,0,0
+0,0,0
+0,0,-1
+1
+5.4
+1
+
+
+5.4
+Geometric
+
+
+
+
+
+Secondary
+Reflector
+Conic
+0,0,-4.0611459018
+0,0,-5.4
+0,0,-1
+1
+1.3388540982
+1.6341835953
+
+
+1.3388540982
+Geometric
+
+
+
+
+
+Ref_surf
+Reference
+Conic
+0,0,-4.0601459018
+0,0,-4.0601459018
+0,0,1
+1
+5.5601459018
+0
+
+
+5.5601459018
+FarField
+
+
+foc_pln
+FocalPlane
+Flat
+0,0,1.5
+0,0,1.5
+0,0,1
+
+
+0
+Geometric
+
+
+1,0,0
+0,1,0
+# TRANSCRIPT-OFF
+show
+1
+# TRANSCRIPT-OFF
+opd 5
+new
+Cass4Circ
+0,0,1
+0,0,-5
+1d22
+1
+0
+none
+1d-6
+1
+Circular
+4
+15
+-1,0,0
+0,-1,0
+5
+# TRANSCRIPT: s04_obscuration_2 from=Enter\sElement\s+1\sData upto=Enter\sElement\s+2\sData
+4CircObs
+Obscuring
+Conic
+0,0,-.01
+0,0,-.01
+0,0,-1
+1
+5.4
+1
+yes
+Circular
+2,0,0
+4
+Circle
+0.2,1,1
+Circle
+0.2,1,-1
+Circle
+0.2,-1,1
+Circle
+0.2,-1,-1
+1,0,0
+5.4
+Geometric
+
+
+# TRANSCRIPT-OFF
+Primary
+Reflector
+Conic
+0,0,0
+0,0,0
+0,0,-1
+1
+5.4
+1
+
+
+5.4
+Geometric
+
+
+
+
+
+Secondary
+Reflector
+Conic
+0,0,-4.0611459018
+0,0,-5.4
+0,0,-1
+1
+1.3388540982
+1.6341835953
+
+
+1.3388540982
+Geometric
+
+
+
+
+
+Ref_surf
+Reference
+Conic
+0,0,-4.0601459018
+0,0,-4.0601459018
+0,0,1
+1
+5.5601459018
+0
+
+
+5.5601459018
+FarField
+
+
+foc_pln
+FocalPlane
+Flat
+0,0,1.5
+0,0,1.5
+0,0,1
+
+
+0
+Geometric
+
+
+1,0,0
+0,1,0
+# TRANSCRIPT-OFF
+show
+1
+# TRANSCRIPT-OFF
+opd 5
+new
+CassSpider
+0,0,1
+0,0,-5
+1d22
+1
+0
+none
+1d-6
+1
+Circular
+4
+15
+-1,0,0
+0,-1,0
+5
+# TRANSCRIPT: s04_obscuration_3 from=Enter\sElement\s+1\sData upto=Enter\sElement\s+2\sData
+SpiderObs
+Obscuring
+Flat
+0,0,-5.4
+0,0,-5.4
+0,0,-1
+yes
+Circular
+2,0,0
+3
+Circle
+0.5,0,0
+Rectangle
+-.25,.25,-2,2
+Rectangle
+-2,2,-.25,.25
+1,0,0
+1d22
+Geometric
+
+
+# TRANSCRIPT-OFF
+Primary
+Reflector
+Conic
+0,0,0
+0,0,0
+0,0,-1
+1
+5.4
+1
+
+
+5.4
+Geometric
+
+
+
+
+
+Secondary
+Reflector
+Conic
+0,0,-4.0611459018
+0,0,-5.4
+0,0,-1
+1
+1.3388540982
+1.6341835953
+
+
+1.3388540982
+Geometric
+
+
+
+
+
+Ref_surf
+Reference
+Conic
+0,0,-4.0601459018
+0,0,-4.0601459018
+0,0,1
+1
+5.5601459018
+0
+
+
+5.5601459018
+FarField
+
+
+foc_pln
+FocalPlane
+Flat
+0,0,1.5
+0,0,1.5
+0,0,1
+
+
+0
+Geometric
+
+
+1,0,0
+0,1,0
+# TRANSCRIPT-OFF
+show
+1
+# TRANSCRIPT-OFF
+opd 5
+# EXPECT: File CassSqAp\.in being created\.[\s\S]*?File Cass4Circ\.in being created\.[\s\S]*?File CassSpider\.in being created\.
+# EXPECT: Enter number of element \(0=aperture\): \[0\]: 1\s+iElt=\s+1\s+EltName=\s+Sq_Ap\s+Element=\s+Obscuring\s+Surface=\s+Flat\s+KrElt=-1\.0E\+22\s+KcElt=0\.0E\+00\s+psiElt=\s+0\.0E\+00\s+0\.0E\+00\s+-1\.0E\+00\s+VptElt=\s+0\.0E\+00\s+0\.0E\+00\s+-5\.4000\d*E\+00\s+RptElt=\s+0\.0E\+00\s+0\.0E\+00\s+-5\.4000\d*E\+00[\s\S]*?xObs=\s+1\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+nObs=\s+0\s+ApType=\s+Rectangular\s+ApVec=\s+-1\.5E\+00\s+1\.5E\+00\s+-1\.5E\+00\s+1\.5E\+00\s+PropType=\s+Geometric\s+zElt=1\.0E\+22
+# EXPECT: OPD: nPassRays =\s+100,\s+DAvgCumL =\s+14\.622\d*D\+00[\s\S]*?RMS OPD error is\s+\d\.\d+D-1[2-6][\s\S]*?A total of\s+24 rays were lost\s+Obscured:\s+24\s+at element\s+1:\s+24
+# EXPECT: Enter number of element \(0=aperture\): \[0\]: 1\s+iElt=\s+1\s+EltName=\s+4CircObs\s+Element=\s+Obscuring\s+Surface=\s+Conic\s+KrElt=-1\.0800\d*E\+01\s+KcElt=-1\.0E\+00\s+psiElt=\s+0\.0E\+00\s+0\.0E\+00\s+-1\.0E\+00\s+VptElt=\s+0\.0E\+00\s+0\.0E\+00\s+-1\.0E-02\s+RptElt=\s+0\.0E\+00\s+0\.0E\+00\s+-1\.0E-02[\s\S]*?xObs=\s+1\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+nObs=\s+4\s+ObsType=\s+Circle\s+ObsVec=\s+2\.0000\d*E-01\s+1\.0E\+00\s+1\.0E\+00\s+ObsType=\s+Circle\s+ObsVec=\s+2\.0000\d*E-01\s+1\.0E\+00\s+-1\.0E\+00\s+ObsType=\s+Circle\s+ObsVec=\s+2\.0000\d*E-01\s+-1\.0E\+00\s+1\.0E\+00\s+ObsType=\s+Circle\s+ObsVec=\s+2\.0000\d*E-01\s+-1\.0E\+00\s+-1\.0E\+00\s+ApType=\s+Circular\s+ApVec=\s+2\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+PropType=\s+Geometric\s+zElt=5\.4000\d*E\+00
+# EXPECT: OPD: nPassRays =\s+120,\s+DAvgCumL =\s+14\.622\d*D\+00[\s\S]*?RMS OPD error is\s+\d\.\d+D-1[2-6][\s\S]*?A total of\s+4 rays were lost\s+Obscured:\s+4\s+at element\s+1:\s+4
+# EXPECT: Enter number of element \(0=aperture\): \[0\]: 1\s+iElt=\s+1\s+EltName=\s+SpiderObs\s+Element=\s+Obscuring\s+Surface=\s+Flat\s+KrElt=-1\.0E\+22\s+KcElt=0\.0E\+00\s+psiElt=\s+0\.0E\+00\s+0\.0E\+00\s+-1\.0E\+00\s+VptElt=\s+0\.0E\+00\s+0\.0E\+00\s+-5\.4000\d*E\+00[\s\S]*?xObs=\s+1\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+nObs=\s+3\s+ObsType=\s+Circle\s+ObsVec=\s+5\.0E-01\s+0\.0E\+00\s+0\.0E\+00\s+ObsType=\s+Rectangle\s+ObsVec=\s+-2\.5E-01\s+2\.5E-01\s+-2\.0E\+00\s+2\.0E\+00\s+ObsType=\s+Rectangle\s+ObsVec=\s+-2\.0E\+00\s+2\.0E\+00\s+-2\.5E-01\s+2\.5E-01\s+ApType=\s+Circular\s+ApVec=\s+2\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+PropType=\s+Geometric\s+zElt=1\.0E\+22
+# EXPECT: OPD: nPassRays =\s+80,\s+DAvgCumL =\s+14\.622\d*D\+00[\s\S]*?RMS OPD error is\s+\d\.\d+D-1[2-6][\s\S]*?A total of\s+45 rays were lost\s+Obscured:\s+45\s+at element\s+1:\s+45
+# EXPECT-NOT: values expected
+# EXPECT-NOT: Unknown (grid|surface|element|command)
+# EXPECT-NOT: forrtl
+# EXPECT-NOT: Graphics\sdevice

@@ -1,0 +1,52 @@
+{
+ "section": "40_benches",
+ "siblings": [
+  "dm_gauge_lib",
+  "90_polarization/tg_psi_dm"
+ ],
+ "refusal": {
+  "entry": "out = zwfs_run('stages',{'bench'});",
+  "expect": "zwfs_run: bench.coat_oap needs bench.optics 'oap'",
+  "from": "\\nREFUSED:"
+ },
+ "entry": "out = zwfs_run('stages',{'bench'}, 'bench.coat_oap','none');",
+ "figure": "runs/run/run_stations_V.png",
+ "run": {
+  "from": "---- bench ----",
+  "to": "bench stage [0-9.]+ min"
+ },
+ "pins": [
+  {
+   "name": "vgain",
+   "pattern": "run_stations_V\\.png: residual vs the engine's field on msk \\S+ pm \\(flat\\), \\S+ pm \\(30 nm rms working surface\\), gain (\\S+)",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "vres",
+   "pattern": "run_stations_V\\.png: residual vs the engine's field on msk \\S+ pm \\(flat\\), (\\S+) pm",
+   "rule": "printed",
+   "format": "%.2f"
+  },
+  {
+   "name": "sgain",
+   "pattern": "run_stations_S\\.png: residual vs the engine's field on msk \\S+ pm \\(flat\\), \\S+ pm \\(30 nm rms working surface\\), gain (\\S+)",
+   "rule": "printed",
+   "format": "%.4f"
+  }
+ ],
+ "caption": "The vector reading's stations (`runs/run/run_stations_V.png`), the flat DM and a 30 nm rms working surface: the mirror command, the focal spot at the mask, the metasurface, the reference wave, the two camera images, the recovered surface, and the recovered map minus the engine's own field (pm).",
+ "number": "On a 30 nm rms working surface the vector reading (the polarized dimple's +phi and -phi images at once) recovers the engine's own field with gain %pin:p2_zwfs_dm96_vgain% and a residual of %pin:p2_zwfs_dm96_vres% pm, where the single phase-stepped scalar reading S reads gain %pin:p2_zwfs_dm96_sgain%. Every bench gate passes (the mask sandwich and the reference surrogate at the floor of the arithmetic); the sampling budget's 96 x 96 line is NOT MET at 1.66 detector px per actuator, a warning by the sheet's own `enforce = warn`.",
+ "prompt": "Using templates/40_benches/zwfs_dm96, rerun the bench stage with NGRID 385 (the 1 Mpix-class detector) and 'bench.coat_oap','none', and tell me whether the 96x96 sampling line is met and how the V and S gains change.",
+ "masks": [
+  {
+   "pattern": "[0-9.]+ s\\n",
+   "with": "<s> s\n"
+  },
+  {
+   "pattern": "bench stage [0-9.]+ min",
+   "with": "bench stage <t> min"
+  }
+ ],
+ "run_note": "CCL's ruling (finding (nnn)): the page shows the bare call refusing, then runs the value the parameter sheet itself gives for the lens rig's geometric gate, `bench.coat_oap 'none'`. The bench stage only; the default also runs the reading battery and the figures. The manual copies the template with `dm_gauge_lib` and `90_polarization/tg_psi_dm`, which the runner adds to the path by relative location."
+}

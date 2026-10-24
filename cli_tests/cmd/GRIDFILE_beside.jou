@@ -1,0 +1,19 @@
+# GridFile= is looked for beside the deck (PLAN_CONSOLIDATION 1.2 (f), Dave 2026-10-22).  A relative name
+#   resolved only against the CLI's working directory, so a deck loaded from elsewhere declined its own grid
+#   ('File flat.txt does not exist -sub GridInit', eight lines on e5hex1).  Now: the working directory first
+#   (unchanged), then the deck's folder (RxDir, elt_mod), with one line naming where it was found; the name
+#   stays as written, so SAVE writes `GridFile= flat.txt`.  Legs: (1) from $TMP, Rx_e5hex1.in (its folder
+#   carries flat.txt) finds all eight grids beside the deck; (2) SAVE keeps the relative name; (3) a copy in
+#   $TMP with no flat.txt anywhere still declines by name.  Pre-fix binary: leg 1 declines -> red.
+# COPY: $RES/pymacos/tests/Rx/Rx_e5hex1.in
+cd $TMP
+none
+old $RES/pymacos/tests/Rx/Rx_e5hex1.in
+save $TMP/gsaved
+! grep -c "GridFile=  *flat.txt" $TMP/gsaved.in
+old $DECK
+# EXPECT: Rx_e5hex1\.in\s+being loaded(?:(?!being loaded)[\s\S])*?Grid file flat\.txt found beside the deck: \S*pymacos/tests/Rx/flat\.txt
+# EXPECT: ^\s*8\s*$
+# EXPECT: cli_cmd\S*/Rx_e5hex1\.in\s+being loaded(?:(?!being loaded)[\s\S])*?File flat\.txt does not exist -sub GridInit
+# EXPECT-NOT: Rx/Rx_e5hex1\.in\s+being loaded(?:(?!being loaded)[\s\S])*?does not exist -sub GridInit
+# EXPECT-NOT: forrtl

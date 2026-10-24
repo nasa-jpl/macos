@@ -1,0 +1,28 @@
+# Figures 60-64 (Section 7): CassWithExitPupil.in: at the detector (element 6, the focal field -- the 3.2 figures
+# were made there) AMP then PHASE (one page each), REAL (real and imaginary pages), IMGMODE CONV + WIRE on INT 6;
+# at the exit pupil (element 5) CONTOUR on OPD 5, COLUMN (the center column) on
+# OPD 5.  Pages: 0 amp, 1 phase, 2-3 real, 4 wire, 5 contour, 6 column (+ a repeat).  fig_engine_60 = [0 | 1], 61 = [2 | 3], 62 = 4, 63 = 5, 64 = 6.
+# COPY: $ROOT/docs/macos-manual/examples/CassWithExitPupil.in fig60
+# DEADLINE: 300
+cd $TMP/fig60
+old CassWithExitPupil.in
+pgd
+/png
+amp 6
+phase 6
+real 6
+imgmode
+CONV
+wire
+int 6
+con
+opd 5
+col
+opd 5
+8
+opd 5
+8
+! mkdir -p $ROOT/docs/macos-manual/build/figs/fig60; cp $TMP/fig60/giza_*.png $ROOT/docs/macos-manual/build/figs/fig60/
+# EXPECT: Plot type set to COLUMN
+# EXPECT: (RMS OPD error is[\s\S]*){3}
+# EXPECT-NOT: forrtl

@@ -54,7 +54,6 @@ spheres, which have no unique vertex, VptElt can be any point on the surface. Fo
 
 Comparing the intervertex spacings of the two mirrors (the difference of the PM and SM VptElt), you can see that they are the same in either frame. It does not matter what frame is used, provided the relative location of each element is correct.
 
-
 ![](media/fig_rescued_02.png)
 
 **FIGURE 2** Principal axis directions
@@ -81,7 +80,7 @@ Detailed discussion of how elements are specified is provided in Section 4.
 
 MACOS allows the user to explicitly specify three types of local coordinates: *element coordinates*, *output coordinates*, and *surface coordinates*. Also important, but not explicitly set at each surface, are *beam coordinates*.
 
-*Element coordinates* allow the user to simulate optical *actuators*, such as steering mirrors or translation stages, by defining coordinates local to the controlled element and aligned with the actuator axes. Actions of the steering mirror are rotations about, or translations along, that axis, and are easily implemented via the MACOS PERturb command (see Section 5.3.7). These *element coordinates* can also be imbedded into a linear model of the system using the MACOS BUIld and EXPort commands (see Sections 8.2.1 and 3.8.5). This enables creation of optical models directly in terms of actuator actions.
+*Element coordinates* allow the user to simulate optical *actuators*, such as steering mirrors or translation stages, by defining coordinates local to the controlled element and aligned with the actuator axes. Actions of the steering mirror are rotations about, or translations along, that axis, and are easily implemented via the MACOS PERturb command (see [Section ?](#beam-set-up-commands)). These *element coordinates* can also be imbedded into a linear model of the system using the MACOS BUIld and EXPort commands (see Sections 8.2.1 and 3.8.5). This enables creation of optical models directly in terms of actuator actions.
 
 *Output coordinates* are used when calculating certain graphical outputs, such as spot diagrams. They help define sensing axes for simulating *detectors* (e.g., rows and columns of CCDs). When embedded in a linear model, they define the optical outputs of that model by selecting and transforming the optical states into combinations specified by the user.
 
@@ -99,11 +98,7 @@ Geometric optics capture the *particle nature* of light. In geometric optics, li
 
 Ray-tracing is an extremely valuable tool for determining the performance of optical systems. For example, characteristics of a well-designed imaging system include an extremely small *spot diagram* at the detector focal plane. Spot diagrams are plots of the pierce points of a ray bundle on a surface, and a small spot indicates a tight focus. An example is provided by the Cassegrain telescope of Figure 3. Two spot diagrams are shown in Figure 4. The unaberrated telescope indeed has a focus at a single spot (diameter is approximately 10-10 in arbitrary units). Misaligning the primary mirror causes the spot to spread as shown in Figure 4 to approximately 2x10-8.
 
-![](media/image8.png){width="2.9811023622047244in" height="3.1102362204724407in"}![](media/image9.png){width="3.819291338582677in" height="2.9354330708661416in"}
-
-Spot diagram at entrance pupil
-
-Cross-section of ray-trace
+![](media/fig_engine_03.png)
 
 **FIGURE 3** Ray trace of a Cassegrain telescope
 
@@ -113,11 +108,7 @@ The predictions of geometric optics are exact only in cases where the wavelength
 
 One thing that ray-tracing cannot do is predict the intensity pattern of a focused spot. For that, use the image simulations features decribed in Section 7.
 
-![](media/image10.png){width="3.695275590551181in" height="3.0in"}![](media/image11.png){width="2.9618110236220474in" height="3.017322834645669in"}
-
-Focal plane spot diagram Focal plane spot diagram
-
-(unaberrated system) (primary mirror tilted 1e-4 radians)
+![](media/fig_engine_04.png)
 
 **FIGURE 4** Spot diagrams for Cassegrain.in.
 
@@ -129,19 +120,11 @@ The exit pupil is a conjugate (an image) of the aperture stop of the system. For
 
 Physical optics capture the *wave nature* of light. In physical optics, Huygen’s Principle states that each point within a beam of light radiates a spherical wave of light. A *wave-front* is the envelope of all the waves emitted at a particular instant of time. Waves of light propagate through an optical train by bouncing off of mirrors or bending through lenses, much as predicted by geometric optics. Unlike geometric optics, however, physical optics predicts that light can leak back into areas of shadow, or areas outside of the edge of the geometric beam. This process is *diffraction* and is important when modelling images, the propagation of beams over long distances, and other phenomena.
 
-Exit pupil at virtual image
-
-Point source on stop
-
-![](media/image12.png){width="0.10551181102362205in" height="0.4515748031496063in"}![](media/image13.png){width="0.13543307086614173in" height="0.11535433070866141in"}![](media/image14.png){width="0.13622047244094487in" height="0.11377952755905511in"}![](media/image15.png){width="0.13543307086614173in" height="0.11535433070866141in"}![](media/image16.png){width="0.13622047244094487in" height="0.11377952755905511in"}Primary Mirror
-
-Focal Plane
+![](media/fig_rescued_05.png)
 
 **FIGURE 5** Exit pupil for Cassegrain.in
 
-![](media/image17.png){width="5.949305555555555in" height="3.129861111111111in"}
-
-Unaberrated (defocused) Aberrated OPD (coma)
+![](media/fig_engine_06.png)
 
 **FIGURE 6** OPD at the exit pupil
 
@@ -189,15 +172,9 @@ MACOS does not currently provide shaped windowing features.
 
 The width of the beam in regions far from focus is determined geometrically. When the beam is small compared to the wavelength, the width is determined largely by diffraction considerations. Near focus, diffraction effects dominate. MACOS is set up to automatically require adequate padding in diffraction calculations for imaging systems.
 
-Nonetheless, the user is urged to be aware of the rules for constructing diffraction models, as discussed in Section 6. Good discussions of these issues are available (Ref.
-
-Lawrence).
+Nonetheless, the user is urged to be aware of the rules for constructing diffraction models, as discussed in Section 6. Good discussions of these issues are in Goodman, *Introduction to Fourier Optics* (sampling and the discrete Fourier transform), and in Sziklas and Siegman's paper on the fast-Fourier-transform propagation method that MACOS uses (References 2 and 3).
 
 The shape and quality of the *point-spread function* (PSF) are a good indicator of the performance of the optical system. The PSF is the image or intensity pattern due to a point
-
-
-
-1/4 L 1/2 L 1/4 L
 
 ![](media/fig_rescued_09.png)
 
@@ -209,9 +186,7 @@ source. Without aberrations, geometrical optics predicts infinitely small images
 
 The simplest and most common PSF calculation uses a ray trace to compute the OPD in the exit pupil of the optical system followed by a single *far-field diffraction propagation* to the focal plane. Figure 10 shows the PSFs computed by MACOS for the Cassegrain telescope calculated in this fashion (see Figure 6 for the OPD maps).
 
-![](media/image20.png){width="2.97007874015748in" height="3.0181102362204726in"}![](media/image21.png){width="2.8751968503937007in" height="3.0090551181102363in"})
-
-Unaberrated (defocused) Aberrated OPD (coma)
+![](media/fig_engine_10.png)
 
 **FIGURE 10** Point spread functions for Cassegrain.in
 
@@ -254,8 +229,6 @@ MACOS uses the geometric propagator to determine phase changes across optical el
 -   More accurately accounts for geometric effects, such as field-dependant aberrations.
 
 The MACOS geometric propagator does not compute magnitude changes unless polarization ray-trace is being used.
-
-**Polarized Light**
 
 ### Polarized Light
 

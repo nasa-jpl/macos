@@ -1,0 +1,37 @@
+{
+ "section": "10_telescopes",
+ "entry": "run(fullfile(pwd,'wf2_freeform.m'));",
+ "knobs": {
+  "file": "wf2_freeform.m",
+  "from": "^% =+  USER DESIGN CHOICES",
+  "to": "^% =+$"
+ },
+ "figure": "wf2_freeform_fieldcurve.png",
+ "run": {
+  "from": "=+\\n Wide-field 2-mirror freeform",
+  "to": ""
+ },
+ "pins": [
+  {
+   "name": "one0",
+   "pattern": "conic-limit (\\S+) -> freeform",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "one1",
+   "pattern": "-> freeform (\\S+) waves",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "wide",
+   "pattern": "worst \\S+->(\\S+) waves",
+   "rule": "printed",
+   "format": "%.3f"
+  }
+ ],
+ "caption": "RMS wavefront error against field for the nominal RC, the conic field-balance (the 2-mirror limit) and the freeform M2 (`wf2_freeform_fieldcurve.png`).",
+ "number": "At a single off-axis field (7\u2032) a freeform departure on the secondary nulls the conics' residual, %pin:p2_wf2_freeform_one0% to %pin:p2_wf2_freeform_one1% waves; over the whole \u00b17\u2032 field it buys almost nothing (worst %pin:p2_wf2_freeform_wide% waves, the diffraction-limited field unchanged at 5\u2032), because a 2-mirror has one surface away from the pupil. The header's \"~25x\" per-field figure reads 34x on this run.",
+ "prompt": "Using templates/10_telescopes/wf2_freeform, add the freeform modes to M1 as well as M2 and rerun, and tell me whether the diffraction-limited field over \u00b17 arcmin grows."
+}

@@ -1,0 +1,24 @@
+# Figure 46 (Section 6): the beam at the entrance pupil (element 1, the Obscuring) of CassWithExitPupil.in on a
+# 64-point grid with the default UNIFORM source beam and with a GAUSSIAN beam (waist radius 1.0 in x and y, half
+# the 4 m aperture) -- at a pupil the intensity IS the beam profile.  The 3.2
+# figure used a 25-element beam-expander deck that is not in the tree.  Pages: 0 uniform, 1 gaussian (+ a repeat).
+# fig_engine_46.png = [0 | 1].
+# COPY: $ROOT/docs/macos-manual/examples/CassWithExitPupil.in fig46
+# DEADLINE: 180
+cd $TMP/fig46
+old CassWithExitPupil.in
+mod ngridpts=64
+q
+pgd
+/png
+int 1
+beam
+gau
+1.0
+1.0
+int 1
+int 1
+! mkdir -p $ROOT/docs/macos-manual/build/figs/fig46; cp $TMP/fig46/giza_*.png $ROOT/docs/macos-manual/build/figs/fig46/
+# EXPECT: Enter beam type \(UNIFORM, GAUSSIAN, COS\*\*POWER, DIPOLE\): \[UNIFORM\]: gau
+# EXPECT: (Peak intensity=[\s\S]*){3}
+# EXPECT-NOT: forrtl

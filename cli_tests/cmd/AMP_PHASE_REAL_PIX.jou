@@ -1,0 +1,19 @@
+# AMPLITUDE / PHASE / REAL / PIXEL / GAIN at the far-field detector of the manual's Cassegrain (cmdref: Outputs).
+# NONE first.  AMP propagates (peak amplitude 2.979e3 = sqrt of the 8.877e6 intensity peak); PHASE and REAL reuse
+# the propagated field; PIX pixelates it on 64 x 64 x 2e-6 (default pixel = the grid's 1.074e-6); GAIN reports
+# the maximum gain 129.55 over an isotropic radiator of the same power.
+old $ROOT/docs/macos-manual/examples/Cassegrain.in
+none
+amp 5
+phase 5
+real 5
+pix 5
+64
+2e-6
+gain 5
+# EXPECT: Peak amplitude= 2\.9794822D\+03; Peak occurs at i=\s+129, j=\s+129
+# EXPECT: MACOS> phase 5\s+Enter number of element where data is to be generated: \[5\]: 5\s+Wavefront Propagation Data Summary
+# EXPECT: MACOS> real 5\s+Enter number of element where data is to be generated: \[5\]: 5\s+Wavefront Propagation Data Summary
+# EXPECT: Enter size of pixel: \[1\.074451E-06\]: 2e-6\s+Peak intensity= 8\.8773143D\+06
+# EXPECT: Maximum gain= 1\.2955053D\+02
+# EXPECT-NOT: forrtl

@@ -1,0 +1,24 @@
+# Section 6, BEAM: the steps of tools/figs/FIG46.jou (figure 46) on /null -- CassWithExitPupil.in on a
+# 64-point grid, the intensity at element 1 (the obscuration plane, an entrance pupil: the intensity there IS
+# the beam profile) with the default UNIFORM beam, then a GAUSSIAN of waist radius 1.0 in x and y.  The
+# Gaussian is normalized to the uniform flux (2026-10-19): its sum is the uniform sum less the truncated tail.
+# COPY: $ROOT/docs/macos-manual/examples/CassWithExitPupil.in s06b
+cd $TMP/s06b
+old CassWithExitPupil.in
+pgd
+/null
+mod ngridpts=64
+q
+# TRANSCRIPT: s06_beam_uniform
+int 1
+# TRANSCRIPT: s06_beam_gauss
+beam
+gau
+1.0
+1.0
+int 1
+# TRANSCRIPT-OFF
+# EXPECT: Enter beam type \(UNIFORM, GAUSSIAN, COS\*\*POWER, DIPOLE\): \[UNIFORM\]: gau
+# EXPECT: Peak intensity= 3\.3322\d*D-04;[^\n]*\s+Sum of intensity= 9\.0636\d*D-01
+# EXPECT: Peak intensity= 1\.5947\d*D-03;[^\n]*\s+Sum of intensity= 5\.7778\d*D-01
+# EXPECT-NOT: forrtl

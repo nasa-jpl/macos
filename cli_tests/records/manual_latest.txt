@@ -1,0 +1,10 @@
+  1/10 ok            n26  pass 11936 rms 3.104584307D-04  rt same     1.1s  AOExample.in
+  2/10 ok            n5   pass 1756  rms 1.293791606D-12  rt same     1.1s  Cassegrain.in
+  3/10 ok            n6   pass 112   rms 1.173788733D-12  rt same     1.1s  CassWithExitPupil.in
+  4/10 ok            n5   pass 3096  rms 6.633497860D-06  rt ulp      1.0s  CornerCube.in
+  5/10 ok            n16  pass       rms 9.999900000D+36  rt same     1.1s  CoroExample.in
+  6/10 ok            n10  pass 49318 rms 3.671709126D-04  rt same     1.2s  FFSegDemoAll.in
+  7/10 ok            n2   pass 3096  rms 7.879932722D-02  rt same     1.1s  GratingExample.in
+  8/10 ok            n4   pass 3001  rms 6.903706658D-16  rt ulp      1.1s  HOEExample.in
+  9/10 ok            n17  pass 789   rms 4.271175381D+00  rt same     1.1s  Luneberg.in
+ 10/10 ok            n10  pass 404   rms 6.179211807D-12  rt same     1.1s  SegDemo.in

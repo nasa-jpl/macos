@@ -1,0 +1,28 @@
+# WINDOW (= PLOCATE: the pixel array fixed in detector coordinates) then PIXEL, and GBS beam sizes written to
+# beamSize.txt in the working directory (hence cd $TMP; the deck is a COPY) on the manual's Cassegrain
+# (cmdref: Window & Post-Processing / Ray Tracing).  GBS: 4 m at the source, 3.99 m on the primary, 0.997 m
+# on the secondary, 2.1e-10 at the focus.
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in
+cd $TMP
+old $DECK
+none
+window
+tout
+2e-6
+0,0
+0,0
+pix 5
+64
+2e-6
+gbs
+0
+5
+! cat $TMP/beamSize.txt
+# EXPECT: Enter pixel size for placing window: \[0\.00000\]: 2e-6\s+Enter pixel coords of element vertex \(x,y\): \[0\.00000,0\.00000\]: 0,0\s+Enter window location in pixel coords \(x,y\): \[0\.00000,0\.00000\]: 0,0
+# EXPECT: Peak intensity= 8\.8773143D\+06
+# EXPECT: iElt =\s+0, Source aperture =\s+4\.0000
+# EXPECT: Result is saved in file beamSize\.txt
+# EXPECT: iElt =\s+2 \(Primary\s*, Reflector\s*\)\s+Beam diameter =\s+3\.9911950913D\+00
+# EXPECT: iElt =\s+3 \(Secondary\s*, Reflector\s*\)\s+Beam diameter =\s+9\.9735754537D-01
+# EXPECT: iElt =\s+5 \(Detector\s*, FocalPlane\s*\)\s+Beam diameter =\s+2\.143\d+D-10
+# EXPECT-NOT: forrtl

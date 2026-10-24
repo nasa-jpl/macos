@@ -1,0 +1,14 @@
+# A trace must not rewrite the prescription -- the two remaining rewrites (PLAN_CONSOLIDATION 1.1b,
+# 2026-10-12; found by 3b's SAVE-before vs SAVE-after measurement: xObs on 106 of 406 corpus decks,
+# Surface= Interpolated -> Conic on 4).  tst_trace_rewrites.in: an Interpolated surface with no
+# data (traced as its base conic) and an xObs= 0.6 0 0.8 that is not perpendicular to psiElt.
+# SHOW before and after an OPD must agree: Surface= Interpolated, xObs = the frame the trace uses
+# (1 0 0, now built once at LOAD).  Pre-fix: before 'Interpolated' / 0.6 0 0.8, after 'Conic' /
+# 1 0 0 -- red.  The trace itself is unchanged (RMS pinned).
+old $ROOT/ZGD_test_files/tst_trace_rewrites.in
+show 1
+opd 2
+/null
+show 1
+# EXPECT: Surface=\s+Interpolated\s*\n\s+[\s\S]*?xObs=\s+1\.0E\+00\s+0\.0E\+00\s+0\.0E\+00[\s\S]*RMS OPD error is\s+-?\d\.\d+D-(1\d|[2-9]\d)[\s\S]*Surface=\s+Interpolated\s*\n[\s\S]*?xObs=\s+1\.0E\+00\s+0\.0E\+00\s+0\.0E\+00
+# EXPECT-NOT: Surface=\s+Conic

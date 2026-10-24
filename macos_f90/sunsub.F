@@ -460,8 +460,14 @@ C***********************************************************************
       SUBROUTINE RFOURN(DATA,NN,NDIM,ISIGN)
       USE Constants, ONLY: TWOPI
       REAL*8 WR,WI,WPR,WPI,WTEMP,THETA
-      COMPLEX*8 DATA
-      DIMENSION NN(NDIM),DATA(1)
+!-->  DATA is the COMPLEX*8 array seen as interleaved (re,im) REAL*4
+!     pairs: the Numerical Recipes indexing below (IP1=2*NPREV,
+!     DATA(I3+1) = imag) needs REAL*4.  A COMPLEX*8 declaration
+!     (019a2981, 2023) addressed whole complex elements, ran to
+!     2*NTOT past the array and returned garbage (ATMOS, LPI).
+      REAL*4 DATA
+!<--
+      DIMENSION NN(NDIM),DATA(*)
       NTOT=1
       DO 11 IDIM=1,NDIM
         NTOT=NTOT*NN(IDIM)
@@ -1039,7 +1045,7 @@ C***********************************************************************
 	CHARACTER*80 imag_file
 	CHARACTER*82 SCR
 	CHARACTER*(*) CXLABL,CYLABL,CTITLE,image_file
-	INTEGER NA,NC,NDA,NDC,iPloTyp,L,ICLEN
+	INTEGER NA,NC,NDA,NDC,iPloTyp,L,ICLEN,lrec
 	INTEGER*4  iElt
 	SREAL     X(NDA),Y(NDC),Z(NDA,NDC)
 	REAL*8     dx_elt, dy_elt
@@ -1146,12 +1152,17 @@ C "16" really means 'ASCII Special' SpyGlass format in macsub
 	  CLOSE(13)
 
 	ELSE IF (iPloTyp.EQ.6) THEN
-C -- use this for sun:
-	  OPEN (UNIT=13,FILE=image_file,ACCESS='DIRECT',RECL=(4*NC),
+!-->  the record is one row of Z, REAL*8: RECL=(4*NC) was a SUN-era
+!     word count -- gfortran counts bytes and died ('Write exceeds
+!     length of DIRECT access record'), ifx counts words and padded
+!     every record to twice its length (a 256 x 256 intensity file of
+!     1048576 bytes).  INQUIRE(IOLENGTH=) is the portable size in the
+!     compiler's own RECL unit.  PLAN_CONSOLIDATION, macos-fd's
+!     TRANSCRIPT_DIFF 3.2; Dave 2026-10-19: fix BINARY.
+	  INQUIRE(IOLENGTH=lrec) (Z(i,1),i=1,NA)
+	  OPEN (UNIT=13,FILE=image_file,ACCESS='DIRECT',RECL=lrec,
      &	  STATUS='NEW')
-C -- use this for alpha or mac:
-C	  OPEN (UNIT=13,FILE=image_file,ACCESS='DIRECT',RECL=(NC),
-C     &	  STATUS='NEW')
+!<--
 	  SCR = 'Writing '//CTITLE
 	  WRITE(*,*) SCR
 	  SCR = 'DIRECT ACCESS File='//image_file
@@ -1180,6 +1191,16 @@ C     &	  STATUS='NEW')
 ! 	  WRITE(*,102)NA,NC,Z(NA/2,NC/2)
 
 !  	  CALL RWRITE_MAT_LOH(Z,NA,NC,NDA,NDC,image_file,imag_file)
+	ELSE IF (iPloTyp.EQ.9) THEN
+!-->  The MAT writer (matloh.F RWRITE_MAT_LOH) needs the MATLAB
+!     libraries and has been a dummy since 2007; say so by name instead
+!     of 'Unknown plot type' (2026-10-10).  Use TEXt / BINary / FITs, or
+!     the mmacos binding, for MATLAB.
+	  WRITE(*,*) ' MAT output is not built into this macos (needs',
+     &	             ' the MATLAB libraries); nothing written.'
+	  WRITE(*,*) ' Use TEXT, BINARY or FITS, or read the result',
+     &	             ' through mmacos.'
+!<--
 	ELSE
 	  WRITE(*, *) ' Unknown plot type iPloTyp = ', iPloTyp
 	END IF
@@ -1203,7 +1224,7 @@ C***********************************************************************
 	CHARACTER*80 imag_file
 	CHARACTER*82 SCR
 	CHARACTER*(*) CXLABL,CYLABL,CTITLE,image_file
-	INTEGER NA,NC,NDA,NDC,iPloTyp,L,ICLEN
+	INTEGER NA,NC,NDA,NDC,iPloTyp,L,ICLEN,lrec
 	INTEGER*4  iElt
 	SREAL     X(NDA),Y(NDC),Z(NDA,NDC)
 	REAL*8    dx_elt, dy_elt, DZ(NDA,NDC)
@@ -1225,7 +1246,6 @@ C
  104	FORMAT(1P,512(1x,e13.6))
  105	FORMAT(1P,I4,A1,I4/E11.4,A1,E11.4)
  106	FORMAT(1P,512(E11.4,A1))
-	print*,'** In DBINOUT: NA,NC =',NA,NC
 
 	L=ICLEN(image_file)
 
@@ -1316,11 +1336,12 @@ C "16" really means 'ASCII Special' SpyGlass format in macsub
 	  CLOSE(13)
 
 	ELSE IF (iPloTyp.EQ.6) THEN
+!-->  one row of Z per record, sized by INQUIRE(IOLENGTH=) as in
+!     BINOUT (realRecLen*NA is bytes; ifx counts RECL in words)
+	  INQUIRE(IOLENGTH=lrec) (Z(i,1),i=1,NA)
 	  OPEN (UNIT=13,FILE=image_file,ACCESS='DIRECT',
-     &          RECL=(realRecLen*NA),STATUS='NEW')
-C -- use this for alpha or mac:
-C	  OPEN (UNIT=13,FILE=image_file,ACCESS='DIRECT',RECL=(NC),
-C     &	        STATUS='NEW')
+     &          RECL=lrec,STATUS='NEW')
+!<--
 	  SCR = 'Writing '//CTITLE
 	  WRITE(*,*) SCR
 	  SCR = 'DIRECT ACCESS File='//image_file
@@ -1349,6 +1370,16 @@ C     &	        STATUS='NEW')
 ! 	  WRITE(*,102)NA,NC,Z(NA/2,NC/2)
 
 !  	  CALL RWRITE_MAT_LOH(Z,NA,NC,NDA,NDC,image_file,imag_file)
+	ELSE IF (iPloTyp.EQ.9) THEN
+!-->  The MAT writer (matloh.F RWRITE_MAT_LOH) needs the MATLAB
+!     libraries and has been a dummy since 2007; say so by name instead
+!     of 'Unknown plot type' (2026-10-10).  Use TEXt / BINary / FITs, or
+!     the mmacos binding, for MATLAB.
+	  WRITE(*,*) ' MAT output is not built into this macos (needs',
+     &	             ' the MATLAB libraries); nothing written.'
+	  WRITE(*,*) ' Use TEXT, BINARY or FITS, or read the result',
+     &	             ' through mmacos.'
+!<--
 	ELSE
 	  WRITE(*, *) ' Unknown plot type iPloTyp = ', iPloTyp
 	END IF
@@ -1380,7 +1411,12 @@ C***********************************************************************
 	INTEGER*4      strLen
 	CHARACTER(len=MacosCharLen) :: root_file_name,
      &                                 output_file_name
-	CHARACTER*40   new_file_name, actual_file_name
+!-->  Were CHARACTER*40: a longer output path was silently CUT and the
+!     FITS file written under the truncated name (2026-10-10, the
+!     PLOT_TYPES journal: a 44-character path in a scratch directory).
+	CHARACTER(len=MacosCharLen) :: new_file_name, actual_file_name
+	INTEGER        ibase
+!<--
 	CHARACTER*24   date
 	CHARACTER*16   int_str
 	LOGICAL        dont_check_for_rounding_errors
@@ -1408,14 +1444,15 @@ c
 
         new_file_name = output_file_name(1:output_file_name_len)
 
-	IF (root_file_name_len .GT. 18) THEN
-	   WRITE(*,*) 'File name ' //
-     &	             root_file_name(1:root_file_name_len) //
-     &	            ' too long for FITS FILENAME data field.' //
-     &	            ' Enter a shorter one' //
-     &	            '(< 19 characters).'
-	   GO TO 1
-	   END IF
+!-->  The FILENAME header card used to REFUSE the whole write when the
+!     deck's name was longer than 18 characters -- i.e. for any path --
+!     after 'FORMATTED File=' had already been printed.  The card is
+!     documentation: it now carries the deck's BASE name (FITS_WSTR
+!     writes up to 68 characters and shifts the comment), and nothing
+!     is refused (2026-10-10).
+	ibase = INDEX(root_file_name(1:root_file_name_len), '/',
+     &	              BACK=.TRUE.)
+!<--
 	CALL fits_init(new_file_name, actual_file_name, lout, ier)
 c sws debugging
 c	print *, 'fits_init called'
@@ -1457,7 +1494,7 @@ c
      &	              'Date FITS file was created',
      &	               ier)
 	CALL  fits_wstr('FILENAME',
-     &	                root_file_name(1:root_file_name_len),
+     &	                root_file_name(ibase+1:root_file_name_len),
      &	               'Name of original file name',
      &	               ier)
 	CALL  fits_wreal('CRVAL1', 0d0,
@@ -1499,7 +1536,7 @@ c grw -- 1/18/94
      &	zero(bit_representation), ier,
      &	image_row_size, image_col_size,array_col_size)
 	CALL  fits_close(ier)
- 1      RETURN
+	RETURN
 	END SUBROUTINE WRITE_FITS_FILE
 c
 c
@@ -2916,8 +2953,13 @@ C***********************************************************************
 
 	  CALL DFOURN(ca3,szArr,2,-1)
           CALL DSWAP2(ca2,ca3,size)
+!-->  The forward-forward-inverse convolution carries size**2 in the
+!     amplitude: divide it out.  A stray 'ca3=ca2' after this line
+!     undid it, so the coherent image was size**4 (4.3e9 at 256) too
+!     bright (PLAN_CONSOLIDATION 1.2 (s)).  Now a point object images
+!     to the PSF itself, the same flux as the incoherent branch.
 	  ca3=ca2/size**2
-	  ca3=ca2
+!<--
 
 	  img=ca3*DCONJG(ca3)
 	  !img=obj2;

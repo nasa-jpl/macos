@@ -1,0 +1,20 @@
+# PARTIALS' input-ray block (cmdref: Linear model) on the manual's Cassegrain.in, 21-point grid, BUILD to the
+# reference surface (element 4).  The block 'Partial of ray 1 at Element 4 to ray at Element 0 (InputRay)' printed
+# all zeros: under BUILD an Obscuring element (element 1, the secondary's shadow) is not traced, and the composite
+# chain multiplied by its never-computed partial, zeroing every block upstream.  The chain now steps over an
+# untraced element to the nearest traced one.  The chief ray's direction magnification is 3.0801 (3.2 printed
+# 3.036 for the same deck at a 15-point grid: unexplained, 1.5%); the element blocks are unchanged.
+# TRANSCRIPT_DIFF 3.7; Dave 2026-10-19: take a look.
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in
+old $DECK
+mod
+nGridpts=21
+q
+build
+4
+partials
+1
+no
+# EXPECT: Partial of ray\s+1 at Element\s+4 \(Ref_surf\) to ray at Element\s+0 \(InputRay\)\s+3\.080\d*E\+00\s+0\.0000E\+00\s+0\.0000E\+00\s+-4\.458\d*E-02
+# EXPECT: \(Primary \) perturbations\s+0\.0000E\+00\s+-6\.606\d*E\+00\s+0\.0000E\+00\s+6\.116\d*E-01
+# EXPECT-NOT: forrtl

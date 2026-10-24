@@ -1,0 +1,7 @@
+# Corpus A/B for PLAN_CONSOLIDATION 1.2 (NSRefractor's grid frame threaded), 2026-10-11.
+# pre = macos 62f60f2 binaries (the commits since touch only CALIB paths, which a load + opd + SAVE
+# never reaches); post = this commit; ifx + gfortran; 406 decks; record columns + first SAVE bytes.
+== ifx: 406 decks compared; 404 SAVE pairs (231 declare a stop); column movers 0; SAVE diffs 0
+== gf: 406 decks compared; 403 SAVE pairs (231 declare a stop); column movers 0; SAVE diffs 0
+# RESULT: 0 movers.  The corpus's one NSRefractor deck (docs Luneberg.in) has no grid; the
+# changed path is exercised by ZGD tst_nsref_ns.in (cli_tests/cmd/NSRefractor_grid.jou).

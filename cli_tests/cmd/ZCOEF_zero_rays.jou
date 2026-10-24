@@ -1,0 +1,25 @@
+# ZCOEF fits the pupil the OPD WROTE, not the non-zero pixels (PLAN_CONSOLIDATION 1.2,
+# 2026-10-12).  zern_fit took its rows where OPDMat /= 0; under the chief-ray OPD reference
+# (the default since 2026-10-10) a valid ray whose path equals the chief's reads EXACTLY 0,
+# the value OPDMat holds where there is no ray, and was dropped.  tst_nsref_seq.in is a flat
+# window with one off-centre GridData bump: 724 of its 740 valid rays read exactly 0 under
+# the chief, none under the mean.  The fit is now over all 740 (traceutil_mod%opdValid), so
+# the chief-referenced coefficients equal the mean-referenced ones for every mode but piston
+# (a backreference), and the pistons differ by the printed Average OPD (5.894e-10:
+# 0.570281e-9 - (-0.191318e-10)).  Pre-fix: the chief fit used the 16 bump rays alone --
+# coefficients ~1e-4 m on a 5e-9 m map -- red.  GridFile= is a bare name, hence the cd.
+cd $ROOT/ZGD_test_files
+old $ROOT/ZGD_test_files/tst_nsref_seq.in
+opd 4
+/null
+zco
+-11
+1
+opdref mean
+opd 4
+zco
+-11
+1
+# EXPECT: OPD reference: CHIEF RAY \(default\)[\s\S]*?Piston[^\n]*\n\s*0\.570281E-09 +(\S+ +\S+ +\S+ +\S+ +\S+)\s*\n[^\n]*\n[^\n]*\n\s*(\S+ +\S+ +\S+ +\S+ +\S+)[\s\S]*?OPDREF MEAN\)[\s\S]*?Piston[^\n]*\n\s*-0\.191318E-10 +\1\s*\n[^\n]*\n[^\n]*\n\s*\2
+# EXPECT: Average OPD is\s+5\.89412832\d+D-10
+# EXPECT-NOT: E-0[1-8]\s

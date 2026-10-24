@@ -1,0 +1,31 @@
+{
+ "section": "10_telescopes",
+ "entry": "run(fullfile(pwd,'rc_unobscured.m'));",
+ "knobs": {
+  "file": "rc_unobscured.m",
+  "from": "^% =+  USER DESIGN CHOICES",
+  "to": "^% =+$"
+ },
+ "figure": "rc_unobscured_wfe.png",
+ "run": {
+  "from": "=+\\n Unobscured off-axis RC",
+  "to": ""
+ },
+ "pins": [
+  {
+   "name": "dec",
+   "pattern": "off-axis decenter = (\\S+) m \\(",
+   "rule": "printed",
+   "format": "%.3f"
+  },
+  {
+   "name": "field",
+   "pattern": "worst-field WFE\\s+\\S+ -> (\\S+) waves",
+   "rule": "printed",
+   "format": "%.4f"
+  }
+ ],
+ "caption": "RMS wavefront error over the \u00b10.5\u2032 field of the delivered unobscured section (`rc_unobscured_wfe.png`).",
+ "number": "With an f/1.5 primary at f/20 the eccentric pupil clears the secondary's shadow at a decenter of %pin:p2_rc_unobscured_dec% m, and after the axial refigure and the field optimization the worst field over \u00b10.5\u2032 is %pin:p2_rc_unobscured_field% waves, diffraction-limited, with all three optics clear.",
+ "prompt": "Using templates/10_telescopes/rc_unobscured, design an unobscured 1.5 m off-axis RC at f/16 with an f/1.8 primary, and report the decenter it needs and the worst-field wavefront error over \u00b10.5 arcmin."
+}

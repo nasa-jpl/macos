@@ -1,0 +1,11 @@
+# LONG_PATH: a command line longer than 130 characters (cmdref: Session & Files / OLD)
+# PARSE_LOH's line buffer was CHARACTER*130: `old <path>` with a path past ~126
+# characters was cut, the load re-prompted on the truncated name forever, and the
+# corpus record read it as timeout_load (three run-artifact decks under a 138-
+# character path, 2026-10-09).  The copy below sits ~150 characters deep.
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in a_subdirectory_whose_name_is_long_enough_to_push_the_whole_path_past_the_old_one_hundred_and_thirty_character_line_limit/and_one_more_level
+old $DECK
+opd 3
+# EXPECT: Tracing rays past\s+\d+\s+elements
+# EXPECT: RMS OPD error is
+# EXPECT-NOT: does not exist

@@ -28,7 +28,7 @@ To use SMACOS, several steps must be followed:
 
 1.  Develop .in-file optical prescriptions for each system to be modeled
 
-2.  In the user’s main program, use Fortran include statements to define SMACOS variables (see Section 9.2)
+2.  In the user’s main program, use Fortran include statements to define SMACOS variables (see [Section ?](#call-line-variables))
 
 3.  Set up the sequence of commands in the main program using SMACOS subroutine calls
 
@@ -101,8 +101,6 @@ SMACOS uses the following dummy variables to pass output:
 <!-- -->
 ```
     REAL*8 RaySpot(mRay, 2), OPDMat(mpts, mpts), RMSWFE REAL*4 PixArray(mPix, mPix)
-
-**Call Line Variables**
 
 #### Sharing Data via Fortran Modules
 
@@ -228,34 +226,13 @@ A new subroutine is added to MACOS 3.2b, as part of the SMACOS library, that all
 
 CALL SMACOS_Set_Model_Size(model_size)
 
-where the argument *model_size* is a either a constant or a variale for the specified model size. The call to SMACOS_Set_Model_Size will release the dynamic storage used for the existing model size, and allocate storage for the new model size. It also does some necessary setup to make sure a proper SMACOS initialization is performed when the model size is changed. The model parameter file *macos_param.txt* must be accessible from the user’s execution directory as discussed in Section 3.3.
+where the argument *model_size* is a either a constant or a variale for the specified model size. The call to SMACOS_Set_Model_Size will release the dynamic storage used for the existing model size, and allocate storage for the new model size. It also does some necessary setup to make sure a proper SMACOS initialization is performed when the model size is changed. The model parameter file *macos_param.txt* must be accessible from the user’s execution directory as discussed in [Section ?](#macos-data-directory).
 
 ### Example
 
-MACOS\>**old**
-
 The user code accesses MACOS functions using the SMACOS call line in a fashion analogous to the MACOS command line. For instance, the MACOS command sequence to load Cassegrain.in and compute the intensity at the final element is:
 
-    Enter file name: Cassegrain
-    Input file Cassegrain.in being loaded. Optical Train Summary:
-    Tracing rays past 5 elements.
-    Aperture type = 1 (Annular ) with 15 grid points.
-    Elt 1: Obscuration with Kc= 0.0000D+00, Kr=-1.0000D+20, nECoords
-    = -6
-    Elt 2: Conic Mirror with Kc=-1.0000D+00, Kr=-1.0800D+01, nECoords
-    = -6
-    Elt 3: Conic Mirror with Kc=-2.6706D+00, Kr=-3.5268D+00, nECoords
-    = -6
-    Elt 4: Reference Surface with Kc= 0.0000D+00, Kr=-5.5601D+00, nECoords
-    = -6
-    Elt 5: Focal Plane with Kc= 0.0000D+00, Kr=-1.0000D+18, nECoords
-    = -6
-    Number of output coordinates is 5 MACOS>intensity
-    Enter last element for propagation:5
-    Tracing 4396 rays and propagating 65536 grid points... FF Prop between Elt 4 and Elt 5 to WF 1:
-    z1= 5.5601D+00 dx1= 7.0764D-02 min= 7.0704D-02 max= 7.0825D-02 dev= 3.5308D-05 lin= 99.95%
-    z2= 0.0000D+00 dx2= 3.0693D-07
-    Compute time was 0.3236 sec MACOS>
+<!-- transcript: s09_old_int -->
 
 The same functions can be performed using SMACOS calls as follows:
 
@@ -263,14 +240,12 @@ The same functions can be performed using SMACOS calls as follows:
     CALL SMACOS(command,CARG,DARG,IARG,RARG,
     & OutRaySpot,NomRayDir,RMSWFE,NomOPDMat,PertOPDMat, & PixArray,Cmatrix)
 
-**Commands**
-
     C Propagate
     command=’INTENSITY’ IARG(1)=5
     CALL SMACOS(command,CARG,DARG,IARG,RARG,
     & OutRaySpot,NomRayDir,RMSWFE,NomOPDMat,PertOPDMat, & PixArray,Cmatrix)
 
-The SMACOS call line passes results of some calculations in dummy output arrays (see Section 9.2.2).
+The SMACOS call line passes results of some calculations in dummy output arrays (see [Section ?](#dummy-output-variables)).
 
 ### Commands
 
@@ -373,7 +348,7 @@ Note that the SMACOS MODify command (unlike the MACOS MODify command) does not c
 
 #### Ray-Trace Analysis
 
-22. MAP: this command displays and prints a cross-sectional map of the source light beam, as described in Section 5.2.2. It has no arguments. The command is set up as follows:
+22. MAP: this command displays and prints a cross-sectional map of the source light beam, as described in [Section ?](#ray-trace-commands). It has no arguments. The command is set up as follows:
 
 ```{=html}
 <!-- -->
@@ -397,11 +372,7 @@ Note that the SMACOS MODify command (unlike the MACOS MODify command) does not c
 
 25. PFP: find field point corresponding to a specified chief ray offset in pixel coordinates
 
-[at a detector. This command has 4 arguments: the element number of the surface at]{.underline}
-
-**Commands**
-
-which the chief ray intercept is specified, the size of the detector pixels, the offset of the chief ray from the vertex, and a prompt response to accept the new source parameters. The command is set up as follows:
+at a detector. This command has 4 arguments: the element number of the surface at which the chief ray intercept is specified, the size of the detector pixels, the offset of the chief ray from the vertex, and a prompt response to accept the new source parameters. The command is set up as follows:
 
     command='PFP' IARG(1)=iElt
     DARG(1)=pixel size in base units DARG(2)=chief ray offset x in pixel units DARG(3)=chief ray offset y in pixel units CARG(1)=’YES’ (to accept changes)
@@ -508,8 +479,6 @@ The SPOt command expects 5 output coordinates.
     command='INTENSITY' IARG(1)=iElt
 
 CARG(1)=’YES’ (to overwrite if a file-writing plot type is selected and a file of the same name exists)
-
-**Commands**
 
 36. GAIn: compute and plot the ratio of the light diffracted by the optical system to a point source. This command has one argument, the element number at which to comput the gain. The command is set up as follows:
 
@@ -626,8 +595,6 @@ CARG(1)=’YES’ (to overwrite if a file-writing plot type is selected and a fi
     IARG(2)=number of pixels per side RARG(1)=size of pixel in base units
 
 50. WINdow: define a window on the detector that stays fixed wrt the detector. Subsequent images that fall on the window, as determined by the ray trace, are placed appropriately, provided the FEX command is used for each image. Used with the PIX,
-
-**Commands**
 
 COMPOSE, ADD, etc. commands. This command has 5 arguments. It is set up as follows:
 
@@ -801,8 +768,6 @@ CARG(2)=’YES’ (to overwrite if a file-writing plot type is selected and a fi
 
 70. PArtials: displays and prints the full set of ray partial derivatives for a specified ray. The command is set up as follows:
 
-**Commands**
-
     command='PARTIALS' IARG(1)=iRay
 
 71. LPErturb: rotate and/or translate a specified optical element. This command has several arguments. An integer argument is used to specify the number of the element to be perturbed (LPErturb does not work with element 0). Up to 9 double precision arguments are used to specify the perturbations. A character argument is used to specify global or element coordinates. The command is set up as follows:
@@ -825,7 +790,7 @@ else if global coords are choosen:
 
     DARG(1)=rotational perturbation x DARG(2)=rotational perturbation y DARG(3)=rotational perturbation z DARG(4)=translational perturbation x DARG(5)=translational perturbation y DARG(6)=translational perturbation z
 
-72. LPRead: rotate and/or translate a specified optical element using data stored in a separate file. This command has no arguments. It assumes that properly formatted data (see Section 8.3.2) is stored in a file named filnam.pert where filnam is the name of the .in-file. The command is set up as follows:
+72. LPRead: rotate and/or translate a specified optical element using data stored in a separate file. This command has no arguments. It assumes that properly formatted data (see [Section ?](#lpread)) is stored in a file named filnam.pert where filnam is the name of the .in-file. The command is set up as follows:
 
 ```{=html}
 <!-- -->

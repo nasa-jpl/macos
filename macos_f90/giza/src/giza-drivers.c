@@ -513,7 +513,14 @@ giza_query_device (const char *querytype, char *returnval, int* rlen)
        if (!_giza_int_to_device(Dev[id].type,devType,sizeof(devType)))
          {
            ierr = 1;
-           strncat(returnval,devType,4*sizeof(char));
+           /* MACOS 2026-10-19: strncat(..., 4) cut "/null" to "/nul", so a
+              PGQINF('DEV/TYPE') cached for a later PGBEGIN reopened as
+              "Unknown device, device not opened" after every reload of a
+              /null session (the CLI's GRAINI cache; PLAN_CONSOLIDATION
+              1.2 (pp)).  Append the whole type name, bounded by the
+              caller's buffer. */
+           strncat(returnval,devType,
+                   max_chars - strlen(returnval) - 1);
          }
     }
   else if (!strcasecmp(querytype,"file"))

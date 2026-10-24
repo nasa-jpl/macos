@@ -5,12 +5,18 @@ Fixed-form source: .F files use the C preprocessor, .f files do not.
 
 > **Post-compaction / post-upgrade — re-read the docs first.** After a
 > context compaction or a tooling upgrade, before resuming build or
-> engine work, re-read: **this file**, `PLAN.md`, `PLAN_DESIGN_LAYER.md`,
-> `CURRENT_SLICE.md` (in-flight state), and the agent `MEMORY.md`
-> (build/test workflow entries).
+> engine work, re-read: **this file**, then -- IF PRESENT -- `PLAN.md`,
+> `PLAN_CONSOLIDATION.md` (the active sequencing, 2026-10-08),
+> `PLAN_DESIGN_LAYER.md`, `CURRENT_SLICE.md` (in-flight state), and the
+> agent `MEMORY.md` (build/test workflow entries).  The plans, the slice
+> and the memory live on the `dev` branch only; a release checkout
+> (`main`) carries this file, the nested `CLAUDE.md` set and
+> `macos_f90/notes/` and nothing else of the kind -- citations such as
+> "PLAN_CONSOLIDATION 1.2 (tt)" in the notes are provenance pointers to
+> the dev branch's record, not files to look for.
 >
 > **THEN re-read the nested `CLAUDE.md` for whatever subsystem you are
-> resuming** — see the index below. Nested CLAUDE.md files load on demand
+> resuming — and, for the engine core, the `macos_f90/notes/<topic>.md` it points to** — see the index below. Nested CLAUDE.md files load on demand
 > when CC reads a file in their directory and are **NOT auto-re-injected
 > after compaction**; if you resume a giza / optimizer / engine-core task
 > without first opening a file there, that subsystem's gotchas are not in
@@ -31,7 +37,7 @@ Fixed-form source: .F files use the C preprocessor, .f files do not.
 |---|---|---|
 | `macos_f90/giza/`, `pgplotsub.F`, any plot/display path | `macos_f90/giza/CLAUDE.md` | raster inversion + PGCTAB CI-0/1 clobber, non-raster black-on-white, labels/titles/wedge, annotation lines, supersampling/idle-window, GRAY CR/CG/CB 0-based bounds, GRAINI caching, PANEL_ENV viewport, smacos_dvr graphics init, draw_rays data-only |
 | `macos_f90/slsqp/`, `design_slsqp_optim.F`, constrained optim | `macos_f90/slsqp/CLAUDE.md` | SLSQP-default / NPSOL-opt-in dispatch, variable pre-scaling underflow fix (do **not** bump `dtt`), A/B reference, deferred setbeam port |
-| engine core: `macos_api_mod.F90`, IO/parse (`msmacosio.inc`/`iosub.inc`/`macosio.F`), `elt_mod.F`, `macos_cmd_loop.inc`, `funcsub.F`, `surfsub.F`, `mathsub.F` | `macos_f90/CLAUDE.md` | §0 closed-hygiene bugs, CALIB wrappers, FreeForm=14 + user input, per-ray status, PERTURB, SXP, ZernType parse + apply-dispatch, deferred PolyObsVec, MOD crash guard, prescription validator, CLI sub-prompts, LOG cleanup, name-collision traps, macos_api_mod wrapper layer + buffer-wrapper template |
+| engine core: `macos_api_mod.F90`, IO/parse (`msmacosio.inc`/`iosub.inc`/`macosio.F`), `elt_mod.F`, `macos_cmd_loop.inc`, `funcsub.F`, `surfsub.F`, `mathsub.F` | `macos_f90/CLAUDE.md` (a 54-line INDEX + the every-session rules) → then the topic file it names in `macos_f90/notes/` (`hygiene`, `surfaces`, `pupil_fex_stop`, `opd_reference`, `rx_io`, `calib`, `cli`, `api_bindings`, `polarization`) | the engine record, split 2026-10-15: each notes file holds its cluster verbatim; **nothing in `notes/` is auto-injected — read the one you touch** |
 | pymacos wrappers / regression | `../MACOS_resources/pymacos/CLAUDE.md` | (existing) intensity/complex_field/dx_at/apodize, PROPER-compare; **cross-ref**, do not duplicate here |
 | coronagraph test prescriptions | `../MACOS_resources/optical_design/CORONAGRAPH_DESIGN_RULES.md` + the `Element= Obscuring` mask rule | **cross-ref** |
 
@@ -41,219 +47,32 @@ Fixed-form source: .F files use the C preprocessor, .f files do not.
 
 ---
 
-## Build
-CMake-based. All scripts live in `macos/` and accept `[debug|release] [gfortran]`
-in any order (defaults: release, ifx). Each combination gets its own build directory.
-
-PGPLOT was dropped on release-candidate: Giza is the only PGPLOT-API
-provider now, and the legacy `[giza|pgplot]` script argument is gone.
-NPSOL was removed on `main` (PR #44); the bound-constrained path is
-now provided by SLSQP on `opt-dev` (default) and `main`'s unconstrained
-LM (`nls_optim_dvr` in `design_optim_mod`) remains available for
-non-constrained problems.
+## Build (summary — the full notes are `BUILD.md`)
+CMake-based; scripts in `macos/` take `[debug|release] [gfortran]` (defaults release, ifx);
+each combination gets its own `build_{release|debug}[_gfortran]` directory.  Giza is the only
+PGPLOT provider; NPSOL is gone from `main`; SLSQP is the constrained path.
 
 | Script | Targets |
 |---|---|
-| `source ./makeall.sh` | macos + smacos + smacos_dvr + GMI (all four) |
-| `source ./makems.sh` | macos + libsmacos.a |
-| `source ./makesd.sh` | smacos_dvr (builds macos/smacos too if needed) |
-| `source ./makegmi.sh` | GMI.mexa64 (requires macos+smacos built first; defaults to gfortran — see GMI build choice section) |
-| `source ./makegfortran.sh` | macos + smacos + smacos_dvr + GMI via gfortran (all four) |
+| `source ./makeall.sh` | macos + smacos + smacos_dvr + GMI |
+| `source ./makems.sh` | macos + libsmacos.a (engine-only; the fast path) |
+| `source ./makesd.sh` | smacos_dvr |
+| `source ./makegmi.sh` | GMI.mexa64 (gfortran default; `ifx` opt-in) |
+| `source ./makegfortran.sh` | all four via gfortran |
 
-All build scripts accept `npsol` to enable `-DUSE_NPSOL=ON` (this
-branch only) — adds the NPSOL-backed constrained-optimization path
-and links `libnpsol.a` + `liblapacklib.a` + `libblaslib.a`.  Default
-OFF.
+Rules that bite: C compiler = gcc; never leave a lowercase `surfsub.f` beside `surfsub.F`;
+smacos_dvr has its own module dir; `-reentrancy=none` is load-bearing on the ifx GMI link;
+`source ./makems.sh debug gfortran` is the only build that bounds-checks every line.  Intel
+RPATH, the gfortran-portability list (the ifx-only constructs gfortran rejects), the GMI
+build choice and the debug-build notes are in `BUILD.md`.
 
-Build directory naming: `build_{release|debug}[_gfortran][_npsol]`
-
-- CMakeLists.txt: top-level `CMakeLists.txt` (macos_f90 sources).
-  (The legacy `macos_f90/npsol/CMakeLists.txt` is gone with rem_npsol.)
-- CMakePresets.json: debug and release presets for VS Code CMake Tools integration.
-- C compiler must be gcc (not icx) — legacy C files use implicit function declarations.
-- smacos_dvr re-compiles macos_mod.F with -DCMACOS (smacos_lib's copy lacks CMACOS-only symbols like ifPGColor).
-- **smacos_dvr MUST have its own `Fortran_MODULE_DIRECTORY` (`mod_smacos_dvr`).** It and the macos exe both compile macos_mod.F (+macos_vars_mod/macosio/pgplotsub) with -DCMACOS; emitting both into the same `mod_macos/` makes two **Ninja** rules generate `mod_macos/macos_mod.mod` → the Fortran dyndep step aborts ("multiple rules generate …"). Unix Makefiles tolerates the duplicate — why it stayed latent (`makems.sh` leaves BUILD_SMACOS_DVR OFF; a build dir that fell back to Makefiles never hits it). Fixed for issue #56 (sls-dev `84f0b9c`, opt-dev `cf01617`). The 4 legacy `makefile_*.sh` (pgplot/npsol/intel-14, dead) are deleted — **cmake is the one build path; ninja is OPTIONAL** (cmake falls back to plain `make`).
-- GMI Makefile is **FC-aware** (`.fc_stamp`, gitignored): GMI.o/GMIG.o live in a flat dir shared by makegmi (gfortran default) + makeall (ifx); switching compilers used to reuse stale .o → `undefined reference to _gfortran_*`. The stamp forces an object rebuild when FC changes (sls-dev `5c729f0`/opt-dev `c2f3c19`).
-- GMI.mexa64 has two build paths: (1) the standalone `MACOS_resources/GMI/Makefile` — more robust across MATLAB versions — which `makeall.sh`/`makegmi.sh` invoke with `MACOS_BUILD_DIR` pointing at the cmake build tree; and (2) a cross-platform cmake path (`add_subdirectory(MACOS_resources/GMI/CMakeLists.txt)`, Luis 2026-06) gated on `-DBUILD_GMI=ON`, used by `makegfortran.sh`, Windows, and opt-in Linux. **`makeall.sh` (both branches) keeps `-DBUILD_GMI=OFF`** so the Makefile is its sole GMI builder (no double build) — opt-dev's makeall kept `-DBUILD_GMI=ON` until `796dc51`, a double build whose cmake leg failed on a box lacking the hard-coded MATLAB (Scott's `GMIG.F fintrf.h` error). New `-DBUILD_MMACOS=ON` builds the mmacos mex the same way (`MMACOS_FC` selects its compiler). **Path gotcha:** the cmake `GMI_SRC_DIR`/`MMACOS_SRC_DIR` defaults must be `${CMAKE_CURRENT_SOURCE_DIR}/../MACOS_resources/{GMI,mmacos}`, NOT `../../../{GMI,mmacos}` — the latter is correct only for pymacos's `src/macos/CMakeLists.txt`; in the top-level macos `CMakeLists.txt` it resolves to `/home/GMI` and FATAL-breaks `makeall`/`makegfortran` configure on Linux. **MATLAB hard-code gotcha (2026-07-01):** the top-level `CMakeLists.txt` hard-coded `MATLAB_ROOT=/usr/local/MATLAB/R2025b`, so any cmake GMI/mmacos build (`-DBUILD_GMI=ON`; makegfortran/Windows) failed `GMIG.F`'s `#include <fintrf.h>` on a box without that exact release; now it auto-detects the latest installed MATLAB (mirrors the Makefile's `sort -V | tail -1`; override `-DMATLAB_ROOT=`), sls-dev `2f4948e`/opt-dev `796dc51`.
-
-## Intel RPATH (self-contained ifx binary + smacos_dvr + GMI mex)
-- Top-level CMakeLists.txt embeds RPATH for ifx builds so `/opt/intel/oneapi/...` libs
-  are found without sourcing setvars.sh. Applies to macos executable, smacos_dvr, and
-  GMI.mexa64: `BUILD_RPATH/INSTALL_RPATH` = `${INTEL_LIB_DIR};/opt/intel/oneapi/mkl/latest/lib`,
-  `-Wl,--disable-new-dtags` forces DT_RPATH (transitive) over DT_RUNPATH (direct-only).
-  libimf → libintlc transitive dep requires DT_RPATH.
-- For gfortran builds: `CMAKE_Fortran_IMPLICIT_LINK_DIRECTORIES` (auto-set by CMake) used
-  as RPATH so libgfortran/libquadmath are found without a module file.
-
-## gfortran portability + GMI build choice
-- `source ./makegfortran.sh release` now builds macos + smacos + smacos_dvr
-  + GMI clean. The build was broken on release-candidate after the FreeForm /
-  ZernType / EltType-table work landed; restored 2026-05-24 by fixing a batch
-  of ifx-only constructs the gfortran compiler rejects:
-  - `CHARACTER,DIMENSION(:),ALLOCATABLE :: EltName*N` — VAX `name*length`
-    syntax. Use `CHARACTER(LEN=N), DIMENSION(:), ALLOCATABLE :: EltName`.
-  - `(/'foo','bar quux'/)` char array constructors with mixed-length literals.
-    Wrap with `[CHARACTER(LEN=Nmax) :: ...]` (Fortran 2003).
-  - 2D INTEGER PARAMETER built from `[[a,b],[c,d],...]` — ifx flattens, gfortran
-    sees rank-1. Use `RESHAPE([flat...], [rows,cols], ORDER=[2,1])` to preserve
-    visual row-major layout.
-  - `DO CONCURRENT` (forbidden by project convention anyway) — convert to
-    sequential `DO` (with `IF` guard for the mask form).
-  - Preprocessor directives indented past column 1 — `#define`, `#if`, `#else`,
-    `#endif` must start in column 1 for gfortran's cpp. ifx's fpp is lenient.
-    Bulk-fix with a `re.sub` to strip leading whitespace from these lines.
-  - `Function FOO` with no `()` for a parameterless function — add empty parens.
-  - `IF (LOGICAL == .TRUE.)` — use `.eqv.`.
-  - `derived.component` access — use `%`.
-  - REAL → LOGICAL implicit coercion (`logical_var = real_val`) — wrap with
-    `(INT(real_val).EQ.1)`.
-  - Slice assignment to an unallocated module-scope allocatable
-    (`arr(:) = 0` when `allocated(arr)` is .FALSE.) — ifx silently no-ops,
-    gfortran SIGSEGVs. Guard with `if (allocated(arr)) arr(:) = 0`. Caught in
-    `src_mod_init_vars` (ds1/ds2 are allocated lazily by sourcsub).
-- Build choice for GMI (`makegmi.sh` defaults to gfortran):
-  - **gfortran (default):** `source ./makegmi.sh` (or `makegmi.sh release`).
-    Mex lands at `~/dev/MACOS_resources/GMI/GMI.mexa64`. Requires
-    `build_release_gfortran/` populated by `makegfortran.sh release` first.
-  - **ifx (opt-in):** `source ./makegmi.sh ifx`. Requires `build_release/`
-    populated by `makems.sh release` first.
-- Both compilers run the GMI regression suite green (6/6) with bit-identical
-  numeric results AND exit MATLAB cleanly (exit 0). They use the SAME source
-  tree; the standalone `MACOS_resources/GMI/Makefile` and the top-level
-  `CMakeLists.txt` have per-compiler conditionals for the compile/link flags
-  (ifx: `-fpp -132 -gen-interfaces -fp-model strict -xHOST -shared-intel
-  -reentrancy=none`;
-  gfortran: `-cpp -ffixed-line-length-132 -march=native
-  -fallow-argument-mismatch -std=legacy`, no Intel runtime).
-- `-reentrancy=none` on the ifx link line is **load-bearing for ifx**: it
-  switches the Intel Fortran runtime from the default multi-threaded variant
-  (`libifcoremt.so.5`) to the single-threaded one (`libifcore.so.5`).
-  `libifcoremt` keeps worker threads parked in the host process across mex
-  calls; once MATLAB's `clear mex` unloads the DSO that owned their wake-up
-  callback, those threads die at process exit by jumping to a now-unmapped
-  function pointer. Symptom: `SIGSEGV` with `RIP=...e2c0` inside a
-  `clone3/start_thread` stack — pure thread-spawn-to-freed-memory, no module
-  of our own on the stack. GMI doesn't use the Intel Fortran runtime's
-  internal threading anyway, so `-reentrancy=none` is a strict win. Without
-  this flag, the ifx mex still produces correct numerical results but
-  SIGSEGVs at MATLAB process exit, after the regression summary has printed.
-  Diagnosed via stack-frame symbolization
-  (`libc+641168 = start_thread`, `libc+1219692 = clone3`).
-- Makefile gotcha: gfortran's `ld` is stricter about lib-after-object
-  ordering than ifx's bundled linker. The Makefile splits compile flags
-  (`LDFLAGS`, before objects) from trailing `POST_LIBS` (`-l:libmx.so` etc.,
-  after objects/archives) so `--no-undefined` resolves under both. Also
-  links `libfitslib.a` when present — gfortran needs it for FITS-related
-  symbols; ifx is happy without.
-- Use gfortran when investigating "weird ifx-only" behavior — its stricter
-  rejection of latent bugs (uninitialized allocatables, etc.) surfaces
-  problems that ifx silently hides. The Zernike-apply zero-response bug
-  (see ZernType section) was caught exactly this way.
-
-## Debug builds
-- `source ./makems.sh debug`    — macos + smacos, -O0 -check all (ifx)
-- `source ./makeall.sh debug` — all four targets, debug
-- CMake debug uses -check all,noarg_temp_created (suppresses harmless array temporary warnings).
-- VS Code: no `.vscode/` config exists currently (the old launch.json/tasks.json
-  pointing at the retired `build_debug_giza` tree is gone; that tree and the other
-  legacy build dirs — giza/pgplot/joint/smoke variants — were deleted 2026-07-02).
-  If recreated, point launch targets at `build_debug[_gfortran]/` and set
-  `debug.allowBreakpointsEverywhere: true` for breakpoints in .F files
-  (requires ms-vscode.cpptools).
-- smacos_dvr: compiles smacos_dvr.F with -DCMACOS, links against smacos_lib.a
-  plus macosio.o/pgplotsub.o/macos_vars_mod.o/macos_mod.o from MACOS_OBJS.
-
-## Build notes
-- Never leave a surfsub.f (lowercase .f) in macos_f90/ alongside surfsub.F — cmake
-  may pick it up and try to build it as a standalone executable.
-- Use `source ./makems.sh` for macos_f90-only changes (faster than makeall.sh).
-  cmake recompiles only changed files; delete the build directory for a clean rebuild.
-- macos.F line 59: `use propsub_mod128` was a stale name; fixed to `use propsub_mod`.
-- GMI (Matlab mex): built via standalone MACOS_resources/GMI/Makefile (invoked by
-  makeall.sh — its sole GMI builder — and makegmi.sh), OR via the cross-platform
-  cmake add_subdirectory path (`-DBUILD_GMI=ON`; makegfortran.sh / Windows). MATLAB
-  auto-detected under /usr/local/MATLAB/R*. ifx 2025.3 quirk: -C flag implies
-  -fsanitize=memory; use -check all instead.
-- jGridSrf mapping: tracesub.F, propsub.F, srtrace.F use nGridMat(iElt).GT.0
-  (not SrfType checks) so all grid-using surfaces get the correct GridMat slot.
-
-## Branch model (UPDATED 2026-07-28 — `sls-dev` retired, `dev` is integration)
-- **`dev`** — **integration + public developer branch for new work**
-  (the role `sls-dev` used to hold).  Multi-person WIP lands here; all
-  developer-facing files (CLAUDE.md, PLAN*.md, `.claude/`, internal
-  fixtures) live here and are stripped from `main`.  **Both `dev` and
-  `main` are public** per the public-release strategy below.
-- **`sls-dev`** — **RETIRED 2026-07-28, deleted in BOTH repos.**  Andy
-  deleted it on `nasa-jpl/macos`; matched on `MACOS_resources` the same
-  day (`dev` fully contained it — `dev` = old `sls-dev` + the
-  expose-beam beam-API commits).  Do not recreate it; new work → `dev`.
-- **`opt-dev`** — release target.  Accepts bug fixes only.  Promotes
-  to `main` for the public release (with NPSOL source tree removed
-  at promotion time).
-- **`release-candidate`** — **frozen** at `19bfbf8` (the mZern slice-
-  overrun cherry-pick).  No new commits.  Pre-existing references to
-  it elsewhere (PLAN.md, scripts) should be retargeted to `opt-dev`
-  over time.
-- **`main`** — public release surface; promoted from `opt-dev`/`dev` at
-  release time per the public-release strategy below.
-
-Day-to-day: push new features to `dev`; cherry-pick bug fixes to
-`opt-dev`; let `dev` accumulate until a promotion gate.  The two repos
-(`~/dev/macos` + `~/dev/MACOS_resources`) are NOT branch-identical —
-`nasa-jpl/macos` is slimmed (as of 2026-07-28 remote heads: `dev`,
-`fixREADME`, `main`, `pol-core`) while `MACOS_resources` still carries
-the wider working set (`dev`, `main`, `opt-dev`, `pol-core`, `pol-ifo`,
-`release-candidate`, `develop`, `dr-dev`, `dr-dev2`, `ifo-l2`).  The
-shared, deliberate facts are that **neither repo has `sls-dev` or
-`bench-builder`** — both retired 2026-07-28.  Always
-`git ls-remote --heads` to see the live set before assuming.
-
-### Merge ordering: engine first, resources second (Dave 2026-07-28)
-`MACOS_resources` may be updated **without review**, but as a best
-practice **do not merge a resources branch to `dev` until the engine is
-updated to match.**  Engine (`macos`) lands first or in the same beat;
-resources follows.
-
-**Why it matters:** a veneer promoted ahead of its engine support fails
-at **prescription-load time, not at build time** — so the resources test
-suite can be fully green while the paired `dev` engine cannot parse the
-Rx keywords that veneer emits.  Nothing on the resources side catches it.
-
-**How to apply.** Before merging a resources branch, ask what engine
-features its new emitters/wrappers depend on and confirm those are
-already on macos `dev`.  Purely additive, engine-independent work
-(examples, plotting, docs, pure-MATLAB layers) is exempt.
-
-Worked example — the 2026-07-28 promotions, which followed the rule:
-- **PR #10** (`bench-builder` → resources `dev`) was safe: its only
-  engine dependency, the BEAM API (`beam_set`/`beam_get`), was already
-  on macos `dev` via **PR #64**.
-- The pol emitters (`Bench.add_polarizer` / `add_waveplate`, which emit
-  `PolAxis=` / `Retardance=` and need Phase-3 `TrPolarizerElt(15)` /
-  `WavePlateElt(18)`) were correctly **left on `pol-ifo`**, because that
-  engine support is on macos `pol-core`, not macos `dev`.
-- Consequence for the in-flight arc: resources `pol-ifo` → `dev` is
-  **gated on** macos `pol-core` → `dev`.  Promote the engine first; the
-  two are sequenced, not independent.
-
-## Public-release strategy (UPDATED — Dave 2026-07-22; lands Friday ~2026-07-24)
-- **Single repo, history rewritten.**  `nasa-jpl/macos` goes **public
-  again** with its **history REWRITTEN to erase all presence of
-  non-public code — especially NPSOL, but also pgplot, etc.** (scrubbed
-  from history, not just deleted at HEAD).  This SUPERSEDES the earlier
-  two-repo snapshot model.
-- **Branches:** `main` is updated to **sls-dev functionality**; a public
-  **`dev`** branch is retained.  All developer-facing files (CLAUDE.md,
-  PLAN*.md, `.claude/`, internal ZGD fixtures, `docs/Archive/`) **stay on
-  `dev` but are stripped from `main`**.  **Both branches are public.**
-- **Users re-clone.**  Andy wants everyone to delete their local clones
-  and re-clone (the history rewrite makes old clones diverge).  Do NOT
-  push from a stale pre-rewrite clone afterward — it would reintroduce
-  scrubbed history.
-- Pre-rewrite full-history safeguard: `~/macos-archive-YYYYMMDD/`
-  (`git bundle --all` per repo + worktree snapshots; e.g. the 2026-07-22
-  archive taken before this rewrite).  See the agent MEMORY branch-model
-  entry for the current tips.
+## Branches (summary — the model and the public-release strategy are `BRANCHES.md`)
+`dev-candidate` is where this program's work lands (both repos); `dev` is the public
+integration branch, `opt-dev` the bug-fix release target, `main` the public release surface;
+`sls-dev` and `bench-builder` are RETIRED (do not recreate).  **Engine first, resources
+second**: never merge a resources branch whose emitters need engine keywords that are not on
+the matching engine branch — the failure is at prescription-load time, not build time.
+Always `git ls-remote --heads` before assuming the live set.  Push only on Dave's word.
 
 ## Key files for current work
 - macos_f90/elt_mod.F        : per-element data arrays and SrfType constants
@@ -287,13 +106,3 @@ Worked example — the 2026-07-28 promotions, which followed the rule:
   destroys git blame. Leave indentation as-is.
 - When the Edit tool fails due to whitespace ambiguity (tab vs spaces mismatch),
   use a Python script with exact string replacement instead.
-
----
-
-> **Migration note (delete after the split lands):** sections not shown
-> above moved to nested files per the index. Move text verbatim — do not
-> paraphrase engine gotchas. After moving, each nested file gets the same
-> post-compaction directive header pointing back here. Target lengths:
-> root ≤ ~180 lines; each nested file holds its cluster. Verify with the
-> doc test: give CC three representative prompts per subsystem against
-> old vs. split, confirm equal-or-better rule-following.

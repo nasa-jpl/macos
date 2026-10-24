@@ -1,0 +1,32 @@
+{
+ "section": "10_telescopes",
+ "entry": "run(fullfile(pwd,'example_tma_widefield.m'));",
+ "figure": "tma_widefield_wfe.png",
+ "run": {
+  "from": " Stage 4 -- residual",
+  "to": "the TMA holds the field\\."
+ },
+ "pins": [
+  {
+   "name": "rc0",
+   "pattern": "\\n\\s+0\\.0\\s+(\\S+)\\s+\\S+\\s+\\S+x",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "tma15",
+   "pattern": "\\n\\s+15\\.0\\s+\\S+\\s+(\\S+)\\s+\\S+x",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "tma20",
+   "pattern": "\\n\\s+20\\.0\\s+\\S+\\s+(\\S+)\\s+\\S+x",
+   "rule": "printed",
+   "format": "%.4f"
+  }
+ ],
+ "caption": "Residual RMS wavefront error against field for the 2-mirror RC and the 3-mirror Korsch, both optimized over the same 0 to 20\u2032 field (`tma_widefield_wfe.png`).",
+ "number": "Optimized over the same 20\u2032 field at f/8, the 3-mirror design holds %pin:p2_tma_widefield_tma15% waves at 15\u2032 (%pin:p2_tma_widefield_tma20% at 20\u2032), while the 2-mirror, its two conics spent across the whole field, sits at %pin:p2_tma_widefield_rc0% waves even on axis: the third conic is what buys the field.",
+ "prompt": "Using templates/10_telescopes/tma_widefield, rerun the RC-against-TMA comparison over a 10 arcmin field at f/12 and tell me where each one stops being well corrected."
+}

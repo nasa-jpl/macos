@@ -1,0 +1,21 @@
+# Appendix A.7: examples/ImageDemo.jou (Dave 2026-10-19: stop elt 4; fex 12 yes; opd 12; int 13),
+# replayed with EXEcute from the scratch directory, so the macro runs as the appendix prints it.
+# The macro leaves the plot device to the user (the device prompt reads the terminal, not the macro
+# stack: a /null line in the macro is not consumed); the gate opens /null first.
+# Gate only (no TRANSCRIPT: the appendix lists the file, not its run).
+# COPY: $ROOT/docs/macos-manual/examples/ImageDemo.in
+# COPY: $ROOT/docs/macos-manual/examples/ImageDemo.jou
+# TRANSCRIPT-OFF
+pgd
+/null
+cd $TMP
+exe
+ImageDemo
+# EXPECT: Computed StopPos =\s+0\.0+D\+00\s+0\.0+D\+00\s+3\.2095\d*D-05
+# EXPECT: Old f=\s+6\.874662920D\+01\s+New f=\s+6\.8746\d*D\+01
+# EXPECT: New Vpt=[^\n]*\n[^\n]*\n\s+1\.6989\d*D\+01\s+1\.6989\d*D\+01\s*\n\s*yes\s
+# EXPECT: OPD: nPassRays =\s+578,[\s\S]*?RMS OPD error is\s+1\.8077\d*D-04
+# EXPECT: Peak intensity=\s+2\.3469\d*D\+02; Peak occurs at i=\s+133, j=\s+130
+# EXPECT-NOT: Command not understood
+# EXPECT-NOT: Couldn't find journal file
+# EXPECT-NOT: forrtl

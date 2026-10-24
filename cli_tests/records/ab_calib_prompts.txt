@@ -1,0 +1,5 @@
+# Corpus A/B for PLAN_CONSOLIDATION 3.3 quit-after-CALIB (UNREAD_LOH push-back at CALIB's two yes/no prompts), 2026-10-11.
+# pre = macos a09a0c4; post = this commit; ifx + gfortran; 406 decks; record columns + first SAVE bytes.
+== ifx: 406 decks compared; 404 SAVE pairs (231 declare a stop); column movers 0; SAVE diffs 0
+== gf: 406 decks compared; 403 SAVE pairs (231 declare a stop); column movers 0; SAVE diffs 0
+# RESULT: 0 movers (READ_LOH, on every CLI input path, only records the last token; UNREAD_LOH runs only at the two CALIB prompts).

@@ -1,0 +1,15 @@
+# A GridData figure on a NON-SEQUENTIAL refracting surface (PLAN_CONSOLIDATION 1.2, macos
+# 2026-10-11).  NSRefractor passed GridSrf a local NULL grid frame, so every ray read the grid's
+# CENTRE pixel: the figure imaged as a piston (here the centre pixel is 0, so the off-centre bump
+# vanished -- RMS OPD exactly 0).  The twins tst_nsref_{seq,ns}.in differ only in Face1's
+# element type (Refractor vs a one-member NSRefractor group); the NS face must now trace like
+# the sequential one.  GridFile= is a bare name resolved from the CWD, hence the cd.
+# Pre-fix: the NS twin's RMS OPD is 0 -- red.
+cd $ROOT/ZGD_test_files
+old $ROOT/ZGD_test_files/tst_nsref_seq.in
+opd 4
+/null
+old $ROOT/ZGD_test_files/tst_nsref_ns.in
+opd 4
+# EXPECT: tst_nsref_seq\.in\s+being loaded[\s\S]*?RMS OPD error is\s+4\.98938\d+D-09[\s\S]*?tst_nsref_ns\.in\s+being loaded[\s\S]*?RMS OPD error is\s+4\.98938\d+D-09
+# EXPECT-NOT: does not exist -sub GridInit

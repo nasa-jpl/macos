@@ -1,0 +1,4 @@
+deck,status,nelt,npass,rms,pv,avg,lost,flips,rt_status,rt_nelt,roundtrip,settle,dt
+/home/dcr/dev/macos_to_hex/cli_tests/must_fail/missing_value.in,load_fail,,,,,,,,,,n/a,n/a,0.8
+/home/dcr/dev/macos_to_hex/cli_tests/must_fail/segdemo3_broken.in,load_fail,,,,,,,,,,n/a,n/a,0.7
+/home/dcr/dev/macos_to_hex/cli_tests/must_fail/short_psielt.in,load_fail,,,,,,,,,,n/a,n/a,0.8

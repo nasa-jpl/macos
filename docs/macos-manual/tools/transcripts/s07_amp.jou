@@ -1,0 +1,30 @@
+# Section 7, AMPLITUDE / PHASE / REAL and IMGMODE (the steps of tools/figs/FIG60_64.jou on /null):
+# CassWithExitPupil.in at the detector (element 6); CONTOUR on OPD 5 (figure 63) and TEXT on INT 5.
+# COPY: $ROOT/docs/macos-manual/examples/CassWithExitPupil.in s07a
+cd $TMP/s07a
+old CassWithExitPupil
+pgd
+/null
+# TRANSCRIPT: s07_amp
+amp 6
+# TRANSCRIPT: s07_phase
+phase 6
+# TRANSCRIPT: s07_real
+real 6
+# TRANSCRIPT: s07_imgmode
+imgmode
+CONV
+# TRANSCRIPT: s07_con
+con
+opd
+5
+# TRANSCRIPT: s07_text
+text
+intensity
+5
+# TRANSCRIPT-OFF
+# EXPECT: Peak amplitude= 1\.0507\d*D\+04
+# EXPECT: Plot type set to CONTOUR[\s\S]*?Enter element where OPD is to be evaluated: \[\d+\]: 5
+# EXPECT: Plot type set to TEXT[\s\S]*?FORMATTED File=CassWithExitPupil\.int5\.txt
+# EXPECT: Raster polarity \(NEG=astro/POS=conventional\): \[NEG\]: CONV\s+IMGMODE = POS
+# EXPECT-NOT: forrtl

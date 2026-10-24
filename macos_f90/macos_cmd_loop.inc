@@ -137,9 +137,16 @@ C         *** reset model size ***
 
 	         ! Local dynamic arrays
 	         if (allocated(L1)) then
+!-->  CRWalk / CRWalkProjLoc are allocated below (and at start-up in
+!     macos.F) but were missing from this deallocate, so at MRESET the
+!     whole allocate statement FAILED ("MACOS: allocate failed!") and
+!     every scratch buffer kept the OLD model's size -- the model-size
+!     transition hazard (PLAN 1.2 (g), 2026-10-16; gate cli_tests/cmd/MRESET.jou).
 		   deallocate(L1,DrawEltVec,
      &		     R1,R2,PertVec,DrawRayVec,
-     &		     D2,DV1,DV2,CD1,CD2,DWF,stat=m_err_macos)
+     &		     D2,DV1,DV2,CD1,CD2,DWF,
+     &		     CRWalk,CRWalkProjLoc,stat=m_err_macos)
+!<--
 		   if (m_err_macos /= 0)
      &               call macos_memory_failure(
      &                 'macos_mod_init: deallocate failed!')
@@ -232,7 +239,11 @@ C 	Select PGPLOT Panels among 1, 2 (1x2), 3 (1x3) and 4 (2x2)
 C         *** A few OS shell utility commands ***
 
 	  ELSE IF (LCMP(command,'!',1)) THEN
-	    Call SHELLCMD(cmdline,130)
+!-->  The shell line was cut at 130 characters while the command line
+!     itself is MacosCharLen (256) wide since b90887e: a `! sed ...` with a
+!     long path ran a truncated command, silently (2026-10-16, PLAN 1.2).
+	    Call SHELLCMD(cmdline,MIN(LEN_TRIM(cmdline),LEN(cmdline)-1))
+!<--
 	    read_cur(pstack)=0; read_len(pstack)=0 ! clean up input deck
 
 	  ELSE IF (LCMP(command,'PWD',3)) THEN
@@ -242,9 +253,15 @@ C         *** A few OS shell utility commands ***
 	    CALL CACCEPT(ANS,'no default', 'Enter folder path ')
 	    Call ChgDir(ANS,ICLEN(ANS))
 
+!-->  LS / LL are EXACT here: a 2-character prefix match swallowed every
+!     command that starts with them -- LSPOT (the linear-model spot) and
+!     LLO were unreachable, `lspot` listed the directory (Phase B journal
+!     LINEAR_MODEL.jou, 2026-10-17; PLAN 1.2 (j)).
 	  ELSE IF (LCMP(command,'RX',2) .OR.
-     &             LCMP(command,'LS',2) .OR. LCMP(command,'DIr',2)
-     &             .OR. LCMP(command,'LL',2)) THEN
+     &             (LCMP(command,'LS',2).AND.ICLEN(command).EQ.2) .OR.
+     &             LCMP(command,'DIr',2) .OR.
+     &             (LCMP(command,'LL',2).AND.ICLEN(command).EQ.2)) THEN
+!<--
 	    IF (read_len(pstack) .NE. 0) THEN
 	      cmdArg=var_store(read_cur(pstack),pstack)
 	      read_cur(pstack)=0; read_len(pstack)=0
@@ -363,9 +380,10 @@ C         ***next command: Load optical description data***
 	    OptAlg=NonLin ! init value
 	    LOptNomSens=.FALSE. ! init value
 	    LOptCons=.FALSE.  ! default to non-constrained sytem optimization
-	    LUseChfRayIfOK=.TRUE.
 
 	    beamOpt%ifOptBeamDir=.FALSE.; beamOpt%ifOptBeamPos=.FALSE.
+	    beamOpt%nBeamPosFov=0; beamOpt%beamWt=1d0
+	    beamOpt%ifBeamCentroid=.FALSE.
 	    beamOpt%ifOptBeamSize=.FALSE.
 	    beamOpt%ifOptBeamRefRayDir=.FALSE.
 
@@ -377,6 +395,11 @@ C         ***next command: Load optical description data***
             SaveVis3d_dat_Flg=.FALSE.  ! default
 	    EltGrp(0,0:mElt)=0
 	    RxStopSet=.FALSE.; ifStopSet=.FALSE.
+!-->	    ! api stop_info_set state must not outlive the LOAD: a
+	    ! stale EltStopSet trips ChkDf2's NS/Segment stop guard
+	    ! mid-parse and cancels the NEW deck's own ApStop.
+	    EltStopSet=.FALSE.; StopElt=0; StopOffset=0.0D0
+!<--
             RxNoStopSet_Flg=.FALSE.
 	    IsVarIndRefElt=.FALSE.; IsGrinRefElt=.FALSE.
 	    TotalLensletsArray=0
@@ -385,6 +408,7 @@ C         ***next command: Load optical description data***
 	    UDBeam_FLG=.FALSE.; ifObjImgSet=.FALSE.
 	    ifRegrid(1:mElt)=.FALSE.; ifOPDModGrid=.FALSE.
 	    LRayTgtElt=.FALSE. ! default
+            refRayOff = 0d0
             refRay = -1d2   ! default initial value, indicating state RRAY before running
 	                    ! RRAY command  01/27/2017
             GridSrfOrder=1  ! default GridSrf interpolation to linear order
@@ -393,6 +417,11 @@ C         ***next command: Load optical description data***
 	    numGradInd=0; nDOE=0
 	    iEltToMetSrf=0; tMetSrf=0; metBeamFlg=0 ! clean up metrology setting
             OPDRefRayLen_FLG=.FALSE.; ShowMetData_FLG=.FALSE.
+!-->  BWK_FLG is Rx state (`CalBWk= Y`), reset per load -- but it was reset
+!     AFTER MBFile6 had parsed the key, so the CLI's BWK always answered
+!     "Need set CalBWk= Y" (2026-10-16, PLAN 1.2; gate cli_tests/cmd/BWK.jou).
+            BWK_FLG=.FALSE.
+!<--
 !	    Do i=1,mElt
 !	      LensletStrArray(1:mLenslet,i)%IndRef=IndRef(i)
 !	    End Do
@@ -407,6 +436,10 @@ C         ***next command: Load optical description data***
 	    PrtPrinRots=.FALSE.; LudDrawGrid=.FALSE.
 	    CALL MBFile6(npts,ifOld,ifFID,LRtn_FLG)
 	    if (.not.LRtn_FLG) GO TO 1
+!-->  the deck gave no output coordinates: the user keeps or replaces
+!     the proposed beam frame (1.2 (u)); the api path takes it
+	    IF (LOutCordCandidate) CALL OutCordQuery()
+!<--
 #else
 	    ! SMACOS
 	    CALL MBFile6(npts,ifOld,LRtn_FLG)
@@ -422,9 +455,7 @@ C         ***next command: Load optical description data***
             ifBuild          = .FALSE.
             ifPropagate      = .FALSE.
             ifPerturb        = .FALSE.
-            ifPol            = .FALSE.
             ifPixLoc         = .FALSE.
-            ifVecDif3        = .FALSE.
             ifTrace          = .FALSE.
             ifGrid           = .FALSE.
             ifAdd            = .FALSE.
@@ -432,10 +463,16 @@ C         ***next command: Load optical description data***
             ifPixArray       = .FALSE.
             ifCmt            = .FALSE.
             ifEFLCalc        = .FALSE.
-            ifCentroid       = .TRUE.
             ifFilterData     = .FALSE.
             ifDMBuild        = .FALSE.
-            ifLNegOK         = .TRUE.
+!-->  POLARIZATION, VECTOR/SCALAR, CENTROID, LNEG and CIR are SESSION modes:
+!     a load keeps them and names the non-default ones (Dave 2026-10-11,
+!     PLAN_CONSOLIDATION 4 item 2).
+            CALL ModesInForceNote()
+!<--
+!-->  a CALIB setup carried by the deck is announced (SAVE writes it)
+            CALL CalibInForceNote()
+!<--
 
             i=mElt
 	    CALL LZERO(ifIntSrfSet,i)
@@ -449,7 +486,6 @@ C         ***next command: Load optical description data***
 	    nTestPts=MIN(nGridPts,21)
 	    nMinPts=3; nSpotPts=nGridPts
 	    EltPix(1:2)=0d0; WinCenPix(1:2)=0d0
-	    BWK_FLG=.FALSE.
 	    LCalcWFELT=.FALSE.  ! default
 #ifdef MACOS_CMD
 	    curFov=1; curwl=1; OPDSave=0d0
@@ -484,81 +520,7 @@ C         ***next command: Load optical description data***
             ! ** Support Linear WFC, calc system sensitivity around nominal
             !    state. Sensitivity will be kept in system optimizer **
 	    If (LOptNomSens) Then
-	      if (nVarElt==0) then
-                WRITE(*,*)' '
-                WRITE(*,*)' No Variable Element for Optimization!'
-                goto 108
-              else if (nOptFov==0) then
-                WRITE(*,*)' '
-                WRITE(*,*)' No Field of View for Optimization!'
-                goto 108
-              end if
-
-	      if (LOptIfFEX .and. .not.ifStopSet) then
-                WRITE(*,*)' Must set STOP before optimization with FEX!'
-                WRITE(*,*)' '
-                goto 108
-              end if
-
-	      ! Process input arguments to system optimer drivers
-              varZerns=0; zern_off=1
-	      varAsphs=0; asph_off=1
-              k=1
-              iVarElt=0
-
-	      ! Process source first
-              If (isVarElt(0)) Then
-                iVarElt=iVarElt+1
-                varElts(iVarElt)=0
-                varDOFs((iVarElt-1)*mVarDOF+1:iVarElt*mVarDOF)
-     &               =varEltDOF(1:mVarDOF,0)
-                If (.not.ifStopSet .and. .not.OptSrcRpt_FLG) Then
-                  if (varEltDOF(1,0)/=0 .or. varEltDOF(2,0)/=0
-     &                .or. varEltDOF(3,0)/=0) then
-                    WRITE(*,*)' Must set STOP before optimizing source!'
-                    go to 108
-                  end if
-                End If
-                EltName(0)='Source'
-                nOptFov=1
-                opt_fov(1:3,1,1)=ChfRayDir; opt_fov(1:3,2,1)=ChfRayPos
-                zernElt(iVarElt)=0; asphElt(iVarElt)=0
-              End If
-
-	      Do iElt=1,nElt
-                If (isVarElt(iElt)) Then
-                  iVarElt=iVarElt+1
-                  varElts(iVarElt)=iElt
-                  varDOFs((iVarElt-1)*mVarDOF+1:iVarElt*mVarDOF)
-     &               =varEltDOF(1:mVarDOF,iElt)
-
-                  zernElt(iVarElt)=0  ! range 1:nVarElt
-                  if (nOptEltZern(iElt)>0) then
-                    zernElt(iVarElt)=nOptEltZern(iElt)
-                    varZerns(zern_off:zern_off+nOptEltZern(iElt)-1)
-     &                = OptEltZernTerm(1:nOptEltZern(iElt),iElt)
-                    zern_off=zern_off+nOptEltZern(iElt)
-                  end if
-
-	          asphElt(iVarElt)=0  ! range 1:nVarElt
-                  if (nOptEltAsph(iElt)>0) then
-                    asphElt(iVarElt)=nOptEltAsph(iElt)
-                    varAsphs(asph_off:asph_off+nOptEltAsph(iElt)-1)
-     &                = OptEltAsphTerm(1:nOptEltAsph(iElt),iElt)
-                    asph_off=asph_off+nOptEltAsph(iElt)
-                  end if
-
-                  if (LOptCons) then
-                    ! process variable constraints
-                    do i=1,mVarDOF
-                      if (varEltDOF(i,iElt)/=0) then
-                        varEltCons(1:2,k)=EltCons(1:2,i,iElt)
-                        k=k+1
-                      end if
-                    end do
-                  end if
-	        End If
-              End Do
+	      IF (.NOT. calib_setup_vars()) GO TO 108   ! PLAN 3.3: one copy
 
 	      ! Save Rx npts, use opt_npts for design optimization
               npts_Rx=npts; npts=opt_npts
@@ -755,18 +717,24 @@ C           * sparse pupil aperture. -jzlou
 		refRay(1)=-1;
 	      End If
 	      WRITE(*,*)' At source aperture: '
-	      srp(1)=1.0; srp(2)=0.0
-	      Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),refRay(2),.TRUE.)
-	      srp(1)=0.0; srp(2)=1.0
-              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),refRay(3),.TRUE.)
-	      srp(1)=-1.0; srp(2)=0.0
-              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),refRay(4),.TRUE.)
-	      srp(1)=0.0; srp(2)=-1.0
-              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),refRay(5),.TRUE.)
+!-->  BRIEF_to_bindings B.2 (2026-10-17): the four marginal rays from one
+!     table, each found ray's XY offset from the chief ray kept in
+!     refRayOff (the api's ref_rays), and the slots RRAY does not fill
+!     (6:mPupRay) cleared -- after a PRAY they kept PRAY's rays, and TPR
+!     traced them as RRAY's.
+	      BLOCK
+	      Real, parameter :: rp(2,4)=reshape([1.0,0.0, 0.0,1.0,
+     &          -1.0,0.0, 0.0,-1.0],[2,4])
+	      Integer :: k
+	      refRay(6:mPupRay)=0; refRayOff=0d0
+	      Do k=1,4
+	        srp(1)=rp(1,k); srp(2)=rp(2,k)
+	        Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
+     &                   srp(1),srp(2),refRay(k+1),.TRUE.)
+	        If (refRay(k+1)>0) refRayOff(1:2,k+1)=srp(1:2)
+	      End Do
+	      END BLOCK
+!<--
 	      If (refRay(1)==1) Then
 	        WRITE(*,*)
      &             ' Reference ray indices (chief + 4 marginal) = ',
@@ -803,30 +771,24 @@ C
                 refRay(1)=-1;
               End If
               WRITE(*,*)' At source aperture: '
-              srp(1)=9.0; srp(2)=0.0
-              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),refRay(2),.TRUE.)
-              srp(1)=0.6364; srp(2)=0.6364
-              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),refRay(3),.TRUE.)
-              srp(1)=0.0; srp(2)=0.9
-              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),refRay(4),.TRUE.)
-              srp(1)=-0.6364; srp(2)=0.6364
-              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),refRay(5),.TRUE.)
-              srp(1)=-0.9; srp(2)=0.0
-              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),refRay(6),.TRUE.)
-              srp(1)=-0.6364; srp(2)=-0.6364
-              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),refRay(7),.TRUE.)
-              srp(1)=0.0; srp(2)=-0.9
-              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),refRay(8),.TRUE.)
-              srp(1)=0.6364; srp(2)=-0.6364
-              Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
-     &                 srp(1),srp(2),refRay(9),.TRUE.)
+!-->  BRIEF_to_bindings B.2 (2026-10-17): the eight ring rays from one
+!     table at 0.9 of the aperture.  The first point read srp(1)=9.0 (the
+!     other seven sit at radius 0.9), so ray 2 was the +x EDGE ray, RRAY's,
+!     not the ring's.  Offsets kept in refRayOff as RRAY's.
+	      BLOCK
+	      Real, parameter :: rp(2,8)=reshape([0.9,0.0,
+     &          0.6364,0.6364, 0.0,0.9, -0.6364,0.6364, -0.9,0.0,
+     &          -0.6364,-0.6364, 0.0,-0.9, 0.6364,-0.6364],[2,8])
+	      Integer :: k
+	      refRayOff=0d0
+	      Do k=1,8
+	        srp(1)=rp(1,k); srp(2)=rp(2,k)
+	        Call FSR(npts,nElt,Dicr,Djcr,dxSource,ifPol,ifPropagate,
+     &                   srp(1),srp(2),refRay(k+1),.TRUE.)
+	        If (refRay(k+1)>0) refRayOff(1:2,k+1)=srp(1:2)
+	      End Do
+	      END BLOCK
+!<--
 	    ELSE
               WRITE(*,150)
 	    End IF
@@ -844,9 +806,14 @@ C         *** TPR = Trace Pupil Rays (and print ray footprint at the final surfa
               CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
      &                              ifPropagate)
               Do iRay=1,mPupRay
-                If (refRay(iRay) < 0) Then
-	          Exit  ! Cycle would do the same
-	        End If
+!-->  TPR (PLAN 1.2 (e), 2026-10-17).  A slot RRAY did not fill is 0
+!     (RRAY sets 1:5 of mPupRay=9) and a ray it could not find is -1:
+!     both are SKIPPED.  The loop used to Exit at the first negative slot
+!     only, so it traced "ray 0" after an RRAY (RayPos(:,0) -- NaN with
+!     SaveRayPosH= Y), and a failed chief ray (slot 1 = -1) skipped the
+!     four marginal rays that were found.
+                If (refRay(iRay) <= 0) Cycle
+!<--
                 ! Trace a ray
                 iStartElt=0
 	        If (LRayTgtElt.eqv..TRUE.) Then
@@ -871,14 +838,21 @@ C         *** TPR = Trace Pupil Rays (and print ray footprint at the final surfa
      &                 StartIndRef,StartExtinc,
      &                 DrawRayVec,DrawEltVec,nDrawElt(1),
      &                 xDraw,yDraw)
-                print*,' **CTRACE iRay =',refRay(iRay),',
-     &                 iEndElt =',iEndElt
-                print*,'     RayPosHist(1:3,iray,iEndElt) =',
-     &                 RayPosHist(1:3,refRay(iRay),iEndElt)
-
-	        ! Pupil rays are indexed 2 to 9
-	        RRayPosHis(1:3,iRay) =
-     &              RayPosHist(1:3,refRay(iRay),iEndElt)
+!-->  The position CTRACE leaves in RayPos at iEndElt (PLAN 1.2 (e)):
+!     TPR printed RayPosHist, which CTRACE fills only with SaveRayPosH= Y,
+!     so on any other deck every position read 0.  RayPosHist is a copy
+!     of RayPos per element; the numbers with the key are unchanged.
+	        If (LRayOK(refRay(iRay))) Then
+	          WRITE(*,'(A,I0,A,I0,A,1P,3E24.15)')'  TPR ray ',
+     &              refRay(iRay),' at element ',iEndElt,':',
+     &              RayPos(1:3,refRay(iRay))
+	          RRayPosHis(1:3,iRay)=RayPos(1:3,refRay(iRay))
+	        Else
+	          WRITE(*,'(A,I0,A,I0)')'  TPR ray ',refRay(iRay),
+     &              ' was lost before element ',iEndElt
+	          RRayPosHis(1:3,iRay)=0d0
+	        End If
+!<--
 	      End Do ! Do iRay
 	    END IF
 
@@ -983,7 +957,7 @@ C         ***Reset defaults, options, etc.***
 	    ifPixArray=.FALSE.
 #endif
 	    ifDMBuild=.FALSE.
-	    ifCentroid=.TRUE.
+	    ifCentroid=.FALSE.  ! chief-ray default (Dave 2026-08-27; was .TRUE.)
 	    ifFilterData=.FALSE.
 	    ifLNegOK=.TRUE.
 	    ifUDSinit=.FALSE.
@@ -998,6 +972,10 @@ C         ***Reset defaults, options, etc.***
 	    iCurWFElt=0
 	    iObsOpt=1
 	    StretchType=1
+!-->  PLAN 1.2 (i): the plot type back to its start-up value too
+!     (ArchInit: GRAY); RESET left NONE / NULL in force.
+	    iPloTyp=2
+!<--
 	    spcOption=1
 	    If (UDBeam_FLG) Then
               BeamType=5
@@ -1036,8 +1014,17 @@ C         ***Status check***
 	      ELSE IF (iPloTyp.EQ.0) THEN
 	        CTITLE='NULL'
 	      END IF
+!-->  The session modes, so a journal can see what a LOAD did to them
+!     (PLAN 3.3 rule-6 audit, 2026-10-11): VECTOR/SCALAR, CENTROID/
+!     CHIEFRAY, LNEG/NOLNEG, CIR/GIR join NOPLOC and POLARIZATION.
 	      WRITE(*,207)filnam(1:ICLEN(filnam)),iCurRayElt,iCurWFElt,
-     &	       iObsOpt,CTITLE(1:ICLEN(CTITLE)),ifAdd,ifPixLoc,ifPol
+     &	       iObsOpt,CTITLE(1:ICLEN(CTITLE)),ifAdd,ifPixLoc,ifPol,
+     &         ifVecDif3,ifCentroid,ifLNegOK
+#ifdef CMACOS
+	      WRITE(*,'(A,L2)')
+     &          '              Color image rendering (CIR)=',ifPGColor
+#endif
+!<--
 	    ELSE
 	      WRITE(*,150)
 	    END IF
@@ -1127,17 +1114,48 @@ C         ***Turn on vector diffraction***
 	      ifVecDif3=.FALSE.
 	    END IF
 
+C         ***OPD reference: chief ray (default) or aperture mean***
+C         Before the OPD branch: LCMP matches a prefix, and 'OPD',3
+C         would take OPDREF.  The session option (traceutil_mod
+C         LOpdRefChief) survives later loads; a deck's UseChfRay4OPD=
+C         still overrides it for that deck.
+
+	  ELSE IF (LCMP(command,'OPDREF',6)) THEN
+	    IF (LUseChfRayIfOK) THEN
+	      CALL CACCEPT(ANS,'CHIEF','OPD reference (CHIEF,MEAN):')
+	    ELSE
+	      CALL CACCEPT(ANS,'MEAN','OPD reference (CHIEF,MEAN):')
+	    END IF
+	    IF (LCMP(ANS,'CHIEF',1)) THEN
+	      LOpdRefChief=.TRUE.
+	    ELSE IF (LCMP(ANS,'MEAN',1)) THEN
+	      LOpdRefChief=.FALSE.
+	    ELSE
+	      WRITE(*,*)' OPDREF wants CHIEF or MEAN; unchanged'
+	      GO TO 1
+	    END IF
+	    LUseChfRayIfOK=LOpdRefChief
+	    iOpdRefSesSrc=2; iOpdRefSrc=2
+	    ifPropagate=.FALSE.  ! propsub fills OPDMat too
+	    IF (LOpdRefChief) THEN
+	      WRITE(*,*)' OPD reference: CHIEF RAY (the default)'
+	    ELSE
+	      WRITE(*,*)' OPD reference: APERTURE MEAN (opt-in;',
+     &	                ' the chief ray is the default)'
+	    END IF
+
 C         ***Set centroid option***
 
 	  ELSE IF (LCMP(command,'CENTROID',5)) THEN
 	    ifCentroid=.TRUE.
-	    WRITE(*,*)' Image referenced to ray centroid'
+	    WRITE(*,*)' FEX/SXP pupil-sphere axis: beam CENTROID',
+     &	              ' (opt-in; chief ray is the default)'
 
 C         ***Set chief ray option***
 
 	  ELSE IF (LCMP(command,'CHIEFRAY',3)) THEN
 	    ifCentroid=.FALSE.
-	    WRITE(*,*)' Image referenced to chief ray'
+	    WRITE(*,*)' FEX/SXP pupil-sphere axis: CHIEF RAY (default)'
 
 C         ***Set regridding on for specified element***
 
@@ -1357,7 +1375,11 @@ C         *** 'ray' command ***
 	  ELSE IF (LCMP(command,'RAY',2)) THEN
 
 	    IF (ifLoad) THEN
+#ifdef MACOS_CMD
 	      ifRayPrint=.TRUE.
+#else
+	      ifRayPrint=.FALSE.
+#endif
 	      ifBuild=.FALSE.
 	      ifTrace=.FALSE.
 	      ifPropagate=.FALSE.
@@ -1371,7 +1393,15 @@ C         *** 'ray' command ***
 
 	        IF ((iRay.LT.1).OR.(iRay.GT.nRay)) THEN
 		  WRITE(*,*)' Invalid ray number. '
+!-->  Re-prompt in the CLI only: under SMACOS the prompt re-reads an
+!     empty stack, keeps the bad number and looped for ever (the api's
+!     ray_trace with iRay > nRay hung the host, B.2 2026-10-17).
+#ifdef MACOS_CMD
 		  GO TO 4
+#else
+		  GO TO 5
+#endif
+!<--
 		END IF
 	        iStartRay=iRay
 	        iEndRay=iRay
@@ -1381,7 +1411,18 @@ C         *** 'ray' command ***
 	        Else
 	          iEndElt=RayTgtElt
 	        End If
+!-->  In SMACOS, RAY saves the ray's state per element in thisRay (the
+!     api's ray_trace, B.2 2026-10-17) and traces quietly; the CLI's RAY
+!     still prints and does not set ifSRT (which changes CTRACE's
+!     ray-header line).
+#ifdef MACOS_CMD
 	        ifRayPrint=.TRUE.
+#else
+	        ifRayPrint=.FALSE.
+	        CALL ThisRayAlloc(nElt)
+	        ifSRT=.TRUE.
+#endif
+!<--
 	        CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
      &	               ifLNegOK,Cmatrix,iStartElt,iEndElt,
      &	               iStartRay,iEndRay,RayMap,SegMap,
@@ -1393,7 +1434,7 @@ C	        print*,'**CTRACE cmd: RayPosHist(1:3,iray,iEndElt) =',
 C    &                 RayPosHist(1:3,iRay,iEndElt)
 C	        GO TO 4
   5	      CONTINUE
-	      ifRayPrint=.FALSE.
+	      ifRayPrint=.FALSE.; ifSRT=.FALSE.
 	    ELSE
 	      WRITE(*,150)
 	    END IF
@@ -1431,7 +1472,11 @@ C             directly at RptElt.
 
 	  ELSE IF (LCMP(command,'SEGRAYTRACE',7)) THEN
 	    IF (ifLoad) THEN
+#ifdef MACOS_CMD
 	      ifRayPrint = .TRUE.
+#else
+	      ifRayPrint = .FALSE.
+#endif
 	      ifBuild     = .FALSE.
 	      ifTrace     = .FALSE.
 	      ifPropagate = .FALSE.
@@ -1442,12 +1487,24 @@ C             directly at RptElt.
 
 	        IF ((iSeg .LT. 1) .OR. (iSeg .GT. nElt)) THEN
 	          WRITE(*,*) ' Invalid element number.'
+!-->  Re-prompt in the CLI only: under SMACOS the prompt re-reads an
+!     empty stack and every GO TO 11 here looped for ever (the api's
+!     segray_trace, B.2 2026-10-17); SMACOS traces one segment a call.
+#ifdef MACOS_CMD
 	          GO TO 11
+#else
+	          GO TO 12
+#endif
+!<--
 	        END IF
 	        IF (EltID(iSeg) .NE. SegmentElt) THEN
 	          WRITE(*,*) ' Element ', iSeg,
      &              ' is not a Segment.'
+#ifdef MACOS_CMD
 	          GO TO 11
+#else
+	          GO TO 12
+#endif
 	        END IF
 
 C           Initialize the source ray grid first (this sets up shared
@@ -1470,7 +1527,11 @@ C           Override the chief-ray slot to land on RptElt(:,iSeg).
 	          IF (S1 .LE. 0d0) THEN
 	            WRITE(*,*)
      &              ' Segment center coincides with source position.'
+#ifdef MACOS_CMD
 	            GO TO 11
+#else
+	            GO TO 12
+#endif
 	          END IF
 	          RayDir(1:3,1) = DV1(1:3) / S1
 	        END IF
@@ -1489,6 +1550,17 @@ C           index, since that is what CTRACE compares against.
 	        ELSE
 	          iEndElt = RayTgtElt
 	        END IF
+!-->  CTRACE clears ifRayPrint on return, so the CLI sets it for every
+!     segment (a second segment in one SEGRAYTRACE printed nothing, B.2
+!     2026-10-17).  In SMACOS the ray's state per element is saved in
+!     thisRay, as RAY does (segray_trace).
+#ifdef MACOS_CMD
+	        ifRayPrint = .TRUE.
+#else
+	        CALL ThisRayAlloc(nElt)
+	        ifSRT = .TRUE.
+#endif
+!<--
 
 	        CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,
      &	               ifLNegOK,Cmatrix,iStartElt,iEndElt,
@@ -1497,9 +1569,11 @@ C           index, since that is what CTRACE compares against.
      &                 StartIndRef,StartExtinc,
      &                 DrawRayVec,DrawEltVec,nDrawElt(1),
      &		       xDraw,yDraw)
+#ifdef MACOS_CMD
 	        GO TO 11
+#endif
  12	      CONTINUE
-	      ifRayPrint = .FALSE.
+	      ifRayPrint = .FALSE.; ifSRT = .FALSE.
 	    ELSE
 	      WRITE(*,150)
 	    END IF
@@ -1622,7 +1696,7 @@ C         ***next command: Print rays surface - to - surface***
 
 	  ELSE IF (LCMP(command,'SRAY',3)) THEN
 	    !
-	    ! This command is buggy, doesn't work  - jzlou   (ToDo)
+	    ! (jzlou's 'buggy' note: SRAY / SRT fixed 2026-10-17, PLAN 1.2 (l); gate SRAY_SRT.jou)
 	    !
 	    IF (ifLoad) THEN
 	      ifRayPrint=.TRUE.
@@ -1674,7 +1748,10 @@ C         ***next command: Print rays surface - to - surface***
 	      WRITE(*,150)
 	    END IF
 
-#ifdef MACOS_CMD
+!-->  SRT is SMACOS-dispatched too (BRIEF_to_bindings B.2, 2026-10-17):
+!     the api's srt_trace pushes iEndElt and the (x, y) aperture point
+!     through LoadStack (its SRT entry already existed) and reads
+!     traceutil_mod's thisRay back; the binding traces quietly.
   ! Trace a single ray with a designated position in source aperture
 	  ELSE IF (LCMP(command,'SRT',3)) THEN
 	    IF (ifLoad) THEN
@@ -1690,7 +1767,11 @@ C         ***next command: Print rays surface - to - surface***
 	        GO TO 1
 	      End If
 
+#ifdef MACOS_CMD
 	      ifRayPrint=.TRUE.
+#else
+	      ifRayPrint=.FALSE.
+#endif
 	      Call SRTrace(srp(1),srp(2),ifPol,ifGrid,ifPropagate,
      &         ifDraw,ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,
      &         ifIntSrfSet,ifRayPrint,iObsOpt,iCurWFElt,
@@ -1701,7 +1782,7 @@ C         ***next command: Print rays surface - to - surface***
 	    ELSE
               WRITE(*,150)
             END IF
-#endif
+!<--
 
 #ifdef MACOS_CMD
 C	  ***Reset pgplot graphics device***
@@ -2032,9 +2113,16 @@ C         Trace beam up to atmosphere surface:
 C         Add atmospheric effects to each ray
 	    IF (LCMP(ANS,'RAY',1)) THEN
 	      !NoiseSeed=0d0  ! test only
+!-->  AddAtmos refuses (by name) an element where the ray grid is not
+!     the source grid frame (PLAN_CONSOLIDATION 1.2 (p)).
+	      BLOCK
+	      LOGICAL ifAtmOK
 	      CALL AddAtmos(iElt,npts,iWF,R1,CD2,r0,atmWavelen,pTilt,
      &	        NoiseSeed,ifPol,ifGrid,ifPropagate,Dicr,Djcr,
-     &	        dxSource,xGrid,yGrid,zGrid)
+     &	        dxSource,xGrid,yGrid,zGrid,ifAtmOK)
+	      IF (.NOT.ifAtmOK) GO TO 1
+	      END BLOCK
+!<--
 
 C	  Otherwise add atmospheric effects using separate grid
 	    ELSE
@@ -2125,19 +2213,27 @@ C         ***Compute linear models***
 	      CALL RTIME(StartTime)
               CALL SetSourceRayGrid(npts,Dicr,Djcr,dxSource,ifPol,
      &                              ifPropagate,ifGrid)
+!-->  over the ray limit the command says 'Tracing N rays but not
+!     BUILDing' and then did NOTHING (GO TO 1), leaving iCurRayElt set
+!     and no trace behind it: EXPORT RAYPOS then reported '0 rays at
+!     Element 1' (Dave's lens_array.in, 12454 rays at model 128;
+!     macos-fd 2026-10-19).  Now it does what it says: the trace runs
+!     without the linear model, and PARTIALS / EXPORT of partials keep
+!     refusing on ifBuild.
               IF (nRay.LE.bRay) THEN
 	        WRITE(*,118)nRay
+	        ifBuild=.TRUE.
 	      ELSE
 	        WRITE(*,119)nRay,bRay
-	        GO TO 1
+	        ifBuild=.FALSE.
 	      END IF
 	      ifPropagate=.FALSE.
 	      ifTrace=.TRUE.
-	      ifBuild=.TRUE.
-	      IF (LCMP(command,'DMBUILD',3)) ifDMBuild=.TRUE.
+	      IF (LCMP(command,'DMBUILD',3)) ifDMBuild=ifBuild
 	      ifOPDCalc=.TRUE.
 	      iCurRayElt=iEndElt
 	      iLinElt=iEndElt
+!<--
 	      iStartRay=1
 	      iEndRay=nRay
 
@@ -2280,7 +2376,7 @@ C         ***Optimize reference surface***
 
             CALL SetSourceRayGrid(nTestPts,Dicr,Djcr,dxSource,ifPol,
      &                            ifPropagate)
-	    ifGrid=.FALSE.               ! ToDo: why set to False ???
+	    ifGrid=.FALSE.               ! the test grid replaced the user's: rebuild it next trace
 	    ifPropagate=.FALSE.
 	    ifTrace=.FALSE.
 	    ifBuild=.FALSE.
@@ -2384,6 +2480,17 @@ C
 	    signpsi=SIGN(1D0,DDOTC(RayDir(1,1),psiElt(1,iSlv1)))
 	    CALL DSMPROD(psip,RayDir,signpsi,3)
 	    CALL DEQUATE(Vptp,RayPos,3)
+!-->  the beam's direction at the slaved surface on the side of the
+!     propagation the pair spans, kept for the convergence sign of a
+!     near-field zElt (1.2 (gg), 2026-10-19).  A Return surface folds
+!     the trace back, so its outgoing ray is the incoming one
+!     reversed: the START surface of the pair (iSlv1 < iSlv2) sends
+!     the beam on toward iSlv2 -- the outgoing ray; the END surface
+!     (iSlv1 > iSlv2) received it from iSlv2 -- the incoming ray.
+	    CALL DEQUATE(dirSlv1,RayDir,3)
+	    IF (EltID(iSlv1).EQ.8 .AND. iSlv1.GT.iSlv2)
+     &	      CALL DSMPROD(dirSlv1,RayDir,-1d0,3)
+!<--
 
 	    iEndElt=iSlv2
             CALL SetSourceRayGrid(nMinPts,Dicr,Djcr,dxSource,ifPol,
@@ -2481,10 +2588,21 @@ C
 	        ! center of curvature (or shifted by zElt for plane<-plane).
 	        ! fp stays at INF -- a Flat surface always has infinite
 	        ! curvature regardless of the propagation distance.
+!-->  the slave-to SPHERE's centre is its vertex plus its RADIUS
+!     along psi (psi points at the centre; KrElt = -|R|), never its
+!     signed zElt -- a diverging surface carries zElt < 0 and the
+!     centre landed on the wrong side (1.2 (gg), 2026-10-19).  A
+!     plane keeps zElt as the signed shift along psi.
 	        DO i=1,3
 	          psip(i) = psiElt(i,iSlv2)
-	          Vptp(i) = VptElt(i,iSlv2) + zElt(iSlv2)*psiElt(i,iSlv2)
+	          IF (fElt(iSlv2).LT.BIG) THEN
+	            Vptp(i) = VptElt(i,iSlv2)
+     &	                  + ABS(fElt(iSlv2))*psiElt(i,iSlv2)
+	          ELSE
+	            Vptp(i) = VptElt(i,iSlv2) + zElt(iSlv2)*psiElt(i,iSlv2)
+	          END IF
 	        END DO
+!<--
 	        zp = zElt(iSlv1)              ! plane stays a plane
 	        fp = INF                      ! Flat: big f, big Kr
 	      ELSE
@@ -2495,9 +2613,11 @@ C
 	          ! the slave-to's center; radius = distance.
 	          DO i=1,3
 	            Vptp(i) = VptElt(i,iSlv1)
+!-->  the shared centre from the slave-to's RADIUS (1.2 (gg))
 	            psip(i) = (VptElt(i,iSlv2)
-     &                       + zElt(iSlv2)*psiElt(i,iSlv2))
+     &                       + ABS(fElt(iSlv2))*psiElt(i,iSlv2))
      &                      - Vptp(i)
+!<--
 	          END DO
 	          zp = SQRT(psip(1)**2 + psip(2)**2 + psip(3)**2)
 	          IF (zp.GT.0d0) THEN
@@ -2506,6 +2626,17 @@ C
 	            END DO
 	          END IF
 	          fp = zp
+!-->  zElt carries the CONVERGENCE sign of a near-field reference
+!     surface (Manual section 6, Table 14: positive converging,
+!     negative diverging; the propagator's leg is zElt(start) -
+!     zElt(end)).  The shared centre AHEAD of the slaved surface
+!     along the chief ray is a converging beam; BEHIND it (the beam
+!     has passed through focus) a diverging one.  Before, zp was the
+!     unsigned distance: CoroExample.in's ret2_2 (-6.329 in the deck)
+!     came back +6.329 and the through-focus leg collapsed to zero
+!     (PLAN_CONSOLIDATION 1.2 (gg), 2026-10-19).
+	          IF (DDOTC(psip,dirSlv1).LT.0d0) zp = -zp
+!<--
 	        ELSE
 	          WRITE(*,*)
      &        ' WARNING: SRS asymmetric sphere<-plane not implemented'
@@ -2525,7 +2656,10 @@ C
      &	    VptElt(3,iSlv1),Vptp(3)
 	    CALL CACCEPT(ANS,'YES',
      &      'Accept the new element? ')
-	    IF ((ANS(1:1).NE.'n').OR.(ANS(1:1).NE.'N')) THEN
+!-->  'no' was accepted too: (.NE.'n' .OR. .NE.'N') is always true
+!     (1.2 (gg), 2026-10-19)
+	    IF ((ANS(1:1).NE.'n').AND.(ANS(1:1).NE.'N')) THEN
+!<--
 	      eElt(iSlv1)=0d0
 	      KcElt(iSlv1)=0d0
 	      zElt(iSlv1)=zp
@@ -2695,7 +2829,7 @@ C         ***
 C         *** NOTE 2026-07-03: FEX itself now DEFAULTS to the
 C         *** EP -> next-element radius (the far-field propagation
 C         *** distance), with the legacy leg as fallback plus
-C         *** telecentric/footprint/Rx-order guards -- see the FEX
+C         *** telecentric/footprint guards -- see the FEX
 C         *** rework block in tracesub.F.  SXP is retained as-is for
 C         *** compatibility; it is now largely redundant with FEX.
 
@@ -2893,7 +3027,7 @@ c  the target element, just blocked by an obscuration mask, so
 c  FFP/PFP can still compute the source adjustment.  Bail only on
 c  miss/bracket/iter failures (chief ray didn't reach iSlv1).
 	    IF (nBadRays.NE.0) THEN
-	      IF (RayStatus(1) .EQ. RayStat_Obscured) THEN
+	      IF (RayStatus(1).EQ.RayStat_Obscured .AND. LRayOK(1)) THEN
 	        WRITE(*,*)' Chief ray obscured at element ',iSlv1,
      &	                  '; proceeding with FFP/PFP calculation.'
 	      ELSE
@@ -3012,8 +3146,8 @@ c----Compute next step
 c--Same obscuration tolerance as for the nominal trace above:
 c  obscured chief ray still reached iSlv1 geometrically, only
 c  miss/bracket/iter failures abort the search.
-	      IF (nBadRays.NE.0 .AND.
-     &	          RayStatus(1) .NE. RayStat_Obscured) THEN
+	      IF (nBadRays.NE.0 .AND. .NOT.(LRayOK(1) .AND.
+     &	          RayStatus(1).EQ.RayStat_Obscured)) THEN
 	        WRITE(*,*)'Chief ray becomes undefined during search'
 	        GO TO 385
 	      END IF
@@ -3051,12 +3185,17 @@ C         ***Center Beam in System Stop***
 	  ELSE IF (LCMP(command,'CENTER',5)) THEN
 	    CALL IACCEPT_S(iStop,1,1,
      &	      'Enter system stop element number:')
-	    IF ((EltID(iStop).EQ.9).OR.(EltID(iStop).EQ.11)
-     &	      .OR.(EltID(iStop).EQ.12)) THEN
-	      WRITE(*,*)'Invalid element type =', EltID(iStop)
-	    ELSE IF ((iStop.GT.nElt).OR.(iStop.LE.0)) THEN
-	      WRITE(*,*)'CENTER: Invalid element number: ', iElt
+!-->  Same rules as STOP (2026-09-08): range first, veto only the
+!     non-sequential types, Segment allowed.
+	    IF ((iStop.GT.nElt).OR.(iStop.LE.0)) THEN
+	      WRITE(*,*)'CENTER: Invalid element number: ', iStop
+	    ELSE IF ((EltID(iStop).EQ.NSRefractorElt).OR.
+     &	      (EltID(iStop).EQ.NSReflectorElt)) THEN
+	      WRITE(*,*)'CENTER: element',iStop,' is ',
+     &	        TRIM(EltTypeName(EltID(iStop))),
+     &	        ' -- a non-sequential element cannot be the stop.'
 	    ELSE
+!<--
 	      CALL DEQUATE(DDEF,VptElt,3)
 	      CALL DACCEPT(xTarg,DDEF,2,'Enter offset vector (dx,dy):')
 	      ifGrid=.FALSE.
@@ -3066,6 +3205,13 @@ C         ***Center Beam in System Stop***
 	      ifBuild=.FALSE.
 	      ifOPDCalc=.FALSE.
 
+!-->  Segment stop: chief-ray mapping, as in STOP.
+	      IF ((EltID(iStop).EQ.SegmentElt).AND.
+     &	    (EltToSegMap(iStop).GT.0)) THEN
+	        nRayToSeg(1)=1
+	        RayToSegMap(1,1)=EltToSegMap(iStop)
+	      END IF
+!<--
 	      CALL STOP(npts,ifPol,ifGrid,ifPropagate,ifDraw,
      &	        ifLNegOK,ifBuild,ifDMBuild,ifTrace,ifRegrid,
      &	        ifIntSrfSet,ifRayPrint,iObsOpt,iEndElt,iCurWFElt,
@@ -3075,7 +3221,7 @@ C         ***Center Beam in System Stop***
      &	        iStop,xTarg,sqErr,ifBeamCentered)
 
 	      IF (ifBeamCentered) THEN
-	        WRITE(*,309) 0,SQRT(sqErr)
+	        WRITE(*,309) nStopIter,SQRT(sqErr)
 	      END IF
 
 	    END IF
@@ -3193,8 +3339,10 @@ C         ***   For point source, ChfRayPos is fixed.
                 zcoType=ZernCircular
                 WRITE(*,*)' -- Set to using NormNoll'
               Else If (LCMP(ANS,'Ann',3)) Then
-                zcoType=ZernAnnular
-                WRITE(*,*)' -- Set to using NormAnnular'
+!-->            (vv) for the output fit (Dave 2026-10-20): refused, type unchanged
+                WRITE(*,'(A)') ' ** SZCO refused: '//ZernAnnularMsg//
+     &            ' (circular) or NormHex'
+!<--
               Else If (LCMP(ANS,'Hex',3)) Then
                 zcoType=ZernHex
                 WRITE(*,*)' -- Set to using NormHex'
@@ -3216,16 +3364,10 @@ C         *** Set System Stop ***
 
 	      ! Chief ray aiming
 	      ! 'Clean up' xGrid, yGrid first, as in source routines
- 205	      CALL DXPROD(zGrid,xGrid,yGrid)
-              IF (DDOTC(zGrid,ChfRayDir).GT.0d0) THEN
-                zGrid = ChfRayDir
-              ELSE
-                zGrid = -ChfRayDir
-              END IF
-              CALL DUNITIZE(zGrid)
-              CALL DXPROD(yGrid,zGrid,xGrid)
-              CALL DUNITIZE(yGrid)
-              CALL DXPROD(xGrid,yGrid,zGrid)
+ 205	      CONTINUE
+!-->  idempotent frame (see OrthoSrcFrame in math_mod)
+	      CALL OrthoSrcFrame(ChfRayDir,xGrid,yGrid,zGrid)
+!<--
 
 	      IF (ABS(zSource).LE.1d10) THEN
 	        ! Pt source
@@ -3235,6 +3377,20 @@ C         *** Set System Stop ***
 	          srcPos(1:3)=ChfRayPos(1:3)+zSource*ChfRayDir
 	          ChfRayDir(1:3)=StopPos(1:3)-srcPos
 	          CALL DUNITIZE(ChfRayDir)
+!-->  dead band (2026-09-08): a re-aim below round-off of a unit
+!     direction is the no-fixed-point case -- keep the incoming aim.
+!     Band = DeadBandUlp of round-off (math_mod; tightened from 1d-14
+!     on 2026-10-02); a suppressed residual above the measured
+!     round-off is noted once per run.
+	          c1=MAXVAL(ABS(ChfRayDir(1:3)-cr1indir(1:3)))
+	          IF (c1.LE.DeadBandUlp*EPSILON(1d0)) THEN
+	            IF (c1.GT.DeadBandQuietUlp*EPSILON(1d0))
+     &	              CALL DeadBandNote('point-source aim',
+     &	                                c1/EPSILON(1d0))
+	            ChfRayDir(1:3)=cr1indir(1:3)
+	            c1=1d0
+	          ELSE
+!<--
 	          c1=DDOTC(ChfRayDir,ChfRayDir)
 	          If (c1.LE.1d-22) Then
                     WRITE(*,*)' Error in setting STOP, abort ...'
@@ -3243,17 +3399,44 @@ C         *** Set System Stop ***
 	            ! Need update ChfRayPos as well
 	            ChfRayPos(1:3)=srcPos(1:3)-zSource*ChfRayDir(1:3)
 		  End If
+	          END IF   ! dead band
 	        Else If (SAOpt==SAPos) Then
 	          ! Translate chief ray in (xGrid,yGrid) plane
 	          x=DDOTC(StopPos(1:3)-ChfRayPos(1:3),xGrid)
                   y=DDOTC(StopPos(1:3)-ChfRayPos(1:3),yGrid)
+!-->  dead band (2026-09-08, Dave): below round-off of the positions
+!     involved the translation has no fixed point -- eac2_7seg's SAVE
+!     round-trip alternated ChfRayPos(3) by 2 ulp on every load with an
+!     ApStop= header (the same disease as OrthoSrcFrame's, in the aim).
+!     A physical re-aim is many orders above 1e-13 of the positions.
+!     Band = DeadBandUlp x round-off of the positions (was 1d-13).
+	          c1=EPSILON(1d0)*MAX(1d0,
+     &              MAXVAL(ABS(StopPos)),MAXVAL(ABS(ChfRayPos)))
+	          IF (MAX(ABS(x),ABS(y)).GT.DeadBandUlp*c1) THEN
             ChfRayPos(1:3)=ChfRayPos(1:3)+x*xGrid(1:3)+y*yGrid(1:3)
+	          ELSE IF (MAX(ABS(x),ABS(y)).GT.DeadBandQuietUlp*c1) THEN
+	            CALL DeadBandNote('stop aim',MAX(ABS(x),ABS(y))/c1)
+	          END IF
+!<--
 	        End If
 	      ELSE
 	        ! Collimated source, translate chief ray in (xGrid,yGrid) plane
 	        x=DDOTC(StopPos(1:3)-ChfRayPos(1:3),xGrid)
 	        y=DDOTC(StopPos(1:3)-ChfRayPos(1:3),yGrid)
+!-->  dead band (2026-09-08, Dave): below round-off of the positions
+!     involved the translation has no fixed point -- eac2_7seg's SAVE
+!     round-trip alternated ChfRayPos(3) by 2 ulp on every load with an
+!     ApStop= header (the same disease as OrthoSrcFrame's, in the aim).
+!     A physical re-aim is many orders above 1e-13 of the positions.
+!     Band = DeadBandUlp x round-off of the positions (was 1d-13).
+	        c1=EPSILON(1d0)*MAX(1d0,
+     &            MAXVAL(ABS(StopPos)),MAXVAL(ABS(ChfRayPos)))
+	        IF (MAX(ABS(x),ABS(y)).GT.DeadBandUlp*c1) THEN
            ChfRayPos(1:3)=ChfRayPos(1:3)+x*xGrid(1:3)+y*yGrid(1:3)
+	        ELSE IF (MAX(ABS(x),ABS(y)).GT.DeadBandQuietUlp*c1) THEN
+	          CALL DeadBandNote('stop aim',MAX(ABS(x),ABS(y))/c1)
+	        END IF
+!<--
 	      END IF
 	      ifStopSet=.TRUE.
 
@@ -3261,13 +3444,20 @@ C         *** Set System Stop ***
 	      ! Stop specified at ELT point
 	      CALL IACCEPT_S(iStop,1,1,
      &	                     'Enter system stop element number:')
-	      IF ((EltID(iStop).EQ.9).OR.(EltID(iStop).EQ.11)
-     &	          .OR.(EltID(iStop).EQ.12)) THEN
-	        WRITE(*,*)'Invalid element type =',EltID(iStop)
-	      ELSE IF ((iStop.GT.nElt).OR.(iStop.LE.0)) THEN
+!-->  Range check FIRST (EltID(iStop) used to be indexed before
+!     it).  The type veto keeps only the non-sequential types: a
+!     Segment stop is allowed (Dave 2026-09-08) -- see the chief-
+!     ray mapping ahead of CALL STOP below.
+	      IF ((iStop.GT.nElt).OR.(iStop.LE.0)) THEN
 	        WRITE(*,*)'STOP: Invalid element number: ',iStop
+	      ELSE IF ((EltID(iStop).EQ.NSRefractorElt).OR.
+     &	          (EltID(iStop).EQ.NSReflectorElt)) THEN
+	        WRITE(*,*)'STOP: element',iStop,' is ',
+     &	          TRIM(EltTypeName(EltID(iStop))),
+     &	          ' -- a non-sequential element cannot be the stop.'
 	      ELSE
-	        CALL DEQUATE(DDEF,VptElt(1:2,iStop),3)  !ToDo: "iStop),3)" => iStop),2) ??? check
+!<--
+	        CALL DEQUATE(DDEF,VptElt(1:2,iStop),3)  ! copies 3 into DDEF(9), DACCEPT uses 2: harmless
 	        CALL DACCEPT(xTarg,DDEF,2,
      &	        	     'Enter offset vector (dx,dy):')
 
@@ -3304,6 +3494,19 @@ C         *** Set System Stop ***
 !	          GO TO 1
 !	        END IF
 
+!-->  Segment stop (Dave 2026-09-08): CTRACE visits a Segment
+!     element only for rays mapped to its source segment
+!     (RayToSegMap vs EltToSegMap), so map the chief ray to this
+!     segment for the aiming trace.  Transient: SetSourceRayGrid
+!     rebuilds the maps at the next grid setup (ifGrid is FALSE
+!     from here on).  Placed AFTER label 210 so the Rx ApStop=
+!     path (GO TO 210) gets it too.
+	        IF ((EltID(iStop).EQ.SegmentElt).AND.
+     &	      (EltToSegMap(iStop).GT.0)) THEN
+	          nRayToSeg(1)=1
+	          RayToSegMap(1,1)=EltToSegMap(iStop)
+	        END IF
+!<--
 	        ! Otherwise, for source at infinity OR finite source with
                 ! SAOpt set to SAPos,
                 ! Center beam in stop to get new chief ray:
@@ -3773,102 +3976,7 @@ C         *** System optimization command, supported in both MACOS and SMACOS **
               End If
 #endif
 
-	      if (nVarElt==0) then
-	        WRITE(*,*)' '
-                WRITE(*,*)' No Variable Element for Optimization!'
-                goto 105
-	      else if (nOptFov==0) then
-	        WRITE(*,*)' '
-                WRITE(*,*)' No Field of View for Optimization!'
-                goto 105
-              end if
-
-	      if (LOptIfFEX .and. .not.ifStopSet) then
-	        WRITE(*,*)' Must set STOP before optimization with FEX!'
-	        WRITE(*,*)' '
-	        goto 105
-	      end if
-
-	      ! Process input arguments to system optimzer drivers
-	      varZerns=0; zern_off=1
-	      varAsphs=0; asph_off=1
-              k=1
-              iVarElt=0
-
-	      ! Process source first
-	      If (isVarElt(0)) Then
-	        iVarElt=iVarElt+1
-                varElts(iVarElt)=0
-	        varDOFs((iVarElt-1)*mVarDOF+1:iVarElt*mVarDOF)
-     &               =varEltDOF(1:mVarDOF,0)
-	        If (.not.ifStopSet .and. .not.OptSrcRpt_FLG) Then
-	          if (varEltDOF(1,0)/=0 .or. varEltDOF(2,0)/=0
-     &                .or. varEltDOF(3,0)/=0) then
-	            WRITE(*,*)' Must set STOP before optimizing source!'
-	            go to 105
-	          end if
-	        End If
-	        EltName(0)='Source'
-	        nOptFov=1
-	        opt_fov(1:3,1,1)=ChfRayDir; opt_fov(1:3,2,1)=ChfRayPos
-	        zernElt(iVarElt)=0; asphElt(iVarElt)=0
-	      End If
-
-	      Do iElt=1,nElt
-		if (isVarElt(iElt)) then
-	          iVarElt=iVarElt+1
-	          varElts(iVarElt)=iElt
-	          varDOFs((iVarElt-1)*mVarDOF+1:iVarElt*mVarDOF)
-     &               =varEltDOF(1:mVarDOF,iElt)
-
-	          zernElt(iVarElt)=0  ! range 1:nVarElt
-	          if (nOptEltZern(iElt)>0) then
-	            zernElt(iVarElt)=nOptEltZern(iElt)
-	            varZerns(zern_off:zern_off+nOptEltZern(iElt)-1)
-     &	              = OptEltZernTerm(1:nOptEltZern(iElt),iElt)
-	            zern_off=zern_off+nOptEltZern(iElt)
-	          end if
-
-		  asphElt(iVarElt)=0  ! range 1:nVarElt
-                  if (nOptEltAsph(iElt)>0) then
-                    asphElt(iVarElt)=nOptEltAsph(iElt)
-                    varAsphs(asph_off:asph_off+nOptEltAsph(iElt)-1)
-     &                = OptEltAsphTerm(1:nOptEltAsph(iElt),iElt)
-                    asph_off=asph_off+nOptEltAsph(iElt)
-                  end if
-
-	          If (LOptCons) Then
-                    ! process variable constraints
-                    Do i=1,mVarDOF
-                      if (varEltDOF(i,iElt)/=0) then
-                        varEltCons(1:2,k)=EltCons(1:2,i,iElt)
-                        k=k+1
-                      end if
-                    End Do
-                  End If
-
-	          ! Save state of variable element
-	          psiElt_old(1:3,iVarElt)=psiElt(1:3,iElt)
-	          vptElt_old(1:3,iVarElt)=vptElt(1:3,iElt)
-	          KrElt_old(iVarElt)=KrElt(iElt)
-	          KcElt_old(iVarElt)=KcElt(iElt)
-
-#if 0
-	           nDOF_VarElt(iVarElt)=0
-	           Do i=1,7
-	             if (varEltDOF(i,iElt)/=0) then
-	 	       nDOF_VarElt(iVarElt)=nDOF_VarElt(iVarElt)+1
-	               DOF_VarElt(nDOF_VarElt(iVarElt),iVarElt)
-     &                   = DOF_NameList(i)
-	             end if
-	           End Do
-#endif
-	        end if
-	      End Do
-
-	      ! Save Rx Chief Ray
-	      ChfRayDir_Rx=ChfRayDir
-	      ChfRayPos_Rx=ChfRayPos
+	      IF (.NOT. calib_setup_vars()) GO TO 105   ! PLAN 3.3: one copy
 
 	      ! Save Rx npts, use opt_npts for design optimization
 	      npts_Rx=npts; npts=opt_npts
@@ -3939,6 +4047,16 @@ C         *** System optimization command, supported in both MACOS and SMACOS **
 #ifdef MACOS_CMD
 	      CALL CACCEPT(ANS,'yes',
      &               'Display optimization summary (yes,no):')
+!-->  A non-answer (a journal's next COMMAND, e.g. 'quit') takes the
+!     default and goes back to the command stream (PLAN 3.3).
+	      IF (.NOT.(LCMP(ANS,'yes',1).OR.LCMP(ANS,'no',1))) THEN
+	        WRITE(*,'(3A)') ' CALIB: "',TRIM(ANS),
+     &            '" is not yes/no -- taking the default [yes];'//
+     &            ' the token goes back to the command stream'
+	        CALL UNREAD_LOH()
+	        ANS='yes'
+	      END IF
+!<--
 #else
 	      ANS(1:3)='yes'  ! default to 'yes' for SMACOS
 #endif
@@ -4185,6 +4303,16 @@ C    &              DOF_VarElt(1:nDOF_VarElt(iElt),iElt)
 #ifdef MACOS_CMD
 	      CALL CACCEPT(ANS,'yes',
      &          'Save optimized optical state (yes,no):')
+!-->  A non-answer (a journal's next COMMAND, e.g. 'quit') takes the
+!     default and goes back to the command stream (PLAN 3.3).
+	      IF (.NOT.(LCMP(ANS,'yes',1).OR.LCMP(ANS,'no',1))) THEN
+	        WRITE(*,'(3A)') ' CALIB: "',TRIM(ANS),
+     &            '" is not yes/no -- taking the default [yes];'//
+     &            ' the token goes back to the command stream'
+	        CALL UNREAD_LOH()
+	        ANS='yes'
+	      END IF
+!<--
 #else
 	      ANS(1:3)='yes'  ! default to 'yes' for SMACOS
 #endif
@@ -4450,7 +4578,17 @@ C  Plot differential OPD
                 WRITE(*,*)' **Warning: OPDs are not on same element!'
               End If
               OPDbuf=OPDMat-OPDSave
-              WRITE(*,*)' RMS dOPD =',RMS2(OPDbuf,nGridPts,nGridPts)
+!-->  PLAN 1.2 (k): RMS2 returns -1 (its no-nonzero-cell sentinel)
+!     when the difference map is all zero -- two identical OPDs, e.g.
+!     OPD, ZABERR/ZRM (no save), OPD, DOPD.  The difference is 0.
+              c1 = RMS2(OPDbuf,nGridPts,nGridPts)
+              IF (c1 < 0d0) THEN
+                WRITE(*,*)' RMS dOPD =',0d0
+                WRITE(*,*)' (the two OPDs are identical)'
+              ELSE
+                WRITE(*,*)' RMS dOPD =',c1
+              END IF
+!<--
               Call FindPV(OPDbuf,nGridPts,nGridPts,c1,c2)
               WRITE(*,*)' P-V dOPD =',c1,c2
 
@@ -6135,8 +6273,12 @@ C         ***Spot diagram from linear model***
 	      CALL CLTRACE(PertVec,RaySpot,
      &        OPDMat,AvgL,Cmatrix,npts,RayIndex,iPertElt,iElt)
 	      NBEAMS=2
-	      CALL SpotDiag(RaySpot,nRay,2,mRay,2,1,
+!-->  PLAN 1.2 (m): honour the NONE plot type as SPOT does (it drew
+!     regardless: eight 'giza ... No device open' errors under NONE).
+	      IF (iPloTyp.NE.0)
+     &	      CALL SpotDiag(RaySpot,nRay,2,mRay,2,1,
      &	                    'X-Axis','Y-Axis','Spot Diagram')
+!<--
 	    ELSE
 	      WRITE(*,157)
 	    END IF
@@ -6284,9 +6426,26 @@ C             Go into interactive mode
 	    End If
 
 	  ELSE IF (LCMP(command,'PWIN',4)) THEN
-	    ! Start a Python-Tcl/Tk GUI window
-            ANS='!he.py&'
-  	    Call SHELLCMD(ANS,7)
+!-->  PWIN handed the shell the literal '!he.py&' ('sh: !he.py: not
+!     found'), so the GUI never launched, and a missing he.py answered
+!     asynchronously after the next prompt.  Now the PATH is checked
+!     first, synchronously; he.py is launched in the background only
+!     when it is there (2026-10-17, PLAN_CONSOLIDATION 1.2 (q)).
+	    BLOCK
+	      INTEGER :: pwin_stat,pwin_cst
+	      pwin_stat=1; pwin_cst=0
+	      CALL EXECUTE_COMMAND_LINE(
+     &          'command -v he.py >/dev/null 2>&1',
+     &          EXITSTAT=pwin_stat,CMDSTAT=pwin_cst)
+	      IF (pwin_cst.NE.0 .OR. pwin_stat.NE.0) THEN
+	        WRITE(*,*)' PWIN: he.py not found on PATH; nothing launched'
+	      ELSE
+	        WRITE(*,*)' PWIN: launching he.py in the background'
+	        ANS='he.py &'
+	        CALL SHELLCMD(ANS,7)
+	      END IF
+	    END BLOCK
+!<--
 #endif
 
 
@@ -6323,7 +6482,8 @@ C         ***Here if no match***
 #else
 	    IF (ifEcho) WRITE(*,302)
 #endif
-	    WRITE(*,'(A,A)') '** Unknown command = ', TRIM(command)
+	    WRITE(emsgRec,'(A,A)') '** Unknown command = ', TRIM(command)
+	    CALL emsg_put
 	  END IF
 	GO TO 1
 

@@ -1,0 +1,21 @@
+{
+ "Two 3k modules fill the swath": {
+  "img:dyson5_block2_3k_views_rc.png": {
+   "x": 3.47,
+   "y": 1.15,
+   "w": 6.4,
+   "h": 3.6
+  },
+  "table:1": {
+   "y": 5.4
+  }
+ },
+ "The two strips on the ground, and the two focal planes": {
+  "img:dyson5_block2_3k_swath_rc.png": {
+   "x": 2.83,
+   "y": 1.15,
+   "w": 7.68,
+   "h": 4.0
+  }
+ }
+}

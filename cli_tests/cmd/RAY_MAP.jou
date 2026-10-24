@@ -1,0 +1,17 @@
+# MAP (ray numbers on the source grid) and RAY (one ray, surface by surface) on the manual's
+# Cassegrain with exit pupil (cmdref: Ray Tracing).  The chief ray (1) is not shown by MAP; RAY 1
+# reports it obscured by element 1 (the secondary's shadow) and still traces it to the detector;
+# the Return-1 -> ExitPupil leg has a NEGATIVE segment length (the return reverses the beam).
+old $ROOT/docs/macos-manual/examples/CassWithExitPupil.in
+map
+ray
+1
+0
+# EXPECT: Map of rays at input aperture
+# EXPECT: 0   0   0   0 120 121 122 123 124 125   0
+# EXPECT: Ray\s+1 is the chief ray\.
+# EXPECT: Ray\s+1 is obscured by element\s+1
+# EXPECT: to Element\s+4 \(Return1\s*\):[\s\S]*?Total Length=\s+1\.46222918040000D\+01
+# EXPECT: to Element\s+5 \(ExitPupil\s*\):[\s\S]*?Segment Length= -5\.56014590200000D\+00
+# EXPECT: to Element\s+6 \(Detector\s*\)
+# EXPECT-NOT: forrtl

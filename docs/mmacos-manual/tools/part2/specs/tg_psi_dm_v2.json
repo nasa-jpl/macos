@@ -1,0 +1,43 @@
+{
+ "section": "90_polarization",
+ "siblings": [
+  "tg_psi_dm"
+ ],
+ "pins": [
+  {
+   "name": "gain",
+   "pattern": "PSI scale gain, as designed\\s+\\S+\\s+(\\S+)",
+   "rule": "printed",
+   "format": "%.6f"
+  },
+  {
+   "name": "corr",
+   "pattern": "correlation (\\S+)\\n",
+   "rule": "printed",
+   "format": "%.6f"
+  },
+  {
+   "name": "resid",
+   "pattern": "residual (\\S+) nm rms interior",
+   "rule": "printed",
+   "format": "%.3f"
+  }
+ ],
+ "run_note": "On 2026-10-24 this page was a refusal (gate 1, the same cause as `tg_psi_dm`'s, finding (ooo)); the engine fix, macos c6c83d55, made it run. The manual copies it with its sibling `tg_psi_dm`, which it reads for `dm_influence_map`.",
+ "number": "With the coated cube in place of v1's plate, the gauge's scale is right as designed, gain %pin:p2_tg_psi_dm_v2_gain% against v1's 1.11661, because the cube's reflecting arm is cleaned to pure s; an arm-waveplate error now costs contrast, not scale. It recovers the same DM map with correlation %pin:p2_tg_psi_dm_v2_corr% and a residual of %pin:p2_tg_psi_dm_v2_resid% nm rms in the interior.",
+ "prompt": "Using templates/90_polarization/tg_psi_dm_v2, sweep the arm-waveplate azimuth error to 20 degrees and tell me where the fringe contrast falls below 0.99 and whether the gain moves.",
+ "entry": "run(fullfile(pwd,'example_tg_psi_dm_v2.m'));",
+ "figure": "tg_psi_dm_v2_recovery.png",
+ "run": {
+  "from": "=== the coating ===",
+  "to": "DM closure: corr[^\\n]*"
+ },
+ "zeros": [
+  {
+   "name": "ls",
+   "pattern": "four-step vs 64-angle least squares: (\\S+) nm",
+   "bound": 1e-10
+  }
+ ],
+ "caption": "The v2 rig's DM surface recovery (`tg_psi_dm_v2_recovery.png`): the injected DM surface, the recovered surface, and the residual (nm)."
+}

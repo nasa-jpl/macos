@@ -1,0 +1,71 @@
+# Section 4, Element Types, Reflectors: the NEW dialog for a flat mirror (flatMirror, element 1).  Dave
+# 2026-10-19: regenerate the NEW tutorials as plain dialogs.  The element answers are 3.2's (the type and
+# surface abbreviated 'reflect' and 'flat' as 3.2 typed them).  Differences from 3.2: the current dialog asks
+# 'Enter glass type (FixedIndex): [FixedIndex]:' before the index and extinction (answered with its default),
+# it echoes the element and asks 'Is this correct? [YES]:' (answered with its default); the element-type menu
+# adds TrGrating, TrPolarizer and WavePlate, the surface menu Grid data, Toric, InfluenceFcn, AsphGrid,
+# FreeForm, MonGrData and ZrnGrData; and the element block no longer carries fElt/eElt (KrElt/KcElt only) and
+# adds nCoat.  3.2 printed only the element, so the source (collimated, 1 unit wide, 15 points, from z=-1) and a
+# flat FocalPlane at z=-1 behind the mirror are setup (not printed).  Pins: the element as SHOW prints it, and
+# the OPD at the focal plane, zero for a flat mirror in a collimated beam.
+cd $TMP
+new
+flatm
+0,0,1
+0,0,-1
+1d22
+1
+0
+none
+1d-6
+1
+Circular
+1
+15
+-1,0,0
+0,-1,0
+2
+# TRANSCRIPT: s04_reflector from=Enter\sElement\s+1\sData upto=Enter\sElement\s+2\sData
+flatMirror
+reflect
+flat
+0,0,0
+0,0,0
+0,0,-1
+no
+0
+1d22
+Geometric
+no
+
+1
+1d22
+
+# TRANSCRIPT-OFF
+fp
+FocalPlane
+Flat
+0,0,-1
+0,0,-1
+0,0,-1
+
+
+1d22
+Geometric
+
+
+1,0,0
+0,1,0
+# TRANSCRIPT-OFF
+show
+1
+# TRANSCRIPT-OFF
+opd 2
+/null
+# EXPECT: File flatm\.in being created\.
+# EXPECT: Enter element type : reflect\s[\s\S]*?Enter surface type : flat\s
+# EXPECT: Enter number of element \(0=aperture\): \[0\]: 1\s+iElt=\s+1\s+EltName=\s+flatMirror\s+Element=\s+Reflector\s+Surface=\s+Flat\s+KrElt=-1\.0E\+22\s+KcElt=0\.0E\+00\s+psiElt=\s+0\.0E\+00\s+0\.0E\+00\s+-1\.0E\+00\s+VptElt=\s+0\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+RptElt=\s+0\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+IndRef=1\.0E\+00\s+Extinc=1\.0E\+22[\s\S]*?ApType=\s+None\s+PropType=\s+Geometric\s+zElt=1\.0E\+22
+# EXPECT: OPD: nPassRays =\s+124,\s+DAvgCumL =\s+20\.000\d*D-01[\s\S]*?RMS OPD error is\s+(0\.0+D\+00|\d\.\d+D-1[2-9])
+# EXPECT-NOT: values expected
+# EXPECT-NOT: Unknown (grid|surface|element|command)
+# EXPECT-NOT: forrtl

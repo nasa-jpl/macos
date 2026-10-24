@@ -1,0 +1,25 @@
+# CENTER (source position for a beam centred at an element + offset), FFP (field for a chief-ray
+# target at an element), PFP (the same in pixels), FDP (detector position from the chief rays) on
+# the manual's Cassegrain (cmdref: Ray Tracing).  CENTER 3 with a 10 mm offset moves ChfRayPos y
+# to 4.03e-2 (RAY 1 shows it); FFP and PFP converge in 2 iterations; FDP updates element 5.
+# The chief ray is obscured at the detector (element 1's shadow) and the solvers proceed anyway.
+old $ROOT/docs/macos-manual/examples/Cassegrain.in
+stop obj 0 0 0
+center 3 0.01,0
+ray
+1
+0
+ffp 5 1e-3,-2e-3
+yes
+pfp 5 15e-4 20,-100
+yes
+fdp 5
+yes
+# EXPECT: Beam centered in\s+\d+ iterations, error=\s+\d\.\d+D-1\d
+# EXPECT: Starting point=\s+\S+\s+4\.0332\d*D-02\s+-5\.00000000000000D\+00
+# EXPECT: Chief ray obscured at element\s+5
+# EXPECT: Field angle finder results:\s+Did\s+\d iterations, error=\s+\d\.\d+D-1\d\s+Old dx=\s+\S+\s+New dx=\s+(1\.0000\d*D-03|9\.9999\d*D-04)
+# EXPECT: Old dx=\s+(1\.0000\d*D-03|9\.9999\d*D-04)\s+New dx=\s+(3\.0000\d*D-02|2\.9999\d*D-02)
+# EXPECT: New Detector Normal   =\s+-4\.4165\d*E-003
+# EXPECT: Detector Element Position \( Elt\s+5 \) Updated!
+# EXPECT-NOT: forrtl

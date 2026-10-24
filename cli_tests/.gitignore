@@ -1,0 +1,6 @@
+records/*.log
+corpus_extended.txt
+must_fail/list.txt
+corpus_manual.txt
+records/*_transcripts/
+records/manual_work/

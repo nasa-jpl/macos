@@ -1,0 +1,46 @@
+{
+ "section": "90_polarization",
+ "pins": [
+  {
+   "name": "rot",
+   "pattern": "the arms are (\\S+) deg from orthogonal",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "ungain",
+   "pattern": "gain (\\S+) \\(11",
+   "rule": "printed",
+   "format": "%.5f"
+  },
+  {
+   "name": "corr",
+   "pattern": "correlation (\\S+)\\n",
+   "rule": "printed",
+   "format": "%.6f"
+  },
+  {
+   "name": "resid",
+   "pattern": "RESIDUAL \\S+ nm rms whole pupil \\| (\\S+) nm rms interior",
+   "rule": "printed",
+   "format": "%.3f"
+  }
+ ],
+ "number": "The bench measures its own polarization defect before it measures the DM: the beamsplitter's diattenuation rotates the test arm %pin:p2_tg_psi_dm_rot% degrees from orthogonal, so the unaligned gauge reads %pin:p2_tg_psi_dm_ungain% times the true surface (11.7 percent high); turning the arm's waveplate nulls it. Aligned, the four-step polarization PSI recovers the injected DM map with correlation %pin:p2_tg_psi_dm_corr% and a residual of %pin:p2_tg_psi_dm_resid% nm rms in the interior, and the four-step agrees with a 64-angle least-squares fit to the floor of the arithmetic.",
+ "prompt": "Using templates/90_polarization/tg_psi_dm, run the example with an uncoated beamsplitter and tell me how far the arms rotate from orthogonal and what the unaligned gain becomes.",
+ "entry": "run(fullfile(pwd,'example_tg_psi_dm.m'));",
+ "figure": "tg_psi_dm_recovery.png",
+ "run": {
+  "from": "=== GATE 1",
+  "to": "CLOSURE PASS[^\\n]*"
+ },
+ "zeros": [
+  {
+   "name": "ls",
+   "pattern": "four-step vs 64-angle least squares: (\\S+) nm",
+   "bound": 1e-10
+  }
+ ],
+ "run_note": "On 2026-10-24 this page was a refusal (gate 2's centroid read NaN, finding (ooo)); the engine fix, macos c6c83d55, made it run, and the page now prints the run.",
+ "caption": "The DM surface recovery (`tg_psi_dm_recovery.png`): an interferogram at analyzer 0 degrees, the recovered surface, the injected DM map, and the residual (nm)."
+}

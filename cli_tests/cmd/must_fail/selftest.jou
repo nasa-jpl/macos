@@ -1,0 +1,3 @@
+# the runner must read expectations: this one can never match
+old $ROOT/docs/macos-manual/examples/Cassegrain.in
+# EXPECT: THIS_LINE_IS_NEVER_PRINTED_BY_MACOS
