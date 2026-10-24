@@ -62,6 +62,8 @@ def page(name, fig_no):
     out = [f"### `{name}`: {title}", "", intro, ""]
     out += ["**Run it.**", "", "```matlab",
             f"cd('<path-to>/mmacos/templates/{s['section']}/{name}');", s["entry"], "```", ""]
+    if "run_note" in s:
+        out += [s["run_note"], ""]
     if "knobs" in s:
         out += [f"**The knobs** (`{s['knobs']['file']}`):", "", f"<!-- transcript: p2_{name}_knobs -->", ""]
     out += ["**What it prints:**", "", f"<!-- transcript: p2_{name}_run -->", ""]

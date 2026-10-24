@@ -5,3 +5,7 @@ tma_centered
 tma_longslit
 tma_onaxis
 tma_unobscured
+e5_pie
+e5_seg
+bench_ctb
+coro_walkthrough

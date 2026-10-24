@@ -92,6 +92,11 @@ p2_coro_walkthrough_floor	1.45e-13
 p2_e5_pie_clipped	120
 p2_e5_pie_kept	86
 p2_e5_pie_src	12128
+p2_e5_seg_prior	12860.131
+p2_e5_seg_edge	55.322
+p2_e5_seg_met	472.908
+p2_e5_seg_both	4.704
+p2_e5_seg_mc	4.759
 p2_freeform_unobscured_s0	0.0108
 p2_freeform_unobscured_s2worst	0.8525
 p2_freeform_unobscured_s2area	0.5906
