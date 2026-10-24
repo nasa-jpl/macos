@@ -1,0 +1,17 @@
+{
+ "section": "40_benches",
+ "entry": "out = zwfs_run('stages',{'bench'});",
+ "siblings": [
+  "dm_gauge_lib",
+  "90_polarization/tg_psi_dm"
+ ],
+ "figure": "SCOUT",
+ "run": {
+  "from": "\\S",
+  "to": ""
+ },
+ "pins": [],
+ "caption": "",
+ "number": "",
+ "prompt": ""
+}
