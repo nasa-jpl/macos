@@ -1,0 +1,8 @@
+{
+ "section": "30_instruments",
+ "entry": "out = coro_planet_demo();",
+ "run_ref": "Section 2 ran it with its defaults (model 512, CoroExample.in): it writes its surfaces page and its planet page and prints only the file names.",
+ "figure_ref": "the surfaces page is FIGURE 5, in Section 2.",
+ "number": "The template prints no number: its product is two pictures. The surfaces page is sound (the Lyot pupil's bright rim is the mask working). The planet page is not: asked for a planet at sky-angle cosines [+2e-5 +2e-5], it composes a shifted, clipped speckle field rather than a planet image, finding (ddd), and Part I prints only the surfaces page.",
+ "prompt": "Using templates/30_instruments/coro_planet_demo, find why the planet page shows no planet image by printing where the engine puts the planet's chief ray at the detector for the requested sky angle, before changing anything."
+}

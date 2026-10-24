@@ -64,19 +64,27 @@ def page(name, fig_no):
     s = json.loads((SPECS / f"{name}.json").read_text())
     title, intro = readme_intro(name, s["section"], s.get("intro_from"))
     out = [f"### `{name}`: {title}", "", intro, ""]
-    out += ["**Run it.**", "", "```matlab",
-            f"cd('<path-to>/mmacos/templates/{s['section']}/{name}');", s["entry"], "```", ""]
+    cd = f"cd('<path-to>/mmacos/templates/{s['section']}/{name}');"
+    if "refusal" in s:                             # the bare call refuses today: that is printed first
+        out += ["**Run it, as it stands today.**", "", "```matlab", cd, s["refusal"]["entry"], "```", ""]
+        out += ["**It refuses:**", "", f"<!-- transcript: p2_{name}_refusal -->", ""]
+    if "entry" in s:
+        lead = "**Run it with the README's own value.**" if "refusal" in s else "**Run it.**"
+        out += [lead, "", "```matlab", cd, s["entry"], "```", ""]
     if "run_note" in s:
         out += [s["run_note"], ""]
     if "knobs" in s:
         out += [f"**The knobs** (`{s['knobs']['file']}`):", "", f"<!-- transcript: p2_{name}_knobs -->", ""]
     if "run_ref" in s:                             # a template Part I already ran: point to it
         out += [f"**What it prints:** {s['run_ref']}", ""]
-    else:
+    elif "run" in s:
         out += ["**What it prints:**", "", f"<!-- transcript: p2_{name}_run -->", ""]
-    attr = s.get("fig_attr", "")                   # e.g. "{height=8in}" for a tall figure
-    fig = s.get("fig_media", f"p2_{name}_fig.png")  # or a figure a Part I driver generated
-    out += [f"![](media/{fig}){attr}", "", f"**FIGURE {fig_no}** {s['caption']}", ""]
+    if "figure_ref" in s:                          # its figure is already in Part I: point to it
+        out += [f"**Its figure:** {s['figure_ref']}", ""]
+    else:
+        attr = s.get("fig_attr", "")               # e.g. "{height=8in}" for a tall figure
+        fig = s.get("fig_media", f"p2_{name}_fig.png")  # or a figure a Part I driver generated
+        out += [f"![](media/{fig}){attr}", "", f"**FIGURE {fig_no}** {s['caption']}", ""]
     out += [f"**The number it reproduces.** {s['number']}", ""]
     out += [f"**Adapt it.** *\"{s['prompt']}\"*", ""]
     return "\n".join(out)
@@ -91,7 +99,8 @@ def main():
     fig = FIRST_FIGURE
     for i, n in enumerate(names, start=1):
         (MAN / "src" / f"2{i:02d}_{n}.md").write_text(page(n, fig) + "\n")
-        fig += 1
+        if "figure_ref" not in json.loads((SPECS / f"{n}.json").read_text()):
+            fig += 1
     print(f"wrote src/200_part2.md and {len(names)} pages (FIGURE {FIRST_FIGURE}..{fig - 1})")
 
 
