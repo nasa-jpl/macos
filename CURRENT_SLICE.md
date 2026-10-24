@@ -3829,3 +3829,8 @@ promote-on-land pass.**
 > docs/mmacos-manual/REPORT_PART_I.md, REPORT_PART_II.md, OPEN_QUESTIONS.md; findings (bbb)-(sss) in PLAN 1.2.  TO stopped for Dave
 > per the brief; next harness task offered: the orphan test classes (in no suite) into their suites.  Engine lane idle; CCMac pair 13
 > pending his gate.**
+
+> **2026-10-24 (CC): both lanes IDLE for Dave.  One more question for his return: the test classes in NO run_mmacos_tests.sh suite
+> (three fixed by TO's bindings round; 'eight CodeV mask classes and about ten others' remain) -- wiring them is a resources test-config
+> change outside any brief, so it waits for his word (TO declined it under the standing push word, correctly).  OPEN_QUESTIONS (sss)
+> states the exit(0) rule conflict.  Origin: macos 81878b1b, resources 446bd45.**
