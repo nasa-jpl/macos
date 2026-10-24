@@ -8,7 +8,7 @@
  },
  "figure": "tls_section_layout.png",
  "run": {
-  "from": "\\S",
+  "from": "tma_longslit section",
   "to": ""
  },
  "pins": [
