@@ -1,0 +1,57 @@
+{
+ "section": "80_end_to_end",
+ "entry": "s1_layout_search(); s1_telescope(); s2_segmentation();",
+ "figure": "s1_shroud.png",
+ "run": {
+  "from": "=+ e2e6m S1 -- the 6 m",
+  "to": "S1 DONE in [0-9.]+ min"
+ },
+ "pins": [
+  {
+   "name": "s0",
+   "pattern": "S0 centre\\s+: \\S+ -> (\\S+)",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "s1",
+   "pattern": "S1 inner 2-D\\s+: worst \\S+ -> (\\S+)",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "s2",
+   "pattern": "S2 full 2-D \\S+ : worst (\\S+),",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "dense",
+   "pattern": "dense 7x7 map over \\S+ raw max (\\S+),",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "fno",
+   "pattern": "EFL \\S+ m -> f/(\\S+)  \\[",
+   "rule": "printed",
+   "format": "%.2f"
+  },
+  {
+   "name": "segs",
+   "pattern": "\\[1\\] (\\d+) segments, width",
+   "rule": "printed",
+   "format": "%d"
+  }
+ ],
+ "caption": "The launch-shroud fit the telescope stage draws (`s1_shroud.png`): end-on, every body's radial extent about the incoming-beam axis against the 8.0 m deployed shroud (black); in elevation, the 17.37 m train with the entry corridor shaded (the sunshade keep-out, not gated).",
+ "number": "The flow's three hard numbers are 500 nm, an OTA f/# of 12 to 20, and an 8 m shroud. Today's run starts where the committed one did, the same all-sphere layout and the same center-field correction (S0, %pin:p2_e2e6m_s0% waves), and then parts from it: the inner-field stage ends at %pin:p2_e2e6m_s1% waves against the committed 0.0200, the full-field solve at %pin:p2_e2e6m_s2% (committed 0.0355, both inside the 0.071-wave bar), the dense 7 x 7 map at %pin:p2_e2e6m_dense% waves raw, which fails the bar the committed 0.0502 passed, and the corrected telescope at f/%pin:p2_e2e6m_fno% against the committed f/25.39. Both f-numbers miss the 12 to 20 band, which is why the flow has `s1_close_fno`. The template's own files have not changed in git since 2026-08-25; the library under them has, and which change moved this is not traced (the open questions list has it). The segmentation stage runs on the live telescope, %pin:p2_e2e6m_segs% segments, and its one-segment poke gate passes.",
+ "prompt": "Using templates/80_end_to_end/e2e6m, run s1_telescope and then s1_close_fno to bring the corrected f/# into the 12-20 band, and report the dense-map maximum and the shroud fit at the closed f/#.",
+ "masks": [
+  {
+   "pattern": "DONE in [0-9.]+ min",
+   "with": "DONE in <t> min"
+  }
+ ],
+ "run_note": "The README's three calls, run in order on a copy: the layout search (whose 216-row table is not printed here; it ends, as committed, with no geometry meeting all three gates), the telescope, and the segmentation. The page prints the telescope stage."
+}

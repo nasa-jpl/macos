@@ -1,0 +1,16 @@
+{
+ "section": "90_polarization",
+ "entry": "run(fullfile(pwd,'example_tg_psi_dm_v2.m'));",
+ "figure": "SCOUT",
+ "run": {
+  "from": "\\S",
+  "to": ""
+ },
+ "pins": [],
+ "caption": "",
+ "number": "",
+ "prompt": "",
+ "siblings": [
+  "tg_psi_dm"
+ ]
+}
