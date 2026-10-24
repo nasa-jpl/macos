@@ -66,9 +66,13 @@ def page(name, fig_no):
         out += [s["run_note"], ""]
     if "knobs" in s:
         out += [f"**The knobs** (`{s['knobs']['file']}`):", "", f"<!-- transcript: p2_{name}_knobs -->", ""]
-    out += ["**What it prints:**", "", f"<!-- transcript: p2_{name}_run -->", ""]
+    if "run_ref" in s:                             # a template Part I already ran: point to it
+        out += [f"**What it prints:** {s['run_ref']}", ""]
+    else:
+        out += ["**What it prints:**", "", f"<!-- transcript: p2_{name}_run -->", ""]
     attr = s.get("fig_attr", "")                   # e.g. "{height=8in}" for a tall figure
-    out += [f"![](media/p2_{name}_fig.png){attr}", "", f"**FIGURE {fig_no}** {s['caption']}", ""]
+    fig = s.get("fig_media", f"p2_{name}_fig.png")  # or a figure a Part I driver generated
+    out += [f"![](media/{fig}){attr}", "", f"**FIGURE {fig_no}** {s['caption']}", ""]
     out += [f"**The number it reproduces.** {s['number']}", ""]
     out += [f"**Adapt it.** *\"{s['prompt']}\"*", ""]
     return "\n".join(out)

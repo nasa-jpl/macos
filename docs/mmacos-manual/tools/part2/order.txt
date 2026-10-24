@@ -12,3 +12,5 @@ coro_walkthrough
 cophi_dm96
 tg_psi_dm96
 tg_psi_dm96_oap
+e2e
+e2e6m
