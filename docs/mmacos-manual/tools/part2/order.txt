@@ -9,3 +9,6 @@ e5_pie
 e5_seg
 bench_ctb
 coro_walkthrough
+cophi_dm96
+tg_psi_dm96
+tg_psi_dm96_oap
