@@ -83,3 +83,29 @@ ch07_pm_seg_piston_actuator	2.595
 ch07_pm_seg_tilt_actuator	1.281
 ch07_sm_tilt_actuator	1.251
 ch07_wfs_sensing_error	0.09183
+p2_bench_ctb_chief	< 1e-09
+p2_bench_ctb_wfe	0.001423
+p2_bench_ctb_rays	3002
+p2_bench_ctb_spot	0.02713
+p2_coro_walkthrough_dzmean	1.49e-09
+p2_coro_walkthrough_floor	1.45e-13
+p2_e5_pie_clipped	120
+p2_e5_pie_kept	86
+p2_e5_pie_src	12128
+p2_freeform_unobscured_s0	0.0108
+p2_freeform_unobscured_s2worst	0.8525
+p2_freeform_unobscured_s2area	0.5906
+p2_offset_imager_s1max	37.8
+p2_offset_imager_s1avg	25.8
+p2_offset_imager_s3max	41849.9
+p2_offset_imager_s5max	12415.1
+p2_tma_centered_centered	0.0575
+p2_tma_centered_section	0.1530
+p2_tma_longslit_plate	329.99
+p2_tma_longslit_strip	54.24
+p2_tma_longslit_clear	10.2
+p2_tma_onaxis_wfe	0.0059
+p2_tma_onaxis_bias	1'
+p2_tma_unobscured_fp_foot	< 0.0001
+p2_tma_unobscured_ffm1	0.011
+p2_tma_unobscured_ring1	0.032
