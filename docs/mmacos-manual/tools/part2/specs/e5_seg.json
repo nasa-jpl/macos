@@ -9,13 +9,45 @@
   "from": "^RINGS ",
   "to": "^MODEL "
  },
- "figure": "e5_seg_metric.png",
+ "figure": "e5_seg_met_layout.png",
  "run": {
   "from": "\\[1\\]",
   "to": ""
  },
- "pins": [],
- "caption": "",
- "number": "",
- "prompt": ""
+ "pins": [
+  {
+   "name": "prior",
+   "pattern": "prior \\(no sensing\\)\\s+(\\S+) nm",
+   "rule": "printed",
+   "format": "%.3f"
+  },
+  {
+   "name": "edge",
+   "pattern": "edge sensors only\\s+(\\S+) nm",
+   "rule": "printed",
+   "format": "%.3f"
+  },
+  {
+   "name": "met",
+   "pattern": "MET only\\s+(\\S+) nm",
+   "rule": "printed",
+   "format": "%.3f"
+  },
+  {
+   "name": "both",
+   "pattern": "edge \\+ MET\\s+(\\S+) nm",
+   "rule": "printed",
+   "format": "%.3f"
+  },
+  {
+   "name": "mc",
+   "pattern": "draws\\): (\\S+) nm",
+   "rule": "printed",
+   "format": "%.3f"
+  }
+ ],
+ "caption": "The MET setup as built (`e5_seg_met_layout.png`, `macos.design.met_view`), its title carrying this run's edge+MET residual: left, the 3-D scene, the seven hex segments, the launchers at their edges and the gauge beams down to the six fiducials (red); center, the aft truss's beams face-on in the hub plane; right, the launchers and beams face-on over the tiling, colored by segment.",
+ "number": "Sensing the 54 rigid-body degrees of freedom (seven segments, the secondary, the aft body) against a 1 urad / 1 um deployment prior, the post-control wavefront residual is %pin:p2_e5_seg_prior% nm rms with no sensing, %pin:p2_e5_seg_edge% nm with the edge sensors alone, %pin:p2_e5_seg_met% nm with the metrology truss alone, and %pin:p2_e5_seg_both% nm with both; a 200-draw Monte-Carlo gives %pin:p2_e5_seg_mc% nm, the same model computed the other way. The README's table (9577 / 3641 / 450 / 232 nm) predates the edge-sensor rework, as its banner says, and the banner's prediction holds: with the in-plane motions now edge-observable, the combined residual drops by a factor of about fifty. The prior moved too (%pin:p2_e5_seg_prior% against 9577 nm), so the wavefront sensitivities themselves are not the README's; that part is not traced here.",
+ "prompt": "Using templates/20_segmentation/e5_seg, rerun the edge-plus-metrology sensing study for the 2-ring, 19-segment hex primary with the same priors and noises, and tell me which body dominates the residual.",
+ "run_note": "The template finds the library's `segmirmaker` folder four levels above itself, so the manual runs its copy under a scratch `mmacos/` folder with `segmirmaker` linked beside it; that is the only difference from running it in place."
 }
