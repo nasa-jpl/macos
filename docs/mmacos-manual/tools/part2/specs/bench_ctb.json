@@ -40,5 +40,6 @@
    "pattern": "chief max (\\S+) mm",
    "bound": 1e-09
   }
- ]
+ ],
+ "intro_from": "^A worked"
 }

@@ -30,8 +30,10 @@ way Part I's did (the front matter, *How this manual is made*).
 """
 
 
-def readme_intro(name, section):
-    """The README's title (after the dash) and its opening paragraphs, up to the first heading."""
+def readme_intro(name, section, start=None):
+    """The README's title (after the dash) and its opening paragraphs, up to the first heading.
+    Blockquoted notes (status banners, cross-references) are left out; a spec's 'intro_from' (a
+    regex) starts the text at the first line it matches, for a README that opens with a table."""
     f = TPL / section / name / "README.md"
     if not f.is_file():
         f = KEPT / f"{name}.md"
@@ -39,19 +41,24 @@ def readme_intro(name, section):
     lines = text.splitlines()
     title = re.sub(r"^#\s*", "", lines[0]).strip()
     title = re.split(r"\s+[—-]\s+", title, maxsplit=1)[-1]
+    rest = lines[1:]
+    if start:
+        k = next(i for i, ln in enumerate(rest) if re.search(start, ln))
+        rest = rest[k:]
     body = []
-    for ln in lines[1:]:
+    for ln in rest:
         if ln.startswith("#"):
             break
-        body.append(ln)
-    para = "\n".join(body).strip()
+        if not ln.startswith(">"):
+            body.append(ln)
+    para = re.sub(r"\n{3,}", "\n\n", "\n".join(body)).strip()
     para = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", para)   # links -> their text (paths are not live here)
     return title, para
 
 
 def page(name, fig_no):
     s = json.loads((SPECS / f"{name}.json").read_text())
-    title, intro = readme_intro(name, s["section"])
+    title, intro = readme_intro(name, s["section"], s.get("intro_from"))
     out = [f"### `{name}`: {title}", "", intro, ""]
     out += ["**Run it.**", "", "```matlab",
             f"cd('<path-to>/mmacos/templates/{s['section']}/{name}');", s["entry"], "```", ""]
