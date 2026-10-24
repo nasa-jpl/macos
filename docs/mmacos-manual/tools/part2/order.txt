@@ -1,6 +1,7 @@
 # Part II page order: the design templates in templates/00_INDEX.md order (PLAN_MMACOS_MANUAL Part II table).
 freeform_unobscured
 offset_imager
+rc_offaxis
 rc_onaxis
 rc_unobscured
 sz_tma
@@ -16,9 +17,20 @@ wf2_freeform
 e5_pie
 e5_seg
 bench_ctb
+coro_planet_demo
 coro_walkthrough
+bench_ifo
+bench_ifo_dm
+bench_layout
 cophi_dm96
+pdi_dm96
 tg_psi_dm96
 tg_psi_dm96_oap
+zwfs_dm96
 e2e
+e2e2
 e2e6m
+e2e6m_r2
+bench_ifo_pol
+tg_psi_dm
+tg_psi_dm_v2
