@@ -96,6 +96,11 @@ The report on Dave's return gathers this list (BRIEF_to_mmacos_manual.md, Report
 - **Tools appendix: `design_layer_api/example_sensitivities_from_rx.m` ends in `exit(0)`** (line 49), and its README
   says all four examples do; the library's own rule is no `exit` in an example (a batch wrapper supplies it).
   `example_telescope_design.m`, the one the page runs, does not.  One line to remove, yours to allow.
+  **The two rules conflict, and that is the likely origin:** `mmacos/CLAUDE.md` ("`clear mmacos` hangs
+  `matlab -batch` ... and so does implicit exit") says to end every batch script with `exit(0)`, because a
+  batch MATLAB that has loaded the mex can hang at an implicit exit; your rule puts the exit in the
+  `-batch` command instead, never in the example.  Section 10 follows your rule.  Which one the library's
+  record should state is yours.
 - **Part II: refusals today** (pages print them): `zwfs_run` / `pdi_run` bare call (coat_oap 'protectedAl' on the
   lens rig, zwfs_run.m:195, (nnn)); `e2e2` s1 conic-fixture gate (seidel_seed re-targeted 2026-10-03,
   the template's gate not, (ppp)); `rc_offaxis` final clipping assert (M2 cuts a foreign beam, (rrr)).
