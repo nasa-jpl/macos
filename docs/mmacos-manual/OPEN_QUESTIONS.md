@@ -84,6 +84,9 @@ The report on Dave's return gathers this list (BRIEF_to_mmacos_manual.md, Report
   Gauss-Newton iterations a stage, against the defaults' report-only exit and 12.  The two part at S2 already
   (a focal-plane refit alone), so those differences are not shown to be the cause.  Not diagnosed; the README
   presents `offset_imager()` as "the five-stage ladder (rodgers3 instance)".  The page prints today's run.
+- **Part II: `tg_psi_dm96_oap`'s layout figure (`<tag>_vlayout.png`) mislabels its colors.**  Its title reads
+  "reference arm red, test arm (DM) blue, camera leg green"; the lens rig's figure (run 2026-10-23, bench stages)
+  draws both arms red.  The figure-producers-rot class; the page's caption says so.
 
 ## Questions
 - Authorship / acknowledgment block in the front matter: copied from the MACOS manual as a placeholder.
