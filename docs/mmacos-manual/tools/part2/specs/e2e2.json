@@ -1,0 +1,13 @@
+{
+ "section": "80_end_to_end",
+ "entry": "run(fullfile(pwd,'s1_axial.m')); run(fullfile(pwd,'s2_fold.m')); run(fullfile(pwd,'s3_score.m'));",
+ "figure": "SCOUT",
+ "run": {
+  "from": "\\S",
+  "to": ""
+ },
+ "pins": [],
+ "caption": "",
+ "number": "",
+ "prompt": ""
+}

@@ -87,6 +87,16 @@ The report on Dave's return gathers this list (BRIEF_to_mmacos_manual.md, Report
 - **Part II: `tg_psi_dm96_oap`'s layout figure (`<tag>_vlayout.png`) mislabels its colors.**  Its title reads
   "reference arm red, test arm (DM) blue, camera leg green"; the lens rig's figure (run 2026-10-23, bench stages)
   draws both arms red.  The figure-producers-rot class; the page's caption says so.
+- **Part II: `e2e6m`'s telescope stage no longer reproduces its committed report.**  Run unchanged on a copy
+  2026-10-23 (layout search, s1_telescope, s2_segmentation; 1095 s): the same all-sphere layout and S0 (0.8594
+  waves), then S1 inner 0.3512 (committed 0.0200), S2 worst 0.0702 (0.0355), dense 7x7 raw max 0.1059 [FAIL]
+  (0.0502 [PASS]), EFL 70.579 m f/11.76 (152.327 m f/25.39).  The template's files are unchanged since
+  2026-08-25 (a9787a9); the library under them is not.  Not traced.  The same shape as offset_imager's (lll):
+  the first stage reproduces, the next departs.
+- **Part II: refusals today** (pages print them): `zwfs_run` / `pdi_run` bare call (coat_oap 'protectedAl' on the
+  lens rig, zwfs_run.m:195); `tg_psi_dm` / `tg_psi_dm_v2` registration gate (intensity reads zero after
+  load_rx with POLARIZATION in force); `e2e2` s1 conic-fixture gate (seidel_seed re-targeted 2026-10-03,
+  the template's gate not).
 
 ## Questions
 - Authorship / acknowledgment block in the front matter: copied from the MACOS manual as a placeholder.
