@@ -5,25 +5,14 @@ does a Zernike sensor beat the TG96 polarization-PSI gauge on the
 differential benchmark (10 nm actuator deviation read to 0.021 nm,
 base-independent — tg_psi_dm96 run 10)?
 
-**Run it, as it stands today.**
+**Run it.**
 
 ```matlab
 cd('<path-to>/mmacos/templates/40_benches/zwfs_dm96');
 out = zwfs_run('stages',{'bench'});
 ```
 
-**It refuses:**
-
-<!-- transcript: p2_zwfs_dm96_refusal -->
-
-**Run it with the README's own value.**
-
-```matlab
-cd('<path-to>/mmacos/templates/40_benches/zwfs_dm96');
-out = zwfs_run('stages',{'bench'}, 'bench.coat_oap','none');
-```
-
-CCL's ruling (finding (nnn)): the page shows the bare call refusing, then runs the value the parameter sheet itself gives for the lens rig's geometric gate, `bench.coat_oap 'none'`. The bench stage only; the default also runs the reading battery and the figures. The manual copies the template with `dm_gauge_lib` and `90_polarization/tg_psi_dm`, which the runner adds to the path by relative location.
+The bench stage of the bare call: the sheet's `bench.coat_oap 'auto'` resolves to none on the lens rig (protected aluminum on the OAP rig; finding (nnn)). The default also runs the reading battery and the figures. The manual copies the template with `dm_gauge_lib` and `90_polarization/tg_psi_dm`, which the runner adds to the path by relative location.
 
 **What it prints:**
 
@@ -35,5 +24,5 @@ CCL's ruling (finding (nnn)): the page shows the bare call refusing, then runs t
 
 **The number it reproduces.** On a 30 nm rms working surface the vector reading (the polarized dimple's +phi and -phi images at once) recovers the engine's own field with gain %pin:p2_zwfs_dm96_vgain% and a residual of %pin:p2_zwfs_dm96_vres% pm, where the single phase-stepped scalar reading S reads gain %pin:p2_zwfs_dm96_sgain%. Every bench gate passes (the mask sandwich and the reference surrogate at the floor of the arithmetic); the sampling budget's 96 x 96 line is NOT MET at 1.66 detector px per actuator, a warning by the sheet's own `enforce = warn`.
 
-**Adapt it.** *"Using templates/40_benches/zwfs_dm96, rerun the bench stage with NGRID 385 (the 1 Mpix-class detector) and 'bench.coat_oap','none', and tell me whether the 96x96 sampling line is met and how the V and S gains change."*
+**Adapt it.** *"Using templates/40_benches/zwfs_dm96, rerun the bench stage with NGRID 385 (the 1 Mpix-class detector) and tell me whether the 96x96 sampling line is met and how the V and S gains change."*
 

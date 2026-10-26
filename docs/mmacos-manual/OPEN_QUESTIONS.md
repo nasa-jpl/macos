@@ -104,7 +104,7 @@ The report on Dave's return gathers this list (BRIEF_to_mmacos_manual.md, Report
   `-batch` command instead, never in the example.  Section 10 follows your rule.  Which one the library's
   record should state is yours.
 - **Part II: refusals today** (pages print them): `zwfs_run` / `pdi_run` bare call (coat_oap 'protectedAl' on the
-  lens rig, zwfs_run.m:195, (nnn)); `e2e2` s1 conic-fixture gate (seidel_seed re-targeted 2026-10-03,
+  lens rig, zwfs_run.m:195, (nnn); **FIXED 2026-10-26, resources 14cafc8: the default follows the rig, a coat on the lens rig warns; both pages print the bare run**); `e2e2` s1 conic-fixture gate (seidel_seed re-targeted 2026-10-03,
   the template's gate not, (ppp)); `rc_offaxis` final clipping assert (M2 cuts a foreign beam, (rrr)).
   **(rrr) RULED 2026-10-26 (Dave): rc_offaxis RETIRED behind rc_unobscured** (resources c143aa1: the template
   and its index row removed; its Part II page dropped, so the catalog has 34 pages; the refusal stays recorded
