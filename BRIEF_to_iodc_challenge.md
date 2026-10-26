@@ -63,4 +63,6 @@ mounting material beyond the clear aperture; no distortion requirement; intermed
 6. **Report** the way the README says: merit, D, theta, element count, length, distortion; beside the published
    top ten.  Any engine finding on the way -> PLAN_CONSOLIDATION 1.2.
 
-Owner: TO's lane (after bindings coverage) unless Dave assigns otherwise; CC's Fable time is short.
+**RULED 2026-10-26 (Dave): the revised order -- 2010 first, 2014 second, 2023 the stress test.**  Owner: TO's lane, after
+round 2 of the mmacos manual; the chosen year's directory is `mmacos/challenges/iodc2010/`.  First deliverable, before any
+optimization: the EVALUATOR (step 1), cross-checked on one lens against CODE V; its gate is the challenge's own proof.

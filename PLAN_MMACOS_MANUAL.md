@@ -96,7 +96,9 @@ deck figures unmodified; the pin policy).
   `BRIEF_to_iodc_challenge.md`.  The full texts change the order: 2010 green lens FIRST (its wavefront convention is
   MACOS's native chief-ray reference; one radius + a sign search; distortion <= 5 %), 2014 second (tilt-removed RMS,
   the blank-packing scorer, an intermediate-image winner), 2023 the stress test.  No prescriptions are printed in any
-  paper: comparison is against the merit tables.**
+  paper: comparison is against the merit tables.**  **RULED 2026-10-26 (Dave): go with the revised order -- enter 2010 (the
+  green lens) first as `mmacos/challenges/iodc2010/`, 2014 second, 2023 the stress test; TO after round 2 of the manual
+  (`BRIEF_to_iodc_challenge.md`, the build section).**
 - Korsch's TMA family and Cook's unobscured forms (the telescope templates' ancestry); Bauer / Schiesser / Rolland
   2018 freeform starting geometry (already in `mmacos/doc`): a freeform challenge with a published answer.
 - Public prescriptions at real scale: HabEx and LUVOIR final reports (off-axis TMAs, segmented); Roman CGI's public
