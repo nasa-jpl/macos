@@ -107,6 +107,9 @@ Worked example — the 2026-07-28 promotions, which followed the rule:
   - b. **human-readable commits** -- clear, concise, plain language, readable by someone without
     deep MACOS experience (subject line = what changed and why, in words; the SHAs, gate counts
     and plan citations go in the body or the records, not the subject);
+    **in force since 2026-10-26 (Dave), and each message says in simple language how the
+    change fits the current task** -- the GitHub notification e-mails carry the message, so
+    the message is the review;
   - c. **PRs reviewed, merged and their branch deleted within a week**;
   - d. otherwise the order of events as specified in the runbook.
 
