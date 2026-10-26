@@ -77,6 +77,8 @@ The report on Dave's return gathers this list (BRIEF_to_mmacos_manual.md, Report
   same path, gives numbers.  Not diagnosed; the page prints the steps before [6] and says so.
 - **Part II: `tma_onaxis`'s README table predates the engine it runs on** (1' bias: 0.0074 waves in the README,
   0.0059 live; the whole sweep lower by about a fifth, same shape).  The page prints the live sweep.
+  **RESOLVED 2026-10-26 (Dave: the live numbers are the ones to show):** the README's table carries the live
+  run's numbers (resources 5fea686).
 - **Part II: `offset_imager()` with its defaults does not reproduce the rodgers3 ladder of record past S1.**
   Run unchanged 2026-10-23 (9841 s): S1 37.8 / 25.8 / 9.2 nm (map max / avg / std), exactly the record's
   (`challenges/rodgers3/t3/r3t_REPORT.md`); then S2 40824.4 (record 303585.5), S3 41849.9 (252.0), S4 28907.4
@@ -104,6 +106,9 @@ The report on Dave's return gathers this list (BRIEF_to_mmacos_manual.md, Report
 - **Part II: refusals today** (pages print them): `zwfs_run` / `pdi_run` bare call (coat_oap 'protectedAl' on the
   lens rig, zwfs_run.m:195, (nnn)); `e2e2` s1 conic-fixture gate (seidel_seed re-targeted 2026-10-03,
   the template's gate not, (ppp)); `rc_offaxis` final clipping assert (M2 cuts a foreign beam, (rrr)).
+  **(rrr) RULED 2026-10-26 (Dave): rc_offaxis RETIRED behind rc_unobscured** (resources c143aa1: the template
+  and its index row removed; its Part II page dropped, so the catalog has 34 pages; the refusal stays recorded
+  here: M2 clearance -0.01573 m, 11 rays obstructed).
   `tg_psi_dm` / `tg_psi_dm_v2`'s registration gates (intensity zero after load_rx with POLARIZATION in
   force, (ooo)) pass since the engine fix macos c6c83d55 (CCL, 2026-10-24); their pages print the runs.
 
@@ -115,4 +120,7 @@ The report on Dave's return gathers this list (BRIEF_to_mmacos_manual.md, Report
   `s4_sens.mat`.  Do you want an e2e budget spec authored (and by whom), so chapter 7 joins the thread?
 - **Part II, the READMEs the 15 un-README'd design templates lack:** the manual keeps their generated text in
   `docs/mmacos-manual/part2/<name>.md` (from the entry script's header and its run); writing them into the
-  templates themselves is a library change -- yours to allow.
+  templates themselves is a library change -- yours to allow.  **RULED 2026-10-26 (Dave: "write them"):**
+  promoted into the 14 templates (rc_offaxis retired; resources 5fea686), each README saying it was generated
+  from the entry script's header and the manual's run; the pages read them like the other 20, and
+  `docs/mmacos-manual/part2/` is gone.

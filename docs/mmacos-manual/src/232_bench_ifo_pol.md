@@ -2,8 +2,6 @@
 
 Polarization-honest Twyman-Green: a real Al coating on the beam-splitter face, ifPol on, scored with the GATED Phase-2 layer (jones_pupil + pol_maps). The coated BS face is hit as an EXTERNAL reflection in the test arm (air->Al, element 'BSrefl') and as an INTERNAL reflection in the reference arm (glass->Al, two glass transits, element 'BScrefr') -- genuinely different Jones -- so the arm-differential diattenuation / retardance at recombination is a MEASURED result, and its pupil variation is the polarization-induced PSI phase-error contribution.
 
-*This template has no README; the text above is generated from its entry script's header (`docs/mmacos-manual/part2/bench_ifo_pol.md`, `tools/gen_readme_part2.py`).*
-
 **Run it.**
 
 ```matlab

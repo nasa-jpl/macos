@@ -2,8 +2,6 @@
 
 The companion to wf2_freeform, where freeform genuinely earns its keep. Pick the knobs below; the script seeds a coaxial Korsch TMA (3 conics null 3rd-order S_I/II/III), takes an UNOBSCURED off-axis section (eccentric pupil), refigures the 3 conics + rigid bodies to the best a 3-mirror can do over the field, then layers freeform Zernike departures on M2 + M3 -- holding every radius and conic -- and re-optimizes. Verifies it is unobscured and saves the deliverable (.in + .mat + figures).
 
-*This template has no README; the text above is generated from its entry script's header (`docs/mmacos-manual/part2/tma_freeform.md`, `tools/gen_readme_part2.py`).*
-
 **Run it.**
 
 ```matlab

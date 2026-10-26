@@ -2,8 +2,6 @@
 
 The classical Cassegrain-form RC: a two-mirror APLANAT (zero 3rd-order spherical AND coma by construction), so it is diffraction-limited on-axis. Its field is limited by ASTIGMATISM, which two conics cannot null -- that limit is precisely why wide-field telescopes add a third mirror (a TMA). This driver builds the RC from your aperture + f-numbers, reports its first-order properties (including the central obscuration the secondary casts), shows WFE vs field, then field-balances the conics for a WIDER corrected field and saves that as the deliverable (better-across-the-field usually beats perfect-on-axis for a real instrument). This is the OBSCURED baseline. For the unobscured (coronagraph-feed) version that decenters to an eccentric pupil, see ../rc_unobscured.
 
-*This template has no README; the text above is generated from its entry script's header (`docs/mmacos-manual/part2/rc_onaxis.md`, `tools/gen_readme_part2.py`).*
-
 **Run it.**
 
 ```matlab

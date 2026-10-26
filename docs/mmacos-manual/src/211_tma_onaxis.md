@@ -31,7 +31,7 @@ run(fullfile(pwd,'tma_onaxis.m'));
 
 **FIGURE 30** The recommended design, the YZ and XZ planes with real rays (`tma_onaxis_layout.png`): the convex secondary before the primary's focus, the tertiary behind the primary, the focal plane biased out of the beam.
 
-**The number it reproduces.** The least off-axis bias that clears the focal plane, %pin:p2_tma_onaxis_bias%, is diffraction-limited at %pin:p2_tma_onaxis_wfe% waves rms at 633 nm. (The README's own table, from an earlier engine, reads 0.0074 waves at the same bias; the sweep's shape is the same.)
+**The number it reproduces.** The least off-axis bias that clears the focal plane, %pin:p2_tma_onaxis_bias%, is diffraction-limited at %pin:p2_tma_onaxis_wfe% waves rms at 633 nm.
 
 **Adapt it.** *"Using templates/10_telescopes/tma_onaxis, design an on-axis Korsch TMA with a 2 m aperture, an f/1.2 primary and an f/10 system at 633 nm, sweep the off-axis bias from 0.5' to 4', and build the least bias that clears the focal plane and is diffraction-limited."*
 

@@ -2,8 +2,6 @@
 
 Pick the four design knobs below; the script builds the on-axis RC parent, takes an UNOBSCURED off-axis section (eccentric pupil), refigures + field-optimizes it to diffraction-limited, verifies it is unobscured, and saves the deliverable (.in + .mat + figures).
 
-*This template has no README; the text above is generated from its entry script's header (`docs/mmacos-manual/part2/rc_unobscured.md`, `tools/gen_readme_part2.py`).*
-
 **Run it.**
 
 ```matlab
