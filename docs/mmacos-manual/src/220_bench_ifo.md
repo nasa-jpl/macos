@@ -2,8 +2,6 @@
 
 A generic Twyman-Green IFO built with the macos.design.Bench add-optic utilities, then RUN as an instrument: simulate 7 phase-shifted interferograms and recover the test-optic surface with windowed phase-shifting-interferometry (PSI) processing -- the full simulate -> detect -> process -> compare-to-truth loop.
 
-*This template has no README; the text above is generated from its entry script's header (`docs/mmacos-manual/part2/bench_ifo.md`, `tools/gen_readme_part2.py`).*
-
 **Run it.**
 
 ```matlab

@@ -2,8 +2,6 @@
 
 `coro_planet_demo()` runs the canonical CoroExample recipe through the mmacos framework and writes two 4-panel figures (matching the CoroExample.jou "pgp 4" plot pages) into the example folder: coro_surfaces.png the coronagraph surfaces (jou: int 1/6/11/16) [entrance pupil | star occulted at FPM | pupil at Lyot | star at det] coro_planet.png the planet injection (jou: ffp + add) [suppressed star | planet alone | star+planet | difference]
 
-*This template has no README; the text above is generated from its entry script's header (`docs/mmacos-manual/part2/coro_planet_demo.md`, `tools/gen_readme_part2.py`).*
-
 **Run it.**
 
 ```matlab

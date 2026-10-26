@@ -2,8 +2,6 @@
 
 A wide-field design strategy where GEOMETRY and CORRECTION fully decouple: 0th-order layout = three BASE SPHERES (Kc=0). The sphere radii set first-order power (f/#, EFL); the fold tilts unobscure the beam and keep it compact. No conics -> none of the conic/ telecentric coupling that bogs down a Korsch search. CORRECTION = Zernike departures on each mirror, optimized by MACOS's native multi-field design optimizer (CALIB OptZern). Because the departures are tiny sag perturbations they don't move the chief-ray geometry, so once the layout meets packaging the optimizer cannot break it.
 
-*This template has no README; the text above is generated from its entry script's header (`docs/mmacos-manual/part2/sz_tma.md`, `tools/gen_readme_part2.py`).*
-
 **Run it.**
 
 ```matlab

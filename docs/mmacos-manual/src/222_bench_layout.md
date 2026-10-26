@@ -2,8 +2,6 @@
 
 A generic folded-bench worked example: build a complete test-bench train SEQUENTIALLY with the macos.design.Bench add-optic utilities, then optimize it in three physically-staged steps. The bench is the classic surface-gauge / interferometer test-arm topology: point source -> baffle (pupil stop) -> L1 (collimating singlet) -> beam-splitter REFLECT -> DM (test mirror, retro) -> beam-splitter TRANSMIT (through the tilted plate, real walk-off) -> Fold1 -> Fold2 -> L2 (imaging singlet) -> focal-mask Reference (internal focus) -> Detector at the DM-PUPIL IMAGE.
 
-*This template has no README; the text above is generated from its entry script's header (`docs/mmacos-manual/part2/bench_layout.md`, `tools/gen_readme_part2.py`).*
-
 **Run it.**
 
 ```matlab

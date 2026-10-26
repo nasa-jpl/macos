@@ -2,8 +2,6 @@
 
 Three conic mirrors (j18mono-geometry Korsch, 6.6 m f/20, unobscured eccentric-pupil section) form the SCIENCE FOCUS -- the shared focal plane where instrument pickoffs live (the 3-mirror holds a 5'-diameter circular field at ~0.095 waves @ 1 um; see ../tma_centered). A 4th FIELD MIRROR just past that focus relays the CORONAGRAPH CHANNEL (a ~30 arcsec patch) to FP2 and -- the point -- relays the exit pupil to an accessible plane and FLATTENS it (the bare TMA pupil carries +0.7 mm defocus / 1.1 mm astig, macos.pupil_quality; the relayed pupil comes out ~10x flatter with M4 varying in the patch balance). A relay cannot carry the wide field: at EFL=132 m a 2.5' half-field walks +-96 mm across M4 -- wide field stays at the TMA focus, the relay serves the small-field channel.
 
-*This template has no README; the text above is generated from its entry script's header (`docs/mmacos-manual/part2/tma_3plus1.md`, `tools/gen_readme_part2.py`).*
-
 **Run it.**
 
 ```matlab

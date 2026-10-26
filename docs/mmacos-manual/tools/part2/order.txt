@@ -1,7 +1,6 @@
 # Part II page order: the design templates in templates/00_INDEX.md order (PLAN_MMACOS_MANUAL Part II table).
 freeform_unobscured
 offset_imager
-rc_offaxis
 rc_onaxis
 rc_unobscured
 sz_tma

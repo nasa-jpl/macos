@@ -2,8 +2,6 @@
 
 j18mono-geometry 3-mirror anastigmat (M1 concave, M2 CONVEX, M3 concave, f/20): exercise the convex-secondary seidel_seed fix (K=0 seed + correct unfolded focus), conic-optimize to a diffraction-limited on-axis anastigmat, then take it OFF-AXIS as an eccentric-pupil section, clear the beam, and re-balance over a 2-D field.
 
-*This template has no README; the text above is generated from its entry script's header (`docs/mmacos-manual/part2/tma_offaxis.md`, `tools/gen_readme_part2.py`).*
-
 **Run it.**
 
 ```matlab

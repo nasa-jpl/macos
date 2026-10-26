@@ -2,8 +2,6 @@
 
 Multi-mirror telescopes exist to widen the corrected field of view. This example makes that quantitative: it builds a 2-mirror RC and a 3-mirror TMA at the same aperture and f/#, optimises BOTH over the same wide field, and compares the residual wavefront error vs field. The physics: an RC nulls 3rd-order spherical AND coma with its two conics, so it is excellent on-axis -- but it has NO degree of freedom left for field astigmatism, which grows ~field^2. A TMA's third conic supplies exactly that DOF (a Korsch anastigmat nulls spherical + coma + astigmatism). So as the field opens up the 2-mirror hits a "wall" and the 3-mirror sails past it.
 
-*This template has no README; the text above is generated from its entry script's header (`docs/mmacos-manual/part2/tma_widefield.md`, `tools/gen_readme_part2.py`).*
-
 **Run it.**
 
 ```matlab
