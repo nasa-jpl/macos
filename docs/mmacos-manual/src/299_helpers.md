@@ -1,8 +1,8 @@
 ### The functions no template calls
 
-Counted by a word-boundary search of every template script for each function's name: `design/src`, 40 of 75; `sensitivities`, 12 of 24. They are documented here, not deleted (the Part I report's default); a runner or a test may still call them.
+Counted by a word-boundary search of every template script for each function's name: `design/src`, 40 of 75; `sensitivities`, 12 of 24. They are kept (Dave, 2026-10-26): a runner or a test may still call them.  Entry scripts are listed apart from the functions: a script is run by a user, not called, so no template naming it says nothing about it.
 
-**`design/src`** (the design layer's helpers, 40 of 75):
+**`design/src`** (the design layer's helpers, 40 of 75: 40 functions, 0 entry scripts)
 
 | Function | What its help line says |
 |---|---|
@@ -47,7 +47,7 @@ Counted by a word-boundary search of every template script for each function's n
 | `tms_geom` | The two-mirror modified Schwarzschild (TMS) that feeds the slit, as an exact chain. |
 | `tms_paraxial` | Closed-form first order of the two-mirror modified Schwarzschild (flat, telecentric). |
 
-**`sensitivities`** (the sensitivity drivers, 12 of 24):
+**`sensitivities`** (the sensitivity drivers, 12 of 24: 11 functions, 1 entry script)
 
 | Function | What its help line says |
 |---|---|
@@ -61,6 +61,9 @@ Counted by a word-boundary search of every template script for each function's n
 | `dw_panel_label` | Short panel title from a channel name. |
 | `per_field_indx` | m2v bookkeeping for ONE field of a dw_d*_multi harvest, in |
 | `plot_dw_index` | Contact sheet: every channel as a thumbnail, page-labelled. |
-| `run_dwdx_multi_zoom` | -- multi-CONFIGURATION x multi-field dw/dx (GENERIC). |
 | `write_page_index` | The harvest's page index: one line per figure written. |
+
+| Entry script | What its help line says |
+|---|---|
+| `run_dwdx_multi_zoom` | multi-CONFIGURATION x multi-field dw/dx (GENERIC). |
 
