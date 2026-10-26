@@ -7,6 +7,38 @@ paths; MACOS_resources history holds 21 OPTIIX/IRIS prescription paths (0 at HEA
 Dave can make after Andy's go.  The branch rules are `BRANCHES.md`; the strip lists are `release-exclude.txt` in
 each repo (amended 2026-10-21, reviewed in `RELEASE_EXCLUSIONS_REVIEW.md`).
 
+> **STATUS after the group meeting of 2026-10-26 (Dave, Andy and the group).**  The room set the path.  It keeps
+> the technical content below as the checklist, but changes WHO runs the moves and HOW the two repositories join:
+>
+> 1. **We consolidate** macos and MACOS_resources first: orphaned files removed, documentation finished to release
+>    standard.  `PLAN_CONSOLIDATION.md` section 3b lists what "done" means for this announcement.
+> 2. **Andy writes his proposed steps on the GitHub wiki**: promote `dev-candidate` to `dev`, then `dev` to `main`
+>    with the redactions we specified (`release-exclude.txt` in both repos, `RELEASE_EXCLUSIONS_REVIEW.md`); history
+>    preserved as far as possible while the NPSOL, OPTIIX and IRIS sources are removed from it; the macos and
+>    MACOS_resources histories MERGED (not step 5's snapshot).  **We review the wiki page** against steps 1-6 below.
+> 3. **Andy executes** after Dave announces that 1 and 2 are done.
+> 4. **We test the new repository**: every clone deleted and re-cloned first (the re-clone block at the end of
+>    step 2), then the gate list of step 4 run on the new clone.
+> 5. When it passes, **Andy makes a new release.**
+>
+> So steps 1, 2, 3, the merge-and-strip of 4, 5 and 6 are Andy's; ours are the re-clone and the gates.  What to look
+> for when we review his wiki page: (a) the step-1 archive bundle exists and is verified BEFORE any rewrite; (b) the
+> removal lists are drawn from history (step 2's `git log --all --diff-filter=A` recipe) and checked on EVERY ref
+> of BOTH repos before the histories are joined -- joining first would carry a removed path across; (c) a merged
+> history means the resources tree moves under a subdirectory of macos (`git filter-repo --to-subdirectory-filter`
+> on the rewritten resources mirror, then `git merge --allow-unrelated-histories`), and the 153 path fix-ups of
+> step 5 are still needed afterwards, as one gated commit, whoever makes it; (d) the strip on `main` uses the two
+> `release-exclude.txt` lists (folded into one once the trees are joined), by `tools/release_strip.py` or an
+> equivalent that is idempotent; (e) protection on `main`/`dev` off for the force-push and back on after, and the
+> GitHub-support purge requested; (f) the announcement that no one pushes from a pre-rewrite clone.  Still
+> undecided by the room, to ask: whether the 2267 run artifacts leave the resources history (step 2's optional
+> block).
+>
+> **Rules in force after the release** (the room, 2026-10-26; recorded in `BRANCHES.md`): a temporary branch per
+> bug fix or feature; human-readable commits (clear, concise, plain language, readable without deep MACOS
+> experience); PRs reviewed, merged and their branch deleted within a week; otherwise the order of events as
+> written here.
+
 ## Step 1 -- archive the full history (before anything is rewritten)
 ```bash
 A=~/macos-archive-$(date +%Y%m%d); mkdir -p $A
@@ -115,6 +147,9 @@ Release gates on main BEFORE pushing it, from a CLEAN clone of the local main (`
 Then `git push origin main` for macos, and only then the same for resources.
 
 ## Step 5 -- import MACOS_resources into macos as a snapshot (no history)
+> 2026-10-26: the room chose a MERGED history instead (Andy's wiki steps); this snapshot recipe stays as the
+> fallback and for its list of directories and path fix-ups, which a history merge needs just the same.
+
 ```bash
 cd ~/dev/macos && git fetch origin && git checkout -b import-resources origin/dev
 S=~/dev/MACOS_resources; SHA=$(git -C $S rev-parse --short origin/dev)
