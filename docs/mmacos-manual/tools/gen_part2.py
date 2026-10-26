@@ -131,6 +131,15 @@ def h1_line(f):
     return ""
 
 
+def is_script(f):
+    """A MATLAB script (run by a user), not a function: its first code line is not 'function'."""
+    for ln in f.read_text(errors="ignore").splitlines():
+        t = ln.strip()
+        if t and not t.startswith("%"):
+            return not t.startswith("function")
+    return True
+
+
 def uncalled():
     """Library functions no template's .m names (word-boundary match), by folder."""
     tpl = "\n".join(f.read_text(errors="ignore") for f in TPL.rglob("*.m"))
@@ -153,13 +162,19 @@ def tools_tables():
     hl = ["### The functions no template calls", ""]
     parts = uncalled()
     hl.append("Counted by a word-boundary search of every template script for each function's name: "
-              + "; ".join(f"`{d}`, {len(un)} of {n}" for d, _, n, un in parts) + ". They are documented here, not "
-              "deleted (the Part I report's default); a runner or a test may still call them.")
+              + "; ".join(f"`{d}`, {len(un)} of {n}" for d, _, n, un in parts) + ". They are kept (Dave, "
+              "2026-10-26): a runner or a test may still call them.  Entry scripts are listed apart from the "
+              "functions: a script is run by a user, not called, so no template naming it says nothing about it.")
     hl.append("")
     for d, label, n, un in parts:
-        hl += [f"**`{d}`** ({label}, {len(un)} of {n}):", "", "| Function | What its help line says |", "|---|---|"]
-        hl += [f"| `{f.stem}` | {h1_line(f).replace('|', '/') or '(no help line)'} |" for f in un]
-        hl.append("")
+        fn = [f for f in un if not is_script(f)]
+        sc = [f for f in un if is_script(f)]
+        hl += [f"**`{d}`** ({label}, {len(un)} of {n}: {len(fn)} function{'s' * (len(fn) != 1)}, {len(sc)} entry script{'s' * (len(sc) != 1)})", ""]
+        for kind, fs in (("Function", fn), ("Entry script", sc)):
+            if fs:
+                hl += [f"| {kind} | What its help line says |", "|---|---|"]
+                hl += [f"| `{f.stem}` | {re.sub(r'^--\s*', '', h1_line(f)).replace('|', '/') or '(no help line)'} |" for f in fs]
+                hl.append("")
     return "\n".join(out), "\n".join(hl)
 
 
