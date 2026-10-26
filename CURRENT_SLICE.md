@@ -3834,3 +3834,12 @@ promote-on-land pass.**
 > (three fixed by TO's bindings round; 'eight CodeV mask classes and about ten others' remain) -- wiring them is a resources test-config
 > change outside any brief, so it waits for his word (TO declined it under the standing push word, correctly).  OPEN_QUESTIONS (sss)
 > states the exit(0) rule conflict.  Origin: macos 81878b1b, resources 446bd45.**
+
+> **2026-10-26 (CC): Dave's group meeting set the RELEASE PATH -- we consolidate first (orphans out, docs to release standard),
+> Andy writes the execution steps on the GitHub wiki (dev-candidate -> dev -> main with our redactions; NPSOL/OPTIIX/IRIS out of
+> history; the two repos' histories MERGED), we review, Andy executes on Dave's announcement, we delete+re-clone and test, Andy
+> releases.  Rules after: branch per fix/feature, human-readable commits, PRs closed within a week.  Recorded: PLAN 3b + 4 item 8
+> (orphan test suites), BRANCHES.md, root CLAUDE.md one line, the runbook's status note (six review checks; the 2267 run artifacts
+> still the room's open question).  TO reports A.1 (kkk) DONE (res 1f32955 + 6efff8f local; run_sensitivities defaults to chief,
+> harvest records its reference, run_compare/run_simulator read it; fast 712/0 after the localization-gate fix) and A.2 (fff)
+> DIAGNOSED (no defect: the July clip predates the 36a5f5aa ColSource radius change; a Pie source never seeds a gap ray).**

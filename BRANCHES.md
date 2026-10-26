@@ -93,3 +93,20 @@ Worked example — the 2026-07-28 promotions, which followed the rule:
   archive taken before this rewrite).  See the agent MEMORY branch-model
   entry for the current tips.
 
+## Repo consolidation and the rules after it (group meeting 2026-10-26, Dave + Andy et al.)
+- **Order of events:** (1) this program consolidates macos and MACOS_resources -- orphaned files
+  removed, documentation to release standard (`PLAN_CONSOLIDATION.md` 3b); (2) Andy writes the
+  execution steps on the GitHub wiki -- `dev-candidate` -> `dev`, `dev` -> `main` with the
+  redactions in `release-exclude.txt`, history preserved as far as possible with NPSOL / OPTIIX /
+  IRIS sources removed, the two repos' histories merged -- and we review them against
+  `RUNBOOK_release_moves_2026-10.md`; (3) Andy executes after Dave announces 1 and 2 done;
+  (4) we delete every clone, re-clone, and test the new repo; (5) Andy makes the release.
+- **Rules in force from that release on:**
+  - a. a **temporary branch per bug fix or new feature** (no more work directly on the branch
+    of record; the 2026-09-07 interim policy ends with the release);
+  - b. **human-readable commits** -- clear, concise, plain language, readable by someone without
+    deep MACOS experience (subject line = what changed and why, in words; the SHAs, gate counts
+    and plan citations go in the body or the records, not the subject);
+  - c. **PRs reviewed, merged and their branch deleted within a week**;
+  - d. otherwise the order of events as specified in the runbook.
+

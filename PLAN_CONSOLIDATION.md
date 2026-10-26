@@ -255,6 +255,36 @@ this plan); Dave rules the open questions below and signs off each phase.
 - **The ATMOS memo's proposals are in PLAN §4.6** (Dave 2026-10-18: yes): fixed-origin screen positions (anisoplanatism), a field-multiply coupling for near-field propagation, layers, frozen flow, the ATMospheric-grid review -- features after the freeze.
 - **Atmosphere** (`PLAN_ATMOSPHERE.md`, PLAN §6a): the single pupil screen fixed (1.2 (p)), a layered-screen generator runner, and the rays-and-field regrid at the entrance pupil (the ray phase guides the unwrap, the field gives the amplitude, a named refusal in strong scintillation).  Sequence and gates in the design; dated after the release gate.
 
+
+### 3b. The exit: the release path set by the group meeting of 2026-10-26
+
+Dave met the group (Andy et al.) on repo consolidation and the `dev-candidate` -> `dev` -> `main` moves.  The agreed
+order, with ours first:
+
+1. **We consolidate macos and MACOS_resources** -- orphaned files removed, documentation completed to release
+   standard.  This program's exit gate.  "Done" for Dave's announcement means, as of 2026-10-26:
+   - the macos manual (`docs/macos-manual`, 4.00) and the command reference build and ship their PDFs; Dave's Word
+     edits are in the Markdown source (the cmp rule in the manual's CLAUDE.md);
+   - the mmacos manual's round 2 lands (TO: A library fixes, B regenerated e2e outputs, C chapter 2 on CTB, D the
+     coronagraph-analysis chapter; `BRIEF_to_mmacos_manual_round2.md`), the 15 READMEs promoted, `rc_offaxis` retired;
+   - orphaned files: the test classes in no `run_mmacos_tests.sh` suite are wired or deleted (Dave's word still
+     needed, section 4 item 8); `DEV_FILES.md` in both repos re-walked for files that nothing references; the
+     uncalled library functions STAY (Dave 2026-10-26, 3a);
+   - the strip lists are final (`release-exclude.txt` x2, `RELEASE_EXCLUSIONS_REVIEW.md`), the self-containment sweep
+     of `BRANCHES.md` run, and the last gate of record green on both compilers and on the Mac (section 5).
+2. **Andy writes his proposed steps on the GitHub wiki** -- promotion, the redactions we specified, history preserved
+   as far as possible with NPSOL / OPTIIX / IRIS sources removed, the two repos' histories merged.  **We review it**
+   against `RUNBOOK_release_moves_2026-10.md` (its status note lists the six things to check).
+3. **Andy executes** when Dave announces 1 and 2 done.
+4. **We test the new repo** -- delete every clone, re-clone once (the runbook's re-clone block), run the runbook's
+   step-4 gate list on the new clone, on Linux and on the Mac.
+5. **Andy cuts the new release** when it passes.
+
+**Rules in force after the release (the room, 2026-10-26; in `BRANCHES.md`):** a temporary branch per bug fix or
+feature; human-readable commits (clear, concise, plain language, accessible without deep MACOS experience); PRs
+reviewed, merged and their branch deleted within a week; otherwise the order of events as specified.  CC's
+recommendation: adopt the commit-message rule NOW -- today's commits survive into the merged history.
+
 ## 4. Rulings needed from Dave
 
 1. **SAVE policy** (from §1.1b): the `Opt*`/CALIB keys and the trace-state singles — deferred by Dave 2026-10-10, ask again when the SAVE round-trip next moves.  `OptTol=` (added 2026-10-11, §3.2) is the family's 26th key and follows it: parsed, not written.  **RULED 2026-10-18 (Dave): SAVE the CALIB settings, and have them transfer (loudly) across a break.  DONE the same day (CC, LOCAL):** `PrtCalibHeader` / `PrtCalibElt` (iosub.inc) write every Table 13 key whose value differs from its load default (header keys in the source block, element keys in their element's block; the reader's field / wavelength counting followed -- fields 2..n as `OptChfRayDir=/OptChfRayPos=` pairs, `OptFOVWt=` after them, `OptTgtElt=` only when not nElt-1, `VarCons=`/`OptAsph=` after `VarElt=`, beam keys at their element); `CalibInForceNote` prints one line at every LOAD that reads a setup (`LOAD: CALIB setup in force from the prescription: target SPOT at element 2, 1 field(s), 1 wavelength(s), 1 variable element(s), OptMaxItrs 10 -- VARS/FOVS/WLENS list them; SAVE writes them`), CLI and bindings.  The trace-state singles (`FEXCentroid`, `RayTgtElt`, the source local frame) stay deferred.  Gate `CALIB_save_roundtrip.jou` (tst_calib_mixed + opt_example_constrained: the saved keys, the notice, VARS after reload, re-save byte-identical; red on e2c93d0b both compilers); the load gate's round trip now covers every CALIB fixture; mmacos tSaveFixedPoint/tAsphCalib/tLinkSave/tSessionModes 9/9 and pymacos save/calib/modes/parse/sysprop 59/59 on the relinked bindings; api-surface twins `tRxLoadRulings1018` / `test_rx_load_rulings_1018` (resources e211fe4; rule 2) -- their CALIB leg found that the writer skipped `VarElt=` when every flag was zero and so dropped the `OptAsph=` the reader keys on it (Rx_AsphCalib / tst_calib_spot4): fixed in aad6400f, the journal gained the leg.  Manual §4 (Table 13 caption, the SAVE paragraph, the keyword bullet), cmdref SAVE/OLD notes, `SAVE_KEYWORD_AUDIT.md` updated.
@@ -267,7 +297,10 @@ this plan); Dave rules the open questions below and signs off each phase.
 
 7. **Engine items from the manual regeneration (macos-fd's TRANSCRIPT_DIFF section 4, Dave's rulings relayed 2026-10-19: #6 fix BINARY, #8 remove the debug prints and pass CENTER's count, #9 look at PARTIALS):** acted on as 1.2 (jj), (kk), (ll) above, plus (mm), (nn), (oo) found on Dave's Section 3 decks the same afternoon; Dave to correct if the relay drifted.
 
+8. **The test classes in NO `run_mmacos_tests.sh` suite (CC 2026-10-24):** three were wired by TO's bindings round; eight CodeV mask classes and about ten others remain in no suite.  Wiring them is a resources test-config change outside any brief (TO declined it under the standing push word, correctly).  With the 2026-10-26 release path (3b item 1, orphaned files), the choice is wire or delete, per class: Dave's word.
+
 ## 4a. Rulings taken so far
+- 2026-10-26 (the group meeting, relayed by Dave): **the release path and the post-release branch rules** -- section 3b; the runbook's roles change (Andy executes, we consolidate first and test after); the two repos' histories MERGED, not snapshotted.
 - 2026-10-13 (Dave): **start-on-surface — agreed, leave it.**  A ray starting ON a surface at round-off stays a miss; the committed corpus has zero such misses on either compiler (`cli_tests/records/start_on_surface_54009d3.md`); a deck that puts a vertex on its predecessor's plane is a deck error (fix the deck, as 82c58bb did).  No surfsub change, no band.
 - 2026-10-10 (Dave, the five rulings of the original §4): **(1) feature freeze — not necessary, but PREFERRED until the `dev-candidate` PR is approved** (rule 10 stands as a preference; the asphere+Zernike surface and EPFIX wait in PLAN §4); **(2) `LUseChfRayIfOK` — cleared** (closed, §1.1); **(3) IRIS — cleared** (closed, §1.1); **(4) the suite's home is `macos/cli_tests/`**; **(5) Mac port — explained, decision pending (§4 item 2)**.  **SAVE writes `ApStop`** (it does); the other unsaved variables deferred.  **PHASE 1 EXITED 2026-10-10 on Dave's word**; the undone items are carried in §1.1b, not dropped.
 - 2026-10-09: Dave started phase 1 ("take it slow and careful"); TO on §1.1 per `BRIEF_to_consolidation_p1.md`, CC on §2.1.  The suite's home is `macos/cli_tests/` (ruling 4, by use).  Rulings 1–3 and 5 still open; IRIS and `LUseChfRayIfOK` not started.

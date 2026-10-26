@@ -73,6 +73,8 @@ integration branch, `opt-dev` the bug-fix release target, `main` the public rele
 second**: never merge a resources branch whose emitters need engine keywords that are not on
 the matching engine branch — the failure is at prescription-load time, not build time.
 Always `git ls-remote --heads` before assuming the live set.  Push only on Dave's word.
+**After the 2026-10 release** (group meeting 2026-10-26, `BRANCHES.md`): a temporary branch per fix or feature,
+human-readable commit messages, PRs merged and deleted within a week.
 
 ## Key files for current work
 - macos_f90/elt_mod.F        : per-element data arrays and SrfType constants
