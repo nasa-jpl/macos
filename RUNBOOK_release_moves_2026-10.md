@@ -171,5 +171,41 @@ After step 5 is on macos `main`: GitHub Settings -> Archive this repository (rea
 months, then decide).  The side branches `develop`, `pol-ifo`, `tg96-oap` (4 commits not on dev-candidate) are in
 the step-1 bundle; delete them before archiving or leave them -- the room's call, no code depends on them.
 
+## Review checklist for Andy's wiki page (CC 2026-10-27; tick each against his draft)
+
+Archive and rewrite
+- [ ] A verified `git bundle --all` of BOTH repos exists before any rewrite, copied off the laptop (step 1).
+- [ ] The removal lists are drawn from history (`git log --all --diff-filter=A --name-only`), reviewed by eye, and the
+      `iris` match checked for innocent names (step 2).
+- [ ] After the rewrite, the verification loop reads 0 for npsol / pgplot / optiix / iris on EVERY ref of EACH repo,
+      BEFORE the two histories are joined.
+- [ ] The 2267-class run artifacts: the room's decision (stay / leave history) is stated, and if they leave, the list
+      excludes the test fixtures (`pymacos/tests/`, `mmacos/tests/`).
+- [ ] Branch protection off for the force-push and ON again after; GitHub support asked for the purge; open PRs noted.
+- [ ] The announcement says: delete every clone, re-clone once, never push from a pre-rewrite clone.
+
+Joining the repositories
+- [ ] Resources moves under a subdirectory of macos with history (`filter-repo --to-subdirectory-filter`, then
+      `merge --allow-unrelated-histories`), and the subdirectory name is stated.
+- [ ] The path fix-ups of step 5 are scheduled as one gated commit after the join (the `../MACOS_resources` and
+      `../macos` assumptions in `cli_tests/`, `CMakeLists.txt`, `.gitattributes`, `mmacos_setup.m`, the pymacos
+      CMake, `rx_fixture_path.m`, `tests/context.py`).
+- [ ] The two `release-exclude.txt` lists are folded into one, each pattern prefixed by its directory.
+
+Promotion and release
+- [ ] `dev-candidate` -> `dev` is a fast-forward in both repos (or the divergence is named).
+- [ ] `dev` -> `main` is merge, strip (`tools/release_strip.py --apply` or an equivalent that is idempotent), one commit.
+- [ ] The strip is checked on the result: 5 `CLAUDE.md` on macos main (root, macos_f90, giza, slsqp, manual) + 4 in
+      the resources subtree; zero `PLAN_* / CURRENT_SLICE / BRIEF_* / NOTE_* / DRAFT_* / RUNBOOK_*`; `git grep -il
+      npsol` reads 0 in sources.
+- [ ] The step-4 gate list runs on a CLEAN clone of the new `main` before the release is cut, on Linux and on the Mac.
+- [ ] The release notes name the version (4.00) and the re-clone requirement.
+
+Dry-run state on 2026-10-27 (CC): macos strip 494 of 7802 files, 5 CLAUDE.md kept, no process file kept; resources
+strip 39 of 6318 after adding the `BRIEF_*.md / NOTE_*.md / PLAN_*.md / STATUS_*.md / SESSION_STATE_*.md /
+CURRENT_SLICE.md` patterns (the named-file list had missed 17 dyson5 briefs, 2 notes and `design/PLAN_CONFIGURATIONS.md`);
+the self-containment sweep finds no `addpath` reaching outside the repos, and the two `matlab_dir` options
+(`segment_grid_basis`, `gs_zernike_segment_basis`) are deprecated-and-ignored defaults, not dependencies.
+
 ## What this runbook does NOT do
 Nothing here is reversible after step 2's force-push except from the step-1 bundle; nothing here is run by CC.
