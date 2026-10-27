@@ -102,7 +102,17 @@ plus a worktree that shares its objects -- the gate tree then cannot drift from 
 third tree is not recreated (a second gate tree, if two lanes ever gate at the same hour again, is a one-line
 `git worktree add` at the time):
 ```bash
-rm -rf ~/dev/macos ~/dev/macos_cli_base ~/dev/macos_to_hex ~/dev/MACOS_resources     # after step 1's bundle is safe
+# KEEPERS FIRST (Dave 2026-10-27, "we'll have to rethink before recloning"): the clones hold files that
+# the new repository will not -- every untracked file (the BRIEF_/DRAFT_/REPORT_ drafts at the macos root,
+# scratch runs, Dave's edit copies) and, on the release surface, everything the two release-exclude.txt
+# lists strip (the six template REPORT_*.md among them, Dave 2026-10-27: not shipped, kept locally).
+# Copy them out before any rm, then decide file by file what comes back into the re-cloned tree.
+K=~/dev/keep_$(date +%Y%m%d); mkdir -p $K/macos $K/MACOS_resources
+(cd ~/dev/macos && git ls-files --others --exclude-standard -z | rsync -a0 --files-from=- . $K/macos/)
+(cd ~/dev/MACOS_resources && git ls-files --others --exclude-standard -z | rsync -a0 --files-from=- . $K/MACOS_resources/)
+(cd ~/dev/MACOS_resources && git ls-files -z -- 'mmacos/templates/*/*/REPORT_*.md' | rsync -a0 --files-from=- . $K/MACOS_resources/)
+du -sh $K                                      # read the listing before the rm below
+rm -rf ~/dev/macos ~/dev/macos_cli_base ~/dev/macos_to_hex ~/dev/MACOS_resources     # after step 1's bundle is safe AND $K is read
 git clone git@github.com:nasa-jpl/macos.git ~/dev/macos && cd ~/dev/macos && git checkout dev-candidate
 git worktree add ../macos_cli_base dev-candidate       # the clean gate tree; run_cli_tests.sh's default
 git clone git@github.com:nasa-jpl/MACOS_resources.git ~/dev/MACOS_resources   # until step 5 folds it in
