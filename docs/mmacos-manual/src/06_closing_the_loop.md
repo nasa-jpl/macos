@@ -78,11 +78,14 @@ its mean it is %pin:ch06_ref_linear_ac% nm, the engine's change under either ref
 the change reads zero.)
 
 A corrector cannot see piston, and an image does not depend on it. So every tool that uses these
-columns removes piston over each field's pupil first: the simulator below, before it solves for
-control; the metrology runner of Section 5, before it forms its prior; and the stage-7 script, when
-it sizes the starting disturbance. With piston removed, a harvest under either reference gives the
-same control, the same metrology prior and the same simulation, so the numbers in this section and
-in Section 5 do not depend on the choice. The lesson: an engine-against-model check is only as good
+columns removes piston over each field's pupil by default, on both sides of every comparison: the
+comparison above, the simulator below, the metrology runner of Section 5, the conditioning of
+Section 4 and the budget of Section 7. With piston removed, a harvest under either reference gives
+the same control, the same metrology prior and the same simulation, so the numbers in this section
+and in Section 5 do not depend on the choice. Each tool takes the option `'piston'`, `'remove'` by
+default or `'keep'` for an interferometer, which does read the piston between fields or arms; the
+e2e thread sets it once, `P.piston` in `e2e_params.m`, and every report prints the choice beside
+the OPD reference. The lesson: an engine-against-model check is only as good
 as the conventions both sides share, and a quantity no sensor or image can see should not reach the
 estimator.
 
@@ -135,6 +138,8 @@ peak ratio against a nominal image, not the exact aperture form.)
 
 - *"Harvest at the mean reference and rerun Sections 5 and 6."* -- `run_sensitivities`'s
   `opd_ref` option; the piston-free tools give the same control, prior and simulation.
+- *"Keep the piston, as an interferometer would."* -- `P.piston = "keep"`: the tilt share of the
+  metrology prior and the uncorrected wavefront now count it.
 - *"Give the loop the figure states."* -- the README's next step: a steady-state Kalman form with
   the figure-sensing matrices of Section 6 in the estimator.
 - *"What does all this cost in the error budget?"* -- Section 7.

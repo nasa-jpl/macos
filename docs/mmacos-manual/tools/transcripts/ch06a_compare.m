@@ -22,6 +22,7 @@ for f = ["e2e_pie.in" "e2e_pieHx.m" "s4_jacobians.mat" "e2e_pie_met.mat" "s4_gri
     end
 end
 copyfile(fullfile(root, 'templates', '80_end_to_end', 'e2e', 's6_compare.m'), work);
+copyfile(fullfile(root, 'templates', '80_end_to_end', 'e2e', 'e2e_params.m'), work);   % the stage's knobs as they are now (P.piston, 1.2 (www))
 addpath(fullfile(root, 'src'));  addpath(fullfile(root, 'design', 'src'));
 addpath(fullfile(root, 'design', 'runners'));
 

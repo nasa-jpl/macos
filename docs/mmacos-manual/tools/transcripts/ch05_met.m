@@ -30,6 +30,7 @@ src = fileread(fullfile(root, 'templates', '80_end_to_end', 'e2e', 's5_met.m'));
 cut = regexp(src, '% promote the optimized layout to the shared preset library.*?\nend\n', 'match');
 assert(numel(cut) == 1, 'ch05: the preset-promotion block did not match exactly once');
 fid = fopen(fullfile(work, 's5_met.m'), 'w');  fwrite(fid, strrep(src, cut{1}, ''));  fclose(fid);
+copyfile(fullfile(root, 'templates', '80_end_to_end', 'e2e', 'e2e_params.m'), work);   % the stage's knobs as they are now (P.piston, 1.2 (www))
 
 pl = splitlines(string(fileread(fullfile(work, 'e2e_params.m'))));
 k0 = find(startsWith(pl, "P.met"), 1);                 % the block, through its closing ');'
