@@ -92,3 +92,5 @@ The pipeline's bound pins printed their bound without checking it. In chapter 6'
 produced "w < 0.01" for a measured 0.945. Nothing false was committed, and every committed bound pin
 holds its rule under the fixed checker. The helpers now fail closed, and the regen script checks
 every bound on the run that records it (dbc2aea2).
+
+Round 2 B (2026-10-26): the e2e template's per-file regeneration record, with the cause of every file that did not reproduce, is `cli_tests/records/run_artifacts_e2e_regen_2026-10-26.tsv`.
