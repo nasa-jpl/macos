@@ -12,7 +12,7 @@
        ExitPupil  R =    1.8489 m  K =  +0.00000  Vpt=[ -0.606   0.291   0.299]
        FP         FocalPlane (flat)        Vpt=[ -2.436   0.553   0.300]
      -- first order --
-       EFL 73.88 m | f/# at M1 1.75 | f/# at FP 18.47
+       plate-scale EFL at the field point 73.88 m (system EFL 72.71 m) | f/# at M1 1.75 | f/# at FP 18.47
        plate scale 358.2 um/arcsec | lambda/D 25.78 mas
      -- field performance (RMS WFE about the field center) --
        bias +0.3' |    field       raw     -tilt    Strehl

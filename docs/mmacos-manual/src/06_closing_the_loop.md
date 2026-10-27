@@ -23,8 +23,8 @@ running, and watch the wavefront for 500 seconds.
   engine truth for each measurement, the estimator (a weighted least-squares pose estimate with a
   prior) and the controller.
 - `MACOS_resources/mmacos/src/+macos/opd_ref.m`, its help text -- the OPD map's reference, the
-  chief ray (the default since 2026-10-10) or the aperture mean. It decides what Section 6's first
-  check measures (below).
+  chief ray (the default) or the aperture mean. The harvest records which one it used, and the
+  comparison follows it (below).
 
 ### It runs: the linear model against the engine
 
@@ -45,7 +45,7 @@ summary (the per-poke table is in `s6_report.txt`):
 ![](media/ch06_poke_x.png)
 
 **FIGURE 15** One rigid-body poke, segment 2 piston +100 nm: the engine (left) and the linear model
-(right). The segment's change is the same; the rest of the pupil differs by a constant.
+(right), both referenced to the chief ray.
 
 ![](media/ch06_poke_g.png)
 
@@ -57,27 +57,34 @@ predicts.
 ### Checking the assistant's work
 
 The measurements agree to the noise of the comparison: the metrology beams to %pin:ch06_x_l% and the
-edge sensors to %pin:ch06_x_e%, relative. The wavefront does not: the worst rigid-body poke reads
-%pin:ch06_x_w%, the worst figure mode %pin:ch06_z_w%, relative, where the library's committed run of
-this stage read a few parts in a thousand. The worst pokes are the center segment's, and Figure 15
-shows the shape of the miss: a constant across the pupil.
+edge sensors to %pin:ch06_x_e%, relative. So does the wavefront: the worst rigid-body poke reads
+%pin:ch06_x_w% and the worst figure mode %pin:ch06_z_w%, relative, the linearization error at these
+poke sizes.
 
-The cause is the OPD reference, not the model. Since 2026-10-10 the engine references the OPD map
-to the chief ray by default, and loading a prescription restores that default. The Section 4
-harvest was taken with the map referenced to the aperture mean. This stage's engine side takes the
-default. So a poke that moves the chief ray's own path, as the center segment's piston does, shifts
-the engine's whole map by a constant that the linear column, mean-referenced, does not have.
-Measured directly on this deck, one poke, segment 1 piston +100 nm, under each reference:
+Both sides use the same OPD reference, and that matters. The engine references the OPD map to the
+chief ray by default. The Section 4 harvest used the same reference and recorded it in its output,
+and the comparison reads that record and sets the engine to match (the report's header line). Under
+the chief-ray reference, a poke that moves the chief ray's own path adds a constant across the whole
+map: a piston. Here is one poke, segment 1 piston +100 nm, measured under each reference, beside
+the linear column:
 
 <!-- transcript: ch06_opdref -->
 
 The engine under the chief-ray reference gives %pin:ch06_ref_chief_rms% nm rms, %pin:ch06_ref_chief_mean%
-nm of it a constant; under the mean reference %pin:ch06_ref_mean_rms% nm; the linear column
-%pin:ch06_ref_linear_rms% nm. About its mean, the engine's change is the model's in both. (The
+nm of it a constant; under the mean reference %pin:ch06_ref_mean_rms% nm. The linear column carries
+the same constant (%pin:ch06_ref_linear_rms% nm rms, mean %pin:ch06_ref_linear_mean% nm), and about
+its mean it is %pin:ch06_ref_linear_ac% nm, the engine's change under either reference. (The
 `macos.modify()` after the perturb matters: without it the next trace reuses the cached geometry and
-the change reads zero.) Which reference the harvest should use is an open question for the library (the
-open questions list), and this manual prints the comparison as it runs. The lesson stands either
-way: an engine-against-model check is only as good as the conventions both sides share.
+the change reads zero.)
+
+A corrector cannot see piston, and an image does not depend on it. So every tool that uses these
+columns removes piston over each field's pupil first: the simulator below, before it solves for
+control; the metrology runner of Section 5, before it forms its prior; and the stage-7 script, when
+it sizes the starting disturbance. With piston removed, a harvest under either reference gives the
+same control, the same metrology prior and the same simulation, so the numbers in this section and
+in Section 5 do not depend on the choice. The lesson: an engine-against-model check is only as good
+as the conventions both sides share, and a quantity no sensor or image can see should not reach the
+estimator.
 
 The grid channel's miss, %pin:ch06_g_w%, has a second cause the report names in its note: the
 engine's grid-surface response is not proportional across sub-micrometre amplitudes on a
@@ -126,8 +133,8 @@ peak ratio against a nominal image, not the exact aperture form.)
 
 ### What to ask next
 
-- *"Rerun the comparison with both sides on the same reference."* -- the reference is a session
-  setting (`macos.opd_ref`); which one the harvest uses is the open question above.
+- *"Harvest at the mean reference and rerun Sections 5 and 6."* -- `run_sensitivities`'s
+  `opd_ref` option; the piston-free tools give the same control, prior and simulation.
 - *"Give the loop the figure states."* -- the README's next step: a steady-state Kalman form with
   the figure-sensing matrices of Section 6 in the estimator.
 - *"What does all this cost in the error budget?"* -- Section 7.

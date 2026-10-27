@@ -35,6 +35,12 @@
           corner_pairs   |    4.102    0.000    4.102 |    1.799    0.000    1.799 |    0.0922  0.01502
 
     [5] Monte-Carlo (200 draws): 0.020 nm rms  (analytic 0.020) [2.0%]
+    metric chart (w_post / w_prior):
+        prior         1
+        edge only     0.4348
+        MET only      0.1357
+        edge+MET      0.09435
+        edge+MET opt  0.09252
 
     [6] figures: <thread>/e2e_pie_met_layout.png, <thread>/e2e_pie_metopt_layout.png, <thread>/e2e_pie_met_view_rx.png, <thread>/e2e_pie_met_metric.png
     preset saved: <thread>/e2e_pie_met_preset.mat (reusable as-built for future Pie builds)
