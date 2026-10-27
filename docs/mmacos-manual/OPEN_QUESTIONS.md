@@ -66,6 +66,11 @@ The report on Dave's return gathers this list (BRIEF_to_mmacos_manual.md, Report
   committed August 2.6e-3 / 1.8e-3 / 0.29.  Measured (ch06c): Seg 1 Tz +100 nm, engine 'chief' 188.9 nm
   rms (178.4 nm piston), 'mean' 61.98, the linear column 61.98.  Which reference the harvest uses is
   Dave's ruling.
+  **RESOLVED.**  The harvest uses 'chief' and records it; `run_compare` reads the record (1.2 (kkk),
+  A.1).  The simulator, `run_met` and `s7_simulate` remove piston over each field's pupil (1.2 (www),
+  Dave 2026-10-27: piston removal is essential in an imager analysis), so a chief and a mean harvest
+  give the same control, prior and simulation; the e2e s5-s7 rerun on the chief harvest reproduces
+  the committed ch05 and ch06 pins exactly.  Chapter 6 tells the one-reference story.
 - **ch. 7: `run_budget`'s per-group chart (`<name>_budget.png`) leaves out the rows that make its total.**
   It bars the alignment groups only; the actuator and sensing rows (2.595 + 1.281 + 1.251 + 0.092 nm of
   the 3.156 nm in its title) are not in it, and the controlled groups' bars are projection residuals

@@ -38,10 +38,10 @@ ch04_rows	59750
 ch04_dwdx_cols	90
 ch04_dwdz_cols	56
 ch04_dwdz_rank	56
-ch04_dwdz_cond	5.368e+00
+ch04_dwdz_cond	1.448e+01
 ch04_dwdgrid_cols	42
 ch04_dwdgrid_rank	42
-ch04_dwdgrid_cond	1.398e+00
+ch04_dwdgrid_cond	5.471e+00
 ch05_dldx_rel	< 1e-05
 ch05_tilt_prior	< 1e-12
 ch05_h_svmin	< 1e-15
@@ -57,12 +57,12 @@ ch05_mc_draws	200
 ch05_mc_nm	0.020
 ch05_mc_analytic_nm	0.020
 ch06_x_pokes	54
-ch06_x_w	9.45e-01
+ch06_x_w	2.83e-03
 ch06_x_l	< 1e-05
 ch06_x_e	< 1e-06
-ch06_z_w	9.90e-01
+ch06_z_w	9.72e-04
 ch06_g_pokes	42
-ch06_g_w	9.87e-01
+ch06_g_w	2.63e-01
 ch06_a_corr_390	44.02
 ch06_a_corr_400	0.843
 ch06_a_corr_500	11.81
@@ -73,7 +73,9 @@ ch06_ref_chief_rms	188.9
 ch06_ref_chief_mean	178.4
 ch06_ref_mean_mean	< 1e-09
 ch06_ref_mean_rms	61.98
-ch06_ref_linear_rms	61.98
+ch06_ref_linear_rms	188.9
+ch06_ref_linear_mean	178.4
+ch06_ref_linear_ac	61.98
 ch07_floor	< 1e-06
 ch07_pre	317.4
 ch07_post	3.156
