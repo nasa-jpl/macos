@@ -21,6 +21,7 @@ if ~isfile(fullfile(work, 'e2e_pie.in'))
     error('ch04:thread', 'no stage-3 products in %s -- run ch03_segmentation first', work);
 end
 copyfile(fullfile(root, 'templates', '80_end_to_end', 'e2e', 's4_jacobians.m'), work);
+copyfile(fullfile(root, 'templates', '80_end_to_end', 'e2e', 'e2e_params.m'), work);   % the stage's knobs as they are now (P.piston, 1.2 (www))
 addpath(fullfile(root, 'src'));  addpath(fullfile(root, 'design', 'src'));
 addpath(fullfile(root, 'design', 'runners'));  addpath(fullfile(root, 'sensitivities'));
 

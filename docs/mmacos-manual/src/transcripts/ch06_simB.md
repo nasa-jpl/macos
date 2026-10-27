@@ -1,6 +1,7 @@
     ==== run_simulator: <thread>/e2e_pie.in ====
     [0] 9 bodies (7 segments), T = 50 frames, dt = 10 s
         states: x 54x50, z 56x50, g 42x50;  sim Rx <thread>/s4_grid.in
+        OPD reference chief (the harvest's), piston removed on both sides
     [1] baseline on <thread>/s4_grid.in: 11950 rays in pupil; psf @ elt 17, peak 6.53e+03;
         COMPOSE band [4.85e-07 5e-07 5.15e-07] WaveUnits, 128 px @ 2.18 um; (grid Rx: no metrology) engine l model-only
     [2] channels in motion: 48 rigid, 21 zernike, 42 grid

@@ -2,11 +2,11 @@
     [0] 9 bodies (7 segments), channels [x z grid]; met Rx <thread>/e2e_pie_metopt.in
         jac: center field 11950 x 54 x-cols; dedx 72x54; dldx 48x54
         baseline: 11950 OPD pixels (jac mask mismatch 0 px), 48 met beams, 72 edge rows
-        OPD reference: chief (the harvest's)
+        OPD reference: chief (the harvest's), piston removed on both sides
 
     [3] worst engine-vs-linear agreement per channel:
         x     ( 54 pokes): w 2.83e-03 (Seg 3 Rz +100 nrad), l < 1e-05, e < 1e-06
-        z     ( 56 pokes): w 9.72e-04 (Seg 4 Z8 +100 nm), l     null, e     null
+        z     ( 56 pokes): w 9.61e-04 (Seg 4 Z8 +100 nm), l     null, e     null
         grid  ( 42 pokes): w 2.63e-01 (Seg 7 G5 +100 nm), l     null, e     null
         (4 poke(s) below the 0.001 nm response floor -- no physical
          response, engine delta is FD noise; rel = null)

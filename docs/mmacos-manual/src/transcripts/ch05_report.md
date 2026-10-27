@@ -9,6 +9,7 @@
     [2] dedx 72x54 (SI);  dldx 48x54 engine-FD vs analytic: < 1e-05 max rel  PASS
 
     [3] dwdx: 54 columns for bodies [1  2  3  4  5  6  7  8  9] from the sensitivities .mat
+        OPD reference chief (the harvest's), piston removed
         post-control wavefront residual (fraction of prior; nm at the
         configured scenario: prior 1e-10 rad / 1e-10 m, noise 1e-11 / 1e-12 m):
           prior (no sensing)       1.0000   (0.2173 nm)

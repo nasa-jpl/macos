@@ -71,7 +71,8 @@ Two checks, both on numbers in the report.
 The first is units. The column norms are in the deck's native units per unit motion, metres of
 wavefront per radian or per metre (BaseUnits are metres here). A segment's piston, Tz, reads about
 0.7, and that can be checked by hand: a mirror moved along its normal changes the reflected path by
-twice the motion, on about a seventh of the rays; with the mean removed, the rms is
+twice the motion, on about a seventh of the rays; with the mean removed (the report's analyses
+remove each field's piston, its `piston:` line says so, Section 6 says why), the rms is
 2·√(1/7 · 6/7) ≈ 0.70. (The center segment reads less: the primary's hole takes some of its rays.)
 A units slip would show as a factor of a thousand.
 
