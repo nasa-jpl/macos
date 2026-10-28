@@ -91,7 +91,7 @@ preset in the Rx is preserved.  Suite: `SESSION_INFO.jou`.
 
 What is loaded / built / propagated.
 
-*CLI suite:* `HELP_POL.jou`, `MODE_centroid.jou`, `MODE_cir.jou`, `MODE_nolneg.jou`, `MODE_polarization.jou`, `MODE_scalar.jou`, `MRESET.jou`, `SESSION_INFO.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `HELP_POL.jou`, `MODE_centroid.jou`, `MODE_cir.jou`, `MODE_nolneg.jou`, `MODE_obs_notice.jou`, `MODE_polarization.jou`, `MODE_scalar.jou`, `MRESET.jou`, `SESSION_INFO.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **CLI-only** — session / shell convenience.
 
@@ -436,14 +436,14 @@ working directory (PLAN_CONSOLIDATION 1.2 (r)).
 
 Load a .in prescription.
 
-*CLI suite:* `AMP_PHASE_REAL_PIX.jou`, `ATMOS_DMBUILD.jou`, `ATMOS_placement.jou`, `ATMOS_seed.jou`, `AVAR_VARS_MVAR_DVAR.jou`, `BEAM_GAUSS.jou`, `BEAM_gaussian.jou`, `BINARY_CENTER.jou`, `BUILD_refused_export.jou`, `BWK.jou`, `CALIB_SPOT_asph.jou`, `CALIB_SPOT_mixed.jou`, `CALIB_SPOT_rigid.jou`, `CALIB_SPOT_zern.jou`, `CALIB_WFE_asph.jou`, `CALIB_WFE_mixed.jou`, `CALIB_WFE_rigid.jou`, `CALIB_WFE_zern.jou`, `CALIB_ZWF_asph.jou`, `CALIB_ZWF_mixed.jou`, `CALIB_ZWF_rigid.jou`, `CALIB_ZWF_zern.jou`, `CALIB_beam_under_spot.jou`, `CALIB_failed_trials.jou`, `CALIB_fov_weight.jou`, `CALIB_history.jou`, `CALIB_journal_prompts.jou`, `CALIB_keywords.jou`, `CALIB_save_roundtrip.jou`, `CALIB_setup.jou`, `CALIB_stalled.jou`, `CENTER_FFP_PFP_FDP.jou`, `COAT_legacy.jou`, `COMPOSE_ADD_NOISE.jou`, `COORD_ACOOR.jou`, `COORD_offaxis_frame.jou`, `DOPD_identical.jou`, `EFL_SYSPROP.jou`, `EXPORT.jou`, `FILTERS_MULTISPEC.jou`, `FOV_SETC_SAOPT.jou`, `GLASS_mod_save.jou`, `GPERTURB.jou`, `GRIDFILE_beside.jou`, `GRIN_unsupported.jou`, `HELP_POL.jou`, `IMAGEDEMO_proptype.jou`, `IMG.jou`, `INT_LOG.jou`, `IndRef_stamp.jou`, `JOURNAL_EXE.jou`, `LINEAR_MODEL.jou`, `LONG_PATH.jou`, `MANUAL_examples.jou`, `METCALC.jou`, `MODE_centroid.jou`, `MODE_cir.jou`, `MODE_load_notice.jou`, `MODE_nolneg.jou`, `MODE_polarization.jou`, `MODE_scalar.jou`, `MOD_spaces.jou`, `MRESET.jou`, `MTF_LOS_ROWCOL.jou`, `NEW.jou`, `NSRefractor_grid.jou`, `OBS_NONE.jou`, `OBS_POLYGON.jou`, `OPD.jou`, `OPD_reference.jou`, `ORS_SRS.jou`, `OUTCORD_missing.jou`, `OptAsph_order.jou`, `PARTIALS_inputray.jou`, `PERTURB.jou`, `PGD_ODRAW.jou`, `PGD_reopen_units.jou`, `PLOCATE_NOPLOC.jou`, `PLOT_TYPES.jou`, `PREAD.jou`, `PROPTYPE_numeric.jou`, `RAY_MAP.jou`, `REGRID.jou`, `RRAY_PRAY_TPR_FSR.jou`, `Rx_header_unknown.jou`, `SAVE_roundtrip.jou`, `SEGRAYTRACE.jou`, `SESSION_INFO.jou`, `SINT.jou`, `SINT_short_file.jou`, `SPCENTER.jou`, `SPOT_text.jou`, `SRAY_SRT.jou`, `STOP_FEX_SXP.jou`, `SYSPROP_after_OPD.jou`, `TRACE_keeps_rx.jou`, `UDSINIT.jou`, `WARN_obscured_elt.jou`, `WINDOW_GBS.jou`, `WLENS_SWL.jou`, `XPS.jou`, `ZABERR_ZRM_DOPD.jou`, `ZCOEF_zero_rays.jou`, `ZERN_mode_count.jou`, `ZERN_normhex.jou`, `ZERN_refused.jou`, `ZernType_default.jou`, `ZernType_extfringe.jou`, `ZrnGr_refusal.jou`, `nGridpts_clamp.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `AMP_PHASE_REAL_PIX.jou`, `ATMOS_DMBUILD.jou`, `ATMOS_placement.jou`, `ATMOS_seed.jou`, `AVAR_VARS_MVAR_DVAR.jou`, `BEAM_GAUSS.jou`, `BEAM_gaussian.jou`, `BINARY_CENTER.jou`, `BUILD_refused_export.jou`, `BWK.jou`, `CALIB_SPOT_asph.jou`, `CALIB_SPOT_mixed.jou`, `CALIB_SPOT_rigid.jou`, `CALIB_SPOT_zern.jou`, `CALIB_WFE_asph.jou`, `CALIB_WFE_mixed.jou`, `CALIB_WFE_rigid.jou`, `CALIB_WFE_zern.jou`, `CALIB_ZWF_asph.jou`, `CALIB_ZWF_mixed.jou`, `CALIB_ZWF_rigid.jou`, `CALIB_ZWF_zern.jou`, `CALIB_beam_under_spot.jou`, `CALIB_failed_trials.jou`, `CALIB_fov_weight.jou`, `CALIB_history.jou`, `CALIB_journal_prompts.jou`, `CALIB_keywords.jou`, `CALIB_save_roundtrip.jou`, `CALIB_setup.jou`, `CALIB_stalled.jou`, `CENTER_FFP_PFP_FDP.jou`, `COAT_legacy.jou`, `COMPOSE_ADD_NOISE.jou`, `COORD_ACOOR.jou`, `COORD_offaxis_frame.jou`, `DOPD_identical.jou`, `EFL_SYSPROP.jou`, `EXPORT.jou`, `FILTERS_MULTISPEC.jou`, `FOV_SETC_SAOPT.jou`, `GLASS_mod_save.jou`, `GPERTURB.jou`, `GRIDFILE_beside.jou`, `GRIN_unsupported.jou`, `HELP_POL.jou`, `IMAGEDEMO_proptype.jou`, `IMG.jou`, `INT_LOG.jou`, `IndRef_stamp.jou`, `JOURNAL_EXE.jou`, `LINEAR_MODEL.jou`, `LONG_PATH.jou`, `MANUAL_examples.jou`, `METCALC.jou`, `MODE_centroid.jou`, `MODE_cir.jou`, `MODE_load_notice.jou`, `MODE_nolneg.jou`, `MODE_obs_notice.jou`, `MODE_polarization.jou`, `MODE_scalar.jou`, `MOD_spaces.jou`, `MRESET.jou`, `MTF_LOS_ROWCOL.jou`, `NEW.jou`, `NSRefractor_grid.jou`, `OBS_NONE.jou`, `OBS_POLYGON.jou`, `OPD.jou`, `OPD_reference.jou`, `ORS_SRS.jou`, `OUTCORD_missing.jou`, `OptAsph_order.jou`, `PARTIALS_inputray.jou`, `PERTURB.jou`, `PGD_ODRAW.jou`, `PGD_reopen_units.jou`, `PLOCATE_NOPLOC.jou`, `PLOT_TYPES.jou`, `POL_across_load.jou`, `PREAD.jou`, `PROPTYPE_numeric.jou`, `RAY_MAP.jou`, `REGRID.jou`, `RRAY_PRAY_TPR_FSR.jou`, `Rx_header_unknown.jou`, `SAVE_roundtrip.jou`, `SEGRAYTRACE.jou`, `SESSION_INFO.jou`, `SINT.jou`, `SINT_short_file.jou`, `SPCENTER.jou`, `SPOT_text.jou`, `SRAY_SRT.jou`, `STOP_FEX_SXP.jou`, `SYSPROP_after_OPD.jou`, `TRACE_keeps_rx.jou`, `UDSINIT.jou`, `WARN_obscured_elt.jou`, `WINDOW_GBS.jou`, `WLENS_SWL.jou`, `XPS.jou`, `ZABERR_ZRM_DOPD.jou`, `ZCOEF_zero_rays.jou`, `ZERN_mode_count.jou`, `ZERN_normhex.jou`, `ZERN_refused.jou`, `ZernType_default.jou`, `ZernType_extfringe.jou`, `ZrnGr_refusal.jou`, `nGridpts_clamp.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `load_rx`.
 
 <!-- BEGIN NOTES cmd-OLD-file -->
 *Syntax:* `OLD <file>` (also `LOAD`) — the prescription file, `.in` optional.
 
-*Defaults:* the file name has no default; a load wipes the trace state and keeps the five session modes (POLARIZATION, VECTOR/SCALAR, LNEG, CENTROID, CIR) and the OPD reference, printing the non-default ones.  A deck that carries a CALIB setup (Table 13 keys) is announced in one line (`LOAD: CALIB setup in force from the prescription: ...`).  A deck with no output-coordinate block (`nOutCord=` / `Tout=`) loads: the beam frame at the last element is proposed (z from the previous vertex to the last vertex, x from the element's `xObs=`) and the CLI asks `Keep the proposed output coordinates? [YES]:` -- NO reads `nOutCord` and the `Tout` rows; the bindings take the proposal.  A numeric `PropType=` (0..15) resolves to its name, 0 = Geometric; an unrecognized value is refused at load, by name (1.2 (dd)).  Gates: `OUTCORD_missing.jou`, `PROPTYPE_numeric.jou`, `CALIB_save_roundtrip.jou`.
+*Defaults:* the file name has no default; a load wipes the trace state and keeps the five session modes (POLARIZATION, VECTOR/SCALAR, LNEG, CENTROID, CIR), the OBS option (since 2026-10-28) and the OPD reference, printing the non-default ones.  A deck that carries a CALIB setup (Table 13 keys) is announced in one line (`LOAD: CALIB setup in force from the prescription: ...`).  A deck with no output-coordinate block (`nOutCord=` / `Tout=`) loads: the beam frame at the last element is proposed (z from the previous vertex to the last vertex, x from the element's `xObs=`) and the CLI asks `Keep the proposed output coordinates? [YES]:` -- NO reads `nOutCord` and the `Tout` rows; the bindings take the proposal.  A numeric `PropType=` (0..15) resolves to its name, 0 = Geometric; an unrecognized value is refused at load, by name (1.2 (dd)).  Gates: `OUTCORD_missing.jou`, `PROPTYPE_numeric.jou`, `CALIB_save_roundtrip.jou`.
 
 ```
 MACOS>old
@@ -615,7 +615,7 @@ Chief ray as the FEX/SXP pupil-sphere axis (the default).
 
 *CLI suite:* `MODE_load_notice.jou`, `OPD_reference.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
-*Binding:* **direct setter** — `xp_fnd(mode=1)` / `sxp_fnd(1)` per call; the session axis is read by `modes_get`.
+*Binding:* **SMACOS command** — `modes_set`.
 
 <!-- BEGIN NOTES cmd-CHIefray -->
 *Syntax:* `CHIEFRAY`; no prompt (the counterpart of CENTROID).
@@ -654,6 +654,8 @@ with reset_xp_method='pupil_find', which is chief-tied by doctrine).
 CHIefray does NOT set the chief-ray position/direction — use
 PERturb 0, STOp, FFP or PFP for that.
 *Related:* CENTRoid, FEXit.
+
+*Bindings (2026-10-28):* `modes_set(centroid, lneg)` sets the session axis (1 = CENTROID, 0 = CHIEFRAY, -1 = leave), the twin of `modes_get`; MATLAB `macos.modes('centroid', tf)`, Python `pymacos.modes_set(centroid=...)`.  The per-call `xp_fnd(mode)` / `sxp_fnd(mode)` override stays.
 <!-- END NOTES cmd-CHIefray -->
 
 #### WLENS
@@ -1475,7 +1477,7 @@ Beam-centroid FEX/SXP axis (opt-in; the chief ray is the default).
 
 *CLI suite:* `MODE_centroid.jou`, `MODE_load_notice.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
-*Binding:* **direct setter** — `xp_fnd(mode=0)` / `sxp_fnd(0)` per call; the session axis is read by `modes_get`.
+*Binding:* **SMACOS command** — `modes_set`.
 
 <!-- BEGIN NOTES cmd-CENTRoid -->
 *Syntax:* `CENTROID`; no prompt (the counterpart of CHIEFRAY).
@@ -1498,6 +1500,8 @@ restores the chief-ray default (the default on all platforms
 since 2026-08-27); the Rx keyword `FEXCentroid= N` vetoes the
 centroid axis per deck.
 *Related:* CHIefray, FEXit.
+
+*Bindings (2026-10-28):* `modes_set(centroid, lneg)` sets the session axis (1 = CENTROID, 0 = CHIEFRAY, -1 = leave), the twin of `modes_get`; MATLAB `macos.modes('centroid', tf)`, Python `pymacos.modes_set(centroid=...)`.  The per-call `xp_fnd(mode)` / `sxp_fnd(mode)` override stays.
 <!-- END NOTES cmd-CENTRoid -->
 
 #### FFP <x,y>
@@ -1637,7 +1641,7 @@ Allow/disallow negative pathlengths.
 
 *CLI suite:* `MODE_load_notice.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
-*Binding:* **missing** — no api setter; read by `modes_get` (a session mode -- NOT the linear model, whatever its L).
+*Binding:* **SMACOS command** — `modes_set`.
 
 <!-- BEGIN NOTES cmd-LNEg-NOLNeg -->
 *Syntax:* `LNEG` / `NOLNEG`; no prompt.
@@ -1715,7 +1719,7 @@ also `macos.jones_pupil` for polarization-aberration analysis.
 
 Polarization off.
 
-*CLI suite:* `MODE_load_notice.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `MODE_load_notice.jou`, `POL_across_load.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `pol_set`.
 
@@ -1742,14 +1746,14 @@ state if polarization was on.
 
 Spot-diagram obscuration option.
 
-*CLI suite:* `OBS_NONE.jou`, `SESSION_INFO.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `MODE_obs_notice.jou`, `OBS_NONE.jou`, `SESSION_INFO.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `obs_set`.
 
 <!-- BEGIN NOTES cmd-OBS -->
 *Syntax:* `OBS [ALL|POSITIVE|NEGATIVE]` — which rays the trace keeps against obscurations.
 
-*Defaults:* [POSITIVE].  Reset by RESET (back to option 1); `obs_opt_get` reads it from the bindings.
+*Defaults:* [POSITIVE].  Session state (2026-10-28, Dave): a LOAD keeps it and names it in the LOAD notice when it is not POSITIVE (`LOAD: session modes in force: OBS ALL`); STATUS shows it (`Obscuration option for ray-trace=` 0 ALL, 1 POSITIVE, 2 NEGATIVE); RESET and allocation set POSITIVE.  Until 2026-10-28 every LOAD reset it silently.  `obs_opt_get` reads it from the bindings; `macos.modes()` / `pymacos.modes()` name it in `in_force`.  Gate: `MODE_obs_notice.jou`.
 
 ```
 MACOS>obs
@@ -3001,7 +3005,7 @@ element motions.  No arguments; requires only a loaded Rx.
 
 Wavefront intensity.
 
-*CLI suite:* `BEAM_GAUSS.jou`, `BEAM_gaussian.jou`, `BINARY_CENTER.jou`, `EFL_SYSPROP.jou`, `IMG.jou`, `INT_LOG.jou`, `ORS_SRS.jou`, `SYSPROP_after_OPD.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
+*CLI suite:* `BEAM_GAUSS.jou`, `BEAM_gaussian.jou`, `BINARY_CENTER.jou`, `EFL_SYSPROP.jou`, `IMG.jou`, `INT_LOG.jou`, `ORS_SRS.jou`, `POL_across_load.jou`, `SYSPROP_after_OPD.jou` (`cli_tests/cmd/`; each journal is the entry's example and its regression test).
 
 *Binding:* **SMACOS command** — `int_cmd`, `cfield_cmd`.
 

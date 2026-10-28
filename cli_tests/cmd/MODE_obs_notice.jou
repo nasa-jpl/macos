@@ -1,0 +1,23 @@
+# OBS is session state like the five modes (Dave 2026-10-28, PLAN_CONSOLIDATION 3a, the modes_set
+# beat): a load KEEPS it (until 2026-10-28 every LOAD reset it to POSITIVE, silently -- the notice
+# below was printed first and then the reset ran), the LOAD notice names it when it is not
+# POSITIVE, and STATUS shows it ('Obscuration option for ray-trace=' 0 ALL, 1 POSITIVE, 2
+# NEGATIVE).  On a coronagraph deck OBS ALL in force is something a user must see.  Here: a
+# default load (no line), OBS ALL + a load + STATUS (names OBS ALL; still 0), OBS NEGATIVE + a load
+# + STATUS (names OBS NEGATIVE; still 2), OBS POSITIVE + a load (silent again).
+# Pre-change: the notice never names OBS, and STATUS after the load shows 1 -- red twice.
+old $ROOT/ZGD_test_files/tst_calib_spot4.in
+obs
+all
+old $ROOT/ZGD_test_files/tst_calib_spot4.in
+status
+obs
+negative
+old $ROOT/ZGD_test_files/tst_calib_spot4.in
+status
+obs
+positive
+old $ROOT/ZGD_test_files/tst_calib_spot4.in
+# EXPECT: LOAD: session modes in force: OBS ALL[\s\S]*?Obscuration option for ray-trace=\s*0[\s\S]*?LOAD: session modes in force: OBS NEGATIVE[\s\S]*?Obscuration option for ray-trace=\s*2
+# EXPECT-NOT: (LOAD: session modes in force[^\n]*\n[\s\S]*){3}
+# EXPECT-NOT: \A[\s\S]*?tst_calib_spot4\.in\s+being loaded[\s\S]*?LOAD: session modes in force[\s\S]*?All rays plotted

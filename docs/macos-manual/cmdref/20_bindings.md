@@ -62,8 +62,11 @@ and CIR are session modes, set once in the engine and kept across every load -- 
 and the bindings alike (one semantics; Dave's ruling on the CLI modes, extended to the
 bindings).  `load_rx` warns when any is in force -- MATLAB `warning('mmacos:modesInForce',
 'load_rx: session modes in force: ...')`, Python `RuntimeWarning` -- and is silent at the
-defaults; `macos.modes()` / `pymacos.modes()` read them.  Set them per deck with
-`macos.polarization` / `vecdif_set` / the `xp_fnd` mode.
+defaults; `macos.modes()` / `pymacos.modes()` read them.  Set them with
+`macos.polarization` / `vecdif_set` and, since 2026-10-28, `modes_set` for CENTROID and LNEG
+(`macos.modes('centroid', tf, 'lneg', tf)` / `pymacos.modes_set(...)`); the per-call `xp_fnd`
+mode still overrides the axis for one call.  The OBS option is session state too (a load keeps
+it since 2026-10-28) and is named in `in_force` as `OBS ALL` / `OBS NEGATIVE`.
 <!-- END NOTES fn-load-rx -->
 
 #### modify
@@ -1674,13 +1677,24 @@ The model sizes the engine accepts. s = macos.model_sizes() returns [128 256 512
 
 #### modes
 
-- **mmacos:** `md = macos.modes()`
+- **mmacos:** `md = macos.modes(opts)`
 - **pymacos:** `pymacos.modes()`
 
-The five SESSION modes as the engine holds them. md = macos.modes() returns a struct with logical fields .pol (polarization), .vecdif (vector diffraction), .centroid (the FEX/SXP centroid axis), .lneg (negative ray lengths allowed; default TRUE), .cir (colour image rendering; always false in the bindings' engine), and .in_force, a cellstr of the modes NOT at their defaults, named as the CLI's LOAD notice names them
+Query or set the SESSION modes as the engine holds them. md = macos.modes() returns a struct with logical fields .pol (polarization), .vecdif (vector diffraction), .centroid (the FEX/SXP centroid axis), .lneg (negative ray lengths allowed; default TRUE), .cir (colour image rendering; always false in the bindings' engine), .obs (the OBS option in force: 'all', 'positive' (default) or 'negative'), and .in_force, a cellstr of the
 
 <!-- BEGIN NOTES fn-modes -->
 <!-- END NOTES fn-modes -->
+
+#### modes_set
+
+- **pymacos:** `pymacos.modes_set(centroid, lneg)`
+- **mmacos:** *not available*
+- **engine API:** `macos_api_mod::modes_set`
+
+Set the two SESSION modes that have no setter of their own (api modes_set, Dave 2026-10-28): ``centroid`` True = CENTROID, False = CHIEFRAY (the FEX / SXP pupil-sphere axis); ``lneg`` True = LNEG, False = NOLNEG (negative ray lengths at reference surfaces).  ``None`` leaves a mode as it is.  Needs :func:`init`, not a loaded Rx: a mode set before :func:`load` stays (the modes survive loads).  Polarization has :func:`polarization_set`; the OBS option :func:`obs_set`.  Returns :func:`modes` after the change.
+
+<!-- BEGIN NOTES fn-modes-set -->
+<!-- END NOTES fn-modes-set -->
 
 #### mon_zrn_max_modes
 
@@ -1742,6 +1756,16 @@ Zero-pad (or centre-crop) a matrix to a target size. OUT = macos.pad(IN, NPIX)  
 
 <!-- BEGIN NOTES fn-pad -->
 <!-- END NOTES fn-pad -->
+
+#### piston
+
+- **mmacos:** `out = macos.piston(out, mode, groups)`
+- **pymacos:** *not available*
+
+Keep or remove wavefront piston in sensitivity columns. OUT = macos.piston(OUT, MODE) takes a dw_d* result (macos.dw_dx, dw_dx_multi, dw_dz_zernike_multi, dw_dgrid_multi, dw_dsurf_multi, or a run_sensitivities leg) and, for MODE = 'remove', subtracts from every column its mean over each field's pupil (the finite rows), in the per-field cells (per_field_dw*), the stacked matrices (dw*all,
+
+<!-- BEGIN NOTES fn-piston -->
+<!-- END NOTES fn-piston -->
 
 #### pol_contrast_floor
 
