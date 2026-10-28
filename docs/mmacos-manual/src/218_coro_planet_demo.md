@@ -9,9 +9,9 @@ cd('<path-to>/mmacos/templates/30_instruments/coro_planet_demo');
 out = coro_planet_demo();
 ```
 
-**What it prints:** Section 2 ran it with its defaults (model 512, CoroExample.in): it writes its surfaces page and its planet page and prints only the file names.
+**What it prints:** Part I does not run it: Section 2's coronagraph is the CTB behind the thread's telescope. Run with its defaults (model 512, CoroExample.in), it writes its surfaces page and its planet page and prints only the file names.
 
-**Its figure:** the surfaces page is FIGURE 5, in Section 2.
+**Its figure:** none printed. Its surfaces page is sound (the Lyot pupil's bright rim is the mask working); its planet page is finding (ddd), below.
 
 **The number it reproduces.** The template prints no number: its product is two pictures. The surfaces page is sound (the Lyot pupil's bright rim is the mask working). The planet page is not: asked for a planet at sky-angle cosines [+2e-5 +2e-5], it composes a shifted, clipped speckle field rather than a planet image, finding (ddd), and Part I prints only the surfaces page.
 

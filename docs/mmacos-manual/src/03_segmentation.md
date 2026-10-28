@@ -55,16 +55,16 @@ grid.
 
 ![](media/ch03_footprints_pie.png)
 
-**FIGURE 8** The pie: each segment's traced footprint (`macos.design.seg_footprints`, found by poking
+**FIGURE 9** The pie: each segment's traced footprint (`macos.design.seg_footprints`, found by poking
 each segment and differencing the trace) and the aperture polygons emitted into the deck (black).
 
 ![](media/ch03_footprints_hex2.png)
 
-**FIGURE 9** The hex, the same way.
+**FIGURE 10** The hex, the same way.
 
 ![](media/ch03_views_pie.png)
 
-**FIGURE 10** The segmented system, `e2e_pie.in` (`macos.view_std`).
+**FIGURE 11** The segmented system, `e2e_pie.in` (`macos.view_std`).
 
 ### Checking the assistant's work
 

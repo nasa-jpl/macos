@@ -11,7 +11,7 @@ run(fullfile(pwd,'example_bench_layout.m'));
 
 **What it prints:** Section 2 ran it unchanged: the builder's chief ray against the engine's, the staged solve, and the optimized bench.
 
-**Its figure:** the inputs are FIGURE 6 and the optimized bench FIGURE 7, in Section 2.
+**Its figure:** the inputs are FIGURE 7 and the optimized bench FIGURE 8, in Section 2.
 
 **The number it reproduces.** The optimized bench is %pin:ch02_bench_nelt% elements, and the builder's chief ray and the engine's agree to %pin:ch02_bench_chief_agree% (Section 2).
 

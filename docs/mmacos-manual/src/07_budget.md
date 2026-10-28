@@ -61,7 +61,7 @@ error (%pin:ch07_wfs_sensing_error% nm, the part of 3 nm of white noise the cont
 
 ![](media/ch07_budget.png)
 
-**FIGURE 19** The per-group chart the runner draws (`e5hex1_budget.png`). It shows the alignment
+**FIGURE 20** The per-group chart the runner draws (`e5hex1_budget.png`). It shows the alignment
 groups only: the actuator and sensing rows, which make up the 3.16 nm in its title, are not in it,
 and the controlled groups' bars are the projection residuals, numerical zeros (the report prints
 them as `< 1e-06`).

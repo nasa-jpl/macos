@@ -19,7 +19,7 @@ run(fullfile(pwd,'rc_onaxis.m'));
 
 ![](media/p2_rc_onaxis_fig.png)
 
-**FIGURE 22** RMS wavefront error against field for the as-built aplanat and the field-balanced design (`rc_onaxis_wfe.png`), with the λ/14 line.
+**FIGURE 23** RMS wavefront error against field for the as-built aplanat and the field-balanced design (`rc_onaxis_wfe.png`), with the λ/14 line.
 
 **The number it reproduces.** The aplanat is diffraction-limited on axis and out to %pin:p2_rc_onaxis_dl0% arcmin, where the astigmatism two conics cannot null crosses λ/14; balancing the radius and conic over ±4′ trades a little on-axis quality for a field diffraction-limited out to %pin:p2_rc_onaxis_dl1% arcmin. The secondary's central obscuration is %pin:p2_rc_onaxis_obsc% of the aperture.
 

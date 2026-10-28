@@ -27,15 +27,15 @@ The report on Dave's return gathers this list (BRIEF_to_mmacos_manual.md, Report
   README describes.  That is the signature of a focal mask covering the whole computed field (leakage
   ~1e-4 in amplitude), not of a dark hole.  Its figures are gitignored, so no committed picture shows
   what it drew before -- a producer that rotted silently, or a scaled deck that never worked; not
-  diagnosed (no library change from this brief).  Chapter 2 uses `coro_planet_demo` (CoroExample, the
-  CLI journal's own recipe) instead.
+  diagnosed (no library change from this brief).  Round 2 (2026-10-28): chapter 2's coronagraph is now
+  the CTB behind the thread's telescope (PLAN 1.2 (xxx), case C); neither demo is in the chapter.
 - **ch. 2: `coro_planet_demo`'s planet page no longer shows a planet** (defaults, model 512, run unchanged
   2026-10-23).  Asked for a planet at sky-angle cosines [+2e-5 +2e-5], the engine puts the planet's
   chief ray at x = -2.0e-5, y = +2.0e-5; "planet light, by itself" is a shifted, clipped speckle
   field filling one corner of the composite, not a PSF (RMS spot 197x the star's; peak at the grid edge,
   [-21 -43] px, centroid [+9.9 -9.9] px); the planet peak equals the star-residual peak to the digit
   (2.13e+03), and the composite grid is 91x91 where the help text's default `npix` is 64.  The
-  surfaces page (pupil, FPM, Lyot edge ring, suppressed star) is sound and is what chapter 2 prints.
+  surfaces page (pupil, FPM, Lyot edge ring, suppressed star) is sound; chapter 2 printed it in round 1.
   The demo was pushed working (memory: the planet-injection redo); not diagnosed.  The index's T3
   coronagraph entry still names `coro_walkthrough` (above).
 - **ch. 2: ImageDemo.in declares no BaseUnits**, so the engine's metre conversions use CBM = 1 and

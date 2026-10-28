@@ -44,12 +44,12 @@ summary (the per-poke table is in `s6_report.txt`):
 
 ![](media/ch06_poke_x.png)
 
-**FIGURE 15** One rigid-body poke, segment 2 piston +100 nm: the engine (left) and the linear model
+**FIGURE 16** One rigid-body poke, segment 2 piston +100 nm: the engine (left) and the linear model
 (right), both referenced to the chief ray.
 
 ![](media/ch06_poke_g.png)
 
-**FIGURE 16** One grid poke, segment 2 influence function 5: the wavefront agrees in shape; the
+**FIGURE 17** One grid poke, segment 2 influence function 5: the wavefront agrees in shape; the
 engine's measurement bars read zero, because the engine holds the metrology and sensor points rigid
 for figure states (the report says so), while the model shows what the figure-sensing model
 predicts.
@@ -112,7 +112,7 @@ true pose walks away, unseen.
 
 ![](media/ch06_simA_t390.png)
 
-**FIGURE 17** Scenario A at 390 s, just before the recontrol: the uncorrected and corrected
+**FIGURE 18** Scenario A at 390 s, just before the recontrol: the uncorrected and corrected
 wavefronts, the corrected point-spread functions (monochromatic and broadband), the sensed drift of
 the metrology and the edge sensors, and the history of the wavefront error and the Strehl ratio.
 
@@ -125,7 +125,7 @@ drift thermally, while the truss reads only rigid pose.
 
 ![](media/ch06_simB_t500.png)
 
-**FIGURE 18** Scenario B at 500 s, the same panels; the dashed line marks the recontrol.
+**FIGURE 19** Scenario B at 500 s, the same panels; the dashed line marks the recontrol.
 
 The figure accumulates unseen to %pin:ch06_b_corr_390% nm; the recontrol, with a tight ridge that
 engages the segments' lateral motions (a decentered segment on a curved parent changes its own

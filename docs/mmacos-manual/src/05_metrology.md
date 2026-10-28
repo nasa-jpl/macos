@@ -69,13 +69,13 @@ launcher pairs at each class's corners. The optimizer takes the metrology-only W
 
 ![](media/ch05_met_layout.png)
 
-**FIGURE 13** The as-built truss (`e2e_pie_met_layout.png`): the 3-D scene, the fiducials on the
+**FIGURE 14** The as-built truss (`e2e_pie_met_layout.png`): the 3-D scene, the fiducials on the
 secondary's rim (the inset's axes are labeled mm; the deck's units are metres), and the face-on view
 of the beams and launchers, colored by segment, with the edge sensors as gray dots.
 
 ![](media/ch05_metopt_layout.png)
 
-**FIGURE 14** The optimized truss, the same views (open circles: the as-built launchers).
+**FIGURE 15** The optimized truss, the same views (open circles: the as-built launchers).
 
 ### Checking the assistant's work
 
