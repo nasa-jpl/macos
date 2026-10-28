@@ -17,6 +17,8 @@ disp(txt)
 ln = splitlines(string(txt));
 keep = startsWith(ln, "[jac] dark zone") | startsWith(ln, "[jac] done") | startsWith(ln, "[efc]");
 keep = keep & ~startsWith(ln, "[efc] figure") & ~contains(ln, "absent -- measuring");
+% the Jacobian's wall clock moves on every run (13.9, 13.3, 12.6 min so far): masked
+ln = regexprep(ln, "in [0-9.]+ min \([0-9.]+ s/poke\)", "in <t> min (<t> s/poke)");
 mm_transcript('ch08_efc_run', strjoin(ln(keep), newline));
 mm_figure('ch08_efc', fullfile(work, 'ctb_efc.png'));
 
