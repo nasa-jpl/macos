@@ -396,12 +396,10 @@ C
 #endif
         End Subroutine ModesGet
 
-        Subroutine ModesInForceNote(iObsOpt_)
-!         iObsOpt_: the OBS option (smacos_vars_mod iObsOpt; 1 = POSITIVE, the
-!         default) -- named here with the modes since 2026-10-28 (Dave: OBS ALL
-!         in force on a coronagraph deck is session state a user must see).
+        Subroutine ModesInForceNote()
+!         The five session modes only: OBS is NOT one (Dave 2026-10-28, a load
+!         resets it to POSITIVE; macos_cmd_loop.inc LOAD says so).
           Implicit None
-          Integer, Intent(In) :: iObsOpt_
           Character(len=96) :: line
           Integer :: n
           Logical :: pol, vecdif, centroid, lneg, cir
@@ -426,13 +424,6 @@ C
           If (cir) Then
             If (n > 0) line = trim(line)//','
             line = trim(line)//' CIR'; n = n + 1
-          End If
-          If (iObsOpt_ == 0) Then
-            If (n > 0) line = trim(line)//','
-            line = trim(line)//' OBS ALL'; n = n + 1
-          Else If (iObsOpt_ == 2) Then
-            If (n > 0) line = trim(line)//','
-            line = trim(line)//' OBS NEGATIVE'; n = n + 1
           End If
           If (n > 0) WRITE(*,'(2A)') '  LOAD: session modes in force:',
      &        trim(line)

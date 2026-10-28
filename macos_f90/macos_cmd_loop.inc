@@ -468,7 +468,7 @@ C         ***next command: Load optical description data***
 !-->  POLARIZATION, VECTOR/SCALAR, CENTROID, LNEG and CIR are SESSION modes:
 !     a load keeps them and names the non-default ones (Dave 2026-10-11,
 !     PLAN_CONSOLIDATION 4 item 2).
-            CALL ModesInForceNote(iObsOpt)
+            CALL ModesInForceNote()
 !<--
 !-->  a CALIB setup carried by the deck is announced (SAVE writes it)
             CALL CalibInForceNote()
@@ -476,9 +476,16 @@ C         ***next command: Load optical description data***
 
             i=mElt
 	    CALL LZERO(ifIntSrfSet,i)
-!-->  OBS is session state like the five modes (Dave 2026-10-28): a load keeps
-!     it (the notice above names it); RESET and allocation still set POSITIVE.
-            iCurRayElt=0; iCurWFElt=0
+!-->  OBS is NOT session state (Dave 2026-10-28): a load resets it to POSITIVE
+!     as it always did, and since 2026-10-28 says so when it was not.
+            If (iObsOpt == 0) Then
+              WRITE(emsgRec,'(A)') '  LOAD: OBS ALL reset to POSITIVE'
+              CALL emsg_put
+            Else If (iObsOpt == 2) Then
+              WRITE(emsgRec,'(A)') '  LOAD: OBS NEGATIVE reset to POSITIVE'
+              CALL emsg_put
+            End If
+            iObsOpt=1; iCurRayElt=0; iCurWFElt=0
 !<--
 	    If (UDBeam_FLG) Then
 	      BeamType=5

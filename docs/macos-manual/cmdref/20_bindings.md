@@ -65,8 +65,8 @@ bindings).  `load_rx` warns when any is in force -- MATLAB `warning('mmacos:mode
 defaults; `macos.modes()` / `pymacos.modes()` read them.  Set them with
 `macos.polarization` / `vecdif_set` and, since 2026-10-28, `modes_set` for CENTROID and LNEG
 (`macos.modes('centroid', tf, 'lneg', tf)` / `pymacos.modes_set(...)`); the per-call `xp_fnd`
-mode still overrides the axis for one call.  The OBS option is session state too (a load keeps
-it since 2026-10-28) and is named in `in_force` as `OBS ALL` / `OBS NEGATIVE`.
+mode still overrides the axis for one call.  The OBS option is NOT a session mode (a load resets
+it to POSITIVE and says so, Dave 2026-10-28); `modes().obs` reports it, `in_force` never names it.
 <!-- END NOTES fn-load-rx -->
 
 #### modify
@@ -1680,7 +1680,7 @@ The model sizes the engine accepts. s = macos.model_sizes() returns [128 256 512
 - **mmacos:** `md = macos.modes(opts)`
 - **pymacos:** `pymacos.modes()`
 
-Query or set the SESSION modes as the engine holds them. md = macos.modes() returns a struct with logical fields .pol (polarization), .vecdif (vector diffraction), .centroid (the FEX/SXP centroid axis), .lneg (negative ray lengths allowed; default TRUE), .cir (colour image rendering; always false in the bindings' engine), .obs (the OBS option in force: 'all', 'positive' (default) or 'negative'), and .in_force, a cellstr of the
+Query or set the SESSION modes as the engine holds them. md = macos.modes() returns a struct with logical fields .pol (polarization), .vecdif (vector diffraction), .centroid (the FEX/SXP centroid axis), .lneg (negative ray lengths allowed; default TRUE), .cir (colour image rendering; always false in the bindings' engine), .obs (the OBS option in force: 'all', 'positive' (default) or 'negative'; NOT a session mode -- load_rx
 
 <!-- BEGIN NOTES fn-modes -->
 <!-- END NOTES fn-modes -->
@@ -1721,7 +1721,7 @@ NOLL_MODE  Noll Zernike mode over an arbitrary pupil support (self-contained). [
 - **mmacos:** `out = macos.obs(opt)`
 - **pymacos:** *not available*
 
-Query or set the ray-trace obscuration option (OBS). OPT = macos.obs() returns the option in force (api obs_opt_get): 'all' (every ray), 'positive' (unobscured rays only: the engine default) or 'negative' (obscured rays only). macos.obs(OPT) sets it (OBS).  Session state: persists until changed, across loads.  Twin of pymacos obs_set (Dave 2026-10-16).
+Query or set the ray-trace obscuration option (OBS). OPT = macos.obs() returns the option in force (api obs_opt_get): 'all' (every ray), 'positive' (unobscured rays only: the engine default) or 'negative' (obscured rays only). macos.obs(OPT) sets it (OBS).  Persists until changed or a load_rx, which resets it to POSITIVE and says so (Dave 2026-10-28).  Twin of
 
 <!-- BEGIN NOTES fn-obs -->
 <!-- END NOTES fn-obs -->

@@ -443,7 +443,7 @@ Load a .in prescription.
 <!-- BEGIN NOTES cmd-OLD-file -->
 *Syntax:* `OLD <file>` (also `LOAD`) — the prescription file, `.in` optional.
 
-*Defaults:* the file name has no default; a load wipes the trace state and keeps the five session modes (POLARIZATION, VECTOR/SCALAR, LNEG, CENTROID, CIR), the OBS option (since 2026-10-28) and the OPD reference, printing the non-default ones.  A deck that carries a CALIB setup (Table 13 keys) is announced in one line (`LOAD: CALIB setup in force from the prescription: ...`).  A deck with no output-coordinate block (`nOutCord=` / `Tout=`) loads: the beam frame at the last element is proposed (z from the previous vertex to the last vertex, x from the element's `xObs=`) and the CLI asks `Keep the proposed output coordinates? [YES]:` -- NO reads `nOutCord` and the `Tout` rows; the bindings take the proposal.  A numeric `PropType=` (0..15) resolves to its name, 0 = Geometric; an unrecognized value is refused at load, by name (1.2 (dd)).  Gates: `OUTCORD_missing.jou`, `PROPTYPE_numeric.jou`, `CALIB_save_roundtrip.jou`.
+*Defaults:* the file name has no default; a load wipes the trace state and keeps the five session modes (POLARIZATION, VECTOR/SCALAR, LNEG, CENTROID, CIR) and the OPD reference, printing the non-default ones; the OBS option is NOT a session mode -- a load resets it to POSITIVE and says so when it was not (`LOAD: OBS ALL reset to POSITIVE`; Dave 2026-10-28).  A deck that carries a CALIB setup (Table 13 keys) is announced in one line (`LOAD: CALIB setup in force from the prescription: ...`).  A deck with no output-coordinate block (`nOutCord=` / `Tout=`) loads: the beam frame at the last element is proposed (z from the previous vertex to the last vertex, x from the element's `xObs=`) and the CLI asks `Keep the proposed output coordinates? [YES]:` -- NO reads `nOutCord` and the `Tout` rows; the bindings take the proposal.  A numeric `PropType=` (0..15) resolves to its name, 0 = Geometric; an unrecognized value is refused at load, by name (1.2 (dd)).  Gates: `OUTCORD_missing.jou`, `PROPTYPE_numeric.jou`, `CALIB_save_roundtrip.jou`.
 
 ```
 MACOS>old
@@ -1753,7 +1753,7 @@ Spot-diagram obscuration option.
 <!-- BEGIN NOTES cmd-OBS -->
 *Syntax:* `OBS [ALL|POSITIVE|NEGATIVE]` — which rays the trace keeps against obscurations.
 
-*Defaults:* [POSITIVE].  Session state (2026-10-28, Dave): a LOAD keeps it and names it in the LOAD notice when it is not POSITIVE (`LOAD: session modes in force: OBS ALL`); STATUS shows it (`Obscuration option for ray-trace=` 0 ALL, 1 POSITIVE, 2 NEGATIVE); RESET and allocation set POSITIVE.  Until 2026-10-28 every LOAD reset it silently.  `obs_opt_get` reads it from the bindings; `macos.modes()` / `pymacos.modes()` name it in `in_force`.  Gate: `MODE_obs_notice.jou`.
+*Defaults:* [POSITIVE].  Not a session mode (Dave 2026-10-28): a LOAD resets it to POSITIVE, as it always did, and says so when it was not (`LOAD: OBS ALL reset to POSITIVE` / `OBS NEGATIVE`); STATUS shows it (`Obscuration option for ray-trace=` 0 ALL, 1 POSITIVE, 2 NEGATIVE); RESET and allocation set POSITIVE.  Until 2026-10-28 the reset was silent.  `obs_opt_get` reads it from the bindings; `macos.modes().obs` / `pymacos.modes()['obs']` report it (never in `in_force`).  Gate: `MODE_obs_notice.jou`.
 
 ```
 MACOS>obs
