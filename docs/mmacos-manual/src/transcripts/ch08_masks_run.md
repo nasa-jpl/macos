@@ -1,4 +1,4 @@
-    [cmp] N=1024 lamD_fpa=4.031 px  annulus 3-15 lam/D  bare peak=6.990e-02
+    [cmp] N=1024 lamD_fpa=4.031 px  annulus 3-15 lam/D  bare peak=6.994e-02
 
       mask kind          | DZ mean    | DZ median  | suppress   | thruput 
       ------------------------------------------------------------------------
