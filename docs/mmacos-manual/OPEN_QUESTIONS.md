@@ -106,7 +106,7 @@ The report on Dave's return gathers this list (BRIEF_to_mmacos_manual.md, Report
   **The two rules conflict, and that is the likely origin:** `mmacos/CLAUDE.md` ("`clear mmacos` hangs
   `matlab -batch` ... and so does implicit exit") says to end every batch script with `exit(0)`, because a
   batch MATLAB that has loaded the mex can hang at an implicit exit; your rule puts the exit in the
-  `-batch` command instead, never in the example.  Section 10 follows your rule.  Which one the library's
+  `-batch` command instead, never in the example.  Section 11 (was 10) follows your rule.  Which one the library's
   record should state is yours.
 - **Part II: refusals today** (pages print them): `zwfs_run` / `pdi_run` bare call (coat_oap 'protectedAl' on the
   lens rig, zwfs_run.m:195, (nnn); **FIXED 2026-10-26, resources 14cafc8: the default follows the rig, a coat on the lens rig warns; both pages print the bare run**); `e2e2` s1 conic-fixture gate (seidel_seed re-targeted 2026-10-03,
@@ -129,3 +129,13 @@ The report on Dave's return gathers this list (BRIEF_to_mmacos_manual.md, Report
   promoted into the 14 templates (rc_offaxis retired; resources 5fea686), each README saying it was generated
   from the entry script's header and the manual's run; the pages read them like the other 20, and
   `docs/mmacos-manual/part2/` is gone.
+- **Ch. 8, the coronagraph on the telescope (round 2 D, 2026-10-28):** chapter 8 runs the CTB's analyses on the
+  bench's own diffraction model (its point source, the committed `ctb_dcr.in` / `ctb_dm.in`).  Running them on
+  the telescope with the case-C CTB behind it (chapter 2) needs a diffraction model of the coupled train --
+  the reference/return quartets of `ctb_prop_layout` regenerated behind the e2e exit beam -- which is new
+  generator work, and it waits on PLAN 1.2 (zzz) (the generator's reference spheres no longer reproduce the
+  committed decks).  Do you want it, and before or after the fold?
+- **Ch. 8, focal-plane sensing:** the EFC loop reads the complex field from the engine (perfect sensing).
+  Pairwise probing (estimating the field from probe-pair images) is not in the library; chapter 8 says so
+  and points to the DM-surface gauges instead.  Do you want the estimator built (a library change), and
+  should chapter 8 then run EFC on estimated fields?

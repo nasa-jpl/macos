@@ -17,9 +17,9 @@ SPECS = MAN / "tools" / "part2" / "specs"
 ORDER = MAN / "tools" / "part2" / "order.txt"
 KEPT = MAN / "part2"                               # README text for templates without one
 TPL = Path.home() / "dev" / "MACOS_resources" / "mmacos" / "templates"
-FIRST_FIGURE = 21                                  # Part I ends at FIGURE 20
+FIRST_FIGURE = 24                                  # Part I ends at FIGURE 23
 
-INTRO = """## SECTION 8: The Template Catalog
+INTRO = """## SECTION 9: The Template Catalog
 
 Part I followed one telescope through the library. This part is the library itself, one page per
 design template, in the order of the template index (`templates/00_INDEX.md`). Each page says what
@@ -93,7 +93,7 @@ def page(name, fig_no):
 TOOLS = MAN / "tools" / "part2" / "tools.txt"
 LIBDIRS = [("design/src", "the design layer's helpers"), ("sensitivities", "the sensitivity drivers")]
 
-TOOLS_INTRO = """## SECTION 9: The Tool Templates
+TOOLS_INTRO = """## SECTION 10: The Tool Templates
 
 The other seventeen templates are tools, not designs: examples of an interface, a method, or a driver that
 the design templates and the runners call. Two are the entry points of Section 1's thread and get a page each;

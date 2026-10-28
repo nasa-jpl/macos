@@ -36,7 +36,7 @@ The runner's one-case form on the bundled `tma_onaxis` deck; the manual copies t
 
 ![](media/p2_pupil_id_fig.png)
 
-**FIGURE 51** The exit pupil's own aberration (`results/tma_onaxis/pupil_id_zernikes.png`): the cone-convergence pupil map against the engine's two-ray XPS command, term by term. The axis multiplier (×10⁻⁴ m) sits under the title, cut off by it.
+**FIGURE 54** The exit pupil's own aberration (`results/tma_onaxis/pupil_id_zernikes.png`): the cone-convergence pupil map against the engine's two-ray XPS command, term by term. The axis multiplier (×10⁻⁴ m) sits under the title, cut off by it.
 
 **The number it reproduces.** The pupil, found as a surface from the convergence of ray cones rather than from one chief ray, departs from a sphere by %pin:p2_pupil_id_dep% m rms, and its aberration agrees with the engine's own pupil-quality command: defocus %pin:p2_pupil_id_df% against %pin:p2_pupil_id_dfe%, 0.02 percent, astigmatism to the printed digit. The revised prescription carries the exit pupil the method finds.
 

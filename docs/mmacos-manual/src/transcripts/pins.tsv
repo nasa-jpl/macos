@@ -103,6 +103,30 @@ ch07_pm_seg_piston_actuator	1.834
 ch07_pm_seg_tilt_actuator	1.281
 ch07_sm_tilt_actuator	1.251
 ch07_wfs_sensing_error	0.09183
+ch08_dz_hard	2.5e-7
+ch08_th_hard	25%
+ch08_dz_blc	2.7e-8
+ch08_th_blc	36%
+ch08_dz_aplc	2.1e-10
+ch08_th_aplc	27%
+ch08_dz_vortex	1.4e-8
+ch08_th_vortex	81%
+ch08_dz_roddier	2.4e-6
+ch08_th_roddier	81%
+ch08_dz_dualzone	6.8e-6
+ch08_th_dualzone	81%
+ch08_efc_before	2.93e-7
+ch08_efc_after	8.05e-9
+ch08_efc_gain	36
+ch08_efc_iter	19
+ch08_efc_s1	9.9 nm
+ch08_efc_s2	8.6 nm
+ch08_efc_nact	1760
+ch08_vx_before	1.7e-8
+ch08_vx_after	5.8e-13
+ch08_pol_before	2.2e-8
+ch08_pol_after	5.8e-13
+ch08_pol_floor	1.1e-15
 p2_bench_ctb_chief	< 1e-09
 p2_bench_ctb_wfe	0.001423
 p2_bench_ctb_rays	3002

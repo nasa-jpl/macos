@@ -1,4 +1,4 @@
-## SECTION 9: The Tool Templates
+## SECTION 10: The Tool Templates
 
 The other seventeen templates are tools, not designs: examples of an interface, a method, or a driver that
 the design templates and the runners call. Two are the entry points of Section 1's thread and get a page each;

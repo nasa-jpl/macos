@@ -19,7 +19,7 @@ run(fullfile(pwd,'wf2_freeform.m'));
 
 ![](media/p2_wf2_freeform_fig.png)
 
-**FIGURE 34** RMS wavefront error against field for the nominal RC, the conic field-balance (the 2-mirror limit) and the freeform M2 (`wf2_freeform_fieldcurve.png`).
+**FIGURE 37** RMS wavefront error against field for the nominal RC, the conic field-balance (the 2-mirror limit) and the freeform M2 (`wf2_freeform_fieldcurve.png`).
 
 **The number it reproduces.** At a single off-axis field (7′) a freeform departure on the secondary nulls the conics' residual, %pin:p2_wf2_freeform_one0% to %pin:p2_wf2_freeform_one1% waves; over the whole ±7′ field it buys almost nothing (worst %pin:p2_wf2_freeform_wide% waves, the diffraction-limited field unchanged at 5′), because a 2-mirror has one surface away from the pupil. The header's "~25x" per-field figure reads 34x on this run.
 

@@ -20,7 +20,7 @@ The bench stage of the bare call: the sheet's `bench.coat_oap 'auto'` resolves t
 
 ![](media/p2_zwfs_dm96_fig.png)
 
-**FIGURE 45** The vector reading's stations (`runs/run/run_stations_V.png`), the flat DM and a 30 nm rms working surface: the mirror command, the focal spot at the mask, the metasurface, the reference wave, the two camera images, the recovered surface, and the recovered map minus the engine's own field (pm).
+**FIGURE 48** The vector reading's stations (`runs/run/run_stations_V.png`), the flat DM and a 30 nm rms working surface: the mirror command, the focal spot at the mask, the metasurface, the reference wave, the two camera images, the recovered surface, and the recovered map minus the engine's own field (pm).
 
 **The number it reproduces.** On a 30 nm rms working surface the vector reading (the polarized dimple's +phi and -phi images at once) recovers the engine's own field with gain %pin:p2_zwfs_dm96_vgain% and a residual of %pin:p2_zwfs_dm96_vres% pm, where the single phase-stepped scalar reading S reads gain %pin:p2_zwfs_dm96_sgain%. Every bench gate passes (the mask sandwich and the reference surrogate at the floor of the arithmetic); the sampling budget's 96 x 96 line is NOT MET at 1.66 detector px per actuator, a warning by the sheet's own `enforce = warn`.
 

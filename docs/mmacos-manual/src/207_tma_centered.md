@@ -24,7 +24,7 @@ run(fullfile(pwd,'tma_centered.m'));
 
 ![](media/p2_tma_centered_fig.png)
 
-**FIGURE 27** The centered design's RMS wavefront error over its 5' circular field at 1 µm (`tma_centered_wfe.png`).
+**FIGURE 30** The centered design's RMS wavefront error over its 5' circular field at 1 µm (`tma_centered_wfe.png`).
 
 **The number it reproduces.** Over a 5' circular field at 1 µm the centered (obscured) design's worst field is %pin:p2_tma_centered_centered% waves, diffraction-limited; the unobscured section of the same mirrors reads %pin:p2_tma_centered_section% waves, and the A/B table shows where it goes: field astigmatism, the price of the clear pupil.
 
