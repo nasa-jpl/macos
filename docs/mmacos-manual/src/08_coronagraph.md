@@ -3,7 +3,8 @@
 Section 2 put the coronagraph testbed, the CTB, behind the thread's telescope and checked that the
 beam gets through it. This section asks what the coronagraph does with the light: how dark a
 focal-plane mask makes the region around the star on its own, how much darker the two deformable
-mirrors make it under control, and what the mirrors' coatings cost through polarization. Each
+mirrors make it under control, what the mirrors' coatings cost through polarization, and how well
+the field can be sensed from images alone, as a lab must. Each
 answer is a template in `templates/30_instruments/bench_ctb`, run unchanged on a scratch copy.
 
 These analyses run on the CTB's own diffraction model: the bench fed by its own point source, from
@@ -13,7 +14,8 @@ has no diffraction model of the telescope and the CTB together yet; the open que
 ### You ask
 
 > On the CTB, show me how dark each coronagraph mask gets on its own, then dig a dark hole with the
-> two deformable mirrors, and tell me what the mirror coatings' polarization costs.
+> two deformable mirrors, and tell me what the mirror coatings' polarization costs. Then close the
+> loop on fields estimated from probe images instead of the model's.
 
 ### The assistant reads
 
@@ -25,6 +27,8 @@ has no diffraction model of the telescope and the CTB together yet; the open que
 - `ctb_dm_jacobian.m` and `ctb_efc.m`, their help texts -- the sensitivity matrix measured through
   the engine, and the control loop that uses it.
 - `ctb_efc_physics.m`, its help text -- how the coatings' polarization enters as pupil screens.
+- `ctb_probe_estimate.m`, its help text -- the pairwise-probe estimator, and `ctb_efc`'s
+  `'sensing'` option that closes the loop on it.
 - `MACOS_resources/optical_design/CORONAGRAPH_DESIGN_RULES.md` -- the coronagraph rules.
 
 ### The dark zone before control
@@ -109,11 +113,73 @@ that puts the CTB in the telescope's shroud (Section 2) must keep every incidenc
 ### Sensing
 
 The control loop above reads the complex field directly from the model. A real bench sees only
-intensity, and estimates the field by applying small probe commands to a DM and differencing the
-images (pairwise probing). That estimator is not in the library today; adding it is a question for
-Dave, not something this chapter can run.
+intensity. It estimates the field by pairwise probing (Give'on, Kern and Shaklan, 2011): it puts a
+small known pattern on a DM, takes the image with the pattern added and with it subtracted, and
+does this for three patterns. Each difference of a pair is linear in the unknown field, with the
+Jacobian's prediction of the probe's own field as the coefficient, so three pairs give every
+dark-zone pixel three equations for two unknowns, the field's real and imaginary parts.
+`ctb_probe_estimate` does this through the full masked chain and reads the engine's true field only
+to score the estimate. `ctb_efc('sensing', ...)` closes the loop on the estimate; its default stays
+perfect sensing. The run measures the Jacobian, estimates the field at the flat DMs, sweeps the
+probe amplitude and the photon count, re-measures the probe DM's Jacobian columns more carefully,
+and then runs ten EFC iterations three ways:
 
-What the library does have is the other kind of sensing: measuring the DM's own surface. The gauge
+<!-- transcript: ch08_probe_run -->
+
+At the default amplitude, %pin:ch08_probe_nm% peak, the probes are as bright as the speckle. The
+estimate is off by %pin:ch08_probe_floor% of the peak, %pin:ch08_probe_rel% of the field, against a
+dark zone of %pin:ch08_efc_before%.
+
+![](media/ch08_probe_amp.png)
+
+**FIGURE 24** Estimation floor and the probe-intensity diagnostic against probe amplitude
+(this chapter's driver plots the sweep), with the Jacobian as measured and with the probe DM's
+columns re-measured by central differences.
+
+Figure 24 has the main lesson. Large probes fail as the DM's response stops being linear: at three
+times the default the error is a third of the field. Small probes level off at
+%pin:ch08_probe_lin_rel% with the Jacobian as `ctb_dm_jacobian` measures it, one-sided 2 nm pokes.
+That error is the Jacobian's own. A one-sided poke differs from the true derivative by up to
+%pin:ch08_probe_bias% for the interior actuators, more than the "~0.1%" the driver's help text
+expects. With the probe DM's columns re-measured by central differences, the small-probe error
+falls to %pin:ch08_probe_cd_rel%. The default amplitude sits at the knee, where the probe's
+second-order response is about a tenth of its linear one.
+
+The diagnostic ratio, the probes' measured intensity over the Jacobian's prediction, stays within
+%pin:ch08_probe_ratio% of 1 at the default and swings off it only for the largest probe. It does
+not reveal the Jacobian's bias, and with the central-difference Jacobian it reads about 1.02 at
+every small amplitude. The probe's second-order field adds to the image in proportion to the
+probe intensity itself, so the ratio has a floor of its own. Treat a ratio within a few percent of
+1 as a sign of no gross mismatch, not as a measure of the estimate's error.
+
+![](media/ch08_probe_photons.png)
+
+**FIGURE 25** Estimation floor against photons per image at the bare peak, default probes.
+
+Photon noise matters below about 1e10 photons per image at the bare peak. At 1e8 the floor is
+%pin:ch08_probe_ph8%; at 1e6 it is %pin:ch08_probe_ph6%, larger than the dark zone itself.
+
+![](media/ch08_probe_efc.png)
+
+**FIGURE 26** EFC closed on probe estimates: the true contrast (solid) and the controller's estimate
+(dotted) for noiseless probes and for 1e8 photons, against perfect sensing. The estimate is taken
+before each iteration, so the estimated curves end one step before the true ones.
+
+Closed on the noiseless estimate, ten iterations reach %pin:ch08_probe_efcE%, against
+%pin:ch08_probe_efcT% with perfect sensing. With 1e8 photons per image they reach
+%pin:ch08_probe_efcP%. The line search still scores each step on the measured contrast, so an
+estimate that is wrong costs depth, never stability. With noise, the estimated contrast sits above
+the true one: the noise adds its own power to the estimate.
+
+![](media/ch08_probe_err.png)
+
+**FIGURE 27** The default estimate, pixel by pixel: the error's histogram with no pixel cut, and
+the amplitude and phase errors over the dark zone.
+
+The error maps carry the coronagraph's ring structure. The relative errors are largest where the
+true field is weakest, between the rings of the occulter's diffraction.
+
+What the library also has is the other kind of sensing: measuring the DM's own surface. The gauge
 benches of Section 9 do that, each a template run unchanged there, most of them on a 96 × 96
 actuator DM: a polarization phase-shifting Twyman-Green (`tg_psi_dm96`, and `tg_psi_dm` at bench
 scale), a Zernike wavefront sensor (`zwfs_dm96`), point-diffraction gauges (`pdi_dm96`) and a
@@ -144,5 +210,7 @@ and imaginary parts as one stacked real system, and `ctb_dm.apply` refuses compl
 - *"Repeat the loop over a 10 % band."* -- `ctb_efc_physics('band', true)`.
 - *"Run the whole study for another vortex charge or Lyot stop."* -- `ctb_study('charge', 6,
   'r_lyot_frac', 0.70)`, the 25-step study from one configuration.
+- *"Close the loop on probe estimates with fewer photons, or with smaller probes."* --
+  `ctb_efc('sensing', struct('photons', 1e7, 'probe_nm', 3))`.
 - *"Do this on the telescope with the CTB behind it."* -- not yet: the coupled system needs a
   diffraction model (Dave's call).

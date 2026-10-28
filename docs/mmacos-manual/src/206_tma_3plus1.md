@@ -19,7 +19,7 @@ run(fullfile(pwd,'tma_3plus1.m'));
 
 ![](media/p2_tma_3plus1_fig.png)
 
-**FIGURE 29** The 3+1 chain with real rays, YZ and XZ planes (`tma_3plus1_layout.png`): the three-mirror telescope to its focus, and M4 just past it relaying the coronagraph channel to FP2 and the exit pupil.
+**FIGURE 33** The 3+1 chain with real rays, YZ and XZ planes (`tma_3plus1_layout.png`): the three-mirror telescope to its focus, and M4 just past it relaying the coronagraph channel to FP2 and the exit pupil.
 
 **The number it reproduces.** The 30″ coronagraph patch is balanced to %pin:p2_tma_3plus1_patch% waves worst, and the relayed pupil carries %pin:p2_tma_3plus1_ast% mm of astigmatism against the bare TMA's 1.1 mm. The template reports its own limit: the worst AOI spread is %pin:p2_tma_3plus1_aoi% degrees, outside the 15-degree preference on M1 and M2, which its sibling `tma_3plus1_aoi_search.m` addresses.
 

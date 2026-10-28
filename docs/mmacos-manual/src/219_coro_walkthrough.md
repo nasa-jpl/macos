@@ -18,7 +18,7 @@ coro_walkthrough();
 
 ![](media/p2_coro_walkthrough_fig.png)
 
-**FIGURE 41** The before/after panel the walkthrough draws (`figures/coro_beforeafter.png`), shared normalization per row; the dashed rings are the 7 and 10 lambda/D edges of the dark zone. The focal mask (top right) covers nearly the whole computed field, and the science-plane image with the coronagraph (bottom right) is the bare image's ring pattern, scaled down: no dark hole.
+**FIGURE 45** The before/after panel the walkthrough draws (`figures/coro_beforeafter.png`), shared normalization per row; the dashed rings are the 7 and 10 lambda/D edges of the dark zone. The focal mask (top right) covers nearly the whole computed field, and the science-plane image with the coronagraph (bottom right) is the bare image's ring pattern, scaled down: no dark hole.
 
 **The number it reproduces.** This page prints what the template does today, which is not what its README describes. The dark-zone mean contrast it reports, %pin:p2_coro_walkthrough_dzmean%, comes from a focal mask that covers nearly the whole computed field: the coronagraph image is the bare image scaled down everywhere, with no dark hole between 7 and 10 lambda/D, and the Lyot-plane panel is a filled disk rather than the bright edge ring. The README's surfaces are right in kind; the deck and the template have not changed in git since June, so something under them did. That is finding (ccc), open, and Part I's coronagraph example (Section 2) uses `coro_planet_demo`'s surfaces page instead.
 

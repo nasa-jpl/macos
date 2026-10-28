@@ -19,7 +19,7 @@ run(fullfile(pwd,'tma_freeform.m'));
 
 ![](media/p2_tma_freeform_fig.png)
 
-**FIGURE 31** Per-field wavefront error at 0, 1.5′ and 3′, the three-conic limit against the freeform design (`tma_freeform_fields.png`).
+**FIGURE 35** Per-field wavefront error at 0, 1.5′ and 3′, the three-conic limit against the freeform design (`tma_freeform_fields.png`).
 
 **The number it reproduces.** Taken off axis by %pin:p2_tma_freeform_dec% m to clear its beams, the three-conic design reaches %pin:p2_tma_freeform_lim% waves at its worst field over ±3′; freeform departures on M2 and M3, every radius and conic held, take it to %pin:p2_tma_freeform_ff% waves. On this field the conic limit is already diffraction-limited, so the freeform's gain is small; `wf2_freeform` shows why a third mirror is what makes the freeform useful at all.
 

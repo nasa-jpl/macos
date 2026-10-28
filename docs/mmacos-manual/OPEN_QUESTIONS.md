@@ -141,3 +141,5 @@ The report on Dave's return gathers this list (BRIEF_to_mmacos_manual.md, Report
   and points to the DM-surface gauges instead.  Do you want the estimator built (a library change), and
   should chapter 8 then run EFC on estimated fields?  **RULED 2026-10-28 (Dave): YES**, a new beat: on the CTB
   first, then the fold, then the coupled model, then pairwise probing on the coupled system.
+  **CTB leg DONE 2026-10-28 (TO):** `ctb_probe_estimate` and `ctb_efc('sensing', ...)`; Section 8 runs EFC on
+  estimated fields (driver ch08d, FIGURES 24-27).  The fold, the coupled model and pairwise on it follow.

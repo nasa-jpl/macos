@@ -19,7 +19,7 @@ run(fullfile(pwd,'rc_unobscured.m'));
 
 ![](media/p2_rc_unobscured_fig.png)
 
-**FIGURE 27** RMS wavefront error over the ±0.5′ field of the delivered unobscured section (`rc_unobscured_wfe.png`).
+**FIGURE 31** RMS wavefront error over the ±0.5′ field of the delivered unobscured section (`rc_unobscured_wfe.png`).
 
 **The number it reproduces.** With an f/1.5 primary at f/20 the eccentric pupil clears the secondary's shadow at a decenter of %pin:p2_rc_unobscured_dec% m, and after the axial refigure and the field optimization the worst field over ±0.5′ is %pin:p2_rc_unobscured_field% waves, diffraction-limited, with all three optics clear.
 

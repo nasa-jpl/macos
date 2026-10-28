@@ -39,7 +39,7 @@ run(fullfile(pwd,'tma_unobscured_search.m')); run(fullfile(pwd,'tma_unobscured.m
 
 ![](media/p2_tma_unobscured_fig.png)
 
-**FIGURE 35** Field curvature on the fitted focal plane (`tma_unobscured_fpmap.png`): the sag of the best focus from the tilted, refocused plane, over ±0.25'.
+**FIGURE 39** Field curvature on the fitted focal plane (`tma_unobscured_fpmap.png`): the sag of the best focus from the tilted, refocused plane, over ±0.25'.
 
 **The number it reproduces.** The correction ladder reaches %pin:p2_tma_unobscured_ffm1% waves rms at the field center at 500 nm with the freeform primary, and the field ladder stays diffraction-limited out to the 1' ring (%pin:p2_tma_unobscured_ring1% waves, tilt removed). The template's closing design report (step [6], not printed) reads NaN on every field ring on this run, the open questions list has it.
 

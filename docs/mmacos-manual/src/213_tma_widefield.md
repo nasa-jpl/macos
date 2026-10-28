@@ -15,7 +15,7 @@ run(fullfile(pwd,'example_tma_widefield.m'));
 
 ![](media/p2_tma_widefield_fig.png)
 
-**FIGURE 36** Residual RMS wavefront error against field for the 2-mirror RC and the 3-mirror Korsch, both optimized over the same 0 to 20′ field (`tma_widefield_wfe.png`).
+**FIGURE 40** Residual RMS wavefront error against field for the 2-mirror RC and the 3-mirror Korsch, both optimized over the same 0 to 20′ field (`tma_widefield_wfe.png`).
 
 **The number it reproduces.** Optimized over the same 20′ field at f/8, the 3-mirror design holds %pin:p2_tma_widefield_tma15% waves at 15′ (%pin:p2_tma_widefield_tma20% at 20′), while the 2-mirror, its two conics spent across the whole field, sits at %pin:p2_tma_widefield_rc0% waves even on axis: the third conic is what buys the field.
 
