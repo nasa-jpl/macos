@@ -17,7 +17,7 @@ SPECS = MAN / "tools" / "part2" / "specs"
 ORDER = MAN / "tools" / "part2" / "order.txt"
 KEPT = MAN / "part2"                               # README text for templates without one
 TPL = Path.home() / "dev" / "MACOS_resources" / "mmacos" / "templates"
-FIRST_FIGURE = 20                                  # Part I ends at FIGURE 19
+FIRST_FIGURE = 21                                  # Part I ends at FIGURE 20
 
 INTRO = """## SECTION 8: The Template Catalog
 

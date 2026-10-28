@@ -24,7 +24,7 @@ OUT = offset_imager();
 
 ![](media/p2_offset_imager_fig.png)
 
-**FIGURE 21** The S5 field map the default run draws (`oi_s5_map.png`): strict rms wavefront error at 11 x 11 points over the 20 x 20 degree box centered 22 degrees off axis, centroid reference; the triangle marks the worst field.
+**FIGURE 22** The S5 field map the default run draws (`oi_s5_map.png`): strict rms wavefront error at 11 x 11 points over the 20 x 20 degree box centered 22 degrees off axis, centroid reference; the triangle marks the worst field.
 
 **The number it reproduces.** The on-axis stage reproduces the challenge's record exactly: S1, the coaxial symmetric aspheres, reads %pin:p2_offset_imager_s1max% nm maximum and %pin:p2_offset_imager_s1avg% nm mean over the dense map, as in `challenges/rodgers3/t3/r3t_REPORT.md`. The offset stages do not: run with the template's defaults today, S3 ends at %pin:p2_offset_imager_s3max% nm against the record's 252.0 and S5 at %pin:p2_offset_imager_s5max% nm against 118.2 (and 45.4 nm for the 25-field re-solve). The record was made by `run_t3`, which pins the exit beam (0.1 degree) and runs 30 iterations a stage where the defaults run 12, but the two already part at S2, a focal-plane refit alone, so those differences are not shown to be the cause. Not diagnosed; the open questions list has it, and this page prints the run as it is.
 

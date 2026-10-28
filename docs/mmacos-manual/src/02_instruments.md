@@ -1,10 +1,11 @@
 ## SECTION 2: Instruments
 
 A telescope delivers a focus; an instrument decides what is done with the light there. This section
-puts the thread's imager behind the Section 1 telescope (the e2e flow's second stage), then steps off
-the thread twice: once for a coronagraph, and once for a bench built optic by optic. Each one is a
-template in the library, run unchanged. A last paragraph says when *not* to split a design into a
-telescope and an instrument.
+puts the thread's imager behind the Section 1 telescope (the e2e flow's second stage), then puts the
+library's coronagraph testbed behind the same telescope, and steps off the thread once for a bench
+built optic by optic. The imager and the bench are templates run unchanged; the coronagraph is a
+template with one focal length and one spacing changed, both measured here. A last paragraph says
+when *not* to split a design into a telescope and an instrument.
 
 ### You ask
 
@@ -63,39 +64,84 @@ views, the elements labeled by number.
 **FIGURE 4** RMS wavefront error over ±3′ of field about the adopted center (waves at 500 nm); the
 white box is the ±2′ science field.
 
-### A coronagraph
+### A coronagraph behind the telescope
 
-Off the thread: a coronagraph does not image the star; it removes it. The request, and what
-the assistant reads, are short, because the library carries the recipe:
+Back to the telescope, for a second instrument: a coronagraph does not image the star; it removes it.
+The library's best coronagraph is the CTB, `templates/30_instruments/bench_ctb`: eight off-axis
+parabolas (OAPs) and two deformable mirrors, laid out with the design layer's `macos.design.Bench`.
+The question is whether it takes the telescope's beam as it stands.
 
-> Show me a Lyot coronagraph working: the pupil, the star at the focal-plane mask, the Lyot stop,
-> and what is left of the star at the detector.
+> Put the CTB behind the stage-2 telescope. Does it take the telescope's beam as built? If not,
+> change as little as you can, and tell me how far off axis it can look before the beam walks on the
+> deformable mirrors.
 
+- `templates/30_instruments/bench_ctb/example_ctb.m` -- its parameter block and its build: OAP1
+  collimates onto DM1, DM2 follows 500 mm on, then the focal-plane mask, the Lyot stop and the
+  detector, every OAP at 5° incidence.
+- `templates/30_instruments/bench_ctb/README.md` and `deck_ctb.md` -- the beam on the DMs (21.38 mm
+  across) and the dark zone's inner edge, 8 λ/D.
+- `macos.design.append_rx`, its help text -- splicing a bench onto a telescope's prescription at its
+  focus.
 - `MACOS_resources/optical_design/CORONAGRAPH_DESIGN_RULES.md` -- the coronagraph rules for
-  prescriptions, among them the `Element= Obscuring` mask rule.
-- `macos-manual/examples/CoroExample.in` and `CoroExample.jou` -- the MACOS Manual's coronagraph
-  example and the CLI journal whose `pgp 4` plot pages the template reproduces.
-- `templates/30_instruments/coro_planet_demo/coro_planet_demo.m` -- its help text: the defaults
-  (model size 512, the mask at element 6, the Lyot stop at 11, the detector at 16).
+  prescriptions.
 
-It runs the template with its defaults, in a MATLAB of its own (the model size differs from the
-thread's):
+It runs on the thread's stage-2 prescription, with the CTB's knobs read from the template, which is
+left unchanged:
 
-<!-- transcript: ch02_coro_run -->
+<!-- transcript: ch02_ctb_params -->
 
-![](media/ch02_coro_surfaces.png)
+It builds that chain behind the telescope's focus three times: as built, with OAP1 matched to the
+telescope, and with DM1 moved as well. Each one is spliced onto the stage-2 prescription with
+`append_rx` and traced:
 
-**FIGURE 5** The CoroExample coronagraph, surface by surface (`coro_planet_demo`, its surfaces page):
-the entrance pupil with the secondary's obscuration and the spiders; the star at the focal-plane mask
-(log intensity); the pupil at the Lyot stop, where the light the mask diffracted sits on the edges of
-the pupil and the spiders and the stop blocks it; and what is left of the star at the detector (log
-intensity).
+<!-- transcript: ch02_ctb_run -->
 
-The picture to check is the third panel. A working focal-plane mask throws the star's light to the
-edges of the re-imaged pupil, the bright rim here, and the Lyot stop, which passes only the
-pupil's interior, removes it. A filled, even pupil at the Lyot plane means the mask is not doing its job, whatever the
-detector panel shows. The template also composes an off-axis planet onto the detector; that page is
-not printed here (the open questions list says why).
+As built, the CTB does not take the beam: its OAP1 is a 2.5 m collimator for the much slower beam
+of its own source, so the telescope's beam leaves OAP1 several times wider than DM1, and only
+%pin:ch02_ctb_asbuilt% rays reach it. The fix is the textbook match, a collimator focal length equal
+to the f-number times the beam diameter on the DMs: %pin:ch02_ctb_foap1% at the marginal ray's
+%pin:ch02_ctb_fno%. The CTB's legs were laid for its own source, though, and with that OAP1 the
+telescope's stop is imaged %pin:ch02_ctb_simg% after OAP1, not at DM1's 600 mm. A DM away from the
+stop's image sees the beam walk across it as the field moves, so DM1 moves there. That is one focal
+length and one spacing changed, and the system the rest of this section measures.
+
+DM2 keeps its 500 mm past DM1, out of the pupil, by design. Light that crosses the gap between the
+two mirrors spreads out by diffraction, which lets the pair correct amplitude as well as phase and
+dig a dark zone on both sides of the star. A DM2 at a second image of the pupil would reduce the
+pair to one phase corrector.
+
+On axis, %pin:ch02_ctb_pass% of %pin:ch02_ctb_rays% rays reach the detector, the same rays the
+telescope passes on its own, and the wavefront there is %pin:ch02_ctb_wfe% rms. The beam on DM1 is
+an ellipse, %pin:ch02_ctb_ell_a% × %pin:ch02_ctb_ell_b% mm, not a circle: the telescope's beam is
+slightly anamorphic, %pin:ch02_ctb_fno_u% and %pin:ch02_ctb_fno_v% along the two axes of its pupil,
+because the science field sits off the telescope's axis.
+
+The walk table answers the last question. The telescope's aperture is %pin:ch02_ctb_mag% times the beam on
+the DMs, so a field angle on the sky is that many times larger at the DMs. At the CTB's dark-zone
+edge, 8 λ/D or %pin:ch02_ctb_edge% on this telescope, the beam moves %pin:ch02_ctb_w1_edge% on DM1,
+which sits at the stop's image, and %pin:ch02_ctb_w2_edge% of an actuator spacing on DM2. At 10″ it
+has moved %pin:ch02_ctb_w2_10% of the pupil's radius on DM2; by 30″ DM2 clips the beam, and by 60″
+few rays pass. So the coronagraph is an instrument with a field of arcseconds. The imager's ±2′
+cannot pass through it, and no realignment would change that: a beam 21 mm across cannot carry
+that field (the Lagrange invariant). The telescope keeps its arcminute field for its other
+instruments, each with a slightly offset field of view. The coronagraph takes an arcsecond sub-field
+about the field center that stage 2 adopted, %pin:ch02_ctb_bias% off axis.
+
+![](media/ch02_ctb_view.png)
+
+**FIGURE 5** The stage-2 telescope with the CTB behind it (`macos.view_std`). At this scale the CTB
+is the small zigzag behind the primary.
+
+![](media/ch02_ctb_bench.png)
+
+**FIGURE 6** The CTB on its own, with OAP1 matched and DM1 at the stop's image, fed at the
+telescope's focus (`macos.view_std`): E1 OAP1, E2 DM1, E3 DM2, E9 the focal-plane mask, E11 the Lyot
+stop, E17 the detector.
+
+The layout is drawn unfolded, in the CTB's own zigzag. The realized instrument folds into the
+telescope's shroud. That is a design step of its own, after this manual, under the design drivers:
+every fold at under 15° incidence, a numeric clearance from the shroud, and a small relay. The
+dark-zone and walk numbers are measured again after the fold.
 
 ### A bench on its own
 
@@ -127,12 +173,12 @@ zero print as a bound (`<`): their last digits differ between machines.
 
 ![](media/ch02_bench_params.png)
 
-**FIGURE 6** The bench's inputs (`bench_layout_params.png`): the legs, in millimetres, are the
+**FIGURE 7** The bench's inputs (`bench_layout_params.png`): the legs, in millimetres, are the
 `add_*` distance arguments; the source cone and the stop set the pupil.
 
 ![](media/ch02_bench_view.png)
 
-**FIGURE 7** The optimized bench, %pin:ch02_bench_nelt% elements (`macos.view_std`).
+**FIGURE 8** The optimized bench, %pin:ch02_bench_nelt% elements (`macos.view_std`).
 
 ### When not to split: a small dedicated imager
 

@@ -19,7 +19,7 @@ run(fullfile(pwd,'sz_tma.m'));
 
 ![](media/p2_sz_tma_fig.png)
 
-**FIGURE 24** RMS wavefront error over the ±2′ field after the full-field stage (`sz_tma_wfe.png`).
+**FIGURE 25** RMS wavefront error over the ±2′ field after the full-field stage (`sz_tma_wfe.png`).
 
 **The number it reproduces.** The Zernike departures take the all-sphere layout to %pin:p2_sz_tma_s0% waves at the field center, diffraction-limited, but over the full ±2′ field the worst point is %pin:p2_sz_tma_s2% waves and the area-weighted mean %pin:p2_sz_tma_s2a%: on this 8 m layout the 15 modes per mirror do not hold the field.
 

@@ -32,7 +32,7 @@ On 2026-10-24 this page was a refusal (gate 2's centroid read NaN, finding (ooo)
 
 ![](media/p2_tg_psi_dm_fig.png)
 
-**FIGURE 48** The DM surface recovery (`tg_psi_dm_recovery.png`): an interferogram at analyzer 0 degrees, the recovered surface, the injected DM map, and the residual (nm).
+**FIGURE 49** The DM surface recovery (`tg_psi_dm_recovery.png`): an interferogram at analyzer 0 degrees, the recovered surface, the injected DM map, and the residual (nm).
 
 **The number it reproduces.** The bench measures its own polarization defect before it measures the DM: the beamsplitter's diattenuation rotates the test arm %pin:p2_tg_psi_dm_rot% degrees from orthogonal, so the unaligned gauge reads %pin:p2_tg_psi_dm_ungain% times the true surface (11.7 percent high); turning the arm's waveplate nulls it. Aligned, the four-step polarization PSI recovers the injected DM map with correlation %pin:p2_tg_psi_dm_corr% and a residual of %pin:p2_tg_psi_dm_resid% nm rms in the interior, and the four-step agrees with a 64-angle least-squares fit to the floor of the arithmetic.
 

@@ -15,7 +15,7 @@ run(fullfile(pwd,'example_bench_ifo_dm.m'));
 
 ![](media/p2_bench_ifo_dm_fig.png)
 
-**FIGURE 39** The DM recovery (`ifo_dm_recovery.png`): the interferogram, the recovered DM surface, the PROPER truth carried through the ray map, and the residual, in nm.
+**FIGURE 40** The DM recovery (`ifo_dm_recovery.png`): the interferogram, the recovered DM surface, the PROPER truth carried through the ray map, and the residual, in nm.
 
 **The number it reproduces.** A DM surface of %pin:p2_bench_ifo_dm_truth% nm rms, made with PROPER, is recovered through the traced pupil map with correlation %pin:p2_bench_ifo_dm_corr% and a residual of %pin:p2_bench_ifo_dm_resid% nm rms; the phase-shifting itself is exact (the PSI against the direct field phase reads in the 1e-5 pm range), so the residual is the pupil imaging: its magnification, its distortion, and the registration the run refines.
 

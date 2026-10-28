@@ -47,7 +47,7 @@ Zernike modes 4 to 11 on each segment, and the grid channel `dwdgrid` has
 
 ![](media/ch04_svspec.png)
 
-**FIGURE 11** The singular-value spectra of the three channels, each normalized to its largest.
+**FIGURE 12** The singular-value spectra of the three channels, each normalized to its largest.
 
 The spectrum says what the conditioning table says, and more. `dwdz` and `dwdgrid` are flat: full
 rank (%pin:ch04_dwdz_rank% and %pin:ch04_dwdgrid_rank%), condition numbers %pin:ch04_dwdz_cond% and
@@ -57,7 +57,7 @@ long tail at the floor, then two columns that are exactly zero. The channel page
 
 ![](media/ch04_dwdx_channels.png){height=8in}
 
-**FIGURE 12** The rigid-body channel, one row per element and one column per degree of freedom (the
+**FIGURE 13** The rigid-body channel, one row per element and one column per degree of freedom (the
 index page of `s4_pages/`; each tile is the center-field wavefront change, with its rms).
 
 The two exact zeros are the fold flat's (element 9) in-plane motions, Rx and Ty, which move a flat

@@ -48,7 +48,7 @@ On 2026-10-24 this page was a refusal (gate 1, the same cause as `tg_psi_dm`'s, 
 
 ![](media/p2_tg_psi_dm_v2_fig.png)
 
-**FIGURE 49** The v2 rig's DM surface recovery (`tg_psi_dm_v2_recovery.png`): the injected DM surface, the recovered surface, and the residual (nm).
+**FIGURE 50** The v2 rig's DM surface recovery (`tg_psi_dm_v2_recovery.png`): the injected DM surface, the recovered surface, and the residual (nm).
 
 **The number it reproduces.** With the coated cube in place of v1's plate, the gauge's scale is right as designed, gain %pin:p2_tg_psi_dm_v2_gain% against v1's 1.11661, because the cube's reflecting arm is cleaned to pure s; an arm-waveplate error now costs contrast, not scale. It recovers the same DM map with correlation %pin:p2_tg_psi_dm_v2_corr% and a residual of %pin:p2_tg_psi_dm_v2_resid% nm rms in the interior.
 
