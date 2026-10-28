@@ -24,7 +24,7 @@ The bench stage with its figures, the README's `cophi_run('stages',{'bench','fig
 
 ![](media/p2_cophi_dm96_fig.png){height=7in}
 
-**FIGURE 41** The COPHI bench from above (`runs/cophi/cophi_vlayout.png`, drawn by `tg96_run`): the TG96 lens rig with the reference flat's seat taken by the traced, fiber-fed local-oscillator arm (purple), the camera leg green. The title says the test arm (DM) is blue; it is drawn red, like the source arm, the mislabel `tg_psi_dm96_oap`'s figure carries too (the open questions list).
+**FIGURE 44** The COPHI bench from above (`runs/cophi/cophi_vlayout.png`, drawn by `tg96_run`): the TG96 lens rig with the reference flat's seat taken by the traced, fiber-fed local-oscillator arm (purple), the camera leg green. The title says the test arm (DM) is blue; it is drawn red, like the source arm, the mislabel `tg_psi_dm96_oap`'s figure carries too (the open questions list).
 
 **The number it reproduces.** The bench stage registers the LO arm on the test arm before any reading, and gates it: the chief rays land on the same pixel, the LO overfills the test pupil's image by %pin:p2_cophi_dm96_overfill% px, the two arms' magnifications agree to a ratio of %pin:p2_cophi_dm96_magratio%, and the fringe contrast over the pupil is %pin:p2_cophi_dm96_contrast% (median). The report's last line is the gate: REGISTRATION PASS.
 

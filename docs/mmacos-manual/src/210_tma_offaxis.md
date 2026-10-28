@@ -15,7 +15,7 @@ run(fullfile(pwd,'tma_offaxis.m'));
 
 ![](media/p2_tma_offaxis_fig.png)
 
-**FIGURE 30** RMS wavefront error over the ±2′ field of the delivered off-axis design at 2.3 µm (`tma_offaxis_wfe.png`).
+**FIGURE 33** RMS wavefront error over the ±2′ field of the delivered off-axis design at 2.3 µm (`tma_offaxis_wfe.png`).
 
 **The number it reproduces.** The convex-secondary seed conic-optimizes on axis to %pin:p2_tma_offaxis_ax% waves; taken off axis by %pin:p2_tma_offaxis_dec% m and re-balanced over a 3 x 3 grid on the ±2′ field, its worst field is %pin:p2_tma_offaxis_area% waves at 2.3 µm, just outside λ/14, which the run prints as a residual. Its all-sphere baseline line reads 0 waves, which an uncorrected sphere cannot be; not traced.
 

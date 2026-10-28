@@ -26,7 +26,7 @@ The bench stages only (`bench`, `figs`); the default also runs the actuator batt
 
 ![](media/p2_tg_psi_dm96_oap_fig.png){height=7in}
 
-**FIGURE 44** The lens rig from above (`runs/lens/lens_vlayout.png`): the whole interferometer, then the node (beamsplitter, compensator, recombination and the polarization optics) and the tail (focuser, mask seat, field lens, camera). The title's legend reads "test arm (DM) blue", but the figure draws the reference and test arms both in red; the open questions list has it.
+**FIGURE 47** The lens rig from above (`runs/lens/lens_vlayout.png`): the whole interferometer, then the node (beamsplitter, compensator, recombination and the polarization optics) and the tail (focuser, mask seat, field lens, camera). The title's legend reads "test arm (DM) blue", but the figure draws the reference and test arms both in red; the open questions list has it.
 
 **The number it reproduces.** The bench stage measures what the build needs before any reading: Stage A's clearances (the beamsplitter at %pin:p2_tg_psi_dm96_oap_aoi% degrees, pinned by Dave's 2026-09-15 ruling; the compensator, the tightest node part, clears by %pin:p2_tg_psi_dm96_oap_comp% mm, under the 25 mm spec, as the report says), the sampling budget (a detector Nyquist margin of %pin:p2_tg_psi_dm96_oap_nyq%x against the DM's), and the stations check: the polarization four-step recovers the engine's own field on a 30 nm working surface with gain %pin:p2_tg_psi_dm96_oap_gain% (%pin:p2_tg_psi_dm96_oap_resid% pm residual), the PZT four-step exactly. The run committed in `runs/lens/` (2026-09-12) predates the pin and shows the Stage-A solve's 7 degrees.
 

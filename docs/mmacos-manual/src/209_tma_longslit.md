@@ -38,7 +38,7 @@ OUT = tma_longslit_run({'first_order','section'});
 
 ![](media/p2_tma_longslit_fig.png)
 
-**FIGURE 29** The engine section, fold plane, center field (`tls_section_layout.png`): the input beam rises to the weak concave M1 (E1), turns to the small convex M2 (E2), the stop, then to M3, which brings it to the slit (E4).
+**FIGURE 32** The engine section, fold plane, center field (`tls_section_layout.png`): the input beam rises to the weak concave M1 (E1), turns to the small convex M2 (E2), the stop, then to M3, which brings it to the slit (E4).
 
 **The number it reproduces.** The first order is closed-form: with the stop at M2, the slit is telecentric when M3's focal length is the M2-to-M3 leg, and each mirror must carry R_t/R_s = 1/cos^2 i at its chief, which an off-axis paraboloid does natively. Traced in the engine, the three off-axis sections hold the spec: a plate scale of %pin:p2_tma_longslit_plate% mm against 330.0, the strip imaged onto %pin:p2_tma_longslit_strip% mm of the 54.0 mm slit, and every leg clear of every body by at least %pin:p2_tma_longslit_clear% mm, with a 5 mm mount allowance. The image quality is the figure stage's job, not this page's: the section is the seed, with 2 mm rms spots.
 

@@ -288,6 +288,15 @@ order, with ours first:
      edits are in the Markdown source (the cmp rule in the manual's CLAUDE.md);
    - the mmacos manual's round 2 lands (TO: A library fixes, B regenerated e2e outputs, C chapter 2 on CTB, D the
      coronagraph-analysis chapter; `BRIEF_to_mmacos_manual_round2.md`), the 15 READMEs promoted, `rc_offaxis` retired;
+     **[A, B, C done.  D DONE (TO, 2026-10-28, local): Section 8 'Coronagraph Analyses on the CTB', three drivers on
+     scratch copies of bench_ctb via the new mmlib/mm_template (library git status checked after every run):
+     ch08a mask families (12 pins; = the August mask table), ch08b EFC with the Jacobian measured live (7 pins;
+     2.934e-7 -> 8.055e-9, 36x, 19 it, 9.9/8.6 nm = the README to every digit; 15 min), ch08c vortex EFC with and
+     without the coated-train Jones screens (5 pins; 1.72e-8 -> 5.81e-13 / 2.19e-8 -> 5.77e-13, pol floor 1.07e-15
+     = S13; 18 min).  Sensing: perfect in the loop; pairwise probing absent -> OPEN_QUESTIONS (and the coupled
+     telescope+CTB diffraction model, behind (zzz)).  Sections renumbered: Part II 9, tools 10, Part III 11;
+     figures 21-23 new, Part II 24-54.  Found en route: ctb_efc reads its Jacobian cache by name without
+     ctb_jac_check (the physics/study drivers check) -- said in the chapter, no library change.]**
    - orphaned files: the test classes in no `run_mmacos_tests.sh` suite are wired or deleted (Dave 2026-10-27: wire them;
      8 of 12 wired + tCophiBench on its own 1024 line, resources c0397fd; tFingerprint waits for round 2 B, tFocalSurface
      and tOiDemoStep wait for Dave's rulings -- section 4 item 8); `DEV_FILES.md` in both repos re-walked for files that nothing references; the
