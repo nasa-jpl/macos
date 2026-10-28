@@ -125,10 +125,12 @@ The hard occulter appears twice in this section, scored at two grid sizes: %pin:
 the comparison's 1024 grid and %pin:ch08_efc_before% at the start of the loop on 512. They are the
 same mask on the same optics (`ctb_dcr.in`, and `ctb_dm.in` with its DMs flat), sampled
 differently. A loop that started far from the static number would mean the Jacobian was measured
-on a different chain. The physics and study drivers (`ctb_efc_physics`, `ctb_study`) refuse a
-cached Jacobian whose stored chain configuration differs from the one requested (`ctb_jac_check`);
-`ctb_efc` reads its cache by file name without that check, so after changing a mask, delete the
-cache or pass the new Jacobian.
+on a different chain, and the drivers refuse such a cache. `ctb_efc_physics` and `ctb_study`
+refuse a cached Jacobian whose stored chain configuration differs from the one requested
+(`ctb_jac_check:mismatch`). `ctb_efc` refuses its default cache when it was measured on another
+chain (the same error), and any cache that disagrees with the fingerprint truth committed beside
+it (`ctb_efc:fingerprint`). A cache from another deck, mask or engine is never used silently;
+`ctb_dm_jacobian` will not overwrite a committed truth unless asked to (`ctb_dm_jacobian:fpTruth`).
 
 The control trap the README records is the one to know about: DM commands are real numbers, and a
 complex least-squares solve returns complex commands, which pass MATLAB's type check while the
