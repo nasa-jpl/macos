@@ -43,7 +43,7 @@ run(fullfile(pwd,'freeform_unobscured.m'));
 
 ![](media/p2_freeform_unobscured_fig.png)
 
-**FIGURE 24** RMS wavefront error over the ±1' field after the full-field stage (`freeform_unobscured_wfe.png`), waves at 500 nm.
+**FIGURE 28** RMS wavefront error over the ±1' field after the full-field stage (`freeform_unobscured_wfe.png`), waves at 500 nm.
 
 **The number it reproduces.** The center stage takes the all-sphere layout to %pin:p2_freeform_unobscured_s0% waves at the field center; the full-field stage trades that for the field, ending at %pin:p2_freeform_unobscured_s2worst% waves worst and %pin:p2_freeform_unobscured_s2area% area-weighted over ±1': a small corrected field on three mirrors, which is why the README sends a wide field to a fourth powered mirror.
 

@@ -15,7 +15,7 @@ run(fullfile(pwd,'example_bench_ifo.m'));
 
 ![](media/p2_bench_ifo_fig.png)
 
-**FIGURE 42** The surface the interferometer recovers (`ifo_surface_recovery.png`): the fitted truth model (tilt plus sphere) and the residual after the fit, in nm.
+**FIGURE 46** The surface the interferometer recovers (`ifo_surface_recovery.png`): the fitted truth model (tilt plus sphere) and the residual after the fit, in nm.
 
 **The number it reproduces.** With the test optic a flat (the injected sphere radius is effectively infinite), the phase-shifted interferometer recovers it to a post-fit residual of %pin:p2_bench_ifo_resid% nm rms surface, at a median fringe visibility of %pin:p2_bench_ifo_vis%; the two phase-recovery algorithms (de Groot 7-frame and Hariharan 5-frame) agree to the floor of the arithmetic, printed as a bound.
 
