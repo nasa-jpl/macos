@@ -1,5 +1,5 @@
     [jac] dark zone 3-15 lam/D (annulus): 2748 px, initial mean contrast 2.934e-07
-    [jac] done: 1760 pokes in 13.3 min (0.45 s/poke)
+    [jac] done: 1760 pokes in <t> min (<t> s/poke)
     [efc] G: 2748 px x 1760 acts (real-stacked), s_max=1.002e+03 cond=1.13e+15
     [efc] iter 0: contrast 2.934e-07
     [efc] iter 1: contrast 9.557e-08 (alpha 1.0e-04, stroke rms [6.95 5.38] nm)
