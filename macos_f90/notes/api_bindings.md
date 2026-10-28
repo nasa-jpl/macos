@@ -316,7 +316,7 @@ capfd read nothing there, so six binding tests were guarded on the Mac.  Now `em
   short file stays tolerated (guards warn).  SetIntSrf's writes go through the message buffer
   (tools/emsg_convert.py's iosub.inc scope is ChkDf2 + SetIntSrf).
 
-## modes_set and the OBS session state (2026-10-28, Dave's ruling in PLAN_CONSOLIDATION 3a)
+## modes_set, and OBS is not a session mode (2026-10-28, Dave's rulings in PLAN_CONSOLIDATION 3a / 1.2 (cccc))
 
 - **`modes_set(OK, centroid, lneg)`** sets the two session modes that had no setter
   (CENTROID/CHIEFRAY -> `ifCentroid`, LNEG/NOLNEG -> `ifLNegOK`); 1 on, 0 off, -1 leave.  It
@@ -335,13 +335,13 @@ capfd read nothing there, so six binding tests were guarded on the Mac.  Now `em
   again: **a shorter LCMP captures look-alikes**; LoadStack's keyword lengths are not audited
   beyond this one.  Gate: the stray-command assertion in tSessionModes /
   test_session_modes through the message buffer (`messages()` after the set).
-- **OBS is session state: a LOAD keeps it.**  Until 2026-10-28 `macos_cmd_loop.inc`'s LOAD reset
-  `iObsOpt=1` AFTER printing the modes notice, so the veneers' "persists across loads" was
-  false and `macos.obs('all')` on a coronagraph deck was lost by the next `load_rx` silently.
-  The reset is gone from LOAD (RESET and allocation still set POSITIVE); the LOAD notice and
-  `modes().in_force` name `OBS ALL` / `OBS NEGATIVE`; STATUS shows the option.  Consumers
-  audited: coro_planet_demo sets ALL and restores POSITIVE in place; tDefaults restores in a
-  cleanup; nothing relied on the reset.
-- **`ModesInForceNote(iObsOpt)`** takes the OBS option as an argument (macos_mod cannot use
-  smacos_vars_mod); `ModesGet` keeps its five.
+- **OBS is NOT a session mode: a LOAD resets it to POSITIVE** (Dave's ruling 2026-10-28; CC
+  had shipped the opposite for a day, 7e9ed0a4).  `macos_cmd_loop.inc`'s LOAD always reset
+  `iObsOpt=1`, silently and AFTER the modes notice, so the veneers' "persists across loads"
+  (macos.obs, pymacos obs_set, 2026-10-16) was false; now the reset says so when the option was
+  not POSITIVE (`LOAD: OBS ALL reset to POSITIVE` / `OBS NEGATIVE`), RESET and allocation set
+  POSITIVE as before, STATUS shows the option, `modes().obs` reads it, and `in_force` names
+  the five modes only.  Consumers audited: coro_planet_demo sets ALL and restores POSITIVE in
+  place; tDefaults restores in a cleanup; nothing relied on OBS surviving a load.
+  `ModesInForceNote()` takes no argument; `ModesGet` keeps its five.
 
