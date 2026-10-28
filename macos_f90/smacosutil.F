@@ -259,7 +259,10 @@ C  Load FFP
 	END IF
 
 C  Load CENTER
-	IF (LCMP(command,'CEN',3)) THEN
+!-->  CENTER needs five letters here as in the command loop: three let it
+!     capture CENTROID (modes_set, 2026-10-28) and push CENTER's arguments,
+!     which the loop then read as commands ('** Unknown command = 0' ...).
+	IF (LCMP(command,'CENTER',5)) THEN
 	  CALL I2C(IARG(1),ls,STACK,' ')
 	  CALL D2C(DARG(1),ls,STACK,',')
 	  CALL D2C(DARG(2),ls,STACK,' ')

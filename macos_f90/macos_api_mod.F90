@@ -6341,6 +6341,58 @@
 
 
       !---------------------------------------------------------------------------------------------
+      ! modes_set -- set the two SESSION modes that had no setter (Dave 2026-10-28,
+      ! PLAN_CONSOLIDATION 3a): the FEX/SXP pupil-sphere axis (CENTROID / CHIEFRAY,
+      ! ifCentroid) and negative ray lengths at reference surfaces (LNEG / NOLNEG,
+      ! ifLNegOK).  Each argument: 1 = on, 0 = off, -1 = leave as it is.  The change
+      ! goes through the CLI's own commands so the two front ends keep one semantics
+      ! (the obs_set / vecdif_set pattern); modes_get reads the result.  Polarization
+      ! and vector diffraction keep pol_set / vecdif_set (the Jones vector, the ifPol
+      ! precondition); CIR is not in the bindings' engine.  Needs the engine allocated
+      ! (init), NOT a loaded Rx: a session mode is set before or after a load and
+      ! survives it.  A change of LNEG with an Rx loaded dirties the trace (MODIFY);
+      ! CENTROID is read only when FEX / SXP run, so it dirties nothing.
+      !---------------------------------------------------------------------------------------------
+      subroutine modes_set(OK, centroid, lneg)
+        use macos_mod, only: ifLNegOK
+        implicit none
+        logical, intent(out):: OK
+        integer, intent(in) :: centroid   ! 1 = CENTROID, 0 = CHIEFRAY, -1 = leave
+        integer, intent(in) :: lneg       ! 1 = LNEG, 0 = NOLNEG, -1 = leave
+        logical :: lnegWas, dirty
+        ! ------------------------------------------------------
+        OK = FAIL
+        if (firstEntry) return                      ! not allocated
+        if (centroid < -1 .or. centroid > 1) return
+        if (lneg < -1 .or. lneg > 1) return
+
+        lnegWas = ifLNegOK
+        dirty   = .false.
+        CARG = ' '      ! no prompt follows: a stale CARG would be read as more commands
+
+        if (centroid == 1) then
+          command = 'CENTROID'
+          CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+        else if (centroid == 0) then
+          command = 'CHIEFRAY'
+          CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+        end if
+
+        if (lneg == 1) then
+          command = 'LNEG'
+          CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+        else if (lneg == 0) then
+          command = 'NOLNEG'
+          CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
+        end if
+
+        dirty = (ifLNegOK .neqv. lnegWas)
+        if (dirty .and. rxLoaded) CALL modified_rx(OK)   ! the trace reads ifLNegOK
+        OK = PASS
+      end subroutine modes_set
+
+
+      !---------------------------------------------------------------------------------------------
       ! calib_buffer_dims -- report the (max_fov, max_wl) compile-time
       ! dimensions used by calib_run's old_wfe_out / new_wfe_out
       ! buffers.  Callers can use this to allocate correctly-shaped
