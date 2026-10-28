@@ -21,7 +21,7 @@
     ALIGNED
 
     === GATE 3: analyzer-basis synthesis is exact (and why) ===
-      9 traces (3 per arm x 3 decks) in 3.55 s -- every analyzer angle now free
+      9 traces (3 per arm x 3 decks) in <t> s -- every analyzer angle now free
       theta   23.70 deg : synthesized vs direct trace, rel 7.541e-11
       theta   71.30 deg : synthesized vs direct trace, rel 7.337e-11
       theta  137.20 deg : synthesized vs direct trace, rel 3.507e-10
@@ -34,7 +34,7 @@
     GATE 3 PASS: exact to 3.5e-10 collimated; degrades as 0.149*beta^2 with power
 
     === GATE 4: analyzer sweep modulates as cos(2 theta) ===
-      from 12 TRACED angles (9.29 s): visibility 0.998310 | 4t/2t 8.8951e-04 | 6t/2t 2.9871e-14
+      from 12 TRACED angles (<t> s): visibility 0.998310 | 4t/2t 8.8951e-04 | 6t/2t 2.9871e-14
       from the synthesized basis        : visibility 0.998310 | 4t/2t 8.8951e-04 | 6t/2t 5.0647e-17
       (the synthesized 6t is zero BY CONSTRUCTION -- the traced one is the gate)
     GATE 4 PASS

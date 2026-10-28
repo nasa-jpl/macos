@@ -37,7 +37,8 @@ worked thread consume each other's products, so their drivers share it) as `<thr
 
 Usage (from docs/mmacos-manual):
   python3 tools/regen_mmacos_transcripts.py [--repin] [driver names...]
-Environment: MATLAB (default `matlab`), MMACOS_ROOT (default ~/dev/MACOS_resources/mmacos, the
+Environment: MMMAN_KEEP (a directory: a passing run's scratch directory is moved there as <dir>/<driver>,
+not deleted), MATLAB (default `matlab`), MMACOS_ROOT (default ~/dev/MACOS_resources/mmacos, the
 mmacos the drivers add to the path), MACOS_HOME (default ~/dev/macos/macos_f90).
 """
 import os, re, shutil, subprocess, sys, tempfile
@@ -221,7 +222,12 @@ def run_driver(name, repin):
     for k, src in figs.items():
         shutil.copyfile(src, MEDIA / f"{k}.png")
     print(f"   wrote {len(texts)} transcripts, {len(figs)} figures, {len(got)} pins", flush=True)
-    shutil.rmtree(work, ignore_errors=True)
+    keep = os.environ.get("MMMAN_KEEP")       # keep the scratch run for a products audit
+    if keep:
+        Path(keep).mkdir(parents=True, exist_ok=True)
+        shutil.move(work, str(Path(keep) / name))
+    else:
+        shutil.rmtree(work, ignore_errors=True)
     return True
 
 

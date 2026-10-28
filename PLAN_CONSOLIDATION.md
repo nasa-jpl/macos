@@ -301,6 +301,14 @@ order, with ours first:
      telescope+CTB diffraction model, behind (zzz)).  Sections renumbered: Part II 9, tools 10, Part III 11;
      figures 21-23 new, Part II 24-54.  Found en route: ctb_efc reads its Jacobian cache by name without
      ctb_jac_check (the physics/study drivers check) -- said in the chapter, no library change.]**
+     **[Part II reruns DONE (TO, 2026-10-28, local; no library change): all 33 pages on scratch copies (resources 458f398, git
+     status unchanged), listings, pins and page figures held (the 29 re-rendered figures pixel-equal, restored); three
+     pages failed on wall-clock seconds only -- tg_psi_dm, tg_psi_dm_v2, cophi_dm96 -- masked in their specs and re-pinned (no
+     pin moved).  Every committed output of the 22 templates that commit any has a verdict in
+     `cli_tests/records/run_artifacts_part2_reruns_2026-10-28.tsv`: exact 25, not-exercised 2530, diagnosed 43, held 35.
+     Held: tma_onaxis / tma_offaxis / sz_tma decks (the design layer since August, not bisected), bench_ctb geometry
+     (~5e-6 rel; candidate 84a91903) and PNG size (4/3, candidate a HiDPI host), e2e6m s1/s2 (qqq), tg_psi_dm's
+     orientation pick (x=+col,y=+row -> x=-col,y=-row, correlation unchanged; predates 10-24).  Nothing removed.]**
    - orphaned files: the test classes in no `run_mmacos_tests.sh` suite are wired or deleted (Dave 2026-10-27: wire them;
      8 of 12 wired + tCophiBench on its own 1024 line, resources c0397fd; tFingerprint waits for round 2 B, tFocalSurface
      and tOiDemoStep wait for Dave's rulings -- section 4 item 8); `DEV_FILES.md` in both repos re-walked for files that nothing references; the
