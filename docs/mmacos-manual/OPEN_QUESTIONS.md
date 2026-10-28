@@ -134,8 +134,10 @@ The report on Dave's return gathers this list (BRIEF_to_mmacos_manual.md, Report
   the telescope with the case-C CTB behind it (chapter 2) needs a diffraction model of the coupled train --
   the reference/return quartets of `ctb_prop_layout` regenerated behind the e2e exit beam -- which is new
   generator work, and it waits on PLAN 1.2 (zzz) (the generator's reference spheres no longer reproduce the
-  committed decks).  Do you want it, and before or after the fold?
+  committed decks).  Do you want it, and before or after the fold?  **RULED 2026-10-28 (Dave): AFTER the fold.**
+  Until then the manual refers to the CTB bench example (`bench_ctb`).
 - **Ch. 8, focal-plane sensing:** the EFC loop reads the complex field from the engine (perfect sensing).
   Pairwise probing (estimating the field from probe-pair images) is not in the library; chapter 8 says so
   and points to the DM-surface gauges instead.  Do you want the estimator built (a library change), and
-  should chapter 8 then run EFC on estimated fields?
+  should chapter 8 then run EFC on estimated fields?  **RULED 2026-10-28 (Dave): YES**, a new beat: on the CTB
+  first, then the fold, then the coupled model, then pairwise probing on the coupled system.

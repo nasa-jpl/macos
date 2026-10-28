@@ -40,5 +40,11 @@
   "to": "^P\\.bench\\.LO_DX"
  },
  "fig_attr": "{height=7in}",
- "run_note": "The bench stage with its figures, the README's `cophi_run('stages',{'bench','figs','clearance'})` without the clearance table. The manual copies the template with the siblings it reads by relative location: `tg_psi_dm96_oap` (the runner it builds on), `dm_gauge_lib`, and `90_polarization/tg_psi_dm`."
+ "run_note": "The bench stage with its figures, the README's `cophi_run('stages',{'bench','figs','clearance'})` without the clearance table. The manual copies the template with the siblings it reads by relative location: `tg_psi_dm96_oap` (the runner it builds on), `dm_gauge_lib`, and `90_polarization/tg_psi_dm`.",
+ "masks": [
+  {
+   "pattern": "bench stages \\{bench,figs\\}: [0-9.]+ s;",
+   "with": "bench stages {bench,figs}: <t> s;"
+  }
+ ]
 }

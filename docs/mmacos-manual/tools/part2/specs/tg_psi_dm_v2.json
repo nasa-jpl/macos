@@ -39,5 +39,15 @@
    "bound": 1e-10
   }
  ],
- "caption": "The v2 rig's DM surface recovery (`tg_psi_dm_v2_recovery.png`): the injected DM surface, the recovered surface, and the residual (nm)."
+ "caption": "The v2 rig's DM surface recovery (`tg_psi_dm_v2_recovery.png`): the injected DM surface, the recovered surface, and the residual (nm).",
+ "masks": [
+  {
+   "pattern": "TRACED angles \\([0-9.]+ s\\)",
+   "with": "TRACED angles (<t> s)"
+  },
+  {
+   "pattern": "\\(3 per arm x 3 decks\\) in [0-9.]+ s",
+   "with": "(3 per arm x 3 decks) in <t> s"
+  }
+ ]
 }

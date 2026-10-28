@@ -1,5 +1,5 @@
     === COPHI on the TG96 bench (lens optics), model 1024, grid 385, tag "cophi" ===
-    tg96_run bench stages {bench,figs}: 64 s; decks cophi_test.in (test arm) + cophi_ref.in (the LO arm)
+    tg96_run bench stages {bench,figs}: <t> s; decks cophi_test.in (test arm) + cophi_ref.in (the LO arm)
 
     LO arm: fiber tip at [2457.68    1.39    0.00] mm, collimator powered face AT the flat's seat [1575.53    1.39    0.00] mm (elt 3 of 21)
     Test-arm launch (laser at the input polarizer): Ex 0.7071-0.0000i, Ey 0.7071+0.0000i (open-analyzer power Ex-only 0.1356, Ey-only 0.1356, solved 0.2712)

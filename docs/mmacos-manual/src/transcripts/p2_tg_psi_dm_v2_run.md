@@ -53,12 +53,12 @@
     GATE 3 PASS
 
     === GATE 4: the analyzer basis is still exact on the cube rig ===
-      9 traces (3 per arm x 3 decks) in 3.71 s
+      9 traces (3 per arm x 3 decks) in <t> s
       theta   23.70 deg : synthesized vs direct trace, rel 7.553e-11
       theta   71.30 deg : synthesized vs direct trace, rel 7.348e-11
       theta  137.20 deg : synthesized vs direct trace, rel 3.512e-10
       theta  -18.00 deg : synthesized vs direct trace, rel 1.424e-10
-      12 TRACED angles (9.77 s): visibility 1.000000 | 4t/2t 8.895e-04 | 6t/2t 2.987e-14
+      12 TRACED angles (<t> s): visibility 1.000000 | 4t/2t 8.895e-04 | 6t/2t 2.987e-14
       synthesized             : visibility 1.000000 | 4t/2t 8.895e-04 | 6t/2t 4.753e-17 (0 by construction)
     GATE 4 PASS
 

@@ -42,5 +42,15 @@
   }
  ],
  "run_note": "On 2026-10-24 this page was a refusal (gate 2's centroid read NaN, finding (ooo)); the engine fix, macos c6c83d55, made it run, and the page now prints the run.",
- "caption": "The DM surface recovery (`tg_psi_dm_recovery.png`): an interferogram at analyzer 0 degrees, the recovered surface, the injected DM map, and the residual (nm)."
+ "caption": "The DM surface recovery (`tg_psi_dm_recovery.png`): an interferogram at analyzer 0 degrees, the recovered surface, the injected DM map, and the residual (nm).",
+ "masks": [
+  {
+   "pattern": "TRACED angles \\([0-9.]+ s\\)",
+   "with": "TRACED angles (<t> s)"
+  },
+  {
+   "pattern": "\\(3 per arm x 3 decks\\) in [0-9.]+ s",
+   "with": "(3 per arm x 3 decks) in <t> s"
+  }
+ ]
 }
