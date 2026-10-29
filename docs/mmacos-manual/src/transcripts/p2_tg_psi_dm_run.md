@@ -58,9 +58,20 @@
        the differential cancels it -- it survives only in a single-shot map)
 
     === CLOSURE: recovered surface vs the injected DM map ===
+      pixel-axis check (score = truth-vs-recovery corr. before refinement):
+        x=+col,y=+row  +0.997211  <- specified
+        x=+col,y=-row  -0.997211
+        x=-col,y=+row  -0.997211
+        x=-col,y=-row  +0.997211  <- its 180-deg partner
+        x=+row,y=+col  +0.997211
+        x=+row,y=-col  -0.997211
+        x=-row,y=+col  -0.997211
+        x=-row,y=-col  +0.997211
+      TIE: x=+col,y=+row and its 180-deg partner x=-col,y=-row score within 1.0e-06 -- the injected pattern is centrosymmetric and cannot resolve the orientation; the specified convention is used, not confirmed
+      also within 1.0e-06 of x=+col,y=+row: x=-col,y=-row, x=+row,y=+col, x=-row,y=-col
       pupil image: mag 10.5252 (det->DM), anamorphic 0.000%, rotation -180.000 deg,
                    nonlinear distortion 0.0068 mm rms (0.03% of the beam)
-      pixel axes x=-col,y=-row, correlation 0.998434
+      pixel axes x=+col,y=+row, correlation 0.998434
       truth 6.35 nm rms | recovered 6.27 nm rms
       RESIDUAL 0.363 nm rms whole pupil | 0.304 nm rms interior (rim excluded)
     CLOSURE PASS: 95.3% of the injected map recovered (interior)
