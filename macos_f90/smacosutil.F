@@ -16,6 +16,10 @@ C***********************************************************************
 
 C       These are SCOMP-specific variables
 
+!-->  PLAN 1.2 (dddd): the data-only DRAW handler reads its arguments from
+!     the DrawData* module variables, never from the stack
+	USE src_mod, ONLY: DrawDataOnly
+!<--
 	IMPLICIT NONE
 	LOGICAL LARG,LCMP
 	CHARACTER(len=*) :: command
@@ -127,6 +131,12 @@ C  Load FDP command arguments
         END IF
 
 C  Load 1st & last elt, plus plane, for DRAW
+!-->  PLAN 1.2 (dddd): a data-only DRAW (the api's draw_rays) bypasses the
+!     dialog, so arguments pushed here were read back by the command loop
+!     ('** Unknown command = 13', '= 0', '= 0', '= <rx path>' -- stale
+!     IARG(1:3) and CARG(1)) after every draw_rays.  Push nothing for it.
+	IF (LCMP(command,'DRAW',3) .AND. DrawDataOnly) GO TO 110
+!<--
 	IF (LCMP(command,'DRAW',3)) THEN
 	  CALL I2C(IARG(1),ls,STACK,' ')
 	  CALL I2C(IARG(2),ls,STACK,' ')

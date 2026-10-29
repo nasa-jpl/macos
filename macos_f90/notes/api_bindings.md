@@ -332,9 +332,22 @@ capfd read nothing there, so six binding tests were guarded on the Mac.  Now `em
   `command = 'CENTROID'` pushed CENTER's arguments (IARG(1), DARG(1:2), CARG(1)) and the loop read
   them back as commands (`** Unknown command = 0` ...; with CARG blank, C2CW overran into the
   stack itself: `= ENTROID`).  Now `LCMP(command,'CENTER',5)`.  The lesson is the rx_io one
-  again: **a shorter LCMP captures look-alikes**; LoadStack's keyword lengths are not audited
-  beyond this one.  Gate: the stray-command assertion in tSessionModes /
-  test_session_modes through the message buffer (`messages()` after the set).
+  again: **a shorter LCMP captures look-alikes**.  Gate: the stray-command assertion in
+  tSessionModes / test_session_modes through the message buffer (`messages()` after the set).
+- **LoadStack keyword audit (2026-10-29, PLAN 1.2 (dddd)).**  Every `LCMP(command,...)` in
+  `smacosutil.F LoadStack` was compared with the command loop's lengths and with the api's
+  command strings (`command = '...'` in `macos_api_mod.F90`): no api command is captured by a
+  branch for another command (the five prefix overlaps -- SPC/SPCENTER, INT/INTENSITY,
+  FEX/FEXIT, PIXEL/PIXILATE, LPI/LPIXILATE -- are the same command spelled short).  The (dddd)
+  noise had a different cause: LoadStack's DRAW branch pushed IARG(1:3) and CARG(1) for the
+  api's DATA-ONLY DRAW (`draw_rays_cmd`, `DrawDataOnly`), whose handler reads the DrawData*
+  module variables and never the stack, so the loop read the STALE values back as commands
+  (`** Unknown command = 13`, `= 0`, `= 0`, `= <rx path>`) after every draw_rays.  Now
+  `IF (LCMP(command,'DRAW',3) .AND. DrawDataOnly) GO TO 110` (LoadStack `USE src_mod, ONLY:
+  DrawDataOnly`).  The rule for a new api command: **either the dialog consumes every token
+  LoadStack pushes, or LoadStack pushes nothing for it** -- check with `messages()` after the
+  call.  Gates: tDrawFrameGuard/test_draw_rays_leaves_no_stray_commands and
+  test_bindings_a3/test_draw_rays_leaves_no_stray_commands (both red on the 10-28 builds).
 - **OBS is NOT a session mode: a LOAD resets it to POSITIVE** (Dave's ruling 2026-10-28; CC
   had shipped the opposite for a day, 7e9ed0a4).  `macos_cmd_loop.inc`'s LOAD always reset
   `iObsOpt=1`, silently and AFTER the modes notice, so the veneers' "persists across loads"
