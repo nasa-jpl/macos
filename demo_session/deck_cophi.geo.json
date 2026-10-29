@@ -2,8 +2,8 @@
  "COPHI on the DM Gauge bench: the four-step run continuously": {
   "txt:Feng's four-frame method, one-color version, for the hold job.  Every box is a component of the TG96 DM Gauge bench.": {
    "x": 3.5,
-   "y": 1.22,
-   "w": 9.5
+   "y": 1.34,
+   "w": 9.83
   },
   "txt:Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data": {
    "x": 6.35,
@@ -81,8 +81,10 @@
  },
  "COPHI against the Zernike sensor with a dedicated laser, for the hold job": {
   "txt:For hold alone, the vector Zernike is cheapest in photons (~50×) and needs no stabilities of its own — but on the assumed polarization camera it is the slowest (~60 s per cycle).": {
-   "y": 5.75,
-   "fs": 11
+   "y": 5.25,
+   "fs": 12,
+   "x": 0.45,
+   "w": 12.43
   },
   "txt:The Zernike rows are the gauge deck's": {
    "x": 0.46,
@@ -244,25 +246,31 @@
  },
  "Capture from cold on the lock-in camera: two colors on alternate frames": {
   "img:cophi_block_lockin_multi.png": {
-   "x": 0.25,
-   "y": 1.3,
-   "w": 8.9,
-   "h": 5.41,
+   "x": 0.0,
+   "y": 1.24,
+   "w": 10.25,
+   "h": 6.13,
    "cl": 0,
    "cr": 0,
-   "ct": 0.0,
+   "ct": 0.0155,
    "cb": 0.0
   },
   "txt:Blue = RF / timing": {
-   "x": 0.45,
-   "y": 7.1,
-   "w": 12.4
+   "x": 2.5,
+   "y": 5.3,
+   "w": 4.5,
+   "fs": 10
   },
   "txt:One color at a time": {
-   "x": 9.25,
+   "x": 9.5,
    "y": 1.3,
-   "w": 3.75,
+   "w": 3.5,
    "fs": 12
+  },
+  "txt:make_cophi_block_fig.py; record": {
+   "x": 9.48,
+   "y": 6.49,
+   "w": 3.85
   }
  },
  "Two colors on the four-frame camera, frequency-multiplexed": {
