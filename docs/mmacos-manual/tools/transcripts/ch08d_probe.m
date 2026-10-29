@@ -2,11 +2,11 @@
 % bench_ctb's ctb_probe_estimate and ctb_efc('sensing', ...) on a scratch copy of the template
 % (mm_template), on the shipped hard occulter (r_fpm 2.70 lambda/D, Lyot 0.50), N = 512, 3-15 lambda/D,
 % the committed decks (ctb_dm.in from ctb_dcr.in, PLAN 1.2 (zzz)).
-%   1. the Jacobian, measured live (ctb_dm_jacobian, one-sided 2 nm pokes, not saved);
+%   1. the Jacobian, measured live (ctb_dm_jacobian, central differences at 2 nm, not saved);
 %   2. one noiseless estimate at the flat DMs, scored against the engine's true field;
 %   3. a probe-amplitude sweep and a photon-count sweep (estimation floor against each);
-%   4. the probe DM's columns re-measured by central differences, and the amplitude sweep again on
-%      them -- the Jacobian's share of the error;
+%   4. the probe DM's columns re-measured the way ctb_dm_jacobian did before 2026-10-28 (one-sided
+%      2 nm pokes), and the amplitude sweep again on them -- what the poke method costs;
 %   5. EFC, 10 iterations: perfect sensing, then closed on the noiseless estimate, then on the
 %      estimate with photon noise.
 % The figures are this driver's own.  The true field is read only for the scores.
@@ -47,7 +47,7 @@ for ph = pho
         ternary_(ph == 0, 'none', sprintf('%.0e', ph)), e.floor, e.rel_err);
 end
 
-% ---- 4. the probe DM's columns by central differences -------------------------------------------
+% ---- 4. the probe DM's columns by one-sided 2 nm pokes (the method before 2026-10-28) --------------
 Js = J;  G = double(J.G);
 udm = unique(J.col_dm, 'stable');  dmof = arrayfun(@(c) find(udm == c, 1), J.col_dm);
 d1 = J.dm(1);
@@ -58,22 +58,23 @@ dm2 = ctb_dm('ielt', d2.ielt, 'ng', d2.ng, 'gdx_mm', d2.gdx_mm, 'nact', d2.nact,
     'pitch_mm', d2.pitch_mm, 'beam_d_mm', d2.beam_d_mm, 'coupling', d2.coupling);
 dm1.clear();  dm2.clear();
 cols = find(dmof == 1);  h = J.h_mm;  bias = zeros(numel(cols), 1);
+E0f = double(ch.run());  e0f = E0f(J.dz_idx);
 for i = 1:numel(cols)
     a = zeros(d1.nact^2, 1);  a(J.col_act(cols(i))) = h;
-    dm1.apply(a);  Ep = double(ch.run());  dm1.apply(-a);  Em = double(ch.run());
-    g = (Ep(J.dz_idx) - Em(J.dz_idx)) / (2*h);
-    bias(i) = norm(G(:, cols(i)) - g) / norm(g);
+    dm1.apply(a);  Ep = double(ch.run());
+    g = (Ep(J.dz_idx) - e0f) / h;
+    bias(i) = norm(g - G(:, cols(i))) / norm(G(:, cols(i)));
     G(:, cols(i)) = g;
 end
 dm1.clear();
 Js.G = single(G);
-L(end+1) = say('[jac] one-sided 2 nm columns vs central differences, probe DM: median %.2e, max %.2e', ...
+L(end+1) = say('[jac] one-sided 2 nm columns vs the central differences, probe DM: median %.2e, max %.2e', ...
     median(bias), max(bias));
 sw3 = struct('nm', {}, 'floor', {}, 'rel', {}, 'ratio', {});
 for f = amp(1:4)
     e = ctb_probe_estimate(ch, Js, {}, 'probe_nm', f * e0.probe_nm);
     sw3(end+1) = struct('nm', e.probe_nm, 'floor', e.floor, 'rel', e.rel_err, 'ratio', e.ratio); %#ok<SAGROW>
-    L(end+1) = say('[amp, central] %6.2f nm: floor %.2e, relative error %.2e, ratios %s', e.probe_nm, ...
+    L(end+1) = say('[amp, one-sided] %6.2f nm: floor %.2e, relative error %.2e, ratios %s', e.probe_nm, ...
         e.floor, e.rel_err, strjoin(compose('%.3f', e.ratio), ' '));
 end
 
@@ -97,7 +98,7 @@ loglog([sw1.nm], [sw1.floor], 'o-', 'LineWidth', 1.5);  hold on
 loglog([sw3.nm], [sw3.floor], 's-', 'LineWidth', 1.5);
 yline(e0.c_true, 'k--', 'dark-zone contrast', 'LabelHorizontalAlignment', 'left');
 grid on;  xlabel('probe amplitude, nm peak');  ylabel('estimation floor, mean |\DeltaE|^2 / peak');
-legend('Jacobian as measured (one-sided 2 nm)', 'probe DM by central differences', 'Location', 'southeast');
+legend('Jacobian as shipped (central differences)', 'probe DM by one-sided 2 nm pokes (before 2026-10-28)', 'Location', 'southeast');
 title('Estimation floor against probe amplitude');
 subplot(1, 2, 2);
 semilogx([sw1.nm], max(abs(reshape([sw1.ratio], [], numel(sw1)) - 1), [], 1), 'o-', 'LineWidth', 1.5);  hold on
@@ -152,8 +153,8 @@ mm_pin('ch08_probe_nm',     e0.probe_nm, 'sig5', sprintf('%.1f nm', e0.probe_nm)
 mm_pin('ch08_probe_floor',  e0.floor,    'sig5', e2(e0.floor));
 mm_pin('ch08_probe_rel',    e0.rel_err,  'sig5', sprintf('%.1f%%', 100*e0.rel_err));
 mm_pin('ch08_probe_ratio',  max(abs(e0.ratio - 1)), 'sig5', sprintf('%.1f%%', 100*max(abs(e0.ratio - 1))));
-mm_pin('ch08_probe_lin_rel', sw1(1).rel, 'sig5', sprintf('%.1f%%', 100*sw1(1).rel));
-mm_pin('ch08_probe_cd_rel',  sw3(1).rel, 'sig5', e2(sw3(1).rel));
+mm_pin('ch08_probe_lin_rel', sw1(1).rel, 'sig5', e2(sw1(1).rel));
+mm_pin('ch08_probe_os_rel',  sw3(1).rel, 'sig5', sprintf('%.1f%%', 100*sw3(1).rel));
 mm_pin('ch08_probe_bias',    max(bias),  'sig5', sprintf('%.1f%%', 100*max(bias)));
 mm_pin('ch08_probe_ph8',     sw2(3).floor, 'sig5', e2(sw2(3).floor));
 mm_pin('ch08_probe_ph6',     sw2(4).floor, 'sig5', e2(sw2(4).floor));

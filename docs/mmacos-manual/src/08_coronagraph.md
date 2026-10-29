@@ -59,8 +59,9 @@ photometric budget.
 
 No mask on a real bench reaches its design contrast: the optics' errors scatter starlight into the
 ring. The two deformable mirrors (DMs) correct that, by electric-field conjugation (EFC). Each
-actuator of each DM is poked once through the full chain, masks and all, and the change in the
-complex field on the dark-zone pixels is recorded. That sensitivity matrix, the Jacobian, then
+actuator of each DM is poked up and down through the full chain, masks and all, and the change in
+the complex field on the dark-zone pixels is recorded (a central difference: half the difference
+over the poke). That sensitivity matrix, the Jacobian, then
 gives the DM commands that cancel the field. The run uses the hard occulter, and measures the
 Jacobian first (the copy carries none: the 37 MB file is not committed):
 
@@ -121,8 +122,8 @@ dark-zone pixel three equations for two unknowns, the field's real and imaginary
 `ctb_probe_estimate` does this through the full masked chain and reads the engine's true field only
 to score the estimate. `ctb_efc('sensing', ...)` closes the loop on the estimate; its default stays
 perfect sensing. The run measures the Jacobian, estimates the field at the flat DMs, sweeps the
-probe amplitude and the photon count, re-measures the probe DM's Jacobian columns more carefully,
-and then runs ten EFC iterations three ways:
+probe amplitude and the photon count, repeats the sweep with the probe DM's columns built the
+pre-2026-10-28 way (one-sided pokes) for comparison, and then runs ten EFC iterations three ways:
 
 <!-- transcript: ch08_probe_run -->
 
@@ -133,22 +134,21 @@ dark zone of %pin:ch08_efc_before%.
 ![](media/ch08_probe_amp.png)
 
 **FIGURE 24** Estimation floor and the probe-intensity diagnostic against probe amplitude
-(this chapter's driver plots the sweep), with the Jacobian as measured and with the probe DM's
-columns re-measured by central differences.
+(this chapter's driver plots the sweep), with the Jacobian as shipped (central differences) and
+with the probe DM's columns from one-sided pokes.
 
 Figure 24 has the main lesson. Large probes fail as the DM's response stops being linear: at three
-times the default the error is a third of the field. Small probes level off at
-%pin:ch08_probe_lin_rel% with the Jacobian as `ctb_dm_jacobian` measures it, one-sided 2 nm pokes.
-That error is the Jacobian's own. A one-sided poke differs from the true derivative by up to
-%pin:ch08_probe_bias% for the interior actuators, more than the "~0.1%" the driver's help text
-expects. With the probe DM's columns re-measured by central differences, the small-probe error
-falls to %pin:ch08_probe_cd_rel%. The default amplitude sits at the knee, where the probe's
-second-order response is about a tenth of its linear one.
+times the default the error is a third of the field. Small probes reach %pin:ch08_probe_lin_rel%
+with the Jacobian as `ctb_dm_jacobian` measures it, central differences at 2 nm. That residual is
+the Jacobian's own. One-sided pokes, the method before 2026-10-28, differ from the derivative by up
+to %pin:ch08_probe_bias%, and the small-probe error then levels off at %pin:ch08_probe_os_rel%: the
+Jacobian's bias, not the probes, sets it. The default amplitude sits at the knee, where the
+probe's second-order response is about a tenth of its linear one.
 
 The diagnostic ratio, the probes' measured intensity over the Jacobian's prediction, stays within
 %pin:ch08_probe_ratio% of 1 at the default and swings off it only for the largest probe. It does
-not reveal the Jacobian's bias, and with the central-difference Jacobian it reads about 1.02 at
-every small amplitude. The probe's second-order field adds to the image in proportion to the
+not reveal the one-sided Jacobian's bias, and with the central-difference Jacobian it reads about
+1.02 at every small amplitude. The probe's second-order field adds to the image in proportion to the
 probe intensity itself, so the ratio has a floor of its own. Treat a ratio within a few percent of
 1 as a sign of no gross mismatch, not as a measure of the estimate's error.
 

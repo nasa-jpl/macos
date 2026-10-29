@@ -116,29 +116,29 @@ ch08_th_roddier	81%
 ch08_dz_dualzone	6.8e-6
 ch08_th_dualzone	81%
 ch08_efc_before	2.93e-7
-ch08_efc_after	8.06e-9
-ch08_efc_gain	36
-ch08_efc_iter	19
-ch08_efc_s1	9.9 nm
-ch08_efc_s2	8.6 nm
+ch08_efc_after	8.30e-9
+ch08_efc_gain	35
+ch08_efc_iter	24
+ch08_efc_s1	10.0 nm
+ch08_efc_s2	8.7 nm
 ch08_efc_nact	1760
 ch08_vx_before	1.7e-8
 ch08_vx_after	5.8e-13
 ch08_pol_before	2.2e-8
 ch08_pol_after	5.8e-13
 ch08_pol_floor	1.1e-15
-ch08_probe_nm	9.2 nm
-ch08_probe_floor	4.4e-10
-ch08_probe_rel	3.9%
-ch08_probe_ratio	1.3%
-ch08_probe_lin_rel	1.3%
-ch08_probe_cd_rel	1.6e-4
+ch08_probe_nm	9.3 nm
+ch08_probe_floor	4.1e-10
+ch08_probe_rel	3.8%
+ch08_probe_ratio	1.8%
+ch08_probe_lin_rel	1.6e-4
+ch08_probe_os_rel	1.3%
 ch08_probe_bias	1.5%
 ch08_probe_ph8	4.1e-9
 ch08_probe_ph6	3.7e-7
-ch08_probe_efcT	8.8e-9
-ch08_probe_efcE	8.9e-9
-ch08_probe_efcP	9.2e-9
+ch08_probe_efcT	9.0e-9
+ch08_probe_efcE	9.1e-9
+ch08_probe_efcP	9.4e-9
 p2_bench_ctb_chief	< 1e-09
 p2_bench_ctb_wfe	0.001423
 p2_bench_ctb_rays	3002
