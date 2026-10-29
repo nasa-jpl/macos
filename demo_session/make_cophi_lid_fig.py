@@ -56,13 +56,13 @@ nA = box(ax, 11.4, 6.55, 1.6, 1.1, "node A", fc=LIGHT, tc=INK, fs=10.5, ec=CHARG
 nC = box(ax, 11.4, 3.85, 1.6, 1.1, "node C", fc=LIGHT, tc=INK, fs=10.5, ec=CHARGE); nD = box(ax, 13.3, 3.85, 1.6, 1.1, "node D", fc=LIGHT, tc=INK, fs=10.5, ec=CHARGE)
 wire(ax, [port(gI, "r", 0.65), port(nA, "l")], color=CHARGE, lw=2.0); wire(ax, [port(gI, "r", 0.35), (11.1, port(gI, "r", 0.35)[1]), (11.1, 6.2), (14.1, 6.2), port(nB, "b")], color=CHARGE, lw=2.0)
 wire(ax, [port(gQ, "r", 0.65), port(nC, "l")], color=CHARGE, lw=2.0); wire(ax, [port(gQ, "r", 0.35), (11.1, port(gQ, "r", 0.35)[1]), (11.1, 3.5), (14.1, 3.5), port(nD, "b")], color=CHARGE, lw=2.0)
-label(ax, 11.4, 8.0, "nodes integrate N beat cycles\n(one I/Q sample, ~1 ms)", color=GRAY, fs=9.5)
+label(ax, 11.4, 8.0, "nodes integrate one beat period per frame (0.2 ms);\nframes are averaged on the camera's FPGA", color=GRAY, fs=9.5)
 dI = box(ax, 15.3, 6.55, 1.7, 1.1, "A − B\n→ I", fc=DATA, fs=11); dQ = box(ax, 15.3, 3.85, 1.7, 1.1, "C − D\n→ Q", fc=DATA, fs=11)
 wire(ax, [port(nB, "r"), port(dI, "l")], color=DATA); wire(ax, [port(nD, "r"), port(dQ, "l")], color=DATA)
 out = box(ax, 11.4, 1.0, 5.6, 1.5, "ADC → I, Q per pixel per sample\n$\\varphi=\\mathrm{atan2}(Q, I)$,   $h=\\varphi\\,\\lambda/4\\pi$", fc=GREEN, tc=INK, fs=11)
 wire(ax, [port(dI, "b"), (port(dI, "b")[0], 5.6), (17.12, 5.6), (17.12, 2.75), port(out, "t", 0.8)[0:1] + (2.75,), port(out, "t", 0.8)], color=DATA)
 wire(ax, [port(dQ, "b"), (port(dQ, "b")[0], 3.3), (port(out, "t", 0.6)[0], 3.3), port(out, "t", 0.6)], color=DATA)
-note(ax, 6.0, 1.75, "the DC $I_0$ lands equally in A and B (and C, D):\nit cancels in the difference -- whether it still\nfills the nodes is the vendor question", fs=9.5)
+note(ax, 6.0, 1.75, "the DC $I_0$ lands equally in A and B (and C, D)\nand cancels; at AC/DC ~ 1 the X/Y output's full\nscale (+-512 counts x 460 e-) binds, not the well", fs=9.5)
 
 # ---- right: the algebra ----------------------------------------------------
 x0 = 18.0; y = 13.2
@@ -70,7 +70,7 @@ rows = [
  ("the light at the pixel", r"$I(t)=I_0\,[\,1+\gamma\cos(\varphi-\omega_b t)\,],\qquad \omega_b=2\pi f_b,\ \ f_b=|f_1-f_2|$"),
  ("the gate references (square waves at the beat)", r"$s_I(t)=\mathrm{sgn}\,\cos\omega_b t,\qquad s_Q(t)=\mathrm{sgn}\,\sin\omega_b t$"),
  ("what the nodes hold after N cycles ($\\tau = N/f_b$, $N_e=I_0\\tau$ electrons)", r"$A-B=\int_0^{\tau} I\,s_I\,dt=\frac{2}{\pi}\,N_e\,\gamma\cos\varphi,\qquad C-D=\frac{2}{\pi}\,N_e\,\gamma\sin\varphi$"),
- ("the DC is common to both nodes and cancels", r"$A+B=C+D=N_e\quad(\mathrm{the\ well\ sees\ } N_e \mathrm{\ unless\ the\ DC\ is\ drained})$"),
+ ("the DC is common to both nodes and cancels (vendor: the sense node suppresses a dominant DC x30; at AC/DC ~ 1 the output full scale binds first)", r"$A+B=C+D=N_e,\qquad |A-B|\leq 512\ \mathrm{counts}\times 460\ e^-=236\ \mathrm{ke}^-\ \mathrm{per\ frame}$"),
  ("the phase and the surface", r"$\varphi=\mathrm{atan2}(C-D,\ A-B)=\mathrm{atan2}(Q,I),\qquad h=\varphi\,\lambda/4\pi$"),
  ("shot + read noise per pixel per sample (the ×1.11 of a square-wave multiplier)", r"$\sigma_\varphi^2=\frac{\pi^2}{8}\cdot\frac{2\,(N_e+r^2)}{N_e^2\,\gamma^2}\ \ \Rightarrow\ \ \sigma_\varphi=\frac{\pi}{2\gamma\sqrt{N_e}}\ \ (r=0)$"),
  ("what a square wave also admits", r"$s_I=\frac{4}{\pi}\left[\cos\omega_b t-\frac{1}{3}\cos 3\omega_b t+\frac{1}{5}\cos 5\omega_b t-\dots\right]$: a clean two-frequency beat has no harmonics"),
