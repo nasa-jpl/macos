@@ -32,7 +32,7 @@ DRAFT — pending review.
 
 ## COPHI on a frame camera: Feng's baseline vs the Photonfocus | Four frames per beat, each a quarter-cycle bucket, phase-locked to the beat by the Rb clock; the computer forms the phase; well depth × frame rate sets the time to a picometer: 7 minutes on the baseline camera, 42 s on the Photonfocus
 ::: left
-- **The four-phase, as implemented (slide 2):**
+- **The four-phase, synchronous detection in the computer:**
 -- the beat: AOM 1 at 80 MHz, AOM 2 at 80 MHz + 7.5 Hz, both synthesizers on the 10 MHz Rb standard
 -- the trigger: the two RF lines tapped, ×4, mixed and low-passed → a 30 Hz frame clock phase-locked to the beat: four frames per beat at 0°, 90°, 180°, 270°
 -- the bucket: each frame integrates a quarter cycle; the phase is kept at the bucket center, the contrast × 0.900
@@ -209,7 +209,8 @@ DRAFT — pending review.
 -- computer: the phase per color, the synthetic wavelength, the null, the estimator, the loop
 - **Record:** zero wrong orders to 480 nm rms, 0.13 nm per pixel, one 0.4 ms frame pair (slide 14)
 - **To confirm on the hardware:** the interleaved average; else blocks of N frames per color, the same reading while the surface is still
-~ Blue = RF / timing · Red = PM fiber · Green = beam · Gray = data.  `make_cophi_block_fig.py`; record `runs/c4_capture_oap`; the four-frame camera's frequency-multiplexed form is in the backup.
+Blue = RF / timing · Red = PM fiber · Green = beam · Gray = data
+~ `make_cophi_block_fig.py`; record `runs/c4_capture_oap`
 
 ## Capture from a cold start: the numbers, and the parts it adds | Zero wrong fringe orders on the whole capture ladder to 480 nm rms; a single color wraps from 40 nm; temporal unwrapping holds a running loop, not a cold start
 ::: left
@@ -254,22 +255,33 @@ DRAFT — pending review.
 | its own stabilities | none beyond the bench | fiber 0.39 nm per frame; LO 10 prad per cycle | same | LO the same (29.4 pm); **fiber a per-frame piston, inert** |
 - **For hold alone, the vector Zernike is cheapest in photons** (~50×) and needs no stabilities of its own — but on the assumed polarization camera it is the slowest (~60 s per cycle).  Feng's camera makes COPHI slow (16 s), the Photonfocus fast (1.6 s), **the lock-in the fastest on the table (~30 ms)** on the vendor's numbers.
 - **For capture and the absolute figure:** COPHI in either form.
-- **For a flight DM:** hold only and photons scarce → the Zernike sensor with a camera chosen for it; hold + capture + absolute, or speed → COPHI (the lock-in fastest by 60–2000×).  **The hybrid** — Zernike for the hold, COPHI's two-color read for capture — stays the conservative answer until the loaner confirms the vendor's numbers on the bench.
+- **For a flight DM:** hold only and photons scarce → the Zernike sensor with a camera chosen for it; hold + capture + absolute, or speed → COPHI (the lock-in fastest by 60–2000×).
+- **The hybrid** — Zernike for the hold, COPHI's two-color read for capture — the conservative answer until the loaner confirms the vendor's numbers on the bench.
 ~ The Zernike rows are the gauge deck's (redo96_*sens, zloop) with the polarization-camera timing from `camS_oap`; the COPHI rows this deck's; the lock-in rows are records on the vendor's row (`runs/c4_*`).
 
-## Recommendations | COPHI is a credible fifth gauge: it matches the IFO's floor, reads exactly, and captures from cold in one reading; its cost is the fiber and the LO, its speed is set by the camera's frame rate, with the lock-in detector the clear winner
+## Recommendations | Build the five-sensor bench now, COPHI included, the lock-in camera its best reading; swappable parts make it a multi-sensor wavefront-sensing testbed; vacuum compatibility for the ultimate performance when the mirrors are delivered
 ::: left
-- **Add COPHI to the DM Gauge plan** as the fifth column, with the converged estimator and the piston-free photon metric for every gauge (both found here, both apply to the record).
-- **Consider a swappable splitter** (Feng's layout); the current polarizing train costs ×1.5 of laser and nothing else.
-- **Camera:** the Photonfocus-class 1k global-shutter part (42 s per pm, 3 pm held in 1.6 s cycles) over Feng's baseline (7 min, 16 s); the lock-in camera faster yet.
--- verify the survey against the vendor sheets before a part is named
-- **The lock-in camera is the fast form:** 0.77 s per pm on the vendor's numbers, 3 pm held in ~30 ms cycles.
--- the two open items are answered (2026-10-29: averaging at 4960 frames/s, no gain); next the offered loaner on the bench
-- **Implement two colors from the start:** capture from cold in one reading; at 1.3 µm, telecom tunables and twice the base range — the InGaAs stage.
+- **Start the five-sensor bench as soon as possible**
+-- the DM Gauge bench with its four record sensors: IFO, stepped and vector Zernike, pinhole (slide 15)
+-- include COPHI: the LO collimator at the reference flat's seat, the RF chain, the two PM fibers
+-- one registration, one 30 nm working surface, one scoring for all five
+- **The lock-in camera is the best performer**
+-- 0.77 s per pm, 3 pm held in ~30 ms cycles: 55× the Photonfocus, 500× Feng's baseline (vendor data, slide 4)
+-- confirmed averaging at 4960 frames/s, fixed gain; captures from cold with two colors on alternate frames (slide 13)
+-- the offered loaner on the bench first: noise and loop re-run on measured numbers
+- **Two colors from the start**
+-- capture from cold in one reading; 1.3 µm later for telecom tunables and twice the range
 ::: right
-- **Open in the record:** the lens rig's +0.1–0.2 % converged gain (a matrix-model term); the polarization-camera timings through the noise hook (slide 24).
-- **Model next:** the tail's chromatic refocus at Δλ = 20 nm (dispersive glass in the model); the LO referenced against the test arm's own flat; parts counts and TRL for all five gauges; Kent's ZWFS reconstruction.
-~ Everything reproduces from `templates/40_benches/cophi_dm96/` (`cophi_run`, the stage tags in each footnote); gates `tCophi`, `tCophiBench`, `tConvergedEst`, `tDmgLoop`.
+- **Swappable parts make it a multi-sensor wavefront-sensing testbed**
+-- the reference flat on a flip mount, the LO shuttered: IFO and COPHI on the same camera and pixels
+-- a pick-off behind the splitter feeds the Zernike and pinhole arms from the test beam alone
+-- a swappable splitter: Feng's plain splitter or the polarizing train (same picometers, ×1.5 laser)
+-- the camera port takes a frame camera or the lock-in camera
+- **Vacuum compatibility for the ultimate performance when the mirrors are delivered**
+-- the terms the loop lags in air: thermal drift (the 5 pm per cycle ramp holds at 10 pm), the LO pointing (10 prad per cycle), the differential fiber phase (0.39 nm per frame)
+-- fibers, collimator mounts, the DM harness and the cameras chosen vacuum-compatible now
+- **Still to model:** the chromatic refocus at Δλ = 20 nm; the LO referenced against the test arm's flat; parts counts and TRL for the five gauges
+~ Records: stages noise, loop, capture and the lock-in runs (`runs/c4_*`); gates `tCophi`, `tCophiBench`, `tConvergedEst`, `tDmgLoop`; everything reproduces from `templates/40_benches/cophi_dm96/`.
 
 ## Backup
 
