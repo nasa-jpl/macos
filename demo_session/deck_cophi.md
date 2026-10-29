@@ -21,7 +21,7 @@ October 2026.  Working record.
 DRAFT — pending review.
 ~ Feng's proposal (COPHI_for_DM_gauge.pptx, 2026-05-19): a single-frequency laser split to two AOMs at 80 MHz and 80 MHz + 7.5 Hz on a Rb standard, a fiber LO combined before a 30 fps camera imaging the DM, four frames per beat, the four-frame phase.  Purpose: to hold each DM in a local loop against drift, to << 10 pm.  What does that read on our bench, and what does it cost?
 
-## Feng's proposal, in one slide | A heterodyne interferometer whose phase steps are set by frequency, not by a piezo, with a fiber-fed local oscillator at the camera, and an array detector providing many parallel channels to resolve 96 × 96 actuators
+## Feng's proposal, in one slide | A heterodyne interferometer whose phase steps are set by frequency, with a fiber-fed local oscillator at the camera, and an array detector providing many parallel channels to resolve 96 × 96 actuators
 ::: left
 - **Layout:** laser → 1×2 coupler → AOM-1 (80 MHz) and AOM-2 (80 MHz + 7.5 Hz), both synthesizers on a 10 MHz Rb standard; the measurement beam to the DM, the LO fiber to a splitter before the camera; the ×4 multipliers mixed to a 30 Hz camera trigger: four frames per 7.5 Hz fringe cycle – see next slide.
 - **Algorithm:** I = I₀ (1 + γ cos(φ + 2π f t)); frames at α = 0, π/2, π, 3π/2; φ = atan2(I₄ − I₂, I₁ − I₃); surface = ½ (φ/2π) λ (double pass).  Backup: the N-frame least-squares solution (Zygo's four-step is N = 4).
@@ -40,9 +40,9 @@ DRAFT — pending review.
 - **Feng's four-frame method, one-color version, for the hold job.**  Every box is a component of the TG96 DM Gauge bench.
 ::: right
 - Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data
-~ `make_cophi_block_fig.py`; the camera rows name the surveyed parts; the lock-in alternative has its own diagram (slide 7).
+~ `make_cophi_block_fig.py`
 
-## Our implementation of Feng's approach: the choices, in one table | Feng's layout kept where he specified it, each unspecified part fixed by a bench number; the lock-in camera (next slide) changes the camera, the beat and the trigger chain only
+## Our implementation of Feng's approach | COPHI using a framing camera; the lock-in camera (next slide) changes the camera, the beat and the trigger chain only
 | part | Feng's proposal | our implementation (what the model runs) | why |
 |---|---|---|---|
 | laser | single-frequency, λ unstated | 632.8 nm, the record bench's; a 1.3 µm row for InGaAs | the other four gauges' surface, matrix and photon rows |
@@ -96,7 +96,7 @@ DRAFT — pending review.
 - **What changes from slide 3:** synthesizer 2 at 80 MHz + 5 kHz; the 20 kHz trigger to the pixels' gates; the camera is one pixel's chain (slide 6), frames averaged on its FPGA; atan2(Q, I) per image.  Fiber, LO, loop unchanged.
 ::: right
 - Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data
-~ `make_cophi_block_fig.py` (lock-in variant); the pixel chain's inputs and outputs are slide 6's.
+~ `make_cophi_block_fig.py`
 
 ## The reading's algebra, pinned before the bench | What the camera records, how the phase and the surface come out, and what the gate measured: the quarter-cycle integration costs 10 % of contrast, a step error is not cured by more frames, read noise is in the photon law
 ::: full
@@ -237,18 +237,15 @@ DRAFT — pending review.
 - **Against a drift rate the cycle has an optimum** (right): Feng's camera 6.0 pm at 5.5 s, Photonfocus 2.7 at 2.5 s, lock-in 0.75 at 0.7 s — the fast reading holds a drift under a picometer where the slow cameras cannot.
 ~ `cophi_hold_vs_cycle` (`runs/figs_hold_vs_cycle/`); seconds per pm from the records (stages noise / format / c4_noise; `camI_oap`, `camS_oap`); the lag from stage loop's thermal row; the markers are the loop records (lock-in: `c4_loop_oap`, `c4_loop_oap_m125`).  A budget, no new runs.
 
-## Capture from a cold start: two colors frequency-multiplexed on one camera | A second laser at λ₂, its own AOM pair at a second beat, WDM combiners into the same two fibers; all four synthesizers on one reference; the processing adds the synthetic-wavelength block
+## Capture from cold on the lock-in camera: two colors on alternate frames | Laser 2 at λ₂ through its own AOM pair at the same 5 kHz beat, WDM-combined into the same two fibers; the trigger's ÷8 blanks one color per 0.2 ms frame; the pixel demodulates, the camera's FPGA averages odd and even frames apart, the computer unwraps
 ::: full
-![](figs/cophi_block_multi.png){h=5.0}
-::: left
-- **Two colors, one camera, one 8-frame set**
--- beats 7.5 and 3.75 Hz = 4 and 8 frames per beat at the same 30 fps
--- each color demodulated at its own bucket centers from the same frames; no interference (THz apart)
--- lock-in form: time-multiplexed, one color per 0.2 ms frame (slide 18)
+![](figs/cophi_block_lockin_multi.png){h=5.0}
 ::: right
-- Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data
-~ `make_cophi_block_fig.py`; the sequential form — one tunable laser switched on alternate beats — uses the one-color hardware and half the cadence.
-
+- **Separating the colors: time, not frequency.**  One reference and one accumulator pair per pixel, so one color at a time: the trigger ÷ 8 (2480 Hz TTL) blanks the AOM drivers, 1 + 2 on odd frames, 3 + 4 on even.  RF off = no first-order beam, so the AOM is the shutter (~1 µs): nothing of the other color reaches the sensor, not even its DC.  Both colors run the same 5 kHz beat.
+- **Where the processing is:** pixel = the demodulation (gates, nodes, A − B and C − D); camera FPGA = the ADCs and the frame averaging, odd and even apart; computer = atan2 per color, the synthetic wavelength, the null, the estimator, the loop.
+- **Record:** zero wrong orders to 480 nm rms, 0.13 nm per pixel from one 0.4 ms frame pair (slide 18).
+- **To confirm on the loaner:** an interleaved (odd / even) average on the FPGA; else the colors alternate in N-frame blocks, 2 × N × 0.2 ms per reading, the same reading while the surface is still.
+~ Blue = RF / timing · Red = PM fiber · Green = beam · Gray = data.  `make_cophi_block_fig.py`; record `runs/c4_capture_oap`; the four-frame camera's frequency-multiplexed form is in the backup.
 ## Capture from a cold start: the numbers, and the parts it adds | Zero wrong fringe orders on the whole capture ladder to 480 nm rms; a single color wraps from 40 nm; temporal unwrapping holds a running loop, not a cold start
 ::: left
 - **Two colors, one reading:** 632.8 + 652.8 nm (synthetic Λ = 20.65 µm, range ±5.2 µm), each color read by its own buckets (crosstalk 4 × 10⁻¹⁶ rad).
@@ -256,7 +253,7 @@ DRAFT — pending review.
 -- **a 200 nm rms figure is captured from cold in one 0.27 s reading**
 -- any Δλ from 1 to ~100 nm works (the fine requirement at Δλ = 20 nm is 1.7 nm against ~0.1 nm per pixel): one rung of the synthetic-wavelength ladder is enough here
 - **Temporal unwrapping:** holds at 0.9 × λ/4 per reading, fails at 1.1 ×: 1.19 µm/s at the peak pixel (baseline camera), 5.9 µm/s (Photonfocus) — ~0.24 / 1.2 µm/s rms for a 30 nm-class shape.
-- **With the lock-in camera (record):** the two colors take alternate 0.2 ms frames, each color's AOM pair gated on for its frame, so ONE color is on the sensor at a time (2480 frames/s per color, 0.4 ms per pair) — zero wrong orders to 480 nm rms, 0.13 nm per pixel; temporal unwrapping at 4960 frames/s tolerates 785 µm/s.
+- **With the lock-in camera (record, slide 17):** the two colors take alternate 0.2 ms frames, each color's AOM pair gated on for its frame, so ONE color is on the sensor at a time (2480 frames/s per color, 0.4 ms per pair) — zero wrong orders to 480 nm rms, 0.13 nm per pixel; temporal unwrapping at 4960 frames/s tolerates 785 µm/s.
 -- the pixel has one reference and one pair of accumulators: both colors on at once would put the second beat and the second color's DC into A−B and C−D.  That form works only with beats an integer number of frame rates apart (the cross term then integrates to zero over the frame, square-wave harmonics included) and costs √2 in shot noise and half the well per color; not modeled.
 ::: right
 | part added for the second color | count | note |
@@ -343,6 +340,18 @@ DRAFT — pending review.
 ::: right
 - Two colors on one camera: the beats 7.5 and 3.75 Hz are both integer frame counts at 30 fps (4 and 8), so one 8-frame set serves both colors; each color's frames are demodulated at its own bucket centers; the colors do not interfere (THz apart).
 - Synthetic wavelength Λ = λ₁λ₂/|λ₁ − λ₂|; range ±Λ/4 of surface; the coarse phase's noise is amplified Λ/λ and must resolve the fine fringe — one rung suffices here (Λ = 20.65 µm); a ladder is needed only for ranges beyond ±5 µm.
+
+## Two colors on the four-frame camera, frequency-multiplexed | A second laser at λ₂, its own AOM pair at a second beat, WDM combiners into the same two fibers; all four synthesizers on one reference; the processing adds the synthetic-wavelength block
+::: full
+![](figs/cophi_block_multi.png){h=5.0}
+::: left
+- **Two colors, one camera, one 8-frame set**
+-- beats 7.5 and 3.75 Hz = 4 and 8 frames per beat at the same 30 fps
+-- each color demodulated at its own bucket centers from the same frames; no interference (THz apart)
+-- lock-in form: time-multiplexed, one color per 0.2 ms frame (slide 17)
+::: right
+- Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data
+~ `make_cophi_block_fig.py`; the sequential form — one tunable laser switched on alternate beats — uses the one-color hardware and half the cadence.
 
 ## The detector survey, and its caveats | Web surveys, every number sourced; the heliCam row verified by its vendor, the others not; the rows the deck uses and the question each needs answered
 ::: full

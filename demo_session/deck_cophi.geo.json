@@ -1,42 +1,42 @@
 {
  "COPHI on the DM Gauge bench: the four-step run continuously": {
   "txt:Feng's four-frame method, one-color version, for the hold job.  Every box is a component of the TG96 DM Gauge bench.": {
-   "x": 0.45,
+   "x": 3.5,
    "y": 1.22,
-   "w": 12.55
+   "w": 9.5
   },
   "txt:Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data": {
    "x": 6.35,
-   "y": 1.48,
+   "y": 2.0,
    "w": 6.4
   },
-  "txt:make_cophi_block_fig.py; the camera rows name the surveyed parts; the lock-in alternative has its own diagram (slide 6).": {
-   "x": 0.45,
-   "y": 7.12,
-   "w": 12.4
-  },
   "img:cophi_block_single.png": {
-   "x": 1.0,
+   "x": 0.45,
    "y": 1.34,
-   "w": 11.54,
-   "h": 5.8,
+   "w": 12.09,
+   "h": 6.08,
    "cl": 0,
    "cr": 0,
    "ct": 0.0,
    "cb": 0.0
+  },
+  "txt:make_cophi_block_fig.py": {
+   "x": 11.4,
+   "y": 4.75,
+   "w": 1.85
   }
  },
  "COPHI with a lock-in camera: the block diagram": {
   "txt:What changes from slide 3: synthesizer 2 at 80 MHz + 5 kHz; the ×4 / 30 Hz trigger chain becomes the 5 kHz reference, fed to the pixels' transfer gates; the camera is drawn as the chain inside one pixel (slide 6: photodiode → gates → nodes → A − B, C − D) in series with the frame grabber; the processing is atan2(Q, I) per sample, decimated to the loop rate.  Fiber, LO and hold loop are unchanged.": {
-   "x": 0.45,
+   "x": 3.25,
    "y": 1.22,
-   "w": 12.4
+   "w": 9.6
   },
   "img:cophi_block_lockin.png": {
-   "x": 2.25,
-   "y": 1.64,
-   "w": 10.88,
-   "h": 5.48,
+   "x": 0.29,
+   "y": 1.18,
+   "w": 12.38,
+   "h": 6.24,
    "cl": 0,
    "cr": 0,
    "ct": 0.0,
@@ -44,13 +44,13 @@
   },
   "txt:Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data": {
    "x": 6.5,
-   "y": 2.25,
+   "y": 2.0,
    "w": 6.25
   },
-  "txt:make_cophi_block_fig.py (lock-in variant); the pixel chain's inputs and outputs are slide 6's.": {
-   "x": 0.25,
-   "y": 7.12,
-   "w": 6.35
+  "txt:make_cophi_block_fig.py": {
+   "x": 11.25,
+   "y": 6.5,
+   "w": 2.0
   }
  },
  "Performance side by side: HET against the IFO on the same surface": {
@@ -121,33 +121,6 @@
    "x": 0.5,
    "y": 6.75,
    "w": 12.4
-  }
- },
- "Capture from a cold start: two colors frequency-multiplexed on one camera": {
-  "txt:Two colors, one camera, one 8-frame set: beats of 7.5 Hz and 3.75 Hz are 4 and 8 frames at the same 30 fps, so each color is demodulated at its own bucket centers from the same frames; the colors do not interfere (THz apart).": {
-   "x": 0.45,
-   "y": 1.22,
-   "w": 12.4
-  },
-  "txt:make_cophi_block_fig.py; the sequential form": {
-   "x": 0.45,
-   "y": 7.24,
-   "w": 12.4
-  },
-  "img:cophi_block_multi.png": {
-   "x": 3.48,
-   "y": 1.3,
-   "w": 9.85,
-   "h": 5.9,
-   "cl": 0.0073,
-   "cr": 0.0466,
-   "ct": 0.0151,
-   "cb": 0.0
-  },
-  "txt:Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data": {
-   "x": 0.25,
-   "y": 5.5,
-   "w": 3.25
   }
  },
  "The LO on the DM Gauge bench replaces the IFO's reference flat": {
@@ -267,6 +240,56 @@
    "x": 9.49,
    "y": 3.87,
    "w": 3.45
+  }
+ },
+ "Capture from cold on the lock-in camera: two colors on alternate frames": {
+  "img:cophi_block_lockin_multi.png": {
+   "x": 0.25,
+   "y": 1.3,
+   "w": 9.6,
+   "h": 5.84,
+   "cl": 0,
+   "cr": 0,
+   "ct": 0.0,
+   "cb": 0.0
+  },
+  "txt:Separating the colors: time, not frequency.": {
+   "x": 9.95,
+   "y": 1.3,
+   "w": 3.15,
+   "fs": 10
+  },
+  "txt:Blue = RF / timing": {
+   "x": 0.45,
+   "y": 7.1,
+   "w": 12.4
+  }
+ },
+ "Two colors on the four-frame camera, frequency-multiplexed": {
+  "txt:Two colors, one camera, one 8-frame set: beats of 7.5 Hz and 3.75 Hz are 4 and 8 frames at the same 30 fps, so each color is demodulated at its own bucket centers from the same frames; the colors do not interfere (THz apart).": {
+   "x": 0.45,
+   "y": 1.22,
+   "w": 12.4
+  },
+  "txt:make_cophi_block_fig.py; the sequential form": {
+   "x": 0.45,
+   "y": 7.24,
+   "w": 12.4
+  },
+  "img:cophi_block_multi.png": {
+   "x": 4.26,
+   "y": 2.15,
+   "w": 8.84,
+   "h": 5.15,
+   "cl": 0,
+   "cr": 0,
+   "ct": 0.0,
+   "cb": 0.0
+  },
+  "txt:Blue = RF / timing · Red = PM fiber · Green = free-space beam · Gray = data": {
+   "x": 0.25,
+   "y": 5.5,
+   "w": 3.25
   }
  }
 }
