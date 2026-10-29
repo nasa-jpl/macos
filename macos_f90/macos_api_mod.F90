@@ -6084,7 +6084,9 @@
         ! (An earlier version also pushed them onto the SMACOS arg stack
         ! "for consistency" -- but the data-only DRAW handler bypasses the
         ! dialog, so the tokens were never consumed and spilled into the
-        ! command loop as "** Unknown command" noise after every call.)
+        ! command loop as "** Unknown command" noise after every call.
+        ! LoadStack's own DRAW branch did the same with stale IARG/CARG until
+        ! 2026-10-29, PLAN 1.2 (dddd): it now pushes nothing when DrawDataOnly.)
         command = 'DRAW'
         CALL SMACOS(command,CARG,DARG,IARG,LARG,RARG,OPDMat,RaySpot,RMSWFE,PixArray)
 
