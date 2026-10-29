@@ -112,8 +112,8 @@ def draw(multi, lockin=False):
     if lockin:
         m1 = box(ax, 0.6, 10.2 + ro, 2.5, 0.7, "RF tap\n80 MHz", fs=11.4, fc=LIGHT, tc=INK, ec=ACCENT)
         m2 = box(ax, 3.6, 10.2 + ro, 2.5, 0.7, "RF tap\n80 MHz + 5 kHz", fs=11.4, fc=LIGHT, tc=INK, ec=ACCENT)
-        mx = box(ax, 1.6, 9.3 + ro, 3.5, 0.8, "Mixer + low-pass\n-> 5 kHz beat reference", fs=11.7)
-        tg = box(ax, 1.6, 8.35 + ro, 3.5, 0.8, "Lock-in REFERENCE input\n(the beat itself; no frame trigger)", fs=10.8)
+        mx = box(ax, 1.6, 9.3 + ro, 3.5, 0.8, "Mixer, low-pass, x4 -> 20 kHz\nquarter-period trigger (0-5 V)", fs=10.2)
+        tg = box(ax, 1.6, 8.35 + ro, 3.5, 0.8, "Lock-in REFERENCE input\n(DivideBy4: gates the pixels directly)", fs=9.8)
     else:
         m1 = box(ax, 0.6, 10.2 + ro, 2.5, 0.7, "x4 multiplier\n320 MHz", fs=11.4, fc=LIGHT, tc=INK, ec=ACCENT)
         m2 = box(ax, 3.6, 10.2 + ro, 2.5, 0.7, "x4 multiplier\n320 MHz + 30 Hz", fs=11.4, fc=LIGHT, tc=INK, ec=ACCENT)
@@ -146,7 +146,7 @@ def draw(multi, lockin=False):
     label(ax, 8.15, y0 + 2.15, "f_opt + 80 MHz", fs=11.1, color=GRAY, ha="center")
     label(ax, 8.15, y0 - 1.55, ("f_opt + 80 MHz + 5 kHz" if lockin else "f_opt + 80 MHz + 7.5 Hz"), fs=11.1, color=GRAY, ha="center")
     note(ax, 0.6, y0 - 1.95, ("electronics error terms: reference phase noise; AOM drive ripple -> contrast;\n"
-                              "ADC bits (2 x 10-bit I/Q); one I/Q frame = one cycle of loop latency (1 ms)") if lockin else
+                              "ADC bits (2 x 10-bit I/Q, +-512 counts x 460 e-); one I/Q frame = one beat period (0.2 ms)") if lockin else
                              ("electronics error terms the model carries: DDS phase noise -> P.cophi.jitter;\n"
                              "AOM drive ripple -> contrast; trigger jitter; one beat = one cycle of loop latency (133 ms)"), fs=10.4)
 
@@ -206,7 +206,7 @@ def draw(multi, lockin=False):
         # photodiode -> gates (the beat reference) -> nodes -> differences -> I, Q out (Dave 2026-10-16)
         CH = "#B9770E"
         cam = box(ax, spx - 2.0, y0 + 2.3, 8.7, 1.9, "", fc="none", tc=INK, ec=ACCENT, lw=1.4)
-        label(ax, spx + 1.6, y0 + 4.02, "LOCK-IN camera (heliCam C4): 542 x 512 pixels, I/Q at 1 kHz", fs=8.4, color=ACCENT, bold=True)
+        label(ax, spx + 1.6, y0 + 4.02, "LOCK-IN camera (heliCam C4): 542 x 512 px, one I/Q frame per beat period (4960/s)", fs=8.4, color=ACCENT, bold=True)
         pxw, pxh, pxy = 1.56, 1.15, y0 + 2.45
         p1 = box(ax, spx - 1.85, pxy, pxw, pxh, "photodiode\nI(t) = I0 [1 +\ng cos(phi - w_b t)]", fs=8.4, fc=ACCENT)
         p2 = box(ax, spx - 0.11, pxy, pxw, pxh, "transfer gates\nA|B by s_I (0/180)\nC|D by s_Q (90/270)", fs=8.2, fc=CH)
@@ -216,7 +216,7 @@ def draw(multi, lockin=False):
         wire(ax, [port(p1, "r"), port(p2, "l")], color=CH, lw=2.0); wire(ax, [port(p2, "r"), port(p3, "l")], color=CH, lw=2.0); wire(ax, [port(p3, "r"), port(p4, "l")], color=DATA); wire(ax, [port(p4, "r"), port(p5, "l")], color=DATA)
         beam(ax, [(spx, spy), (spx, port(p1, "b")[1] + 0.02)])
         label(ax, spx + 0.3, port(cam, "b")[1] - 0.35, "camera tail: the pupil image of the DM", fs=10.1, color=GRAY)
-        label(ax, spx - 1.95, y0 + 4.28, "s_I, s_Q = the 5 kHz beat (square wave)", fs=8.8, color=RF)
+        label(ax, spx - 1.95, y0 + 4.28, "s_I, s_Q = the 5 kHz beat, from the 20 kHz trigger", fs=8.8, color=RF)
         lk = p5
     else:
         cam = box(ax, spx - 1.9, y0 + 2.55, 4.6, 1.45, "Camera, true global shutter\n1k x 1k: Feng baseline 60 ke / 30 fps\nPhotonfocus 200 ke / 150 fps; pco.edge GS", fs=10.4)
@@ -230,10 +230,10 @@ def draw(multi, lockin=False):
         wire(ax, [port(tg, "r"), (6.6, port(tg, "r")[1]), (6.6, ty), (bx0 - 0.4, ty), (bx0 - 0.4, y0 + 4.4), (port(p1, "r")[0] + 0.12, y0 + 4.4), (port(p1, "r")[0] + 0.12, port(p2, "l")[1]), port(p2, "l")], lw=1.3)
     else:
         wire(ax, [port(tg, "r"), (6.6, port(tg, "r")[1]), (6.6, ty), (bx0 - 0.4, ty), (bx0 - 0.4, y0 + 4.3), (port(cam, "l")[0] - 0.02, y0 + 4.3), (port(cam, "l")[0] - 0.02, port(cam, "l")[1] + 0.4), (port(cam, "l")[0], port(cam, "l")[1] + 0.4)], lw=1.3)
-    label(ax, 6.8, ty + 0.22, ("the 5 kHz beat reference to the lock-in camera: every pixel demodulates ~5 cycles per 1 ms I/Q frame; no bucket, no frame trigger" if lockin else "30 Hz camera trigger, phase-locked to the beat (4 buckets / beat); a lock-in camera takes the beat itself as its reference input"), fs=10.8, color=RF)
+    label(ax, 6.8, ty + 0.22, ("the 20 kHz quarter-period trigger (Rb-locked) to the lock-in camera: every pixel demodulates one 5 kHz beat period per 0.2 ms frame; frames averaged on the camera; no bucket" if lockin else "30 Hz camera trigger, phase-locked to the beat (4 buckets / beat); a lock-in camera takes the beat itself as its reference input"), fs=10.8, color=RF)
 
     # ------------------------------------------------------------------ processing (bottom)
-    fg = box(ax, 14.6, py - 0.1, 2.3, 0.9, ("GigE receiver\n(digital I/Q frames)" if lockin else "Frame grabber\n(CXP / CLHS)"), fs=11.4, fc=DATA)
+    fg = box(ax, 14.6, py - 0.1, 2.3, 0.9, ("GigE receiver\n(FPGA-averaged I/Q,\n2 x 16-bit, ~20/s)" if lockin else "Frame grabber\n(CXP / CLHS)"), fs=11.4, fc=DATA)
     src = lk if lockin else cam
     wire(ax, [port(src, "r"), (port(src, "r")[0] + 0.3, port(src, "r")[1]), (port(src, "r")[0] + 0.3, y0 + 4.45), (bx0 + 10.75, y0 + 4.45), (bx0 + 10.75, py + 0.35), port(fg, "r")], color=DATA)
     if multi:
@@ -244,21 +244,21 @@ def draw(multi, lockin=False):
         note(ax, 7.0, py - 0.95, "range +- Lambda/4, coarse noise x Lambda/lambda: a rung LADDER (dl ~ 20 nm then ~0.5 nm) captures\n"
                                  "200 nm rms from cold; sequential form = one tunable laser switched on alternate beats", fs=10.1)
     else:
-        rc = box(ax, 10.3, py - 0.35, 3.95, 1.4, ("phase per pixel per I/Q frame\natan2(Q, I) at 1 kHz\n-> decimate / average to the loop rate" if lockin else "four-bucket phase per pixel\natan2(I2 - I4, I1 - I3)\n(dmg_cophi_recon, N-bucket LSQ)"), fs=10.4, fc=DATA)
+        rc = box(ax, 10.3, py - 0.35, 3.95, 1.4, ("phase per pixel per averaged frame\natan2(Q, I); 4960 frames/s on the\ncamera -> ~20 images/s to the loop" if lockin else "four-bucket phase per pixel\natan2(I2 - I4, I1 - I3)\n(dmg_cophi_recon, N-bucket LSQ)"), fs=10.4, fc=DATA)
         wire(ax, [port(fg, "l"), port(rc, "r")], color=DATA)
         nxt = rc
-        note(ax, 10.6, py - 0.95, ("temporal unwrap between I/Q frames (free): the surface cannot move lambda/4 in 1 ms" if lockin else "temporal unwrap between beats (free): the surface cannot move lambda/4 in 133 ms"), fs=10.1)
+        note(ax, 10.6, py - 0.95, ("temporal unwrap between averaged frames (free): the surface cannot move lambda/4 in 50 ms" if lockin else "temporal unwrap between beats (free): the surface cannot move lambda/4 in 133 ms"), fs=10.1)
     nl = box(ax, 3.85, py - 0.35, 2.85, 1.4, "null reference\n(frozen: flat DM;\nLO wavefront in it)", fs=10.9, fc=DATA)
     wire(ax, [port(nxt, "l"), port(nl, "r")], color=DATA)
     est = box(ax, 0.6, py - 0.35, 3.0, 1.4, "matrix estimator\n(dmg_act_fit, lambda_m)\n-> 9216 actuator heights", fs=10.9, fc=DATA)
     wire(ax, [port(nl, "l"), port(est, "r")], color=DATA)
-    lp = box(ax, 17.6, py - 0.35, 3.0, 1.0, ("hold loop (dmg_loop)\ng = 0.5 at up to 1 kHz" if lockin else "hold loop (dmg_loop)\ng = 0.5 at 7.5 Hz"), fs=11.2, fc=GREEN, tc=INK)
+    lp = box(ax, 17.6, py - 0.35, 3.0, 1.0, ("hold loop (dmg_loop)\ng = 0.5 at 8 Hz (0.125 s)" if lockin else "hold loop (dmg_loop)\ng = 0.5 at 7.5 Hz"), fs=11.2, fc=GREEN, tc=INK)
     wire(ax, [port(est, "b"), (port(est, "b")[0], py - 0.55), (port(lp, "b")[0], py - 0.55), port(lp, "b")], color=DATA)
     drv = box(ax, 21.0, py - 0.35, 3.0, 1.0, "DM driver\n(HV electronics, 9216 ch)", fs=11.2, fc=GREEN, tc=INK)
     wire(ax, [port(lp, "r"), port(drv, "l")], color=DATA)
     wire(ax, [port(drv, "r", 0.25), (bx0 + 10.85, port(drv, "r", 0.25)[1]), (bx0 + 10.85, port(dm, "r")[1]), (port(dm, "r")[0], port(dm, "r")[1])], color=DATA, lw=1.3)
     out = box(ax, 17.6, py + 1.9, 10.4, 0.7, "OUTPUT: DM surface figure vs time (pm); the hold residual; the capture record", fs=11.2, fc="#DFF0D8", tc=INK, ec=GREEN)
-    label(ax, 17.6, py - 0.8, ("per I/Q sample: sigma_phi^2 = (pi^2/8) 2 (I0 + r^2) / (I0^2 g^2), I0 = well x fill; well-capped -- 3.4 s per pm as surveyed" if lockin else "camera rows: photons / frame = fill x well; sigma_phi^2 = 2 (I0 + r^2) / (N I0^2 g'^2); g' = g x 0.900 (integrating bucket)"), fs=10.8, color=GRAY)
+    label(ax, 17.6, py - 0.8, ("per I/Q sample: sigma_phi^2 = (pi^2/8) 2 (I0 + r^2) / (I0^2 g^2), I0 = 2 x 236 ke (the output's full scale), r = 489 e- -- 0.77 s per pm (mirror rig)" if lockin else "camera rows: photons / frame = fill x well; sigma_phi^2 = 2 (I0 + r^2) / (N I0^2 g'^2); g' = g x 0.900 (integrating bucket)"), fs=10.8, color=GRAY)
 
     name = "cophi_block_lockin.png" if lockin else ("cophi_block_multi.png" if multi else "cophi_block_single.png")
     fig.savefig(f"figs/{name}", dpi=200, facecolor="white", bbox_inches="tight", pad_inches=0.08)
