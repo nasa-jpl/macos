@@ -39,7 +39,7 @@
     check_clipping  (family=tma, 6 elements)
       name       kind            ap_r    foot_r    margin  clearnce obstruct  status
       M1         Reflector        3.3     2.999    0.3006        --        0  OK
-      M2         Reflector          3    0.2738     2.726    0.1649        0  OK
+      M2         Reflector          3    0.2738     2.726    0.1657        0  OK
       M3         Reflector          3   0.03424     2.966    0.2821        0  OK
       FP_return  Return           3.3 5.698e-07       3.3        --        0  OK
       ExitPupil  Return           3.3   0.02268     3.277        --        0  OK
