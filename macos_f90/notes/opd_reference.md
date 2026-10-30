@@ -104,7 +104,13 @@ reference IS available (map shifts by an exact constant, std 4.06e-28);
 deck checked has a geometrically dead chief.  A pre-fix note claimed
 `e5pie` "loses exactly one ray — the chief"; that was the STRUCTURAL
 `nPassRays = nRay − 1` (OPD loops `DO iRay=2,nRay`, so the chief is never
-written into `OPDMat`) misread as a lost ray.  Gate:
+written into `OPDMat`) misread as a lost ray.  **Consequence for any RMS compared at 1e-3 (TO, 2026-10-30, IODC 2010 evaluator):** the
+`opd()` / `OPDMat` RMS is over every valid ray EXCEPT the chief, so it sits below the RMS of the full
+launched set by the chief's share -- 0.1 % on a 741-ray grid, 1e-4 at 7081 (the pupil-centre sample
+reads 0 under the chief reference while the mean does not).  `ray_info_get`'s per-ray OPL at the
+exit-pupil Return includes ray 1; `mmacos/challenges/iodc2010/iodc2010_eval.m` takes its RMS from that
+set and keeps the map's RMS beside it, and `iodc2010_gate` pins the identity (map RMS = per-ray set
+without ray 1) to 2e-16.  Not a defect; a convention to state.  Gate:
 `tOpdRef/test_an_obscured_chief_ray_still_serves`.
 
 `api`: `opd_ref_set(OK,use_chief)` / `opd_ref_get`; mmacos `macos.opd_ref`,
