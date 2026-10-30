@@ -28,6 +28,23 @@ ch02_ctb_w1_edge	0.001 mm
 ch02_ctb_w2_10	44%
 ch02_ctb_mag	187
 ch02_ctb_np1	1168
+ch02_fold_reach	6.7 m
+ch02_fold_gate	5.0 m
+ch02_fold_f0_m	0.30 m
+ch02_fold_f0_aoi	4°
+ch02_fold_rays	1168
+ch02_fold_wfe	0.0102 waves
+ch02_fold_wfe_dev	< 0.0002 waves
+ch02_fold_walk10	4.70 mm
+ch02_fold_walk_dev	< 1 %
+ch02_fold_aoi_max	5°
+ch02_fold_zmax	0.90 m
+ch02_fold_margin	0.234 m
+ch02_fold_clear	149 mm
+ch02_fold_own	31 mm
+ch02_fold_fm	-22 mm
+ch02_fold_len	7.19 m
+ch02_fold_tel_len	6.58 m
 ch02_bench_chief_agree	< 1e-09
 ch02_bench_spread	< 1e-06
 ch02_bench_shift	< 1e-05

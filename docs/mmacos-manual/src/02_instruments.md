@@ -127,27 +127,44 @@ that field (the Lagrange invariant). The telescope keeps its arcminute field for
 instruments, each with a slightly offset field of view. The coronagraph takes an arcsecond sub-field
 about the field center that stage 2 adopted, %pin:ch02_ctb_bias% off axis.
 
+The walk table measures the chain unfolded, in the CTB's own zigzag, where it reaches
+%pin:ch02_fold_reach% from the telescope's axis against the %pin:ch02_fold_gate% the telescope itself
+needs. The realized instrument folds into that envelope. The thread's stage 8
+(`templates/80_end_to_end/e2e/s8_coronagraph.m`) searched the fold's knobs under the design drivers
+(every surface under 15° of incidence, a numeric clearance, a small relay) and recorded its pick in
+`e2e_params`; the figures draw that pick replayed on this telescope by the library's `ctb_fold_build`,
+and `ctb_fold_measure` gates it:
+
+<!-- transcript: ch02_ctb_fold -->
+
 ![](media/ch02_ctb_view.png)
 
-**FIGURE 5** The stage-2 telescope with the CTB behind it (`macos.view_std`). At this scale the CTB
-is the small zigzag behind the primary.
+**FIGURE 5** The stage-2 telescope with the CTB folded behind it (`macos.view_std`). At this scale
+the CTB is the small accordion behind the primary, standing up from the bench plane.
 
 ![](media/ch02_ctb_bench.png)
 
-**FIGURE 6** The CTB on its own, with OAP1 matched and DM1 at the stop's image, fed at the
-telescope's focus (`macos.view_std`): E1 OAP1, E2 DM1, E3 DM2, E9 the focal-plane mask, E11 the Lyot
-stop, E17 the detector.
+**FIGURE 6** The folded CTB (`macos.view_rx`). Left, the bench alone in elevation, z up and the
+primary's vertex at z = 0: E1 the added fold F0 on the converging feed, E2 OAP1, E3 DM1, E4 DM2, E10
+the focal-plane mask, E12 the Lyot stop, E18 the detector. Right, the whole train in plan, looking
+down z, inside the telescope's own %pin:ch02_fold_gate% envelope (dashed).
 
-The layout is drawn unfolded, in the CTB's own zigzag, and it reaches 6.7 m from the telescope's
-axis against the 2.5 m the telescope itself needs. The realized instrument folds into that envelope;
-the thread's stage 8 (`templates/80_end_to_end/e2e/s8_coronagraph.m`, after this manual) does it
-under the design drivers: one near-normal fold on the converging feed lifts the chain and turns it
-back across the aperture, the CTB's accordion runs in the vertical plane behind the instrument bench
-with its turn pattern inverted once so the chain climbs no higher than 0.9 m, every surface stays at
-5° or less, the relay is the template's. Each gate is a number in its report: 0.235 m inside the
-envelope, 160 mm from every telescope body and beam, the same rays and wavefront as the unfolded
-train, the DM walk within 0.5 %. The dark zone is measured on the coupled diffraction model, the
-step after the fold.
+One near-normal flat %pin:ch02_fold_f0_m% before the focus on the converging feed, at
+%pin:ch02_fold_f0_aoi% of incidence, lifts the chain and turns it back across the aperture. The CTB's
+accordion then runs in the vertical plane behind the instrument bench, with its turn pattern inverted
+once after DM2 so that the chain climbs to %pin:ch02_fold_zmax% behind the primary's vertex and then
+comes back down; every other surface stays at the template's %pin:ch02_fold_aoi_max%, and the relay is
+the template's. Each gate is a number. %pin:ch02_fold_rays% rays reach the detector, the same rays as
+the unfolded train, and the wavefront there is %pin:ch02_fold_wfe%, the difference from the unfolded one
+%pin:ch02_fold_wfe_dev%: a flat fold is an isometry. The DM2 walk at 10″ is %pin:ch02_fold_walk10%,
+%pin:ch02_fold_walk_dev% from the unfolded table's and not identical, because turning the accordion
+into the vertical plane rotates each OAP's off-axis direction against the telescope's anamorphic
+beam. The CTB's bodies stay %pin:ch02_fold_margin% inside the envelope, %pin:ch02_fold_clear% from
+every telescope body and beam and %pin:ch02_fold_own% from each other, the bodies sized over the
+coronagraph's 1″ field; the train grows from %pin:ch02_fold_tel_len% to %pin:ch02_fold_len%. The same
+measure puts the telescope's own fold flat %pin:ch02_fold_fm% inside its M3-to-M4 return, the body the
+stage-2 report flags without a number (below): a finding about the telescope as built, not about the
+fold. The dark zone is measured on the coupled diffraction model, the step after the fold.
 
 ### A bench on its own
 
@@ -221,7 +238,8 @@ pupil were both tried and both rejected.
 ### What to ask next
 
 - *"Why does the clearance check flag the fold flat, and by how much?"* --
-  `t.check_clipping` on the stage-2 design, the call the report makes.
+  `t.check_clipping` on the stage-2 design is the call the report makes; the number is
+  `deck_clearance`'s, %pin:ch02_fold_fm% on the exact leg-to-body measure (the fold listing above).
 - *"Center the science field lower, inside the ring."* -- `P.inst.field_dy_arcmin` with
   `field_center = "manual"`; the variants kept in `s2_variants/` are the two already solved.
 - *"Segment the primary."* -- Section 3.

@@ -5,6 +5,9 @@
 % example_ctb.m's PARAMETER BLOCK and its rot_axis fold helper are TAKEN from the template file at run
 % time (the template is unchanged); one number differs from it, OAP1's focal length (f/# x the CTB's
 % DM pupil diameter), and one spacing, OAP1 -> DM1 (the telescope stop's image, measured here).
+% The figures draw the FOLDED instrument: e2e stage 8's recorded pick (e2e_params P.coro.pick,
+% PLAN_CONSOLIDATION 3a, CCL 2026-10-29) replayed on this thread's telescope by the library's
+% ctb_fold_build / ctb_fold_measure, and the unfolded case C by the same code for the comparison.
 % Products land in the scratch directory (MMMAN_WORK); the thread is read, never written.
 
 root = getenv('MMACOS_ROOT');  work = getenv('MMMAN_WORK');  thread = getenv('MMMAN_THREAD');
@@ -83,15 +86,49 @@ for j = 1:numel(ie)
 end
 macos.trace(nF);  W = macos.opd();  M = macos.opd_mask();
 wfe = std(W(M)) / (P.WAVLEN*mm);
-fvw = macos.view_std('title', 'The stage-2 telescope with the CTB behind it');
-print(fvw, fullfile(work, 'ctb_coupled_view.png'), '-dpng', '-r150');  close(fvw);
-macos.init(256);  macos.load_rx(fullfile(work, 'ctb_C.in'));    % the bench alone, fed at the telescope focus
-fvb = macos.view_std('title', 'The CTB alone, case C');
-print(fvb, fullfile(work, 'ctb_bench_view.png'), '-dpng', '-r150');  close(fvb);
 
 % ---- the pupil walk across the coronagraph's field ---------------------------------------------
 RS = [EDGE_LD*ld 0.5 1 3 10 30 60];                            % ring radii, arcsec
 wk = walk_(fileread(fc), dB, L0, RS, [ic.DM1 ic.DM2], work);
+
+% ---- the fold: e2e stage 8's recorded pick, replayed on this thread's telescope -----------------
+% The same chain by the library's builder (ctb_fold_build: example_ctb's block via
+% ctb_template_params), unfolded first as a check against the hand build above, then folded by the
+% stage's pick.  The measure is the stage's (ctb_fold_measure: rays, wavefront, AOI, the walk on the
+% ring, deck_clearance over the coronagraph's own field, the hardware union about the launch axis).
+addpath(fullfile(root, 'templates', '80_end_to_end', 'e2e'));   % e2e_params: P.coro (the pick), the hole
+PE = e2e_params();  Q = PE.coro;  rp = Q.pick;
+holes = struct('M1', max(PE.hole_min_r_m, 0.232));           % the primary's through-hole: a crossing inside it is the design
+Pc = ctb_template_params();
+Kc = struct('dm1_m', LDM1, 'fno', fno, 'sign0', -1, 'model', 256);   % case C in the chapter's zigzag (first turn -)
+Rc = ctb_fold_build(tel, fullfile(work, 'libC'), Pc, Kc);
+Mc = ctb_fold_measure(Rc, 'holes', holes, 'leg_from', 3, 'ring_as', Q.ring_as, 'clear_as', Q.clear_as, 'quiet', true);
+assert(Mc.rays(end) == npF && abs(Mc.wfe_waves - wfe) < 1e-6, 'ch02b: the library''s case C is not the hand build''s');
+Kp = struct('fold0_m', rp.fold_m, 'fold0_tilt_deg', rp.tilt_deg, 'plane_deg', Q.plane_deg, 'sign0', rp.sign, ...
+            'flip_at', rp.flip_at, 'relay_scale', rp.scale, 'dm1_m', LDM1, 'fno', fno, 'model', 256);
+Rf = ctb_fold_build(tel, fullfile(work, 'fold'), Pc, Kp);
+Mf = ctb_fold_measure(Rf, 'holes', holes, 'leg_from', 3, 'ring_as', Q.ring_as, 'clear_as', Q.clear_as, 'quiet', true);
+sh = shroud_deck(tel, struct('shroud_D_m', 0, 'model', 256), 'model', 256);   % the telescope's own hardware union
+Rgate = sh.D/2 + Q.shroud_grow_m;
+margin = Rgate - Mf.shroud.ctb_max_r;
+zc = [Mf.clear.bodies([Mf.clear.bodies.elt] > Rf.n_base).z];
+wdev = Mf.walk.dm2_m/Mc.walk.dm2_m - 1;
+e = @(nm) Rf.ix.(nm) - Rf.n_base;                               % element numbers in the bench alone
+
+% the figures: the folded train (view_std) and the folded bench in world views
+macos.init(256);  macos.load_rx(Rf.full_in);
+fvw = macos.view_std('title', 'The stage-2 telescope with the CTB folded behind it', 'visible', false);
+print(fvw, fullfile(work, 'ctb_coupled_view.png'), '-dpng', '-r150');  close(fvw);
+fvb = figure('Visible', 'off', 'Position', [100 100 1600 640], 'Color', 'w');
+ax1 = subplot(1, 2, 1);  macos.load_rx(Rf.bench_in);
+macos.view_rx('ax', ax1, 'view', [0 0], 'title', 'the folded CTB alone: elevation, z up (the primary''s vertex at z = 0)');
+xlabel(ax1, 'x  [m]');  zlabel(ax1, 'z  [m]');
+ax2 = subplot(1, 2, 2);  macos.load_rx(Rf.full_in);
+macos.view_rx('ax', ax2, 'view', [0 90], 'title', sprintf('plan, looking down z: inside the %.1f m envelope (dashed)', 2*Rgate));
+hold(ax2, 'on');  tq = linspace(0, 2*pi, 361);
+plot3(ax2, Rgate*cos(tq), Rgate*sin(tq), zeros(size(tq)), 'k--', 'LineWidth', 1.2);
+xlim(ax2, 1.1*Rgate*[-1 1]);  ylim(ax2, 1.1*Rgate*[-1 1]);  xlabel(ax2, 'x  [m]');  ylabel(ax2, 'y  [m]');
+print(fvb, fullfile(work, 'ctb_bench_view.png'), '-dpng', '-r150');  close(fvb);
 
 % ---- the listing ---------------------------------------------------------------------------
 t = strings(0);
@@ -116,6 +153,25 @@ for k = 1:numel(RS)
         wk.nmin(k,2), wk.nmax(k,2), wk.fmin(k), wk.fmax(k)); %#ok<AGROW>
 end
 mm_transcript('ch02_ctb_run', strjoin(t, newline));
+
+t = strings(0);
+t(end+1) = "the fold: e2e stage 8's pick (e2e_params P.coro.pick) on this telescope, by ctb_fold_build / ctb_fold_measure";
+t(end+1) = sprintf('   F0, a flat %.2f m before the focus, deviation %g deg (AOI %.1f) out of the bench plane toward +z;', rp.fold_m, rp.tilt_deg, rp.tilt_deg/2);
+t(end+1) = sprintf('   the accordion''s plane %g deg from the bench plane, first turn %+d, the pattern inverted after turn %d; relay scale %.2f', Q.plane_deg, rp.sign, rp.flip_at, rp.scale);
+t(end+1) = sprintf('   unfolded (case C, the library''s build): CTB bodies to r = %.3f m; DM2 walk at %g" %.3f mm', Mc.shroud.ctb_max_r, Q.ring_as, Mc.walk.dm2_m*1e3);
+for j = 1:numel(Mf.stations)
+    t(end+1) = sprintf('   %-5s %4d of %4d rays, beam radius %6.2f mm', Mf.stations{j}, Mf.rays(j), Mf.nrays, Mf.beam_r(j)*1e3); %#ok<AGROW>
+end
+t(end+1) = sprintf('   FPA rms wavefront %.4f waves (unfolded %.4f); lambda/D at the FPM %.1f um (unfolded %.1f)', Mf.wfe_waves, Mc.wfe_waves, Rf.lamD_fpm_um, Rc.lamD_fpm_um);
+a = "   AOI (deg):";  for k = 1:numel(Mf.aoi), a = a + sprintf(' %s %.1f', Mf.aoi(k).name, Mf.aoi(k).aoi_deg); end;  t(end+1) = a;
+t(end+1) = sprintf('   walk at %g": DM2 %.3f mm (unfolded %.3f, %+.2f %%); rays DM2 %d..%d, FPA %d..%d', Q.ring_as, Mf.walk.dm2_m*1e3, Mc.walk.dm2_m*1e3, 100*wdev, Mf.walk.rays_dm2, Mf.walk.rays_fpa);
+t(end+1) = sprintf('   envelope: the telescope''s own hardware union %.3f m = %.2f x D, gate radius %.3f m; CTB bodies to r = %.3f m, margin %+.3f m', sh.D, sh.D/Dtel, Rgate, Mf.shroud.ctb_max_r, margin);
+t(end+1) = sprintf('   train %.3f m (the telescope alone %.3f); CTB bodies from z = %.3f to %.3f m behind the primary''s vertex (the bench at %.2f)', Mf.shroud.len, sh.len, Mf.zmin_ctb, max(zc), Q.z_floor_m);
+t(end+1) = sprintf('   clearance (mm, signed): CTB vs telescope %+.1f (leg from %s vs %s); within the CTB %+.1f (%s vs %s), bodies and legs over the %g" field;', ...
+                   Mf.clear.min*1e3, Mf.clear.worst.leg_name, Mf.clear.worst.body_name, Mf.clear.min_addon*1e3, Mf.clear.worst_addon.leg_name, Mf.clear.worst_addon.body_name, Q.clear_as);
+t(end+1) = sprintf('   the telescope''s own worst pair %+.1f (%s vs %s), as built', Mf.clear.min_base*1e3, Mf.clear.worst_base.leg_name, Mf.clear.worst_base.body_name);
+t(end+1) = sprintf('   in the bench alone: E%d F0, E%d OAP1, E%d DM1, E%d DM2, E%d FPM, E%d Lyot, E%d FPA', e('F0'), e('OAP1'), e('DM1'), e('DM2'), e('FPM'), e('Lyot'), e('FPA'));
+mm_transcript('ch02_ctb_fold', strjoin(t, newline));
 mm_figure('ch02_ctb_view', fullfile(work, 'ctb_coupled_view.png'));
 mm_figure('ch02_ctb_bench', fullfile(work, 'ctb_bench_view.png'));
 
@@ -137,6 +193,23 @@ mm_pin('ch02_ctb_w1_edge', wk.walk(1,1)*1e3,   'sig5', sprintf('%.3f mm', wk.wal
 mm_pin('ch02_ctb_w2_10',   wk.walk(5,2)/rpup,  'sig5', sprintf('%.0f%%', 100*wk.walk(5,2)/rpup));
 mm_pin('ch02_ctb_mag',     Dtel/Dpup,  'sig5', sprintf('%.0f', Dtel/Dpup));
 mm_pin('ch02_ctb_np1',     np1,        'sig5', sprintf('%d', np1));
+mm_pin('ch02_fold_reach',  Mc.shroud.ctb_max_r, 'sig5', sprintf('%.1f m', Mc.shroud.ctb_max_r));
+mm_pin('ch02_fold_gate',   2*Rgate,    'sig5', sprintf('%.1f m', 2*Rgate));
+mm_pin('ch02_fold_f0_m',   rp.fold_m,  'sig5', sprintf('%.2f m', rp.fold_m));
+mm_pin('ch02_fold_f0_aoi', rp.tilt_deg/2, 'sig5', sprintf('%.0f°', rp.tilt_deg/2));
+mm_pin('ch02_fold_rays',   Mf.rays(end), 'sig5', sprintf('%d', Mf.rays(end)));
+mm_pin('ch02_fold_wfe',    Mf.wfe_waves, 'sig5', sprintf('%.4f waves', Mf.wfe_waves));
+mm_pin('ch02_fold_wfe_dev', Mf.wfe_waves - Mc.wfe_waves, sprintf('abs:%g', Q.wfe_tol_waves), sprintf('< %g waves', Q.wfe_tol_waves));
+mm_pin('ch02_fold_walk10', Mf.walk.dm2_m*1e3, 'sig5', sprintf('%.2f mm', Mf.walk.dm2_m*1e3));
+mm_pin('ch02_fold_walk_dev', wdev,     'abs:0.01', '< 1 %');
+mm_pin('ch02_fold_aoi_max', max([Mf.aoi.aoi_deg]), 'sig5', sprintf('%.0f°', max([Mf.aoi.aoi_deg])));
+mm_pin('ch02_fold_zmax',   max(zc),    'sig5', sprintf('%.2f m', max(zc)));
+mm_pin('ch02_fold_margin', margin,     'sig5', sprintf('%.3f m', margin));
+mm_pin('ch02_fold_clear',  Mf.clear.min*1e3, 'sig5', sprintf('%.0f mm', Mf.clear.min*1e3));
+mm_pin('ch02_fold_own',    Mf.clear.min_addon*1e3, 'sig5', sprintf('%.0f mm', Mf.clear.min_addon*1e3));
+mm_pin('ch02_fold_fm',     Mf.clear.min_base*1e3, 'sig5', sprintf('%.0f mm', Mf.clear.min_base*1e3));
+mm_pin('ch02_fold_len',    Mf.shroud.len, 'sig5', sprintf('%.2f m', Mf.shroud.len));
+mm_pin('ch02_fold_tel_len', sh.len,    'sig5', sprintf('%.2f m', sh.len));
 
 % =================================================================================================
 function [full_in, ix] = bench_(P, f1, LDM1, pF, dF, fno, nd, tel, work, tag)
