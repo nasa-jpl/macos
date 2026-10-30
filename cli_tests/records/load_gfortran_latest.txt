@@ -1,9 +1,9 @@
-record  load_gfortran_08b92085.csv  (160 decks)
+record  load_gfortran_9c92f3de.csv  (160 decks)
   must-fail missing_value.in       load_fail    OK
   must-fail segdemo3_broken.in     load_fail    OK
   must-fail short_psielt.in        load_fail    OK
   status    ok 160
   roundtrip n/a 7  same 153
   settle    differ 29  n/a 7  same 123  ulp 1   (s1 vs s2; roundtrip is s2 vs s3)
-  vs load_gfortran_0c0c98c7.csv: 0 decks with a changed OPD/nPass/lost
+  vs load_gfortran_c6c83d55.csv: 0 decks with a changed OPD/nPass/lost
   verdict   PASS
