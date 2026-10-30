@@ -3875,3 +3875,17 @@ promote-on-land pass.**
 > (the A/B gate tree, KEEP), MACOS_resources, MACOS_sandbox, proper_matlab.  Local branches to-b2c/to-e1/to-e4 remain (merged by patch).**
 
 > **2026-10-30 (TO, IODC 2010 challenge): the EVALUATOR landed (macos 9c92f3de; resources `mmacos/challenges/iodc2010/`, committing next): metric argued from the 2006 paper, gated against an independent skew-ray tracer (2e-10 wave per ray, 1e-13 mm geometry, chief through the stop centre), paraxial EFL / pupils / yP from a y-nu trace, apertures sized at the limit and re-verified, reports + `.seq` per lens; N-BK7 + N-SF6 rows in `macos_glass_list.txt` (+ builtin regenerated; proven at runtime); `tIodc2010` 5/0/1 standalone (the table-row leg Incomplete until the rebuild -- now rebuilt). SEARCH STAGE landed too (`iodc2010_search.m`): CALIB spacing solve in an R x stop scan, best 20.2 from 11.1 (winner 3537); findings: thickness collapse (rejected by the rules check), header ApStop drifts (now element-bound), CALIB's off-axis 1e37 at R 130 OPEN. NEXT: the outer loop over sign patterns / element counts; the corpus load gate from macos_cli_base at 9c92f3de (CCL's ask). Record: PLAN_CONSOLIDATION 1.2 (hhhh).**
+
+> **2026-10-30 (CCL, stage 10 -- pairwise probing on the coupled telescope+CTB model; resources 1c324c7 LOCAL, macos this commit): the last of Dave's
+> four-step order is DONE.  `e2e/s10_sensing.m` (387 s, stage 9's Jacobians reused through the new `e2e_jacobian.m`, which s9 now calls too -- its rerun
+> reproduces the 10-29 report to the digit), `tests/tE2eSensing.m` in SUITE_CTB_512 (4/0; a 12-actuator Jacobian in setup, 600 s), `ctb_probe_estimate`
+> gains `'probe_rel'` (tCtbProbe (f), 6/0), tE2eCoupled 5/0.  FINDINGS (PLAN 3a, the stage-10 entry): (1) the estimator's default amplitude rule is a
+> 0.94 rad probe on the shadow's 5.3e-7 halo, the estimate 47 % off, error ∝ amplitude²; the stage picks 0.3x (11 nm) and keeps the default as the
+> counter-example; (2) the probe-intensity ratio is NOT a Jacobian meter on the telescope (22 % amplitude-independent second-order offset); (3) the
+> estimate needs a Jacobian about the CURRENT state (33 % vs 1.2 %), and every probed fixed-G loop stalls at iteration 3 (1.93e-7 vs perfect 1.44e-7;
+> relinearized 7.68e-8 vs 6.70e-8); (4) 1e8 photons/image is 50 photons per speckle pixel here -- no linear probe works; 1e10 does.  NEXT BEAT PROPOSED
+> for Dave: the probe field predicted about the current DM state (2 chain runs per probe per iteration, or in-loop relinearization of the probe columns).
+> For TO (manual lane): 08_coronagraph.md's stage-9 bullet wants a stage-10 sentence.  CCMac's Mac verification of the header-key fix folded into
+> PLAN 1.2 (gggg) (fixture question CLOSED).  TO's engine finding (CALIB rewards a lost field; design_optim.F funcs_app fix staged in its worktree)
+> lands after CCL's TREE FREE, sent at this commit.  Push word pending for: resources 1c324c7 + macos this commit (the earlier set is pushed:
+> macos df6d66e2, resources aa81761).**
