@@ -8,6 +8,7 @@
 # 2026-10-29 (TO, Dave's rulings PLAN 4a): bench_ctb's 12 geometry files and tma_onaxis.in REGENERATED (disposition 'regenerated'); tma_offaxis.in and sz_tma.in stay HELD as a measured regression (1.2 (ffff)); the ulp-equal files keep their committed bytes.
 # 2026-10-29 (TO, PLAN 4a (4)): tg_psi_dm's mat REGENERATED under the specified default convention, its two closure figures pixel-identical (kept); the flip was a tie.
 # 2026-10-29 (TO, the (ffff) bisect, PLAN 1.2): tma_offaxis.in REGENERATED (a check_clipping defect, fixed); sz_tma.in stays HELD (the Zernike solve is chaotic in its start, not a code regression).
+# 2026-10-30 (TO, the sz_tma M2 clip, PLAN 1.2 (ffff) (c)): realize_apertures emitted global-XY ApVec offsets, fixed (resources be4d12b); tma_offaxis.in regenerated again (ApVec lines only); the held sz_tma.in still clips at M2 standalone and stays HELD pending Dave.
 template	file	compare	disposition	detail	cause
 bench_ctb	BRIEF_dst_defects.md	exact	not-exercised	(not rewritten)	
 bench_ctb	CTB_PROP_STATUS.md	exact	not-exercised	(not rewritten)	
