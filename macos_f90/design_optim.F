@@ -965,6 +965,15 @@ C
      &                n_optZern_m,varZern_arr_m,
      &                n_optAsph_m,varAsph_arr_m,
      & 		      fovs_m(:,1:2,ifov),wls_m(iwl),a)
+!-->  A field whose rays are ALL lost (OPD's 99999d32 sentinel) left its rows
+!     ZERO (OPD zeroes OPDMat before its loop), so the trial's chisq FELL and
+!     the LM was rewarded for losing a field (IODC 2010 ladder, 2026-10-30:
+!     R 130, two of three fields lost, chisq 1.8e-9, 'cap').  Such a trial is
+!     a failed trial like a lost chief ray (PLAN 3.4): flag it; the tail of
+!     this routine then rejects it (yfit = 1d100).
+	    if ((opt_tgt_m==WFE_TARGET .or. opt_tgt_m==WFE_ZMODE_TARGET)
+     &      .and. wfe_rms >= 1d30) lOpsFail = .TRUE.
+!<--
 
 	    !print*,' ** funcs_app: wfe_rms =',wfe_rms
 
@@ -1005,6 +1014,10 @@ C
      &               n_optZern_m,varZern_arr_m,
      &               n_optAsph_m,varAsph_arr_m,
      &               fovs_m(:,1:2,ifov),wls_m(iwl),a2)
+!-->  a lost field in a derivative probe is a failed trial too
+	      if ((opt_tgt_m==WFE_TARGET .or. opt_tgt_m==WFE_ZMODE_TARGET)
+     &        .and. wfe_rms >= 1d30) lOpsFail = .TRUE.
+!<--
 
 	      if (opt_tgt_m==WFE_TARGET) then
 	        dyda(off:off+obj_size-1,i)=
