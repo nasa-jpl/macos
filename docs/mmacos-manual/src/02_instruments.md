@@ -138,10 +138,16 @@ is the small zigzag behind the primary.
 telescope's focus (`macos.view_std`): E1 OAP1, E2 DM1, E3 DM2, E9 the focal-plane mask, E11 the Lyot
 stop, E17 the detector.
 
-The layout is drawn unfolded, in the CTB's own zigzag. The realized instrument folds into the
-telescope's shroud. That is a design step of its own, after this manual, under the design drivers:
-every fold at under 15° incidence, a numeric clearance from the shroud, and a small relay. The
-dark-zone and walk numbers are measured again after the fold.
+The layout is drawn unfolded, in the CTB's own zigzag, and it reaches 6.7 m from the telescope's
+axis against the 2.5 m the telescope itself needs. The realized instrument folds into that envelope;
+the thread's stage 8 (`templates/80_end_to_end/e2e/s8_coronagraph.m`, after this manual) does it
+under the design drivers: one near-normal fold on the converging feed lifts the chain and turns it
+back across the aperture, the CTB's accordion runs in the vertical plane behind the instrument bench
+with its turn pattern inverted once so the chain climbs no higher than 0.9 m, every surface stays at
+5° or less, the relay is the template's. Each gate is a number in its report: 0.235 m inside the
+envelope, 160 mm from every telescope body and beam, the same rays and wavefront as the unfolded
+train, the DM walk within 0.5 %. The dark zone is measured on the coupled diffraction model, the
+step after the fold.
 
 ### A bench on its own
 
