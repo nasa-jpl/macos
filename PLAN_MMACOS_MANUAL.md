@@ -98,7 +98,7 @@ deck figures unmodified; the pin policy).
   the blank-packing scorer, an intermediate-image winner), 2023 the stress test.  No prescriptions are printed in any
   paper: comparison is against the merit tables.**  **RULED 2026-10-26 (Dave): go with the revised order -- enter 2010 (the
   green lens) first as `mmacos/challenges/iodc2010/`, 2014 second, 2023 the stress test; TO after round 2 of the manual
-  (`BRIEF_to_iodc_challenge.md`, the build section).**
+  (`BRIEF_to_iodc_challenge.md`, the build section).**  **Step 1 DONE (TO, 2026-10-30, LOCAL): `mmacos/challenges/iodc2010/` -- the evaluator with its metric stated first (README), gated against an independent textbook ray trace to 2e-10 wave, the N-BK7 table row, the CODE V `.seq` for Luis, `tIodc2010` (PLAN_CONSOLIDATION 1.2 (hhhh)); the design search is next.**
 - Korsch's TMA family and Cook's unobscured forms (the telescope templates' ancestry); Bauer / Schiesser / Rolland
   2018 freeform starting geometry (already in `mmacos/doc`): a freeform challenge with a published answer.
 - Public prescriptions at real scale: HabEx and LUVOIR final reports (off-axis TMAs, segmented); Roman CGI's public
