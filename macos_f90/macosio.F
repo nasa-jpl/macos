@@ -40,13 +40,15 @@ C***********************************************************************
      &                       zcoType,ZernCircular,ZernAnnular,ZernHex,
      &                       cUnit,ifRegrid,ifPGColor
 	use lohpars_mod, only : cmdArg,RX_Flg
+	use loh_I1, only : BaseUnits_FLG   ! (H): the OPD unit label
 	use traceutil_mod
 	use loh_I1
 	use loh_I2
 	use loh_I3
 	use dopt_mod
         use macos_IO, only: SetPrtToFileID
-        use validate_prescription_mod, only: ValidatePrescription
+        use validate_prescription_mod, only: ValidatePrescription,
+     &      RxNormalizeEOL, RxTmpCleanup, RxTmpFile
 ! --------------------------------------
         IMPLICIT NONE
 
@@ -61,7 +63,8 @@ C***********************************************************************
      &          iSeg,iObs,jGridSrf,eltGrpStrt,eltGrpEnd,grpRange(20),
      &          nValsPerRow,fid,status,jAmplSrf,jMetSrf,
      &          dupElt,nTok,GetNumToken,ios
-	REAL*8 invec6(6),invec7(7),DDEF(7)
+	REAL*8 invec6(6),invec7(7),DDEF(9)   ! 9: the glass and the
+!                                      ! 9-term aspheric prompts fill it
 	REAL*8 fseg,eseg,psiseg(3),Vseg(3),S1,S2
 
 C       Setup for new input scheme
@@ -245,6 +248,12 @@ C	Get file name
 	IF (exist) THEN
 	  IF (ifOld) THEN
 	    WRITE (*,*) ' Input file ',infil(1:L),' being loaded.'
+!-->  (f): remember the deck's folder for GridFile= (GridInit)
+	    RxDir = ' '
+	    iRxSep = MAX(INDEX(infil(1:L),'/',BACK=.TRUE.),
+     &                   INDEX(infil(1:L),CHAR(92),BACK=.TRUE.))
+	    IF (iRxSep > 0) RxDir = infil(1:iRxSep)
+!<--
 	  ELSE
 	    WRITE (*,*) ' Input file ',infil(1:L),
      &	    ' already exists. Please use a new name or use OLD.'
@@ -278,19 +287,40 @@ C
 	  ! the user pick a different file (or 'q' to abort) instead of
 	  ! letting the parser walk into the breakage and leave the model
 	  ! half-initialized.
+!-->  a deck with any CR is loaded from an LF copy in the system temp
+!     dir (RxNormalizeEOL; PLAN_CONSOLIDATION item 5, 2026-10-09)
+	  CALL RxTmpCleanup()
 	  BLOCK
 	    INTEGER :: vios
 	    CHARACTER(LEN=256) :: vmsg
-	    CALL ValidatePrescription(INFIL(1:ICLEN(INFIL)),vios,vmsg)
+	    LOGICAL :: hascr, nok
+	    CHARACTER(LEN=1024) :: tmpf
+	    CALL ValidatePrescription(INFIL(1:ICLEN(INFIL)),vios,vmsg,
+     &                                hascr)
+	    IF (hascr) THEN
+	      CALL RxNormalizeEOL(INFIL(1:ICLEN(INFIL)),tmpf,nok)
+	      IF (nok) THEN
+	        WRITE(*,'(A,A,A)') '  ',INFIL(1:ICLEN(INFIL)),
+     &          ': CR line endings normalized for this load'
+	        CALL ValidatePrescription(TRIM(tmpf),vios,vmsg)
+	      END IF
+	    END IF
 	    IF (vios /= 0) THEN
 	      WRITE(*,*)' ** Prescription validation failed:'
 	      WRITE(*,*)'    ',TRIM(vmsg)
 	      WRITE(*,*)'    Pick a different file (or "q" to abort).'
+	      CALL RxTmpCleanup()
 	      LOAD_SUCCESS = .FALSE.
 	      GO TO 43
 	    END IF
 	  END BLOCK
-	  OPEN (UNIT=RX_FID, FILE=INFIL, STATUS='OLD', ACTION='READ')
+	  IF (LEN_TRIM(RxTmpFile) > 0) THEN
+	    OPEN (UNIT=RX_FID, FILE=TRIM(RxTmpFile), STATUS='OLD',
+     &            ACTION='READ')
+	  ELSE
+	    OPEN (UNIT=RX_FID, FILE=INFIL, STATUS='OLD', ACTION='READ')
+	  END IF
+!<--
 	  REWIND(RX_FID)
 
 #include "msmacosio.inc"
@@ -316,24 +346,34 @@ C
 	  end if
 
 	  CALL LOHIN3()
+!-->  no nOutCord=/Tout= in the deck: ChkDf3 proposes the frame (1.2 (u))
+	  IF (LOutCordAbsent) GO TO 72
+!<--
 
-	  READ(VALUE,*) nOutCord
+	  READ(VALUE,*,IOSTAT=iosRx) nOutCord
+
+	  IF (RxBad(iosRx,VAR_NAM,0,VALUE)) GO TO 99
 	  nOutCord_FLG=.TRUE.
 
 	  READ(RX_FID, 123, END=99) STRING
 	  CALL GET_EQ(STRING,VAR_NAM,VALUE,IND,ARR_FLG,RX_FID)
 
 	  IF (LCMP(VAR_NAM,'Tout',4)) THEN
-	    READ(VALUE,*)(Tout(1,j),j=1,7)
+	    READ(VALUE,*,IOSTAT=iosRx)(Tout(1,j),j=1,7)
+
+	    IF (RxBad(iosRx,VAR_NAM,0,VALUE)) GO TO 99
 	    IF (nOutCord .GT. 1) THEN
 	      DO k=2,nOutCord
 	 	READ(RX_FID, 123, END=99)STRING
-	        READ(STRING,*)(Tout(k,j),j=1,7)
+	        READ(STRING,*,IOSTAT=iosRx)(Tout(k,j),j=1,7)
+
+	        IF (RxBad(iosRx,VAR_NAM,0,STRING)) GO TO 99
               END DO
 	    END IF
 	    Tout_FLG=.TRUE.
 	  END IF
 
+   72	  CONTINUE
 	  CALL ChkDf3(EXIT_OK)
 
 	  IF (EXIT_OK) THEN
@@ -385,7 +425,12 @@ C	Create new input file
 
 	ELSE
 	  WRITE(*,*) 'File '//infil(1:ICLEN(infil))//' being created.'
-	  OPEN (1,FILE=infil,STATUS='NEW')
+!-->  NEW opened unit 1 but the prescription is written through
+!     SetPrtToFileID(RX_FID) at the end of the dialog, so the named file
+!     stayed EMPTY and the deck went to fort.77 in the working directory
+!     (2026-10-17, PLAN_CONSOLIDATION 1.2 (r)); open the unit it writes.
+	  OPEN (UNIT=RX_FID,FILE=infil,STATUS='NEW')
+!<--
 
 C	Specify input ray grid parameters
 
@@ -404,25 +449,38 @@ C	Specify input ray grid parameters
      &	  'Enter chief ray extinction coefficient ')
 	  CALL CACCEPT(BaseUnits,' ',
      &	  'Enter base units (m, cm, mm, in, none) :')
+!-->  cUnit, the label the OPD lines carry, as the parser sets it: a
+!     NEW deck printed 'DAvgCumL = ...' bare until it was reloaded
+!     (macos-fd 2026-10-19, (H); PLAN 1.2 (ss))
 	  IF (LCMP(BaseUnits,'cm',2)) THEN
-	    CBM=1d-2
+	    CBM=1d-2; cUnit='cm'
 	  ELSE IF (LCMP(BaseUnits,'mm',2)) THEN
-	    CBM=1d-3
+	    CBM=1d-3; cUnit='mm'
 	  ELSE IF (LCMP(BaseUnits,'m',1)) THEN
-	    CBM=1d0
-	  ELSE IF (LCMP(WaveUnits,'in',2)) THEN
-	    CBM=2.54d-2
-	  ELSE IF (LCMP(WaveUnits,'none',2)) THEN
-	    CBM=1d0
+	    CBM=1d0; cUnit='m '
+	  ELSE IF (LCMP(BaseUnits,'in',2)) THEN
+	    CBM=2.54d-2; cUnit='in'
+	  ELSE IF (LCMP(BaseUnits,'none',2)) THEN
+	    CBM=1d0; cUnit='  '
 	  ELSE
 	    WRITE(*,*)' Unknown units, unitless operation assumed'
 	    BaseUnits='none'
 	    WaveUnits='none'
-	    CBM=1d0
+	    CBM=1d0; cUnit='  '
 	  END IF
-	  IF (.NOT.LCMP(BaseUnits,'none',2))
-     &	  CALL CACCEPT(WaveUnits,BaseUnits,
-     &	  'Enter wavelength units (m, cm, mm, um, nm, A, in, none) :')
+	  BaseUnits_FLG=.TRUE.   ! the trace prints cUnit only on this flag
+!<--
+!-->  base units 'none' skip the wavelength-units prompt: WaveUnits then
+!     kept whatever it held (blank in a fresh NEW) and the test below
+!     printed 'Unknown units' for a listed choice (macos-fd 2026-10-19,
+!     (E) second half; PLAN 1.2 (qq))
+	  IF (LCMP(BaseUnits,'none',2)) THEN
+	    WaveUnits='none'
+	  ELSE
+	    CALL CACCEPT(WaveUnits,BaseUnits,
+     &	    'Enter wavelength units (m, cm, mm, um, nm, A, in, none) :')
+	  END IF
+!<--
 	  IF (LCMP(WaveUnits,'cm',2)) THEN
 	    DDEF(1)=6.328d-5
 	    CWM=1d-2
@@ -860,6 +918,14 @@ C  Get Optical Parameters
 	        CALL DACCEPT_S(Extinc(iElt),S1,1,
      &	        'Enter element extinction coefficient ')
 	      ELSE
+!-->  the catalog's six coefficients are a Sellmeier model: the NEW
+!     dialog copied them and set LGlass but left GlassType at 0 =
+!     Hartmann, which SAVE wrote and the reader refused ('** Unknown
+!     glass type at Elt 1'), and the trace through the lens lost every
+!     ray (macos-fd 2026-10-19, the Refractors tutorial; the parser's
+!     GlassElt= branch sets SellmeierGlass first).  PLAN 1.2 (rr).
+	        GlassType(iElt)=SellmeierGlass
+!<--
 	        i=1
 	        DO WHILE (((.NOT.LGlass(iElt))).AND.(i.LE.mGlass))
 	          IF (LCMP(GlassElt(iElt),GlassName(i),
@@ -887,9 +953,11 @@ C  Get Aspheric Parameters
 
 	    IF ((SrfType(iElt).EQ.3).OR.(SrfType(iElt).EQ.11)) THEN
 	      If (maxAsphCoef==4) then
+	        CALL DZERO(DDEF,9)   ! (G): DDEF(1) still held the wavelength
 	        CALL DACCEPT(AsphCoef(:,iElt),DDEF,maxAsphCoef,
      &	         'Enter aspheric coefficients A,B,C,D')
 	      Else
+	        CALL DZERO(DDEF,9)   ! (G) too
 	        CALL DACCEPT(AsphCoef(:,iElt),DDEF,maxAsphCoef,
      &	         'Enter aspheric coefficients A,B,C,D,E,F,G,H,J')
 	      End If
@@ -1332,6 +1400,26 @@ C	Specify output coordinates
 
         ! Close input file
         CLOSE (UNIT=RX_FID)
+        CALL RxTmpCleanup()      ! the LF copy, if one was loaded
+!-->  zGrid is not deck state: set it to the z OrthoSrcFrame derives
+!     (sign of xGrid x yGrid against ChfRayDir, unitised), so the first
+!     grid setup after a load sees a consistent frame and its dead band
+!     keeps the deck's x/y.  It was 0 or the PREVIOUS deck's, the band
+!     test failed at order 1 and the frame was rebuilt from cross
+!     products on every load: SAVE -> load -> SAVE never reached a fixed
+!     point on a frame with round-off-sized components (PLAN_CONSOLIDATION
+!     6a, 2026-10-09: the dyson5 roll-180 joins, 33 corpus decks).
+        BLOCK
+          REAL*8 :: zc(3)
+          CALL DXPROD(zc,xGrid,yGrid)
+          IF (DOT_PRODUCT(zc,ChfRayDir).GT.0d0) THEN
+            zGrid=ChfRayDir
+          ELSE
+            zGrid=-ChfRayDir
+          END IF
+          CALL DUNITIZE(zGrid)
+        END BLOCK
+!<--
 
 
 	! Setup ApType and ApVec for all segments if an aperture
@@ -1360,6 +1448,7 @@ C	Specify output coordinates
 
         INQUIRE(UNIT=RX_FID, OPENED=isRxOpen)
         IF (isRxOpen) CLOSE(UNIT=RX_FID)
+        CALL RxTmpCleanup()      ! the LF copy, if one was loaded
 
 	RETURN
 	END SUBROUTINE MBFile6
@@ -1678,11 +1767,36 @@ c	      READ(VALUE,*,ERR=999,END=999)ApType(MB_I(1))
 	  END IF
 
 	ELSE IF (LCMP(VAR_NAM,'F',1)) THEN
-	    print*,'Debug: VAR_NAM = ', VAR_NAM
 	    IF (LCMP(VAR_NAM,'FFZernCoef',10)) THEN
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(IND(2),*,ERR=999,END=999)MB_I(2)
+!-->	      (xx): the index is bounded by the array
+	      IF (MB_I(1).LT.1 .OR. MB_I(1).GT.mFFCoef) THEN
+	        WRITE(*,*) ' ** MOD refused: FFZernCoef index', MB_I(1),
+     &	          ' is outside 1 ..', mFFCoef
+	        GO TO 998
+	      END IF
+!<--
 	      READ(VALUE,*,ERR=999,END=999)FFZernCoef(MB_I(1),MB_I(2))
+!-->	      (tt): an inert ExtFringe mode takes no coefficient
+	      IF (ZernModeInert(FFZernTypeL(MB_I(2)), MB_I(1)) .AND.
+     &	          FFZernCoef(MB_I(1),MB_I(2)) .NE. 0d0) THEN
+	        FFZernCoef(MB_I(1),MB_I(2)) = 0d0
+	        WRITE(*,*) ' ** MOD refused: FFZernCoef mode', MB_I(1),
+     &	          ': '//ZernInertMsg
+	      END IF
+!	      (xx): a mode past the type's count takes no coefficient
+	      IF (FFZernTypeL(MB_I(2)).GE.1 .AND. FFZernTypeL(MB_I(2)).LE.mZernType)
+     &	      THEN
+	        IF (MB_I(1) .GT. ZernType_MaxMode(FFZernTypeL(MB_I(2))) .AND.
+     &	            FFZernCoef(MB_I(1),MB_I(2)) .NE. 0d0) THEN
+	          FFZernCoef(MB_I(1),MB_I(2)) = 0d0
+	          WRITE(*,'(A,I3,A,I3,A)') ' ** MOD refused: FFZernCoef mode',
+     &	            MB_I(1), ': '//TRIM(ZernTypeNameL(FFZernTypeL(MB_I(2))))//
+     &	            ' has', ZernType_MaxMode(FFZernTypeL(MB_I(2))), ' modes'
+	        END IF
+	      END IF
+!<--
 	      WRITE(*,22)' FFZernCoef',MB_I(2),
      &	        (FFZernCoef(MB_J,MB_I(2)),MB_J=1,6)
 	    ELSE IF (LCMP(VAR_NAM,'FFZernType',10)) THEN
@@ -1694,7 +1808,9 @@ c	      READ(VALUE,*,ERR=999,END=999)ApType(MB_I(1))
 	        REAL*8  :: pratio
 	        CALL ParseZernType(VALUE, ptypeL, pfound,
      &	                           pratio, phasRatio)
-	        IF (pfound) THEN
+	        IF (pfound .AND. ZernTypeUnsupported(ptypeL)) THEN   ! (vv)
+	          WRITE(*,*) ' ** MOD refused: FFZernType: '//ZernAnnularMsg
+	        ELSE IF (pfound) THEN
 	          FFZernTypeL(MB_I(1)) = ptypeL
 	          IF (phasRatio) ZernAnnuRatio(MB_I(1)) = pratio
 	        END IF
@@ -1709,7 +1825,6 @@ c	      READ(VALUE,*,ERR=999,END=999)ApType(MB_I(1))
 	      WRITE(*,19)' FFZernModes',MB_I(1),FFZernModes(MB_I(1))
 !<--
 	    ELSE IF (LCMP(VAR_NAM,'FLUX',4)) THEN
-	      print*,'Debug: VALUE = ', VALUE
 	      READ(VALUE,*)Flux
  	      WRITE(*,11)' Flux',Flux
 	    ELSE IF (LCMP(VAR_NAM,'fElt',4)) THEN
@@ -1736,6 +1851,11 @@ c	    READ(VALUE,*)GridType
      &	      ICLEN(GlassName(i)))) THEN
 	        LNOTSET=.FALSE.
 	        CALL DEQUATE(GlassCoef(1,MB_I(1)),GlassTable(1,i),6)
+!-->  a glass set by MOD is a glass: the model and the flag, as the
+!     parser sets them (1.2 (rr))
+	        GlassType(MB_I(1))=SellmeierGlass
+	        LGlass(MB_I(1))=.TRUE.
+!<--
 	      END IF
      	      i=i+1
 	    END DO
@@ -1765,7 +1885,8 @@ c	    READ(VALUE,*)GridType
 	  ELSE IF (LCMP(VAR_NAM,'GridFile',8)) THEN
 	    READ(IND(1),*,ERR=999,END=999) MB_I(1)
 	    READ(VALUE,*,ERR=999,END=999) GridFile(MB_I(1))
-	    WRITE(*,*)' GridFile(',MB_I(1),')=',GridFile(MB_I(1))
+	    WRITE(*,*)' GridFile(',MB_I(1),')=',
+     &                TRIM(GridFile(MB_I(1)))
 	    CALL GridInit(GridFile(MB_I(1)),iEltToGridSrf(MB_I(1)),
      &	    	   nGridMat(MB_I(1)),ifGridInit,.FALSE.)
 	  ELSE IF (LCMP(VAR_NAM,'GridSrfdx',8)) THEN
@@ -1858,7 +1979,33 @@ c	    READ(VALUE,*)GridType
 	    IF (LCMP(VAR_NAM,'MonZernCoef',11)) THEN
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(IND(2),*,ERR=999,END=999)MB_I(2)
+!-->	      (xx): the index is bounded by the array
+	      IF (MB_I(1).LT.1 .OR. MB_I(1).GT.mMonCoef) THEN
+	        WRITE(*,*) ' ** MOD refused: MonZernCoef index', MB_I(1),
+     &	          ' is outside 1 ..', mMonCoef
+	        GO TO 998
+	      END IF
+!<--
 	      READ(VALUE,*,ERR=999,END=999)MonZernCoef(MB_I(1),MB_I(2))
+!-->	      (tt): an inert ExtFringe mode takes no coefficient
+	      IF (ZernModeInert(MonZernTypeL(MB_I(2)), MB_I(1)) .AND.
+     &	          MonZernCoef(MB_I(1),MB_I(2)) .NE. 0d0) THEN
+	        MonZernCoef(MB_I(1),MB_I(2)) = 0d0
+	        WRITE(*,*) ' ** MOD refused: MonZernCoef mode', MB_I(1),
+     &	          ': '//ZernInertMsg
+	      END IF
+!	      (xx): a mode past the type's count takes no coefficient
+	      IF (MonZernTypeL(MB_I(2)).GE.1 .AND. MonZernTypeL(MB_I(2)).LE.mZernType)
+     &	      THEN
+	        IF (MB_I(1) .GT. ZernType_MaxMode(MonZernTypeL(MB_I(2))) .AND.
+     &	            MonZernCoef(MB_I(1),MB_I(2)) .NE. 0d0) THEN
+	          MonZernCoef(MB_I(1),MB_I(2)) = 0d0
+	          WRITE(*,'(A,I3,A,I3,A)') ' ** MOD refused: MonZernCoef mode',
+     &	            MB_I(1), ': '//TRIM(ZernTypeNameL(MonZernTypeL(MB_I(2))))//
+     &	            ' has', ZernType_MaxMode(MonZernTypeL(MB_I(2))), ' modes'
+	        END IF
+	      END IF
+!<--
 	      WRITE(*,22)' MonZernCoef',MB_I(2),
      &	        (MonZernCoef(MB_J,MB_I(2)),MB_J=1,6)
 	    ELSE IF (LCMP(VAR_NAM,'MonZernType',11)) THEN
@@ -1870,7 +2017,9 @@ c	    READ(VALUE,*)GridType
 	        REAL*8  :: pratio
 	        CALL ParseZernType(VALUE, ptypeL, pfound,
      &	                           pratio, phasRatio)
-	        IF (pfound) THEN
+	        IF (pfound .AND. ZernTypeUnsupported(ptypeL)) THEN   ! (vv)
+	          WRITE(*,*) ' ** MOD refused: MonZernType: '//ZernAnnularMsg
+	        ELSE IF (pfound) THEN
 	          MonZernTypeL(MB_I(1)) = ptypeL
 	          IF (phasRatio) ZernAnnuRatio(MB_I(1)) = pratio
 	        END IF
@@ -2444,13 +2593,35 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	      READ(IND(1),*,ERR=999,END=999)MB_I(1)
 	      READ(IND(2),*,ERR=999,END=999)MB_I(2)
 
-	      if (MB_I(1)>mZernModes) then
-	        ! ZernCoef index out of range
-                ! ToDo --> FIX
-	      end if
-
 	      ! MB_I(1)=ZernCoef index, MB_I(2)=iElt index. -jzlou
+!-->	      (xx): the index is bounded by the array (was a 'ToDo' no-op
+!	      that let the READ write past it)
+	      IF (MB_I(1).LT.1 .OR. MB_I(1).GT.mZernModes) THEN
+	        WRITE(*,*) ' ** MOD refused: ZernCoef index', MB_I(1),
+     &	          ' is outside 1 ..', mZernModes
+	        GO TO 998
+	      END IF
+!<--
 	      READ(VALUE,*,ERR=999,END=999)ZernCoef(MB_I(1),MB_I(2))
+!-->	      (tt): an inert ExtFringe mode takes no coefficient
+	      IF (ZernModeInert(ZernTypeL(MB_I(2)), MB_I(1)) .AND.
+     &	          ZernCoef(MB_I(1),MB_I(2)) .NE. 0d0) THEN
+	        ZernCoef(MB_I(1),MB_I(2)) = 0d0
+	        WRITE(*,*) ' ** MOD refused: ZernCoef mode', MB_I(1),
+     &	          ': '//ZernInertMsg
+	      END IF
+!	      (xx): a mode past the type's count takes no coefficient
+	      IF (ZernTypeL(MB_I(2)).GE.1 .AND. ZernTypeL(MB_I(2)).LE.mZernType)
+     &	      THEN
+	        IF (MB_I(1) .GT. ZernType_MaxMode(ZernTypeL(MB_I(2))) .AND.
+     &	            ZernCoef(MB_I(1),MB_I(2)) .NE. 0d0) THEN
+	          ZernCoef(MB_I(1),MB_I(2)) = 0d0
+	          WRITE(*,'(A,I3,A,I3,A)') ' ** MOD refused: ZernCoef mode',
+     &	            MB_I(1), ': '//TRIM(ZernTypeNameL(ZernTypeL(MB_I(2))))//
+     &	            ' has', ZernType_MaxMode(ZernTypeL(MB_I(2))), ' modes'
+	        END IF
+	      END IF
+!<--
 
 	      IF (MB_I(1) .LE. 6) THEN
 	       WRITE(*,22)' ZernCoef',MB_I(2),(ZernCoef(MB_J,MB_I(2)),
@@ -2508,7 +2679,9 @@ c	      READ(VALUE,*,ERR=999,END=999)PropType(MB_I(1))
 	        REAL*8  :: pratio
 	        CALL ParseZernType(TypeString, ptypeL, pfound,
      &	                           pratio, phasRatio)
-	        IF (pfound) THEN
+	        IF (pfound .AND. ZernTypeUnsupported(ptypeL)) THEN   ! (vv)
+	          WRITE(*,*) ' ** MOD refused: ZernTypeL: '//ZernAnnularMsg
+	        ELSE IF (pfound) THEN
 	          ZernTypeL(MB_I(1)) = ptypeL
 	          IF (phasRatio) ZernAnnuRatio(MB_I(1)) = pratio
 	          LNOTSET = .FALSE.
@@ -2592,6 +2765,13 @@ c got nothing, return a blank
 
 C       Is this the last command saved?
 
+!-->  Remember the token for UNREAD_LOH (PLAN 3.3)
+	last_stk=0
+	IF (read_len(pstack) .NE. 0) THEN
+	   last_cur=read_cur(pstack); last_len=read_len(pstack)
+	   last_stk=pstack
+	END IF
+!<--
 	IF (read_cur(pstack) .EQ. read_len(pstack)) THEN
 	   read_len(pstack)=0
 	   read_cur(pstack)=0
@@ -2605,20 +2785,44 @@ C       Is this the last command saved?
 	RETURN
 	END SUBROUTINE READ_LOH
 
+!-->  Hand the token READ_LOH consumed last back to its stack, so the
+!     next READ_LOH returns it again (PLAN 3.3, 2026-10-11): a CALIB
+!     yes/no prompt that receives a COMMAND (a journal's 'quit')
+!     takes its default and gives the token back.  A no-op when the
+!     last read consumed nothing or the stack has changed since.
+	SUBROUTINE UNREAD_LOH()
+	use lohpars_mod
+	IMPLICIT NONE
+	IF (last_stk.EQ.pstack .AND. last_stk.GT.0) THEN
+	   read_len(pstack)=last_len
+	   read_cur(pstack)=last_cur
+	END IF
+	last_stk=0
+	END SUBROUTINE UNREAD_LOH
+!<--
+
 C***********************************************************************
 
 #if 1
 
 	SUBROUTINE PARSE_LOH(Mode)
 
-C       THIS ROUTINE DOES THE ACTUAL PARSING.  A MAXIMUM OF 10
+C       THIS ROUTINE DOES THE ACTUAL PARSING.  A MAXIMUM OF mLohTok
 C       ENTRIES MAY BE PUT ON ONE LINE.  ENTRIES ARE DELIMITED
 C       BY A SEMICOLON or a blank.  COMMENTS ARE DELIMITED BY A PERCENT
 C       SIGN. A COMMAND LINE MAY BE len_max CHARACTERS LONG.
 C
         use lohpars_mod
 
-        CHARACTER*130 VAR
+!-->  A command line is as long as a token may be (var_store's width,
+!     MacosCharLen = 256).  Was CHARACTER*130 with len_max 130, so an
+!     `old <path>` longer than 130 characters was CUT at 126 and the
+!     load re-prompted forever on the truncated name (three run-
+!     artifact decks under a 138-character path read as 'timeout_load'
+!     in the corpus record), and MHIST copied strlen(line) bytes into
+!     the 130-byte VAR unbounded.  MHIST now takes the buffer length.
+        CHARACTER(len=MacosCharLen) VAR
+!<--
 
         INTEGER Mode,i,j,k,l
         INTEGER len_max
@@ -2630,7 +2834,7 @@ C    if last flag = true, then the semi colon is the last character
 C    on the line, (besides spaces)
 
 c       maximum length of a line
-        data len_max /130/
+        data len_max /MacosCharLen/
 
     6   FORMAT(A)
 
@@ -2639,7 +2843,7 @@ C  added for jump from popping the stack
  10     continue
 
 c Initialize command stack
-        var_store(1:10,pstack)=' '
+        var_store(1:mLohTok,pstack)=' '
 
 C       Read new statement to be parsed
    98   CONTINUE
@@ -2649,11 +2853,15 @@ C       Read new statement to be parsed
 	   VAR=' '
 #ifdef READLINE_LIBRARY
 	   If (Mode /= 0) Then
-	     Call MHIST(' ',VAR)
+	     Call MHIST(' ',VAR,LEN(VAR))
 	   Else
-	     Call MHIST('MACOS',VAR)
+	     Call MHIST('MACOS',VAR,LEN(VAR))
 	   End If
 #else
+!-->      Non-readline build: render any cached sub-prompt before the
+!         bare READ, or the program blocks on invisible input.
+           CALL print_sub_prompt
+!<--
            READ(*,6,END=200, ERR=300) VAR
 #endif
         ELSE
@@ -2712,7 +2920,7 @@ C  Go to next character
 	    else
               cma=.false.
 	    end if
-            var_store(j,pstack)(k:k)=VAR(i:i)
+            IF (j.LE.mLohTok) var_store(j,pstack)(k:k)=VAR(i:i)
             k=k+1; i=i+1
             last_flag=.FALSE.
             GO TO 1
@@ -2721,6 +2929,16 @@ C  Go to next character
     2   CONTINUE
 
         IF (last_flag) j=j-1
+
+!-->  More tokens than var_store holds (only empty ';' tokens can do it on
+!     a 256-character line): refuse the line by its command, read the next.
+        IF (j.GT.mLohTok) THEN
+          WRITE(*,'(3A,I0,A,I0,A)') ' ** Command line refused (',
+     &      TRIM(var_store(1,pstack)),'): ',j,' tokens, at most ',
+     &      mLohTok,' on a line'
+          GO TO 10
+        END IF
+!<--
 
         !print*,'i,j, pstack=', i,j, pstack
         !print*,'var_store(j,pstack)= ',var_store(j,pstack)
@@ -2756,7 +2974,7 @@ c pop the file stack to initial values
            ustack = ustack-1
 c go back to console
            bat_task=1
-	   var_store(1:10,pstack)=' ' ! added by jzlou to clean up cmd arg stack after
+	   var_store(1:mLohTok,pstack)=' ' ! added by jzlou to clean up cmd arg stack after
                                         ! running journal file, 01/19/07
         ELSE
 c shouldn't get here
@@ -2788,7 +3006,7 @@ C *********************************************************************
 
 	SUBROUTINE PARSE_LOH_SAVE()
 
-C       THIS ROUTINE DOES THE ACTUAL PARSING.  A MAXIMUM OF 10
+C       THIS ROUTINE DOES THE ACTUAL PARSING.  A MAXIMUM OF mLohTok
 C       ENTRIES MAY BE PUT ON ONE LINE.  ENTRIES ARE DELIMITED
 C       BY A SEMICOLON or a blank.  COMMENTS ARE DELIMITED BY A PERCENT
 C       SIGN. A COMMAND LINE MAY BE len_max CHARACTERS LONG.
@@ -2815,7 +3033,7 @@ C  added for jump from popping the stack
  10     continue
 
 c Initialize command stack
-	var_store(1:10,pstack)=' '
+	var_store(1:mLohTok,pstack)=' '
 
 C       Read new statement to be parsed
    98   CONTINUE
@@ -2866,7 +3084,7 @@ C  Go to next character
 	    i=i+1
 	    GO TO 1
 	  ELSE
-	    var_store(j,pstack)(k:k)=var(i:i)
+	    IF (j.LE.mLohTok) var_store(j,pstack)(k:k)=var(i:i)
 	    k=k+1
 	    i=i+1
 	    last_flag=.FALSE.
@@ -2878,6 +3096,7 @@ C  Go to next character
 	IF (last_flag) THEN
 	  j=j-1
 	END IF
+	j=MIN(j,mLohTok)
 
 	if (.false.) then
 	print*,'i,j, pstack,last_flag=', i,j, pstack,last_flag
@@ -2972,6 +3191,38 @@ c   jump here if we need a new line from a batch file
 
 C***********************************************************************
 
+!-->  The CLI's question when the deck gave no output coordinates and
+!     ChkDf3 proposed the beam frame (2026-10-18, 1.2 (u)).  YES keeps
+!     it; NO reads nOutCord and the Tout rows, the proposal as defaults.
+	SUBROUTINE OutCordQuery()
+	use param_mod
+	use elt_mod
+	IMPLICIT NONE
+	CHARACTER(len=8) :: ans
+	INTEGER k, n1(1), nd(1)
+	REAL*8 row(7)
+	ans = ' '
+	CALL CACCEPT(ans,'YES','Keep the proposed output coordinates?')
+	IF (ans(1:1).EQ.'n' .OR. ans(1:1).EQ.'N') THEN
+	  n1(1) = nOutCord; nd(1) = nOutCord
+	  CALL IACCEPT(n1,nd,1,'Enter nOutCord (1-7)')
+	  nOutCord = MAX(1,MIN(7,n1(1)))
+	  DO k=1,nOutCord
+	    row = Tout(k,1:7)
+	    WRITE(*,'(A,I2,A)') '  Tout row',k,
+     &        ' (x y z position, x y z direction, OPL weights):'
+	    CALL DACCEPT(row,row,7,'Enter 7 values')
+	    Tout(k,1:7) = row
+	  END DO
+	  WRITE(*,'(A,I2,A)') '  Output coordinates set by hand:',
+     &      nOutCord,' rows (SAVE writes them)'
+	ELSE
+	  WRITE(*,'(A)') '  Output coordinates: the proposed beam frame'
+	END IF
+	LOutCordCandidate = .FALSE.
+	END SUBROUTINE OutCordQuery
+!<--
+
 	SUBROUTINE CACCEPT(COUT,CDEF,TEXT)
 	use lohpars_mod
 
@@ -3053,6 +3304,8 @@ C  sub-prompt cache via set_sub_prompt(); see CACCEPT for rationale.
 	INTEGER I,N,ABSN,LEN
 	INTEGER ICLEN
 	REAL*8 DVAR(N),DDEF(N)
+	INTEGER ios
+	CHARACTER(len=MacosCharLen) :: acc
 	CHARACTER*23 CNUM
 	CHARACTER(len=MacosCharLen) :: prompt_str
 
@@ -3089,7 +3342,31 @@ C  Read response:
 	CALL READ_LOH(2)
 	CALL clear_sub_prompt
 	IF (CVAR.NE.' ')THEN
-	   READ(CVAR,*,ERR=1)(DVAR(I),I=1,ABSN)
+!-->  Multi-value gather (2026-09-08): a prompt for ABSN values
+!     answered on ONE line ("stop obj 0 0 0") arrives one blank-
+!     delimited token per READ_LOH, and a list-directed READ of ABSN
+!     values from a single token hits EOF -- which ERR= does not
+!     catch (forrtl severe 24, the STOP crash).  Keep pulling tokens
+!     -- the rest of the line, then further lines / journal lines --
+!     until the READ completes.  A bad value re-prompts as before.
+	   acc=CVAR
+ 11	   READ(acc,*,IOSTAT=ios)(DVAR(I),I=1,ABSN)
+	   IF (ios.LT.0) THEN
+	     IF (read_len(pstack).EQ.0) THEN
+	       WRITE(*,'(A,I2,A)')'  (',ABSN,
+     &	         ' values expected -- enter the rest)'
+	       CALL set_sub_prompt(prompt_str(1:LEN_TRIM(prompt_str)))
+	     END IF
+	     CALL READ_LOH(2)
+	     CALL clear_sub_prompt
+	     IF (CVAR.EQ.' ') GO TO 1
+	     acc=TRIM(acc)//' '//CVAR
+	     GO TO 11
+	   ELSE IF (ios.GT.0) THEN
+	     GO TO 1
+	   END IF
+	   CVAR=acc
+!<--
 	ELSE IF (ifDefault) THEN
 C    No data entered, use the default
 	   DO I=1,ABSN
@@ -3232,6 +3509,8 @@ C  sub-prompt cache via set_sub_prompt(); see CACCEPT for rationale.
 	INTEGER I,N,ABSN,LEN
 	INTEGER ICLEN
 	SREAL RVAR(N),RDEF(N)
+	INTEGER ios
+	CHARACTER(len=MacosCharLen) :: acc
 	CHARACTER*23 CNUM
 	CHARACTER(len=MacosCharLen) :: prompt_str
 
@@ -3268,7 +3547,31 @@ C  Read response:
 	CALL READ_LOH(3)
 	CALL clear_sub_prompt
 	IF (CVAR.NE.' ')THEN
-	   READ(CVAR,*,ERR=1)(RVAR(I),I=1,ABSN)
+!-->  Multi-value gather (2026-09-08): a prompt for ABSN values
+!     answered on ONE line ("stop obj 0 0 0") arrives one blank-
+!     delimited token per READ_LOH, and a list-directed READ of ABSN
+!     values from a single token hits EOF -- which ERR= does not
+!     catch (forrtl severe 24, the STOP crash).  Keep pulling tokens
+!     -- the rest of the line, then further lines / journal lines --
+!     until the READ completes.  A bad value re-prompts as before.
+	   acc=CVAR
+ 11	   READ(acc,*,IOSTAT=ios)(RVAR(I),I=1,ABSN)
+	   IF (ios.LT.0) THEN
+	     IF (read_len(pstack).EQ.0) THEN
+	       WRITE(*,'(A,I2,A)')'  (',ABSN,
+     &	         ' values expected -- enter the rest)'
+	       CALL set_sub_prompt(prompt_str(1:LEN_TRIM(prompt_str)))
+	     END IF
+	     CALL READ_LOH(3)
+	     CALL clear_sub_prompt
+	     IF (CVAR.EQ.' ') GO TO 1
+	     acc=TRIM(acc)//' '//CVAR
+	     GO TO 11
+	   ELSE IF (ios.GT.0) THEN
+	     GO TO 1
+	   END IF
+	   CVAR=acc
+!<--
 	ELSE IF (ifDefault) THEN
 C    No data entered, use the default
 	   DO 9 I=1,ABSN
@@ -3408,6 +3711,8 @@ C  with Fortran WRITE.  See CACCEPT for the rationale.
 	LOGICAL ifDefault
 	CHARACTER*(*) TEXT
 	INTEGER I, N, ABSN, LEN, IVAR(N), IDEF(N)
+	INTEGER ios
+	CHARACTER(len=MacosCharLen) :: acc
 	INTEGER ICLEN
 	CHARACTER*16 CNUM
 	CHARACTER(len=MacosCharLen) :: prompt_str
@@ -3445,8 +3750,32 @@ c goes via the cache so readline can render and own cursor state.
 C  Read response:
 	CALL READ_LOH(4)
 	CALL clear_sub_prompt
-	IF (CVAR.NE.' ') THEN
-	   READ(CVAR,*,ERR=1)(IVAR(I),I=1,ABSN)
+	IF (CVAR.NE.' ')THEN
+!-->  Multi-value gather (2026-09-08): a prompt for ABSN values
+!     answered on ONE line ("stop obj 0 0 0") arrives one blank-
+!     delimited token per READ_LOH, and a list-directed READ of ABSN
+!     values from a single token hits EOF -- which ERR= does not
+!     catch (forrtl severe 24, the STOP crash).  Keep pulling tokens
+!     -- the rest of the line, then further lines / journal lines --
+!     until the READ completes.  A bad value re-prompts as before.
+	   acc=CVAR
+ 11	   READ(acc,*,IOSTAT=ios)(IVAR(I),I=1,ABSN)
+	   IF (ios.LT.0) THEN
+	     IF (read_len(pstack).EQ.0) THEN
+	       WRITE(*,'(A,I2,A)')'  (',ABSN,
+     &	         ' values expected -- enter the rest)'
+	       CALL set_sub_prompt(prompt_str(1:LEN_TRIM(prompt_str)))
+	     END IF
+	     CALL READ_LOH(4)
+	     CALL clear_sub_prompt
+	     IF (CVAR.EQ.' ') GO TO 1
+	     acc=TRIM(acc)//' '//CVAR
+	     GO TO 11
+	   ELSE IF (ios.GT.0) THEN
+	     GO TO 1
+	   END IF
+	   CVAR=acc
+!<--
 	ELSE IF (ifDefault) THEN
      	   ! No data entered, use the default
 	   DO 9 I=1,ABSN

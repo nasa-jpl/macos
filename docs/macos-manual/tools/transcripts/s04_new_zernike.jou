@@ -1,0 +1,92 @@
+# Section 4, "Zernike Surfaces": NEW entering the Zernike reflector zern_surface (a flat base, Kc&Kr with
+# KcElt 0 and Radius 1d22, principal axis 0,0,-1, zElt 1d22, Geometric, index 1, the 3.2 Zernike
+# coefficients 1-45 in groups of six, pMon 0,0,0, xMon 1,0,0, yMon 0,1,0, zMon 0,0,1, scale length 1).
+# The answers are 3.2's.  3.2 printed only the element's dialog and then its prescription lines; NEW
+# needs a complete deck, so the source (a 2-unit collimated beam along +z onto the mirror) and a
+# FocalPlane at z=-5 are entered as setup and not printed, and the prescription lines are SHOW's.
+# Differences from 3.2's dialog: the glass-type prompt is new (answered with its default, FixedIndex);
+# the scale length is now asked BEFORE the coefficients, as "Enter Mon scale length [2.00000]" (3.2:
+# "Enter scale length [1.00000]" after zMon), answered 1 as in 3.2; a new prompt "Enter Zernike Type :
+# [ANSI]" is answered with its default (ANSI = the MACOS/Malacara ordering of Table 8 -- a Zernike
+# surface traces only with a ZernType set); NEW prints the element back and asks "Is this correct?"
+# (default YES); the element and surface type lists are longer.  The element is written in the sparse
+# form (ZernType=, nZernCoef= 14, ZernModes= the 14 nonzero modes, ZernCoef=) and lMon precedes pMon.
+# The trace pin shows the coefficients reach the trace: the mean path is 15 + 2 x the 1e-4 piston.
+cd $TMP
+new
+Zern
+0,0,1
+0,0,-10
+1d22
+1
+0
+none
+1d-6
+1
+Circular
+2
+11
+1,0,0
+0,1,0
+2
+# TRANSCRIPT: s04_zernike upto=Enter\sElement\s+2\sData
+zern_surface
+Reflector
+Zernike
+0,0,0
+0,0,0
+0,0,-1
+2
+0
+1d22
+
+
+1d22
+Geometric
+
+
+1
+
+1
+
+.0001,0,.00002,0,0,.00001
+0,0,.000001,.00002,0,0
+0,.000003,.000001,0,0,.000002
+.0000005,.0000001,0,0,.000002,.00004
+.0000001,0,0,0,.000001,0
+0,0,0,0,0,0
+0,0,0,0,0,0
+0,0,0
+0,0,0
+1,0,0
+0,1,0
+0,0,1
+
+# TRANSCRIPT-OFF
+FP
+FocalPlane
+Flat
+0,0,-5
+0,0,-5
+0,0,-1
+
+
+0
+Geometric
+
+
+1,0,0
+0,1,0
+# TRANSCRIPT-OFF
+show
+1
+# TRANSCRIPT-OFF
+opd 2
+/null
+# EXPECT: File Zern\.in being created\.
+# EXPECT: Enter\sZernike\sType\s:\s\[ANSI\]:
+# EXPECT: Enter number of element \(0=aperture\): \[0\]: 1\s+iElt=\s+1\s+EltName=\s+zern_surface\s+Element=\s+Reflector\s+Surface=\s+Zernike\s+KrElt=-1\.0E\+22\s+KcElt=0\.0E\+00\s+psiElt=\s+0\.0E\+00\s+0\.0E\+00\s+-1\.0E\+00\s+VptElt=\s+0\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+RptElt=\s+0\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+ZernType=\s+ANSI\s+nZernCoef=\s+14\s+ZernModes=\s+1\s+3\s+6\s+9\s+10\s+14\s+15\s+18\s+19\s+20\s+23\s+24\s+25\s+29\s+ZernCoef=\s+1\.0E-04\s+2\.0000\d*E-05\s+1\.0000\d*E-05\s+(9\.9999\d*E-07|1\.0000\d*E-06)\s+2\.0000\d*E-05\s+3\.0000\d*E-06\s+(9\.9999\d*E-07|1\.0000\d*E-06)\s+(1\.9999\d*|2\.0000\d*)E-06\s+(4\.9999\d*|5\.0000\d*)E-07\s+(9\.9999\d*E-08|1\.0000\d*E-07)\s+(1\.9999\d*|2\.0000\d*)E-06\s+4\.0000\d*E-05\s+(9\.9999\d*E-08|1\.0000\d*E-07)\s+(9\.9999\d*E-07|1\.0000\d*E-06)\s+lMon=1\.0E\+00\s+pMon=\s+0\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+xMon=\s+1\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+yMon=\s+0\.0E\+00\s+1\.0E\+00\s+0\.0E\+00\s+zMon=\s+0\.0E\+00\s+0\.0E\+00\s+1\.0E\+00[\s\S]*?PropType=\s+Geometric\s+zElt=1\.0E\+22
+# EXPECT: OPD: nPassRays =\s+60,\s+DAvgCumL =\s+15\.000\d*D\+00[\s\S]*?RMS OPD error is\s+2\.95526\d*D-05
+# EXPECT-NOT: values expected
+# EXPECT-NOT: Unknown (grid|surface|element|command)
+# EXPECT-NOT: forrtl

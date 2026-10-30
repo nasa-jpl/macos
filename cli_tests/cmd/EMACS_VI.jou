@@ -1,0 +1,13 @@
+# VI / EMAcs (cmdref: Session & Files): the command token AS TYPED becomes the editor command, run on
+# the file name through the shell, and the CLI waits for it.  'ema' (the 3-character match) is not a
+# program, so the shell says so and the prompt returns -- the dispatch and the wait, without an editor.
+# 'vi' is real: the "file name" +q! makes vi quit at once (vi's +command form), and the CLI continues.
+ema
+$TMP/edit_me.txt
+vi
++q!
+! echo after-vi
+# EXPECT: MACOS> ema\s+Enter filename \[no default\]: \S+/edit_me\.txt\s+sh: (1: )?ema: (command )?not found
+# EXPECT: MACOS> vi\s+Enter filename \[no default\]: \+q!
+# EXPECT: after-vi
+# EXPECT-NOT: forrtl

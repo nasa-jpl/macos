@@ -1,0 +1,117 @@
+# Section 4, Element Types / Focal Planes: the NEW dialog for 3.2's focal_plane example (a Flat
+# FocalPlane at z=2, axis +z, zElt 1d22), with NEW's echo of the element (printed before 'Is this correct?') in place of 3.2's typed "prescription
+# data" block.  Dave 2026-10-19: Section 4's NEW tutorials become plain generated dialogs.  The answers are
+# 3.2's.  3.2's element was the deck's fifth (its SHOW read iElt= 5); the setup (not printed) ends a
+# far-field propagation there, as the text says focal planes do: a collimated 1.0 source at z=-1, a
+# plano-hyperbolic lens (flat front at z=-0.4, n 1.5; back at z=-0.1, K -2.25, R -1.05: a perfect focus
+# at z=2), a Flat Return at the focus and a Return sphere at the lens centered on it (FarField, 2.1) --
+# the exit-pupil pair FEX uses.  Against 3.2's dialog: the type menus list more types; the dialog now asks
+# 'Do you wish to use element-based coordinates?' for a FocalPlane too (3.2 did not; answered with its
+# default NO); the source asks for base units (none) and the refractors for a glass type (default
+# FixedIndex); the echo adds nCoat.  The OPD on the focal plane is at the round-off floor.
+cd $TMP
+new
+FPTest
+0,0,1
+0,0,-1
+1d22
+1
+0
+none
+1d-6
+1
+Circular
+1
+32
+1,0,0
+0,1,0
+5
+lens_front
+Refractor
+Flat
+0,0,-0.4
+0,0,-0.4
+0,0,-1
+
+
+1d22
+Geometric
+
+
+1.5
+0
+
+lens_back
+Refractor
+Conic
+0,0,-0.1
+0,0,-0.1
+0,0,-1
+2
+-2.25
+-1.05
+
+
+1d22
+Geometric
+
+
+1
+0
+
+FP_return
+Return
+Flat
+0,0,2
+0,0,2
+0,0,-1
+
+
+1d22
+Geometric
+
+
+Pupil_return
+Return
+Conic
+0,0,-0.1
+0,0,-0.1
+0,0,1
+2
+0
+-2.1
+
+
+2.1
+FarField
+
+
+# TRANSCRIPT: s04_focalplane
+focal_plane
+FocalPlane
+Flat
+0,0,2
+0,0,2
+0,0,1
+no
+0
+1d22
+Geometric
+
+
+# TRANSCRIPT-OFF
+1,0,0
+0,1,0
+show
+5
+# TRANSCRIPT-OFF
+opd 5
+/null
+# EXPECT: File FPTest\.in being created\.
+# EXPECT: Do you wish to use element-based coordinates\?: \[NO\]:\s+iElt=\s+5\s+EltName=\s+focal_plane
+# EXPECT: Enter number of element \(0=aperture\): \[0\]: 5\s+iElt=\s+5\s+EltName=\s+focal_plane\s+Element=\s+FocalPlane\s+Surface=\s+Flat\s+KrElt=-1\.0E\+22\s+KcElt=0\.0E\+00\s+psiElt=\s+0\.0E\+00\s+0\.0E\+00\s+1\.0E\+00\s+VptElt=\s+0\.0E\+00\s+0\.0E\+00\s+2\.0E\+00\s+RptElt=\s+0\.0E\+00\s+0\.0E\+00\s+2\.0E\+00
+# EXPECT: EltName=\s+focal_plane[\s\S]*?nObs=\s+0\s+ApType=\s+None\s+PropType=\s+Geometric\s+zElt=1\.0E\+22
+# EXPECT: Enter element where OPD is to be evaluated: \[0\]: 5\s[\s\S]*?OPD: nPassRays =\s+709,\s+DAvgCumL =\s+31\.500\d*D-01[\s\S]*?RMS OPD error is\s+\d\.\d+D-1[3-7]
+# EXPECT-NOT: values expected
+# EXPECT-NOT: Unknown (grid|surface|element|command)
+# EXPECT-NOT: forrtl

@@ -1,0 +1,13 @@
+# PLAN_CONSOLIDATION 1.2 (dd), Dave 2026-10-22 (BRIEF_to_cleanup_round1): ImageDemo.in, the 3.2 listing's
+#   Cassegrain-and-relay deck (docs/macos-manual/examples/, Appendix A), carried `PropType= Annulus` on its
+#   three obscurations (SEC_OBS, SPIDER_2, SPIDER_3) -- not a PropType name; the loader named it and applied
+#   the default, Geometric.  The deck now says Geometric, the value it always traced with (0 movers).  The
+#   loader now REFUSES an unknown PropType (Dave 2026-10-22; gate PROPTYPE_numeric.jou), so the old deck
+#   would not load at all.  Red on the pre-fix deck.
+old $ROOT/docs/macos-manual/examples/ImageDemo.in
+show 1
+# EXPECT: ImageDemo\.in\s+being loaded
+# EXPECT: PropType=\s*Geometric
+# EXPECT-NOT: not recognized: the default applies
+# EXPECT-NOT: Annulus
+# EXPECT-NOT: forrtl

@@ -1,0 +1,27 @@
+# The legacy multilayer-coating keys at their limit (PLAN_CONSOLIDATION 1.2 (zz), Dave 2026-10-22: "allow
+#   nCoat=65, adding slots, with a loud refusal above that").  The arrays held 20 layers with nCoat= unbounded:
+#   nCoat= 21 + CoatThk= was an out-of-bounds write at load (gfortran debug build: 'Index 21 ... above upper
+#   bound of 20') and SHOW read past the array; CoatIndx= was unreachable -- Coating= was matched on six
+#   letters ('Coatin') and took it.  Now 65 slots (mLegacyCoat, elt_mod), nCoat= > 65 refused by name,
+#   Coating= matched on its full name, and both blocks read one line or wrapped five per line.
+# Legs: tst_coat_legacy.in (the Cassegrain, element 2 at nCoat= 65, indices 1.001..1.065, thicknesses
+#   0.01..0.65) loads; SHOW prints the 65th of each (so CoatIndx= reached its own branch); OPD is the
+#   Cassegrain's (a Reflector ignores the legacy layers -- they feed NSRefractor's AirGap only); the same deck
+#   at nCoat= 66 is refused by name.  Pre-fix binary: CoatIndx= refused ('the value could not be read') -> red.
+# COPY: $ROOT/ZGD_test_files/tst_coat_legacy.in
+cd $TMP
+none
+old $DECK
+show 2
+opd 5
+! perl -pe 's/^(\s*nCoat=\s+)65\s*$/${1}66\n/' tst_coat_legacy.in > c66.in
+! grep -c "nCoat=  66" c66.in
+old c66.in
+# EXPECT: tst_coat_legacy\.in\s+being loaded
+# EXPECT: nCoat=\s+65\s+CoatIndx=\s+1\.0009\d*E\+00[\s\S]*?1\.06[45]9*\d*E\+00\s+CoatThk=\s+1\.0E-02[\s\S]*?6\.[45]\d*E-01\s
+# EXPECT: RMS OPD error is\s+\d\.\d+D-1[2-9]
+# EXPECT: ^\s*1\s*$
+# EXPECT: c66\.in\s+being loaded\.(?:(?!being loaded)[\s\S])*?\*\* Rx load refused: nCoat= 66 \(elt\s+2\): at most 65 coating layers
+# EXPECT-NOT: tst_coat_legacy\.in\s+being loaded(?:(?!being loaded)[\s\S])*?Rx load refused
+# EXPECT-NOT: forrtl
+# EXPECT-NOT: Fortran runtime error

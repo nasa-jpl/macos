@@ -1,0 +1,267 @@
+ch01_efl_m	72.14 m
+ch01_fno	f/18.04
+ch01_lamD_mas	25.78 mas
+ch01_bias_arcmin	2'
+ch01_hole_r_m	0.232 m
+ch01_rays_pass	1168
+ch01_rays	1185
+ch02_nelt	11
+ch02_efl_m	72.71 m
+ch02_fno	f/18.18
+ch02_rays_pass	1168
+ch02_rays	1185
+ch02_ctb_fno	f/17.87
+ch02_ctb_fno_u	f/17.69
+ch02_ctb_fno_v	f/18.47
+ch02_ctb_bias	0.26′
+ch02_ctb_asbuilt	104
+ch02_ctb_foap1	0.382 m
+ch02_ctb_simg	465.1 mm
+ch02_ctb_pass	1168
+ch02_ctb_rays	1185
+ch02_ctb_ell_a	20.7
+ch02_ctb_ell_b	19.8
+ch02_ctb_wfe	0.0103 waves
+ch02_ctb_edge	0.21″
+ch02_ctb_w2_edge	0.15
+ch02_ctb_w1_edge	0.001 mm
+ch02_ctb_w2_10	44%
+ch02_ctb_mag	187
+ch02_ctb_np1	1168
+ch02_fold_reach	6.7 m
+ch02_fold_gate	5.0 m
+ch02_fold_f0_m	0.30 m
+ch02_fold_f0_aoi	4°
+ch02_fold_rays	1168
+ch02_fold_wfe	0.0102 waves
+ch02_fold_wfe_dev	< 0.0002 waves
+ch02_fold_walk10	4.70 mm
+ch02_fold_walk_dev	< 1 %
+ch02_fold_aoi_max	5°
+ch02_fold_zmax	0.90 m
+ch02_fold_margin	0.234 m
+ch02_fold_clear	149 mm
+ch02_fold_own	31 mm
+ch02_fold_fm	-22 mm
+ch02_fold_len	7.19 m
+ch02_fold_tel_len	6.58 m
+ch02_bench_chief_agree	< 1e-09
+ch02_bench_spread	< 1e-06
+ch02_bench_shift	< 1e-05
+ch02_bench_nelt	13
+ch02_imagedemo_nelt	13
+ch02_imagedemo_fno	f/9.22
+ch02_imagedemo_obsc	0.00
+ch03_pie_nseg	7
+ch03_pie_width	1.33 m
+ch03_pie_pass	11950
+ch03_pie_src	12128
+ch03_pie_clip	0
+ch03_hex2_nseg	19
+ch03_hex2_width	0.8 m
+ch03_hex2_pass	9698
+ch03_hex2_src	9876
+ch03_hex2_clip	0
+ch03_reload_nelt	17
+ch03_reload_pass	11950
+ch04_dwdx_cond	> 1e+06
+ch04_dwdx_svmin	< 5e-05
+ch04_dwdx_segcond	> 1e+06
+ch04_seg1_rz	< 5e-05
+ch04_dwdx_deficit	< 5
+ch04_rows	59750
+ch04_dwdx_cols	90
+ch04_dwdz_cols	56
+ch04_dwdz_rank	56
+ch04_dwdz_cond	5.368e+00
+ch04_dwdgrid_cols	42
+ch04_dwdgrid_rank	42
+ch04_dwdgrid_cond	1.398e+00
+ch05_dldx_rel	< 1e-05
+ch05_tilt_prior	< 1e-12
+ch05_h_svmin	< 1e-15
+ch05_beams	48
+ch05_edge_rows	72
+ch05_dofs	54
+ch05_hole_margin	0.005971
+ch05_asbuilt_met	15.322
+ch05_asbuilt_emet	3.943
+ch05_optimized_met	3.877
+ch05_optimized_emet	1.782
+ch05_mc_draws	200
+ch05_mc_nm	0.020
+ch05_mc_analytic_nm	0.020
+ch06_x_pokes	54
+ch06_x_w	2.83e-03
+ch06_x_l	< 1e-05
+ch06_x_e	< 1e-06
+ch06_z_w	9.61e-04
+ch06_g_pokes	42
+ch06_g_w	2.63e-01
+ch06_a_corr_390	44.02
+ch06_a_corr_400	0.843
+ch06_a_corr_500	11.81
+ch06_b_corr_390	45.35
+ch06_b_corr_400	23.64
+ch06_b_corr_500	30.15
+ch06_ref_chief_rms	188.9
+ch06_ref_chief_mean	178.4
+ch06_ref_mean_mean	< 1e-09
+ch06_ref_mean_rms	61.98
+ch06_ref_linear_rms	188.9
+ch06_ref_linear_mean	178.4
+ch06_ref_linear_ac	61.98
+ch07_floor	< 1e-06
+ch07_pre	236.2
+ch07_post	2.567
+ch07_mc_draws	1000
+ch07_mc	2.573
+ch07_pm_seg_piston_actuator	1.834
+ch07_pm_seg_tilt_actuator	1.281
+ch07_sm_tilt_actuator	1.251
+ch07_wfs_sensing_error	0.09183
+ch08_dz_hard	2.5e-7
+ch08_th_hard	25%
+ch08_dz_blc	2.7e-8
+ch08_th_blc	36%
+ch08_dz_aplc	2.1e-10
+ch08_th_aplc	27%
+ch08_dz_vortex	1.4e-8
+ch08_th_vortex	81%
+ch08_dz_roddier	2.4e-6
+ch08_th_roddier	81%
+ch08_dz_dualzone	6.8e-6
+ch08_th_dualzone	81%
+ch08_efc_before	2.93e-7
+ch08_efc_after	8.30e-9
+ch08_efc_gain	35
+ch08_efc_iter	24
+ch08_efc_s1	10.0 nm
+ch08_efc_s2	8.7 nm
+ch08_efc_nact	1760
+ch08_vx_before	1.7e-8
+ch08_vx_after	5.8e-13
+ch08_pol_before	2.2e-8
+ch08_pol_after	5.8e-13
+ch08_pol_floor	1.1e-15
+ch08_probe_nm	9.3 nm
+ch08_probe_floor	4.1e-10
+ch08_probe_rel	3.8%
+ch08_probe_ratio	1.8%
+ch08_probe_lin_rel	1.6e-4
+ch08_probe_os_rel	1.3%
+ch08_probe_bias	1.5%
+ch08_probe_ph8	4.1e-9
+ch08_probe_ph6	3.7e-7
+ch08_probe_efcT	9.0e-9
+ch08_probe_efcE	9.1e-9
+ch08_probe_efcP	9.4e-9
+p2_bench_ctb_chief	< 1e-09
+p2_bench_ctb_wfe	0.001423
+p2_bench_ctb_rays	3002
+p2_bench_ctb_spot	0.02713
+p2_bench_ifo_agree	< 1e-08
+p2_bench_ifo_vis	0.833
+p2_bench_ifo_resid	0.0014
+p2_bench_ifo_dm_corr	0.998426
+p2_bench_ifo_dm_truth	16.92
+p2_bench_ifo_dm_resid	0.969
+p2_bench_ifo_pol_fres	< 1e-12
+p2_bench_ifo_pol_dia	7.2133e-02
+p2_bench_ifo_pol_ret	8.3521e-02
+p2_cophi_dm96_contrast	0.9825
+p2_cophi_dm96_overfill	33.9
+p2_cophi_dm96_magratio	0.998353
+p2_coro_walkthrough_dzmean	1.49e-09
+p2_coro_walkthrough_floor	1.45e-13
+p2_design_layer_api_onaxis	< 1e-09
+p2_design_layer_api_recovered	< 1e-09
+p2_design_layer_api_k1	-1.002185
+p2_design_layer_api_k2	-1.524259
+p2_design_layer_api_pert	1.752e-05
+p2_e2e2_dk	3.03e-01
+p2_e2e6m_s0	0.8594
+p2_e2e6m_s1	0.3512
+p2_e2e6m_s2	0.0702
+p2_e2e6m_dense	0.1059
+p2_e2e6m_fno	11.76
+p2_e2e6m_segs	19
+p2_e2e6m_r2_shroud	7.451
+p2_e2e6m_r2_nelt	37
+p2_e2e6m_r2_pass	983
+p2_e5_pie_clipped	120
+p2_e5_pie_kept	86
+p2_e5_pie_src	12128
+p2_e5_seg_prior	12860.131
+p2_e5_seg_edge	55.322
+p2_e5_seg_met	472.908
+p2_e5_seg_both	4.704
+p2_e5_seg_mc	4.759
+p2_freeform_unobscured_s0	0.0108
+p2_freeform_unobscured_s2worst	0.8525
+p2_freeform_unobscured_s2area	0.5906
+p2_offset_imager_s1max	37.8
+p2_offset_imager_s1avg	25.8
+p2_offset_imager_s3max	41849.9
+p2_offset_imager_s5max	12415.1
+p2_pdi_dm96_pgain	0.9808
+p2_pdi_dm96_pres	744.20
+p2_pdi_dm96_g5	4.508
+p2_pupil_id_df	2.735e-04
+p2_pupil_id_dfe	2.734e-04
+p2_pupil_id_dep	1.843e-07
+p2_rc_onaxis_obsc	0.19
+p2_rc_onaxis_dl0	2.7
+p2_rc_onaxis_dl1	3.3
+p2_rc_unobscured_dec	0.642
+p2_rc_unobscured_field	0.0281
+p2_sz_tma_s0	0.0054
+p2_sz_tma_s2	4.1915
+p2_sz_tma_s2a	2.3925
+p2_tg_psi_dm_ls	< 1e-10
+p2_tg_psi_dm_rot	7.4786
+p2_tg_psi_dm_ungain	1.11661
+p2_tg_psi_dm_corr	0.998434
+p2_tg_psi_dm_resid	0.304
+p2_tg_psi_dm96_null	0.1345
+p2_tg_psi_dm96_nyqgain	0.8509
+p2_tg_psi_dm96_dflat	0.0210
+p2_tg_psi_dm96_dcorr	0.9906
+p2_tg_psi_dm96_dbase	0.0235
+p2_tg_psi_dm96_oap_aoi	22.5
+p2_tg_psi_dm96_oap_comp	10.4
+p2_tg_psi_dm96_oap_nyq	4.0
+p2_tg_psi_dm96_oap_gain	0.9929
+p2_tg_psi_dm96_oap_resid	422.19
+p2_tg_psi_dm_v2_ls	< 1e-10
+p2_tg_psi_dm_v2_gain	0.999999
+p2_tg_psi_dm_v2_corr	0.999573
+p2_tg_psi_dm_v2_resid	0.183
+p2_tma_3plus1_patch	0.0337
+p2_tma_3plus1_ast	0.199
+p2_tma_3plus1_aoi	24.1
+p2_tma_centered_centered	0.0575
+p2_tma_centered_section	0.0807
+p2_tma_freeform_lim	0.0213
+p2_tma_freeform_ff	0.0176
+p2_tma_freeform_dec	0.89
+p2_tma_longslit_plate	329.99
+p2_tma_longslit_strip	54.24
+p2_tma_longslit_clear	10.2
+p2_tma_offaxis_ax	0.0016
+p2_tma_offaxis_dec	4.359
+p2_tma_offaxis_area	0.044
+p2_tma_onaxis_wfe	0.0059
+p2_tma_onaxis_bias	1'
+p2_tma_unobscured_fp_foot	< 0.0001
+p2_tma_unobscured_ffm1	0.006
+p2_tma_unobscured_ring1	0.022
+p2_tma_widefield_rc0	0.4519
+p2_tma_widefield_tma15	0.0613
+p2_tma_widefield_tma20	0.1200
+p2_wf2_freeform_one0	0.0801
+p2_wf2_freeform_one1	0.0023
+p2_wf2_freeform_wide	0.143
+p2_zwfs_dm96_vgain	0.9954
+p2_zwfs_dm96_vres	272.12
+p2_zwfs_dm96_sgain	0.7829

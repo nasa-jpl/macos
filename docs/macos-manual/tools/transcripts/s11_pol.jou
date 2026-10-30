@@ -1,0 +1,13 @@
+# Section 11, turning polarization on: POL with its two prompts.  The prose after it is pinned too: the mode
+# survives a LOAD and the LOAD names it (Section 3, session options).
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in s11
+cd $TMP/s11
+# TRANSCRIPT: s11_pol
+pol
+1,0
+0,0
+# TRANSCRIPT-OFF
+old Cassegrain
+# EXPECT: Polarization turned on\s+Vector diffraction enabled\s+Enter Ex0 \(real,imag\): \[[^\]]*\]: 1,0\s+Enter Ey0 \(real,imag\): \[[^\]]*\]: 0,0
+# EXPECT: LOAD: session modes in force: POLARIZATION
+# EXPECT-NOT: forrtl

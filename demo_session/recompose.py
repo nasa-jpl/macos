@@ -1,0 +1,60 @@
+#!/usr/bin/env python3   # needs numpy + PIL: run with the pymacos venv python if the system one lacks numpy
+"""Recompose a wide multi-panel figure for a 16:9 slide: trim white margins and,
+for an N-panel strip, split it into R rows at column boundaries found from
+white gutters.  Composition only (DECK_STYLE: recompose at the panel level,
+never regenerate).  Usage: recompose.py <in.png> <out.png> [rows]"""
+import sys
+import numpy as np
+from PIL import Image
+
+def trim(im, pad=10):
+    a = np.asarray(im.convert('L')); ink = np.where(a < 250)
+    if ink[0].size == 0: return im
+    t, b, l, r = ink[0].min(), ink[0].max(), ink[1].min(), ink[1].max()
+    return im.crop((max(0, l-pad), max(0, t-pad), min(im.width, r+pad+1), min(im.height, b+pad+1)))
+
+def split_cols(im, rows):
+    """Cut the strip into `rows` row-strips at the widest white gutters."""
+    a = np.asarray(im.convert('L')); col_ink = (a < 250).sum(axis=0)
+    white = col_ink == 0
+    # gutters = runs of white columns; pick the (rows-1) widest that are not at the edges
+    runs, start = [], None
+    for x, w in enumerate(white):
+        if w and start is None: start = x
+        if not w and start is not None: runs.append((start, x)); start = None
+    runs = [(s, e) for s, e in runs if s > 0 and e < im.width]
+    # choose cut points nearest to equal thirds among the gutters
+    cuts = []
+    for k in range(1, rows):
+        target = im.width * k / rows
+        s, e = min(runs, key=lambda se: abs((se[0]+se[1])/2 - target))
+        cuts.append((s+e)//2)
+    edges = [0] + sorted(cuts) + [im.width]
+    return [im.crop((edges[i], 0, edges[i+1], im.height)) for i in range(rows)]
+
+def drop_suptitle(im, max_frac=0.06):
+    """Remove a centred super-title: the first ink run from the top when it is
+    short (< max_frac of the height) and followed by a full-width white gap.
+    The slide caption carries the title (DECK_STYLE)."""
+    a = np.asarray(im.convert('L')); row_ink = (a < 250).sum(axis=1)
+    y = 0
+    while y < im.height and row_ink[y] == 0: y += 1
+    y0 = y
+    while y < im.height and row_ink[y] > 0: y += 1
+    y1 = y
+    while y < im.height and row_ink[y] == 0: y += 1
+    if 0 < (y1 - y0) < max_frac * im.height and y < im.height:
+        return im.crop((0, y, im.width, im.height))
+    return im
+
+src, dst = sys.argv[1], sys.argv[2]; rows = int(sys.argv[3]) if len(sys.argv) > 3 else 1
+im = trim(Image.open(src).convert('RGB'))
+if rows > 1:
+    im = trim(drop_suptitle(im))
+    parts = [trim(p) for p in split_cols(im, rows)]
+    W = max(p.width for p in parts); gutter = 16
+    H = sum(p.height for p in parts) + gutter*(len(parts)-1)
+    out = Image.new('RGB', (W, H), (255,255,255)); y = 0
+    for p in parts: out.paste(p, (0, y)); y += p.height + gutter
+    im = out
+im.save(dst); print('wrote', dst, im.size)

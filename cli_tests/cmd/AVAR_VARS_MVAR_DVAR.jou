@@ -1,0 +1,22 @@
+# AVAR / VARS / MVAR / DVAR: the CALIB variable set by dialog on the manual's Cassegrain (cmdref:
+# System Optimization).  AVAR 3 with the mask 0,0,0,0,0,0,1,1 frees ROC and CONIC (no Zernike terms);
+# MVAR re-masks it to TIP TILT; DVAR removes it and VARS reports the empty set again.
+old $ROOT/docs/macos-manual/examples/Cassegrain.in
+vars
+avar
+3
+0,0,0,0,0,0,1,1
+0,0
+vars
+mvar
+3
+1,1,0,0,0,0,0,0
+vars
+dvar
+3
+vars
+# EXPECT: No Variable Element for Optimization![\s\S]*?Elt Name= Secondary, Elt ID=3, Variable DOF= ROC CONIC[\s\S]*?Variable DOF= TIP TILT[\s\S]*?No Variable Element for Optimization!
+# EXPECT: Enter range of Zernike terms: \[1,45\]
+# EXPECT-NOT: already defined
+# EXPECT-NOT: is not a variable
+# EXPECT-NOT: forrtl

@@ -126,6 +126,7 @@ set(MOD_SRCS
     lohpars_mod.F
     macos_IO.f90
     param_mod.F
+    emsg_mod.F90
     elt_mod.F
     nn_util.F
     mathsub.F

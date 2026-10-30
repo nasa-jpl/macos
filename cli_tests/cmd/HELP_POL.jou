@@ -1,0 +1,27 @@
+# HELP (paginated; 0 at each "Hit return to continue" prompt continues) and POL / SCALAR (polarization on with
+# Ex0 = 1, Ey0 = 0; vector diffraction enabled with it; SCALAR turns the vector mode off and leaves polarization
+# on) on the manual's Cassegrain (cmdref: Session & Files / Behavior Toggles).  The MODE_*.jou journals cover the
+# session-mode persistence across LOAD; this one covers the commands' own dialogs.
+old $ROOT/docs/macos-manual/examples/Cassegrain.in
+help
+0
+0
+0
+0
+0
+0
+0
+0
+pol
+1,0
+0,0
+status
+scalar
+status
+# EXPECT: MACOS command summary\s+Casing: UPPER part is the minimum-match abbreviation
+# EXPECT: Hit return to continue\.\.\. \[0\]: 0\s+PRESCRIPTION I/O
+# EXPECT: SYSTEM OPTIMIZATION
+# EXPECT: Polarization turned on\s+Vector diffraction enabled\s+Enter Ex0 \(real,imag\): \[0\.00000,0\.00000\]: 1,0\s+Enter Ey0 \(real,imag\): \[0\.00000,0\.00000\]: 0,0
+# EXPECT: Polarization= T\s+Vector diffraction= T
+# EXPECT: Scalar diffraction enabled[\s\S]*?Polarization= T\s+Vector diffraction= F
+# EXPECT-NOT: forrtl

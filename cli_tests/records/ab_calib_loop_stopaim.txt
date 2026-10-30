@@ -1,0 +1,14 @@
+# Corpus A/B for PLAN_CONSOLIDATION 3.3 (the CALIB LM stopping rule), 2026-10-11.
+# The element-stop LOAD path runs the same loop (stop_set.F ChiefRayAiming: nls_optim_dvr,
+# BEAM target, T=12, tol 5e-12), so every deck with an element-bound stop exercises it.
+# pre  = engine a8c08bf + the reporting only (old loop), ifx and gfortran side builds
+# post = this commit's engine, ifx and gfortran
+# cli_load_gate.py on scratchpad decks_all.txt (406 decks), SAVEs kept; cmp.py compares every
+# record column (status nelt npass rms pv avg lost flips rt_status rt_nelt roundtrip settle)
+# and the first SAVE of every deck BYTE FOR BYTE (StopPos / ChfRayPos / ChfRayDir / xGrid live
+# there: header ApStop= for an object-space stop, the element block for an element-bound one).
+== ifx: 406 decks compared; 404 SAVE pairs (231 declare a stop); column movers 0; SAVE diffs 0
+== gf: 406 decks compared; 403 SAVE pairs (231 declare a stop); column movers 0; SAVE diffs 0
+# element-bound stops in the SAVEs: 31 (both compilers); header stops: 181
+# load_fail on both pre and post (unchanged): ifx 2, gfortran 3 -- the pre-existing refusals
+# RESULT: 0 movers, 0 SAVE differences -> no named movers for this change.

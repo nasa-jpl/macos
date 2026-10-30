@@ -1,0 +1,24 @@
+# MTF with the ROW / COLUMN plot types, IMGMODE, PGP panels, LOS on the manual's Cassegrain (cmdref: Outputs /
+# Plot Style).  NONE first.  LOS at the exit-pupil Reference (element 4) of the unperturbed telescope reports a
+# line of sight at the 1e-12 rad level (round-off of zero).
+old $ROOT/docs/macos-manual/examples/Cassegrain.in
+none
+mtf 5
+row
+column
+imgmode
+neg
+imgmode
+pos
+pgp 4
+los
+4
+# EXPECT: MACOS> mtf 5\s+Enter number of element where data is to be generated: \[5\]: 5\s+Tracing\s+1877 rays and propagating\s+65536 grid points
+# EXPECT: Plot type set to ROW
+# EXPECT: Plot type set to COLUMN
+# EXPECT: IMGMODE = NEG \(astronomy: large -> dark\)
+# EXPECT: IMGMODE = POS \(conventional: large -> bright\)
+# EXPECT: Use 2 x 2 PGPLOT panels
+# EXPECT: System Line of Sight \(X-tilt, Y-tilt \(radian\)\) =\s+-?\d+\.\d+D-1\d,\s+-?\d+\.\d+D-1\d
+# EXPECT: System Line of Sight \(PSF centroid at detector
+# EXPECT-NOT: forrtl

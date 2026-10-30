@@ -16,6 +16,10 @@ C***********************************************************************
 
 C       These are SCOMP-specific variables
 
+!-->  PLAN 1.2 (dddd): the data-only DRAW handler reads its arguments from
+!     the DrawData* module variables, never from the stack
+	USE src_mod, ONLY: DrawDataOnly
+!<--
 	IMPLICIT NONE
 	LOGICAL LARG,LCMP
 	CHARACTER(len=*) :: command
@@ -47,7 +51,10 @@ C  Load CARG(1 and 2) for some commands
 	IF (LCMP(command,'SAVE',3).OR.LCMP(command,'JOURNAL',3))
      &	THEN
 	  CALL C2CW(CARG(1),ls,STACK,' ')
-	  CALL C2CW(CARG(2),ls,STACK,' ')
+!-->  PLAN 1.2 (v): a blank second token is no token (C2CW would scan
+!     past its buffer for one); save_rx passes none for a new file.
+	  IF (LEN_TRIM(CARG(2)) > 0) CALL C2CW(CARG(2),ls,STACK,' ')
+!<--
 	  GO TO 110
 	END IF
 
@@ -61,7 +68,8 @@ C  Load IARG(1) for other commands
      &	  LCMP(command,'DMBUILD',3).OR.LCMP(command,'COORD',3).OR.
      &	  LCMP(command,'BUILD',3).OR.LCMP(command,'INTENSITY',3).OR.
      &	  LCMP(command,'GAIN',3).OR.LCMP(command,'LOG',3).OR.
-     &    LCMP(command,'DVAR',4)) THEN
+     &    LCMP(command,'DVAR',4).OR.
+     &    LCMP(command,'SEGRAYTRACE',7)) THEN
       	  CALL I2C(IARG(1),ls,STACK,' ')
 	  GO TO 110
 	END IF
@@ -123,6 +131,12 @@ C  Load FDP command arguments
         END IF
 
 C  Load 1st & last elt, plus plane, for DRAW
+!-->  PLAN 1.2 (dddd): a data-only DRAW (the api's draw_rays) bypasses the
+!     dialog, so arguments pushed here were read back by the command loop
+!     ('** Unknown command = 13', '= 0', '= 0', '= <rx path>' -- stale
+!     IARG(1:3) and CARG(1)) after every draw_rays.  Push nothing for it.
+	IF (LCMP(command,'DRAW',3) .AND. DrawDataOnly) GO TO 110
+!<--
 	IF (LCMP(command,'DRAW',3)) THEN
 	  CALL I2C(IARG(1),ls,STACK,' ')
 	  CALL I2C(IARG(2),ls,STACK,' ')
@@ -255,7 +269,10 @@ C  Load FFP
 	END IF
 
 C  Load CENTER
-	IF (LCMP(command,'CEN',3)) THEN
+!-->  CENTER needs five letters here as in the command loop: three let it
+!     capture CENTROID (modes_set, 2026-10-28) and push CENTER's arguments,
+!     which the loop then read as commands ('** Unknown command = 0' ...).
+	IF (LCMP(command,'CENTER',5)) THEN
 	  CALL I2C(IARG(1),ls,STACK,' ')
 	  CALL D2C(DARG(1),ls,STACK,',')
 	  CALL D2C(DARG(2),ls,STACK,' ')

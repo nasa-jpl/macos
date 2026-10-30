@@ -1,0 +1,19 @@
+{
+ "section": "80_end_to_end",
+ "refusal": {
+  "entry": "run(fullfile(pwd,'s1_axial.m'));",
+  "expect": "CONIC SOLVER GATE FAILED",
+  "from": "=+\\n E2E2 stage 1"
+ },
+ "pins": [
+  {
+   "name": "dk",
+   "pattern": "max\\|dK\\| = (\\S+) \\(bar",
+   "rule": "printed",
+   "format": "%.2e"
+  }
+ ],
+ "figure_ref": "none: stage 1 stops at its first gate, before it builds the telescope.",
+ "number": "There is no number to reproduce today. Stage 1's first gate checks the conic solver against the shared TMA fixture, and the solver now misses it by max|dK| = %pin:p2_e2e2_dk%. The solver was replaced on 2026-10-03 by the signed fixed-frame form, and its own test re-targeted to the Ritchey-Chretien closed form, which says the fixture's conics are no longer a truth; this gate was not re-targeted (finding (ppp)). The README's delivered telescope (30.001 nm maximum at the strict-centroid reference) is the committed run's.",
+ "prompt": "Using a copy of templates/80_end_to_end/e2e2, re-target s1_axial's conic gate the way tests/tE2E2Axial was (the Ritchey-Chretien closed form), run the three stages, and compare the delivered ladder with the README's."
+}

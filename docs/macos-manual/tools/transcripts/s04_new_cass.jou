@@ -1,0 +1,132 @@
+# Section 4, the NEW tutorial: the Cassegrain telescope, typed from the prompts (Example Light Source)
+# and finished element by element (Example Telescope) -- Dave 2026-10-19: regenerate the NEW tutorials as
+# plain dialogs (TRANSCRIPT_DIFF.md #11).  The answers are 3.2's; the current dialog adds the base-units and
+# glass-type prompts, both answered with their defaults.  The deck NEW writes traces as examples/Cassegrain.in
+# does: same rays to the focal plane and the same mean path at the same grid, the OPD at the round-off floor.
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in ref
+cd $TMP
+# TRANSCRIPT: s04_new_source
+new
+Cassegrain
+0,0,1
+0,0,-5
+1d22
+1
+0
+none
+1d-6
+1
+Circular
+4
+15
+-1,0,0
+0,-1,0
+5
+# TRANSCRIPT: s04_new_elt1 from=Enter\sElement\s+1\sData
+SecMirObs
+Obscuring
+Flat
+0,0,-5.4
+0,0,-5.4
+0,0,-1
+yes
+Circular
+2,0,0
+1
+Circle
+0.5,0,0
+1,0,0
+1d22
+Geometric
+
+
+# TRANSCRIPT: s04_new_elt2 from=Enter\sElement\s+2\sData
+Primary
+Reflector
+Conic
+0,0,0
+0,0,0
+0,0,-1
+1
+5.4
+1
+
+
+5.4
+Geometric
+
+
+
+
+
+# TRANSCRIPT: s04_new_elt3 from=Enter\sElement\s+3\sData
+Secondary
+Reflector
+Conic
+0,0,-4.0611459018
+0,0,-5.4
+0,0,-1
+1
+1.3388540982
+1.6341835953
+
+
+1.3388540982
+Geometric
+
+
+
+
+
+# TRANSCRIPT: s04_new_elt4 from=Enter\sElement\s+4\sData
+Ref_surf
+Reference
+Conic
+0,0,-4.0601459018
+0,0,-4.0601459018
+0,0,1
+1
+5.5601459018
+0
+
+
+5.5601459018
+FarField
+
+
+# TRANSCRIPT: s04_new_elt5 from=Enter\sElement\s+5\sData
+foc_pln
+FocalPlane
+Flat
+0,0,1.5
+0,0,1.5
+0,0,1
+
+
+0
+Geometric
+
+
+# TRANSCRIPT: s04_new_tout from=Enter\sxOut upto=%\s-{20}
+1,0,0
+0,1,0
+# TRANSCRIPT: s04_new_source_show
+show
+0
+# TRANSCRIPT-OFF
+opd 5
+/null
+old ref/Cassegrain
+mod ngridpts=15 q
+opd 5
+# EXPECT: File Cassegrain\.in being created\.
+# EXPECT: Enter number of elements\s*\[no default\]: 5\s+Enter Element\s+1 Data:
+# EXPECT: EltName=\s+Secondary[\s\S]*?KrElt=-3\.5267\d*E\+00\s+KcElt=-2\.6705\d*E\+00
+# EXPECT: EltName=\s+Ref_surf[\s\S]*?PropType=\s+FarField
+# EXPECT: Enter yOut \(x,y,z\) \[[^]]*\]: 0,1,0\s+% -+\s+% Source Definition[\s\S]*?Number of output coordinates is\s+5
+# EXPECT: Enter number of element \(0=aperture\): \[0\]: 0[\s\S]*?Aperture=4\.0E\+00[\s\S]*?nGridpts=\s+15
+# EXPECT: OPD: nPassRays =\s+112,\s+DAvgCumL =\s+14\.622\d*D\+00[\s\S]*?RMS OPD error is\s+\d\.\d+D-1[2-6]
+# EXPECT: Input file ref/Cassegrain\.in being loaded[\s\S]*?OPD: nPassRays =\s+112,\s+DAvgCumL =\s+14\.622\d*D\+00[\s\S]*?RMS OPD error is\s+\d\.\d+D-1[2-6]
+# EXPECT-NOT: values expected
+# EXPECT-NOT: Unknown (grid|surface|element|command)
+# EXPECT-NOT: forrtl

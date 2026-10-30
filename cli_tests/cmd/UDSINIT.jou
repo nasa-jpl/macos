@@ -1,0 +1,28 @@
+# UDSINIT on the manual's AO example: element 7 is a UserDefined (influence-function deformable mirror)
+# surface whose coefficients come from AOmirror.test (cmdref: Surface Data).  The deck loads the file itself
+# (UDSrfParam= must precede UDSrfFile= -- the example had them the other way round and its ten UDSrfParam
+# values split over two lines until 2026-10-16, which printed a parse warning and an "Unidentified string");
+# UDSINIT re-reads the same file and the exit-pupil OPD is unchanged.
+cd $ROOT/docs/macos-manual/examples
+old AOExample.in
+opd 16
+/null
+udsinit
+7
+AOmirror.test
+opd 16
+/null
+save $TMP/aodm
+old $TMP/aodm.in
+opd 16
+# The 3.1638e-7 pinned until 2026-10-19 was the DM WITHOUT its monomial frame (lost in the May SAVE refresh, PLAN 1.2 (hh));
+# with the 3.2 frame restored the OPD is 1.2675e-6, and a SAVE now keeps the frame and writes UDSrfParam before UDSrfFile.
+# The SAVE-reload leg is the must-fail one: the pre-fix writer dropped the frame and put UDSrfFile before UDSrfParam, so the
+# reloaded deck read 3.1638e-7 (and, the keys swapped, the reader's 'Must specify UDSrfParam' warning).  The reloaded deck
+# finds AOmirror.test in the examples directory, still the working directory.
+# EXPECT: RMS OPD error is\s+1\.2675\d*D-06[\s\S]*?Enter user-defined surface file name \[none\]: AOmirror\.test[\s\S]*?RMS OPD error is\s+1\.2675\d*D-06
+# EXPECT: (RMS OPD error is\s+1\.2675\d*D-06[\s\S]*?){3}
+# EXPECT-NOT: Must specify UDSrfParam
+# EXPECT-NOT: Unidentified string
+# EXPECT-NOT: Unknown user-defined surface type
+# EXPECT-NOT: forrtl

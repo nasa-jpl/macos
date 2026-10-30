@@ -1,0 +1,33 @@
+# SINT on the f = 1 m paraboloid of tst_trace_rewrites.in (Surface= Interpolated, no data file: it traces
+# as its base conic until SINT) (cmdref: Surface Data).  The data file is <deck file name>.srf<iElt>.txt,
+# the deck's FULL file name including .in (tst_trace_rewrites.in.srf1.txt), written here by awk on a
+# 15 x 15 grid (225 points, mDP = 255), iComputeDZ = 1; each z is the DEVIATION from the base conic,
+# positive along psiElt (toward the incoming beam; didesub IntSrf: zc = rho - f*zhat).
+# Legs, each a SINT re-read then OPD at the focal plane (the OPD there is tilt-blind; piston shows in the
+# average path): (1) no data: RMS 3e-16; (2) piston +1e-6: the mean path SHORTENS by 2e-6 (the surface
+# moved toward the source), OPD stays at the interpolation noise; (3) defocus 1e-4 r^2: RMS 5.64e-7 and
+# P-V 1.91e-6 against 5.8e-7 / 2.0e-6 for a 2x double pass of the deviation; (4) the paraboloid's own sag
+# as data, +r^2/4: the sag doubles and the focal plane sits 0.5 m past focus, RMS 2.84 mm.
+# COPY: $ROOT/ZGD_test_files/tst_trace_rewrites.in
+cd $TMP
+old $DECK
+none
+opd 2
+! awk 'BEGIN{print 225,1;for(i=-7;i<=7;i++)for(j=-7;j<=7;j++){x=i*0.0175;y=j*0.0175;printf "%g %g %.12g\n",x,y,1e-6}}' > tst_trace_rewrites.in.srf1.txt
+sint
+opd 2
+! awk 'BEGIN{print 225,1;for(i=-7;i<=7;i++)for(j=-7;j<=7;j++){x=i*0.0175;y=j*0.0175;printf "%g %g %.12g\n",x,y,1e-4*(x*x+y*y)}}' > tst_trace_rewrites.in.srf1.txt
+sint
+opd 2
+! awk 'BEGIN{print 225,1;for(i=-7;i<=7;i++)for(j=-7;j<=7;j++){x=i*0.0175;y=j*0.0175;printf "%g %g %.12g\n",x,y,(x*x+y*y)/4}}' > tst_trace_rewrites.in.srf1.txt
+sint
+opd 2
+# EXPECT: Elt   1: Reflector   : Interpol with Kc=-1\.0000D\+00, Kr=-2\.0000D\+00
+# EXPECT: MACOS> opd 2\s+Enter element where OPD is to be evaluated: \[0\]: 2\s+OPD: Rays being traced =\s+277[\s\S]*?DAvgCumL =  15\.00000000D-01 m[\s\S]*?RMS OPD error is   \d\.\d+D-1[3-9] m
+# EXPECT: (MACOS> sint\s+Computing interpolated surface data\.\.\.\s+Compute time was[\s\S]*?){3}
+# EXPECT: DAvgCumL =  14\.99997\d+D-01 m[\s\S]*?RMS OPD error is   \d\.\d+D-(09|1\d) m
+# EXPECT: DAvgCumL =  15\.0000097\dD-01 m[\s\S]*?RMS OPD error is   5\.644\d+D-07 m\s+P-V OPD error is   1\.911\d+D-06 m
+# EXPECT: DAvgCumL =  15\.048983\d+D-01 m[\s\S]*?RMS OPD error is   2\.84198\d+D-03 m\s+P-V OPD error is   9\.6218\d+D-03 m
+# EXPECT-NOT: does not exist
+# EXPECT-NOT: not correctly set
+# EXPECT-NOT: forrtl

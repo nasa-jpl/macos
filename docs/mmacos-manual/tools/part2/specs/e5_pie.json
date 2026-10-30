@@ -1,0 +1,37 @@
+{
+ "section": "20_segmentation",
+ "entry": "run(fullfile(pwd,'e5_pie.m'));",
+ "knobs": {
+  "file": "e5_pie.m",
+  "from": "^PAD  = 0;",
+  "to": "^R_EXTRA"
+ },
+ "figure": "e5pie_step3_apertures.png",
+ "run": {
+  "from": "step 1:",
+  "to": ""
+ },
+ "pins": [
+  {
+   "name": "clipped",
+   "pattern": "\\n\\s*(\\d+) rays clipped",
+   "rule": "printed",
+   "format": "%d"
+  },
+  {
+   "name": "kept",
+   "pattern": "trace keeps (\\d+) rays",
+   "rule": "printed",
+   "format": "%d"
+  },
+  {
+   "name": "src",
+   "pattern": "baseline: (\\d+) src rays",
+   "rule": "printed",
+   "format": "%d"
+  }
+ ],
+ "caption": "The apertures step 3 emits (`e5pie_step3_apertures.png`): the center hexagon and six chorded wedges, each a convex polygon, with the 50 mm gaps as uniform slots; one ring needs no obscurations.",
+ "number": "Declared in the prescription, the polygons clip the %pin:p2_e5_pie_clipped% gap rays the source tiling had placed where there is no glass (of %pin:p2_e5_pie_src%), and under a 100 mm wedge decenter the aperture-less trace keeps %pin:p2_e5_pie_kept% rays that the apertured one loses at the segment's edge. The template's committed `findings.txt` (August) reads 502 clipped and 403 kept, of 12520 source rays, and the README says about 400: the live source grid is smaller, the same change as Part I's pie (finding (fff)).",
+ "prompt": "Using templates/20_segmentation/e5_pie, segment the e5 primary into a 2-ring pie with a 30 mm gap, emit the physical apertures, and tell me how many rays the gaps clip and how many the aperture-less trace wrongly keeps under a 100 mm decenter."
+}

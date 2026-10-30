@@ -1,0 +1,88 @@
+# ATMOS under SEED, against Kolmogorov and Noll, and carried consistently to the focal plane (PLAN_CONSOLIDATION
+# 1.2 (p), RULED 2026-10-18).  The manual's Cassegrain (4 m, 51-px grid, dx 0.08 m), r0 0.25 m at 1e-6, tilt
+# participation 1, the RAY grid at the entrance-pupil Obscuring (element 1); OPD 1 = the screen, OPD 4 = the exit-
+# pupil Reference, SPOT 5 at the focal plane (EFL 22.4736 m, EFL_SYSPROP.jou).  Pre-fix (RFOURN declared
+# COMPLEX*8 since 019a2981, so the transform ran over 2x its array) the screen was a checkerboard 70-160x
+# Kolmogorov at one pixel, its amplitude 1e5x seed-dependent, ifx non-deterministic under a fixed seed, and
+# the ray tilt 3x the gradient (the 3-row stencil over 2 dx).  The checks are cli_tests/tools/atmos_map_check.py:
+# slope / noll / carry / tilt per seed, kolm over the three seeds; the values are identical on ifx and gfortran.
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in
+old $DECK
+none
+text
+! rm -f $TMP/*.txt
+seed
+12345
+atm
+1
+0.25
+1e-6
+1.0
+ray
+opd 1
+opd 4
+opd 5
+spot 5
+tout
+/null
+! mv $TMP/Cassegrain.in.OPD1.txt $TMP/s12345_1.dat
+! mv $TMP/Cassegrain.in.OPD4.txt $TMP/s12345_4.dat
+! mv $TMP/Cassegrain.in.spot5.txt $TMP/s12345_sp.dat
+! python3 $ROOT/cli_tests/tools/atmos_map_check.py --screen s12345_1.dat --ep s12345_4.dat --spot s12345_sp.dat --dx 0.08 --r0 0.25 --lam 1e-6 --efl 22.4736 --dir $TMP
+! rm -f $TMP/*.txt
+seed
+4321
+atm
+1
+0.25
+1e-6
+1.0
+ray
+opd 1
+opd 4
+opd 5
+spot 5
+tout
+/null
+! mv $TMP/Cassegrain.in.OPD1.txt $TMP/s4321_1.dat
+! mv $TMP/Cassegrain.in.OPD4.txt $TMP/s4321_4.dat
+! mv $TMP/Cassegrain.in.spot5.txt $TMP/s4321_sp.dat
+! python3 $ROOT/cli_tests/tools/atmos_map_check.py --screen s4321_1.dat --ep s4321_4.dat --spot s4321_sp.dat --dx 0.08 --r0 0.25 --lam 1e-6 --efl 22.4736 --dir $TMP
+! rm -f $TMP/*.txt
+seed
+777
+atm
+1
+0.25
+1e-6
+1.0
+ray
+opd 1
+opd 4
+opd 5
+spot 5
+tout
+/null
+! mv $TMP/Cassegrain.in.OPD1.txt $TMP/s777_1.dat
+! mv $TMP/Cassegrain.in.OPD4.txt $TMP/s777_4.dat
+! mv $TMP/Cassegrain.in.spot5.txt $TMP/s777_sp.dat
+! python3 $ROOT/cli_tests/tools/atmos_map_check.py --screen s777_1.dat --ep s777_4.dat --spot s777_sp.dat --dx 0.08 --r0 0.25 --lam 1e-6 --efl 22.4736 --dir $TMP
+! python3 $ROOT/cli_tests/tools/atmos_map_check.py --screens s12345_1.dat,s4321_1.dat,s777_1.dat --dx 0.08 --r0 0.25 --lam 1e-6 --dir $TMP
+! rm -f $TMP/*.txt
+seed
+12345
+atm
+1
+0.25
+1e-6
+1.0
+ray
+opd 1
+# EXPECT: Enter noise seed \(any integer 1 to 32,700\): \[\d+\]: 12345[\s\S]*?RMS OPD error is\s+7\.3376\d*D-0\d
+# EXPECT: Enter noise seed \(any integer 1 to 32,700\): \[\d+\]: 4321[\s\S]*?RMS OPD error is\s+1\.2006\d*D-0\d
+# EXPECT: Enter noise seed \(any integer 1 to 32,700\): \[\d+\]: 777[\s\S]*?RMS OPD error is\s+2\.7360\d*D-0\d
+# EXPECT: (ATMCHK slope ok[\s\S]*?ATMCHK noll  ok[\s\S]*?ATMCHK carry ok[\s\S]*?ATMCHK tilt  ok[\s\S]*?ATMCHK PASS[\s\S]*?){3}ATMCHK kolm  ok[^\n]*\n ?ATMCHK PASS
+# EXPECT: Enter noise seed[^\n]*12345[\s\S]*?RMS OPD error is\s+(\S+)[\s\S]*Enter noise seed[^\n]*12345[\s\S]*?RMS OPD error is\s+\1\s
+# EXPECT-NOT: ATMCHK FAIL
+# EXPECT-NOT: refused
+# EXPECT-NOT: forrtl

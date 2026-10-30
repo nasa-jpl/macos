@@ -1,0 +1,52 @@
+# Section 8 (differential ray tracing): the linear model of Cassegrain.in, the 3.2 example's steps -- BUILD to
+# the reference surface (element 4), PARTIALS of the chief ray (global) and of ray 2 (actuator/sensor), LPERTURB
+# a 1e-7 rad tilt of the secondary about y, LPREAD a .pert file, LOPD, LSPOT, LINTENSITY, LPIXILATE.  The deck's
+# nGridpts is cut to 15 first (the 3.2 deck's value; BUILD is limited to 500 rays, the tree's 51 grid traces 1877).
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in s08
+cd $TMP/s08
+! printf '0 0 0 0 0 0\n0 0 0 0 0 0\n0 1e-7 0 0 0 0\n0 0 0 0 0 0\n0 0 0 0 0 0\n' > Cassegrain.pert
+old Cassegrain
+pgd
+/null
+mod nGridpts=15
+q
+# TRANSCRIPT: s08_build
+build
+4
+# TRANSCRIPT: s08_partials_chief
+partials
+1
+no
+# TRANSCRIPT: s08_partials_ray2
+partials
+2
+yes
+# TRANSCRIPT: s08_lperturb
+lperturb
+3
+no
+0,1e-7,0
+0,0,0
+lreset
+# TRANSCRIPT: s08_lpread
+lpr
+Cassegrain.pert
+# TRANSCRIPT: s08_lopd
+lopd
+# TRANSCRIPT: s08_lspot
+lspot
+# TRANSCRIPT: s08_lint
+lintensity
+# TRANSCRIPT: s08_lpix
+lpix
+10
+1e-7
+# TRANSCRIPT-OFF
+# EXPECT: Enter terminal element number: \[1\]: 4\s+Tracing\s+125 rays and BUILDing linear model\.\.\.
+# EXPECT: Partial of ray\s+1 at Element\s+4 \(Ref_surf\) to Element\s+2 \(Primary \) perturbations\s+0\.0000E\+00\s+-6\.6061E\+00\s+0\.0000E\+00\s+6\.1167E-01
+# EXPECT: Partial of ray\s+2 at Element\s+4 \(Ref_surf\) to Element\s+2 \(Primary \) perturbations\s+-6\.6190E-02\s+-6\.3981E\+00
+# EXPECT: Element\s+3 Linear Perturbations:\s+Rotational=\s+0\.000000D\+00\s+1\.000000D-07\s+0\.000000D\+00
+# EXPECT: Enter \.pert-file name: Cassegrain\.pert\s+FileCassegrain\.pert read\.
+# EXPECT: MACOS> lopd\s+Tracing perturbed system\s+Average OPD is\s+-?\d\.\d+E-1[1-9]\s+RMS OPD including piston is\s+2\.9689\d*E-08
+# EXPECT: Enter number of pixels per side: \[128\]: 10\s+Enter size of pixel: \[[^\]]*\]: 1e-7
+# EXPECT-NOT: forrtl

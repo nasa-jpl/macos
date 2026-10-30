@@ -1,0 +1,6 @@
+# VALIDATE: the Phase-1 pre-validator, with no state change (cmdref: Prescription I/O)
+# a good deck says OK; a deck with a keyword and no value is refused with the line number
+validate $ROOT/docs/macos-manual/examples/Cassegrain.in
+validate $ROOT/cli_tests/must_fail/missing_value.in
+# EXPECT: Cassegrain\.in: OK
+# EXPECT: line 21: key "nGridpts" has no value

@@ -1,0 +1,18 @@
+# The 17 tool templates (PLAN_MMACOS_MANUAL Part II table), in the index's order; a page each for the first two.
+10_telescopes/design_layer_api
+10_telescopes/pupil_id
+20_segmentation/grid_surface
+30_instruments/coro_experiments
+40_benches/dm_gauge_lib
+50_sensitivities/e5hex1
+50_sensitivities/e5hex1_budget
+50_sensitivities/e5hex2_refzern
+50_sensitivities/gen_segment_gridmat
+50_sensitivities/run_dwdgrid_multi
+50_sensitivities/run_dwdgrid_multi_multisegbasis
+50_sensitivities/run_dwdgrid_multi_singlesegbasis
+50_sensitivities/run_dwdsurf_multi
+50_sensitivities/run_dwdx_multi
+50_sensitivities/run_dwdz_multi
+50_sensitivities/zoom_5x5
+60_visualization/view_rx_demo

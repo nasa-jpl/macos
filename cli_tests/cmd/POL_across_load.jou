@@ -1,0 +1,25 @@
+# PLAN_CONSOLIDATION 1.2 (ooo), 2026-10-24: POLARIZATION switched on BEFORE a load survived the load as a mode
+# (PLAN 4 item 2) but with NO field -- src_mod_init_vars zeroed the source Jones vector Ex0/Ey0 on every load, so
+# an INTENSITY after the load summed to exactly zero (found by macos-fd on the tg_psi_dm templates: a centroid of
+# 0/0).  Now reinitialise_variables keeps Ex0/Ey0 across the load when the mode is in force; a deck's Ex0Ey0= line
+# still overrides.  Legs: polarization (Ex0 = 1, Ey0 = 0), load the manual's Cassegrain, INTENSITY at the detector:
+# the sum is finite; the same with the switch AFTER the load reads the same sum (the order no longer matters).
+# Pre-fix binary: the first sum is 0.0000000D+00 -> red.
+old $ROOT/docs/macos-manual/examples/CassWithExitPupil.in
+polarization
+1,0
+0,0
+old $ROOT/docs/macos-manual/examples/CassWithExitPupil.in
+int 6
+/null
+nopolarization
+old $ROOT/docs/macos-manual/examples/CassWithExitPupil.in
+polarization
+1,0
+0,0
+int 6
+/null
+# EXPECT: session modes in force: POLARIZATION
+# EXPECT: Sum of intensity=\s+([1-9]\.\d+D[+-]\d+)[\s\S]*?Sum of intensity=\s+\1
+# EXPECT-NOT: Sum of intensity=\s+0\.0+D\+00
+# EXPECT-NOT: forrtl

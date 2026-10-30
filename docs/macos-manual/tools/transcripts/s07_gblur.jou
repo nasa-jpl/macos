@@ -1,0 +1,35 @@
+# Section 7, GBLUR (the steps of tools/figs/FIG56.jou on /null): CoroExample.in on a 128 grid, the composed image
+# at the detector (element 16, 128 pixels of 1.392542e-6), a fresh COMPOSE before each GBLUR, a 0.1 um kernel
+# (far below the pixel) then a 20 um kernel (14 pixels).
+# DEADLINE: 300
+# COPY: $ROOT/docs/macos-manual/examples/CoroExample.in s07g
+cd $TMP/s07g
+old CoroExample.in
+pgd
+/null
+mod
+ngridpts=128
+q
+# TRANSCRIPT: s07_gblur_compose
+compose
+16
+128
+1.392542E-06
+# TRANSCRIPT: s07_gblur_small
+gblur
+1d-7,1d-7
+yes
+# TRANSCRIPT-OFF
+compose
+16
+128
+1.392542E-06
+# TRANSCRIPT: s07_gblur_large
+gblur
+2d-5,2d-5
+yes
+# TRANSCRIPT-OFF
+# EXPECT: Enter Gaussian blur kernel width in base units \(0,0\): \[[^\]]*\]: 1d-7,1d-7\s+Image added
+# EXPECT: Enter Gaussian blur kernel width in base units \(0,0\): \[[^\]]*\]: 2d-5,2d-5\s+Image added
+# EXPECT: Peak intensity= 3\.5161\d*D\+04;[^\n]*\s+Sum of intensity= 4\.7677\d*D\+05
+# EXPECT-NOT: forrtl

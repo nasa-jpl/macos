@@ -1,0 +1,25 @@
+# PLAN 3.4 matrix: OptTarget SPOT x mixed (TIP + h^4) DOF (CC 2026-10-11; the programmatic twins are
+# tCalibMatrix / test_calib_matrix.py, TO).  The deck (tst_calib_mixed.in) is spoiled: TIP 1 mrad AND h^4 5e-3;
+# CALIB must remove the spoil, print its merit and say why it stopped.  SPOT is the deck's own
+# target; WFE / ZWF are selected through SETP (SETP offers WFE, ZWF and Beam -- not SPOT).
+# DEADLINE: 120
+# COPY: $ROOT/ZGD_test_files/tst_calib_mixed.in
+# T = 35, not the deck's 10 (TO 2026-10-17): ONE residual (the spot radius) against two DOFs is a
+# rank-1 Jacobian at every step and a round-off-sensitive path; it met T=10 only while the field
+# weight was 0 (read as 1e-10, PLAN 1.2 (a)).  At weight 1, both compilers: T=10 TIP 1.46e-4,
+# T=30 1.2e-9, T=35 6.0e-10 (h^4 9.7e-10), cap.  The bindings' twins set the same T.
+! perl -i -pe 's/^(\s*OptMaxItrs=).*$/$1 35/' $DECK
+old $DECK
+calib
+no
+yes
+show 1
+# EXPECT: Final LM merit \(chisq\) =\s+\S+
+# EXPECT: Stopped: 
+# EXPECT-NOT: Optimization aborted
+# EXPECT-NOT: singular
+# EXPECT: psiElt=\s+-?0\.0E\+00\s+(-?0\.0E\+00|-?\d\.\d+E-(0[5-9]|[1-9]\d))\s+(-\d\.\d+E\+00|-9\.9+\d*E-01)
+# (the normal's z = -sqrt(1 - tilt^2) prints -9.9999999987E-01 on arm64 at the 1.6e-5 tilt; CCMac's gate 5)
+# (the residual tilt < 1e-4, the binding twin's margin -- arm64 lands at 1.6e-5 on this near-singular cell, Dave 2026-10-19: widen)
+# EXPECT: AsphCoef=\s+(-?0\.0E\+00|-?\d\.\d+E-(0[6-9]|[1-9]\d))
+# (measured 2026-10-11 at 338416c, both compilers: every cell stops at the cap T=10; TIP -> <= 1.8e-9, h^4 -> <= 3.3e-9, Z12 -> <= 5.5e-17)

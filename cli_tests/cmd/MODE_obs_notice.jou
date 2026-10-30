@@ -1,0 +1,24 @@
+# OBS is NOT session state (Dave 2026-10-28, PLAN_CONSOLIDATION 1.2 (cccc)(2)): a load resets it to
+# POSITIVE, as every LOAD always did, and since 2026-10-28 says so when it was not ('LOAD: OBS ALL
+# reset to POSITIVE' / 'LOAD: OBS NEGATIVE reset to POSITIVE'); STATUS shows the option
+# ('Obscuration option for ray-trace=' 0 ALL, 1 POSITIVE, 2 NEGATIVE).  Here: a default load (no
+# line), OBS ALL + a load + STATUS (the reset line; 1 after the load), OBS NEGATIVE + a load +
+# STATUS (the reset line; 1), OBS POSITIVE + a load (silent again).  The modes notice never names
+# OBS.  Pre-change: no reset line at all -- red; on the 7e9ed0a4 engine (OBS kept across the load)
+# the modes notice names OBS and STATUS shows 0 / 2 -- red again.
+old $ROOT/ZGD_test_files/tst_calib_spot4.in
+obs
+all
+old $ROOT/ZGD_test_files/tst_calib_spot4.in
+status
+obs
+negative
+old $ROOT/ZGD_test_files/tst_calib_spot4.in
+status
+obs
+positive
+old $ROOT/ZGD_test_files/tst_calib_spot4.in
+# EXPECT: LOAD: OBS ALL reset to POSITIVE[\s\S]*?Obscuration option for ray-trace=\s*1[\s\S]*?LOAD: OBS NEGATIVE reset to POSITIVE[\s\S]*?Obscuration option for ray-trace=\s*1
+# EXPECT-NOT: Obscuration option for ray-trace=\s*[02]
+# EXPECT-NOT: LOAD: session modes in force
+# EXPECT-NOT: (LOAD: OBS \w+ reset to POSITIVE[^\n]*\n[\s\S]*){3}

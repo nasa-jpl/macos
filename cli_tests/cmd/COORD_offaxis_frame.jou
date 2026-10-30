@@ -1,0 +1,16 @@
+# PLAN_CONSOLIDATION 1.2 (ff), CCMac's source-level bisection 2026-10-20 (cli_tests/records/mac_ff_localcoord.md):
+# LocalCoord (tracesub.F) builds the local frame at an element from differential chief rays.  The x branch
+# recomputes xLocal from the rotated ray's RayPos before normalizing; the y branch did NOT, so DUNITVEC normalized
+# the STALE translate-stage residual: exactly 0 on a coaxial deck (COORD_ACOOR.jou's Cassegrain stays right on
+# every platform), 2.2e-16 on arm64 at -O1+ (the 76.5-degree frame of (ff)), and a REAL residual on x86_64 for a
+# non-coaxial deck: pre-fix, opt_example.in's focal plane read zLocal (0, -0.94199, 0.33565) against its normal
+# (0, -0.94994, 0.31244) -- 1.4 degrees off -- and e5hex1.in's (0, 0.16440, -0.98639) against (0, -0.04398,
+# 0.99903) -- 12 degrees off.  With the recompute both read the normal to every printed digit (beam-side sign on
+# e5hex1), ifx and gfortran alike.  Pins: 5 figures (the cross-architecture rule).  Pre-fix binary: red.
+old $ROOT/ZGD_test_files/opt_example.in
+coord 11
+old $ROOT/ZGD_test_files/e5hex1.in
+coord 13
+# EXPECT: opt_example\.in\s+being loaded[\s\S]*?Computed zLocal=\s+(-?0\.0+D\+00|-?\d\.\d+D-(1\d|[2-9]\d))\s+-9\.4993\d*D-01\s+3\.1243\d*D-01
+# EXPECT: e5hex1\.in\s+being loaded[\s\S]*?Computed zLocal=\s+(-?0\.0+D\+00|-?\d\.\d+D-(1\d|[2-9]\d))\s+4\.3978\d*D-02\s+-9\.9903\d*D-01
+# EXPECT-NOT: forrtl

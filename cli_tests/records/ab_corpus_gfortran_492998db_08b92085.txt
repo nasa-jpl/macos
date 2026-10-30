@@ -1,0 +1,3 @@
+# A/B: pre corpus_gfortran_492998db.csv  post corpus_gfortran_08b92085.csv  (1468 decks in common, 0 only in pre, 0 only in post)
+# columns compared: status nelt npass lost rms pv avg roundtrip
+# 0 decks moved

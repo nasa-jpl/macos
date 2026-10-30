@@ -1113,6 +1113,24 @@ the WFE read at an explicit `ExitPupil` Return surface (should match);
 if MACOS's FP reference removes a term you need referenced to a SPECIFIC
 pupil, that's the case where `add_pupil` would enter the loop.
 
+> **RESOLVED 2026-09-08 (Dave's ruling, measured): the wavefront is read
+> at the PUPIL by default -- that is the OPD a PSF or any diffraction
+> calculation uses.**  The sentence above is WRONG for anything but the
+> optimiser's WFE objective.  MACOS's OPD at an element is the path to
+> each ray's landing point; a displaced perfect image has equal paths,
+> so the focal-plane read is BLIND to tilt: on e2e6m `s3_imager_full` a
+> 1e-6 rad global field tilt reads 4.4e-10 m rms at the FocalPlane vs
+> 1.4e-6 at the exit-pupil sphere, and a 1e-6 rad segment tilt reads as
+> a flat segment PISTON (Seg8 2.3e-6) instead of the +/-1e-6 bipolar
+> ramp.  The optimiser got away with it because minimising the FP OPD
+> minimises the wavefront modulo tilt and distortion; a rigid-body
+> Jacobian cannot.  A flat Reference normal to the chief in COLLIMATED
+> space is also a valid pupil read (s3's `SharedPupil`, elt 23, matches
+> the sphere to corr 0.9975).  Record: `macos/REPORT_ep_dome_review.md`,
+> tool `mmacos/tools/ep_dome_probe/`.  Supervisor default: read at a
+> placed pupil (Return/Reference, unpowered) and REFUSE or auto-place
+> when the deck has none -- never the FocalPlane (`BRIEF_ep_dome_ruling.md`).
+
 **`add_pupil` (exit-pupil reference surfaces, wanted by Dave):** a 2-pass
 op — (1) emit optics→FP, trace at a field, `m.fex()` to find the exit
 pupil; (2) re-emit `Return@image → ExitPupil Return (= elt nElt-1) →
@@ -1492,6 +1510,69 @@ slice 4 wants speed.
   observability.  First cut pure-MATLAB kinematics; MACOS validates
   selected configs through the real gauge functions + traces met-beam
   clearance.  Gated on §9.1 Q8.
+- **Exact asphere+Zernike co-emit on one mirror (`Telescope.build`).**
+  The emitter emits `Surface= Aspheric` OR `Surface= Zernike`, never
+  both; the engine applies the even-radial `AsphCoef` only on `Aspheric`
+  (SrfType 3), while `Zernike`(8)/`FreeForm`(14) carry a single monomial
+  field.  CCMac's dyson5 step-5 fold (even-radial → symmetric Zernike,
+  `asph_to_zern_`) is exact in the `MonZern` convention but the current
+  `Surface= Zernike`/`ZernCoef` emit applies a ~2× (plus a per-mode
+  residual) — see `MACOS_resources/mmacos/challenges/dyson5/
+  NOTE_asph_zernike_fold.md`.  FIX: emit the freeform via the `FreeForm`
+  `MonZern` channel (`zernike_grid_basis` is gated to match `MonZern`
+  exactly) and point `optimize_freeform`'s `OptZern` DOF at that channel;
+  no engine change.  Gate: A/B round-trip (asph via `Aspheric` == asph
+  via the fold, ray positions to engine precision).  The combined emit
+  path currently ERRORS until this lands.
+  **UPDATE 2026-10-05 (TO, addendum 44 / 0258faa): the exact route is
+  `Surface= FreeForm` with two channels -- Mon about the VERTEX carrying
+  the asphere as unnormalised ANSI 1/5/13/25 (exact to 7.8e-15 m), FF about
+  the section POLE carrying the Zernike modes -- no conversion through
+  `ZernCoef`.  PLAN.md 3.1 carries it as "asph+Zernike surface option".**
+- **EPFIX -- the fixed-station exit-pupil reference (engine + design
+  layer; Dave 2026-10-05, picked up with the co-emit above).**  Why:
+  `OptFEX` places the reference sphere at the probe chiefs' CROSSING,
+  which is ill-conditioned as a design approaches telecentric and fails
+  outright on dyson5's eccentric TMA section (far astigmatic crossing,
+  0.18/0.65 m probe axes, EP sphere loses every ray, CALIB aborts with
+  9.9999e36 -- TO addendum 42 cp1); FEX's telecentric fallback is a FLAT
+  Return, i.e. a sphere centred at infinity, which measures a converging
+  beam against a plane wave.  The metric never needed the crossing: a
+  reference sphere is correct iff it is centred on the field's chief
+  IMAGE point; its vertex station is a free convention.  Design: a
+  sibling of SXP, `EPFIX iElt` (tracesub.F): station S = VptElt(iElt)
+  NEVER moves; chief traced to the flat Return at the detector (iElt-1),
+  leg to element iElt+1 via `FEXConicLeg` -> image point P; then
+  `psi = unit(P-S)`, `Kr = -|P-S|`, `Kc = 0`, `Rpt = S` -- the same five
+  assignments FEX's caller makes, with S and P in place of the crossing
+  (no probe rays, nothing singular as the chiefs go parallel).  Dispatch
+  like SXP (`macos_cmd_loop.inc`, `smacosutil.F` LoadStack, `MACOS_OPS`);
+  CALIB flag `LOptEPFix` beside `LOptIfFEX` (dopt_mod; Rx `OptEPFix=`;
+  api `calib_set_ep_fix`; the ~15 `LOptIfFEX` sites in msmacosio /
+  stop_set / design_optim / smacos_compute mirror it), `smacos_compute`
+  calls EPFIX instead of FEX per field when set, STOP re-issue unchanged;
+  api `ep_fix(iElt)` + veneers; cmdref entry.  FEX and SXP are NOT
+  touched (FEX keeps "where the pupil IS" = the far-field propagation
+  distance).  Design layer: `add_pupil(..., 'station', z|'fex')` emits
+  the Return at a fixed station (default one FEX call at the seed, then
+  frozen); `optimize(..., 'ep_ref', 'fixed'|'fex')`, default 'fex' until
+  the gates pass.  Gates: (1) coaxial identity -- rodgers1's deck,
+  station = FEX's crossing, on-axis WFE equal to OptFEX to its 2.7e-9
+  class and the same solve; off-axis coaxial fields differ by the
+  second-order sphere-sampling term only (quantified); (2) TO's -4/190
+  section with the station 1 m out: runs where OptFEX aborted, per-field
+  rms matches TO's hand STRICT (29-40 um at the seed; `tEP` stage,
+  resources ea615fb) -- report BOTH the chief-intercept and the
+  best-focus form, the first carries field curvature (TO cp2: the strict
+  solve moved the worst SRF from the edge to the centre by balancing
+  focus); (3) tTmaTelecentric's Korsch: FEX falls back flat, EPFIX gives
+  the converging-wave reference; (4) FEX/SXP bit-identical.  Not urgent
+  for dyson5 (cp2: with symmetric DOFs the strict merit moves the edge
+  343 -> 332 um, the wall is the optics), but CCMac's freeform rungs on
+  the section currently optimise the FP merit, which mis-ranks the
+  fields 6x (16 um floor), so EPFIX goes in BEFORE the next freeform
+  ladder.  ~1 day.  Stopgap until then: TO's lsqnonlin strict solver
+  (`tEP` rung S1, deck write + reload per evaluation).
 
 ---
 

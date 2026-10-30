@@ -1,0 +1,32 @@
+{
+ "section": "40_benches",
+ "entry": "run(fullfile(pwd,'example_bench_ifo_dm.m'));",
+ "figure": "ifo_dm_recovery.png",
+ "run": {
+  "from": "dm_map_gen:",
+  "to": "DONE \\(phase 1\\)[^\\n]*"
+ },
+ "pins": [
+  {
+   "name": "corr",
+   "pattern": "col\\s+correlation (\\S+)",
+   "rule": "printed",
+   "format": "%.6f"
+  },
+  {
+   "name": "truth",
+   "pattern": "truth rms (\\S+) nm",
+   "rule": "printed",
+   "format": "%.2f"
+  },
+  {
+   "name": "resid",
+   "pattern": "recovered rms \\S+ nm; residual (\\S+) nm rms",
+   "rule": "printed",
+   "format": "%.3f"
+  }
+ ],
+ "caption": "The DM recovery (`ifo_dm_recovery.png`): the interferogram, the recovered DM surface, the PROPER truth carried through the ray map, and the residual, in nm.",
+ "number": "A DM surface of %pin:p2_bench_ifo_dm_truth% nm rms, made with PROPER, is recovered through the traced pupil map with correlation %pin:p2_bench_ifo_dm_corr% and a residual of %pin:p2_bench_ifo_dm_resid% nm rms; the phase-shifting itself is exact (the PSI against the direct field phase reads in the 1e-5 pm range), so the residual is the pupil imaging: its magnification, its distortion, and the registration the run refines.",
+ "prompt": "Using templates/40_benches/bench_ifo_dm, turn on the aberration phase (DO_ABERR=1) and rerun, and tell me how much the DM recovery's residual grows."
+}

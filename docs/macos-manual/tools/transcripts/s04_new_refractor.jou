@@ -1,0 +1,90 @@
+# Section 4, Refractors: the 3.2 lens -- lens_front (Conic, f=1, e=0, glass BK7) + lens_back (Flat at z=0.1,
+# FixedIndex 1) -- typed into NEW (Dave 2026-10-19: regenerate the NEW tutorials, TRANSCRIPT_DIFF #11).  The
+# answers are 3.2's; the current dialog adds the base-units / wavelength-units prompts (m, so BK7's Sellmeier
+# sees a physical wavelength), the glass-type default and the 'Is this correct?' echo.  Setup (not printed):
+# a collimated 0.2 beam from z=-1 and a FocalPlane at z=2.  The deck NEW writes must reload and trace the
+# same: before macos f0ba193e NEW left GlassType at Hartmann, the lens lost every ray and the deck refused to
+# reload (TRANSCRIPT_DIFF 3.10 (F)).
+cd $TMP
+new
+lens
+0,0,1
+0,0,-1
+1d22
+1
+0
+m
+m
+6.328d-7
+1
+Circular
+0.2
+15
+-1,0,0
+0,-1,0
+3
+# TRANSCRIPT: s04_refractor from=Enter\sElement\s+1\sData upto=Enter\sElement\s+3\sData
+lens_front
+refractor
+conic
+0,0,0
+0,0,0
+0,0,-1
+1
+1
+0
+no
+0
+1d22
+Geometric
+no
+BK7
+
+lens_back
+refractor
+flat
+0,0,0.1
+0,0,0
+0,0,-1
+no
+0
+1d22
+Geometric
+no
+FixedIndex
+1
+0
+
+# TRANSCRIPT-OFF
+fp
+FocalPlane
+Flat
+0,0,2
+0,0,2
+0,0,1
+
+
+1d22
+Geometric
+
+
+1,0,0
+0,1,0
+# TRANSCRIPT-OFF
+show
+1
+show
+2
+# TRANSCRIPT-OFF
+opd 3
+/null
+old lens
+opd 3
+# EXPECT: EltName=\s+lens_front\s+Element=\s+Refractor\s+Surface=\s+Conic\s+KrElt=-1\.0E\+00\s+KcElt=0\.0E\+00[\s\S]*?GlassElt=\s+BK7\s+GlassType=\s+Sellmeier
+# EXPECT: EltName=\s+lens_back\s+Element=\s+Refractor\s+Surface=\s+Flat[\s\S]*?VptElt=\s+0\.0E\+00\s+0\.0E\+00\s+1\.0000\d*E-01[\s\S]*?IndRef=1\.0E\+00
+# EXPECT-NOT: All rays are obscured or lost
+# EXPECT: OPD: nPassRays =\s+124,\s+DAvgCumL =\s+30\.539\d*D-01[\s\S]*?RMS OPD error is\s+1\.4114\d*D-03[\s\S]*?Input file lens\.in being loaded\.[\s\S]*?OPD: nPassRays =\s+124,\s+DAvgCumL =\s+30\.539\d*D-01[\s\S]*?RMS OPD error is\s+1\.4114\d*D-03
+# EXPECT-NOT: Unknown glass
+# EXPECT-NOT: values expected
+# EXPECT-NOT: Unknown (grid|surface|element|command)
+# EXPECT-NOT: forrtl

@@ -13,6 +13,19 @@ C***********************************************************************
 
       PUBLIC
       PRIVATE :: CSWAP, DROTG, DDOTLP, CNRM2, zrhqr, balanc, hqr
+!-->  Round-off dead bands (2026-10-02).  The source-frame
+!     re-orthogonalisation (OrthoSrcFrame) and the object-space STOP
+!     aim keep their incoming state when the freshly computed target
+!     differs from it by round-off only.  DeadBandUlp is the band, in
+!     units of EPSILON times the scale of the quantity.  MEASURED on
+!     the corpus (jwst zoom, e5hex1, Cass, dyson5, eac2_7seg; element,
+!     object and header stops): round-off residuals <= 0.5 (frame) and
+!     <= 0.7 (aim); the smallest genuine update 7e5.  A residual
+!     between DeadBandQuietUlp and the band is suppressed AND noted
+!     once per run by DeadBandNote; nDeadBandNote counts them all.
+      REAL*8, PARAMETER :: DeadBandUlp=16d0, DeadBandQuietUlp=2d0
+      INTEGER, SAVE :: nDeadBandNote=0
+!<--
       CONTAINS
 
         !-------------------------------------------------------------
@@ -207,21 +220,21 @@ C
       END SUBROUTINE DSUB
 C
       SUBROUTINE DSMPROD(A,B,S,N)
-      REAL*8 A(1),B(1),S
+      REAL*8 A(*),B(*),S
       Integer :: N
       A(1:N)=S*B(1:N)
       RETURN
       END SUBROUTINE DSMPROD
 C
       SUBROUTINE DNEGATE(A,B,N)
-      REAL*8 :: A(1),B(1)
+      REAL*8 :: A(*),B(*)
       Integer :: N
       A(1:N)=-B(1:N)
       RETURN
       END SUBROUTINE DNEGATE
 C
       SUBROUTINE DEQUATE(A,B,N)
-      REAL*8 A(1),B(1)
+      REAL*8 A(*),B(*)
       Integer :: N
       A(1:N)=B(1:N)
       RETURN
@@ -237,7 +250,7 @@ C
 C added by sws ...
       SUBROUTINE rdEQUATE(A,B,N)
       SREAL A(1)
-      REAL*8 B(1)
+      REAL*8 B(*)
       Integer :: N
       A(1:N)=B(1:N)
       RETURN
@@ -252,7 +265,7 @@ C added by sws ...
       END SUBROUTINE drdSUB
 C
       SUBROUTINE DUNITVEC(YHAT,Y,DMAG,N)
-      REAL*8 YHAT(1),Y(1),DMAG
+      REAL*8 YHAT(*),Y(*),DMAG
       Integer :: N,I
       DMAG=0D0
       DO 1 I=1,N
@@ -384,7 +397,7 @@ C         and A is NAxNC
 C
         SUBROUTINE DMPRDB(A,B,C,NA,NB,NC)
         IMPLICIT NONE
-        REAL*8 A(1),B(1),C(1),BIK
+        REAL*8 A(*),B(*),C(*),BIK
         Integer :: NA,NB,NC,NAMAX,NBMAX,
      &           NAPTR,NBPTR,NCPTR,I,K
         NAMAX=NA*NC
@@ -428,7 +441,7 @@ C
       END SUBROUTINE RMPRDB
 C
       SUBROUTINE DMPRDC(A,B,C,NA,NB,NC)
-      REAL*8 A(1),B(1),C(1),CJK
+      REAL*8 A(*),B(*),C(*),CJK
       Integer :: NA,NB,NC,NAM1,NAMAX,NCMAX,
      &           NAPTR,NBPTR,NCPTR,I,J,K,II
       NAM1=NA-1
@@ -529,7 +542,9 @@ C
       END SUBROUTINE IZERO
 C
       SUBROUTINE LZERO(A,N)
-      LOGICAL A(1)
+      LOGICAL A(*)     ! assumed-size (was A(1); see DZERO --
+                       ! the gfortran debug CLI aborted here at
+                       ! start-up, 2026-10-10)
       Integer :: N
       A(1:N)=.FALSE.
       RETURN
@@ -788,7 +803,7 @@ C***********************************************************************
 C***********************************************************************
 
       DOUBLE PRECISION FUNCTION DDOTLP(N,DX,INCX,DY,INCY)
-      DOUBLE PRECISION DX(1),DY(1),DTEMP
+      DOUBLE PRECISION DX(*),DY(*),DTEMP
       INTEGER I,INCX,INCY,IX,IY,M,MP1,N
       DDOTLP = 0.0D0
       DTEMP = 0.0D0
@@ -823,7 +838,7 @@ C***********************************************************************
 C***********************************************************************
 
       SUBROUTINE CAXPY(N,DA,DX,INCX,DY,INCY)
-      DOUBLE PRECISION DX(1),DY(1),DA
+      DOUBLE PRECISION DX(*),DY(*),DA
       INTEGER I,INCX,INCY,IX,IY,M,MP1,N
       IF(N.LE.0)RETURN
       IF (DA .EQ. 0.0D0) RETURN
@@ -858,7 +873,7 @@ C***********************************************************************
 
       SUBROUTINE DSVDC(X,LDX,N,P,S,E,U,LDU,V,LDV,WORK,JOB,INFO)
       INTEGER LDX,N,P,LDU,LDV,JOB,INFO
-      DOUBLE PRECISION X(LDX,1),S(1),E(1),U(LDU,1),V(LDV,1),WORK(1)
+      DOUBLE PRECISION X(LDX,*),S(*),E(*),U(LDU,*),V(LDV,*),WORK(*)
       INTEGER I,ITER,J,JOBU,K,KASE,KK,L,LL,LLS,LM1,LP1,LS,LU,M,MAXIT,
      &        MM,MM1,MP1,NCT,NCTP1,NCU,NRT,NRTP1
       DOUBLE PRECISION T
@@ -1140,7 +1155,7 @@ C***********************************************************************
 C***********************************************************************
 
       SUBROUTINE CSCAL(N,DA,DX,INCX)
-      DOUBLE PRECISION DA,DX(1)
+      DOUBLE PRECISION DA,DX(*)
       INTEGER I,INCX,M,MP1,N,NINCX
       IF(N.LE.0)RETURN
       IF(INCX.EQ.1)GO TO 20
@@ -1264,7 +1279,7 @@ C***********************************************************************
 C***********************************************************************
 
       SUBROUTINE DROT (N,DX,INCX,DY,INCY,C,S)
-      DOUBLE PRECISION DX(1),DY(1),DTEMP,C,S
+      DOUBLE PRECISION DX(*),DY(*),DTEMP,C,S
       INTEGER I,INCX,INCY,IX,IY,N
       IF(N.LE.0)RETURN
       IF(INCX.EQ.1.AND.INCY.EQ.1)GO TO 20
@@ -1292,7 +1307,7 @@ C***********************************************************************
 
       DOUBLE PRECISION FUNCTION CNRM2( N, DX, INCX)
       INTEGER  NEXT,N,INCX,I,J,NN
-      DOUBLE PRECISION   DX(1), CUTLO, CUTHI, HITEST, SUM, XMAX,ZERO,ONE
+      DOUBLE PRECISION   DX(*), CUTLO, CUTHI, HITEST, SUM, XMAX,ZERO,ONE
       DATA   ZERO, ONE /0.0D0, 1.0D0/
       DATA CUTLO, CUTHI / 8.232D-11,  1.304D19 /
       IF(N .GT. 0) GO TO 10
@@ -2651,7 +2666,7 @@ C ********************************************************
 
         SUBROUTINE  CSWAP (N,DX,INCX,DY,INCY)
           IMPLICIT NONE
-          DOUBLE PRECISION DX(1),DY(1),DTEMP
+          DOUBLE PRECISION DX(*),DY(*),DTEMP
           INTEGER I,INCX,INCY,IX,IY,M,MP1,N
           IF(N.LE.0)RETURN
           IF(INCX.EQ.1.AND.INCY.EQ.1)GO TO 20
@@ -2691,6 +2706,118 @@ C ********************************************************
           END DO
           RETURN
         END SUBROUTINE  CSWAP
+
+!-->  OrthoSrcFrame (2026-09-08, Dave): the source-frame re-orthogonal-
+!     isation used at every grid setup -- z = +/-ChfRayDir (sign from the
+!     current x cross y), y = unit(z x x), x = y x z -- has no floating-
+!     point FIXED POINT on a general frame: applied to a frame it itself
+!     produced it returns a 1-ulp neighbour, and the two alternate on
+!     every trace (measured on the jwst zoom deck: xGrid(1)
+!     -0.99999991481031303 <-> ...292).  Every ray launch moves with the
+!     frame, so the accumulated OPL alternates by a few ulp of the 24 m
+!     path on ~2200 rays -- the 'speckle' floor of every finite-difference
+!     sensitivity column (macos/REPORT_sens_noise_center.md).  A frame
+!     that is exact, e5hex1's (-1,0,0), is its own fixed point, which is
+!     why that deck was idempotent.  Idempotent form: compute the candidate
+!     frame; if it differs from the incoming one by round-off only (every
+!     component within OrthoTol) keep the incoming frame.  A physical
+!     change -- any field move >= 1e-14 rad, a re-read deck, a stale z --
+!     is far above the band and is applied exactly as before.
+	SUBROUTINE OrthoSrcFrame(ChfRayDir,xGrid,yGrid,zGrid)
+	IMPLICIT NONE
+	REAL*8 ChfRayDir(3),xGrid(3),yGrid(3),zGrid(3)
+	REAL*8 x(3),y(3),z(3),d
+	REAL*8 OrthoTol
+	OrthoTol=DeadBandUlp*EPSILON(1d0)   ! was 1d-14 (45 ulp)
+	CALL DXPROD(z,xGrid,yGrid)
+	IF (DDOTC(z,ChfRayDir).GT.0d0) THEN
+	  z=ChfRayDir
+	ELSE
+	  z=-ChfRayDir
+	END IF
+	CALL DUNITIZE(z)
+	CALL DXPROD(y,z,xGrid)
+	CALL DUNITIZE(y)
+	CALL DXPROD(x,y,z)
+	d=MAX(MAXVAL(ABS(x-xGrid)),MAXVAL(ABS(y-yGrid)),
+     &	      MAXVAL(ABS(z-zGrid)))
+	IF (d.GT.OrthoTol) THEN
+	  xGrid=x
+	  yGrid=y
+	  zGrid=z
+	ELSE IF (d.GT.DeadBandQuietUlp*EPSILON(1d0)) THEN
+	  CALL DeadBandNote('source frame',d/EPSILON(1d0))
+	END IF
+	END SUBROUTINE OrthoSrcFrame
+
+!-->  The obscuration / aperture frame of an element (2026-10-12, PLAN
+!     1.1b): z = psi, y = unit(z x xObs), x = y x z -- the recipe CTRACE,
+!     CPROPAGATE and SRTrace each ran at every trace, writing the result
+!     back into xObs.  A deck whose xObs is not perpendicular to psiElt
+!     (105 corpus decks) was therefore REWRITTEN by its first trace, and
+!     SAVE after a trace differed from SAVE before.  Now ChkDf2 runs it
+!     once at LOAD and the traces run it again, keeping the frame when
+!     the recomputed one differs by round-off only (the OrthoSrcFrame
+!     dead band): the first trace's frame is unchanged, a re-trace no
+!     longer walks it, and a psiElt changed since (an api setter) still
+!     moves it.
+	SUBROUTINE OrthoObsFrame(psi,xObs,yObs,zObs)
+	IMPLICIT NONE
+	REAL*8 psi(3),xObs(3),yObs(3),zObs(3)
+	REAL*8 x(3),y(3),z(3),d
+	CALL DEQUATE(z,psi,3)
+	CALL DXPROD(y,z,xObs)
+	CALL DUNITIZE(y)
+	CALL DXPROD(x,y,z)
+	d=MAX(MAXVAL(ABS(x-xObs)),MAXVAL(ABS(y-yObs)),
+     &	      MAXVAL(ABS(z-zObs)))
+	IF (d.GT.DeadBandUlp*EPSILON(1d0)) THEN
+	  xObs=x
+	  yObs=y
+	  zObs=z
+	ELSE IF (d.GT.DeadBandQuietUlp*EPSILON(1d0)) THEN
+	  CALL DeadBandNote('obscuration frame',d/EPSILON(1d0))
+	END IF
+	END SUBROUTINE OrthoObsFrame
+
+!     ... and its LOAD form (ChkDf2).  At load yObs / zObs are not this
+!     deck's yet, so only xObs is judged: a declared xObs off the
+!     perpendicular by more than the dead band is replaced (the
+!     candidate frame, exactly what the first trace used to compute), one
+!     within it is KEPT and y / z are built from it -- so a SAVEd xObs
+!     reloads to itself (SAVE -> load -> SAVE a fixed point; without the
+!     keep, e2e_pie's round trip read 'ulp').
+	SUBROUTINE OrthoObsFrameLoad(psi,xObs,yObs,zObs)
+	IMPLICIT NONE
+	REAL*8 psi(3),xObs(3),yObs(3),zObs(3)
+	REAL*8 x(3),y(3),z(3)
+	CALL DEQUATE(z,psi,3)
+	CALL DXPROD(y,z,xObs)
+	CALL DUNITIZE(y)
+	CALL DXPROD(x,y,z)
+	IF (MAXVAL(ABS(x-xObs)).GT.DeadBandUlp*EPSILON(1d0)) xObs=x
+	yObs=y
+	zObs=z
+	END SUBROUTINE OrthoObsFrameLoad
+!<--
+
+!-->  One line per run when an update is suppressed although it is
+!     larger than the measured round-off; every such event is counted
+!     (macos_api_mod deadband_notes_get).  Guards warn, never flood.
+	SUBROUTINE DeadBandNote(site,ulps)
+	IMPLICIT NONE
+	CHARACTER(len=*) site
+	REAL*8 ulps
+	nDeadBandNote=nDeadBandNote+1
+	IF (nDeadBandNote.EQ.1) THEN
+	  WRITE(*,'(1X,3A,F6.1,A)') '** Note: a ',site,
+     &    ' update of ',ulps,' ulp (units of round-off)'
+	  WRITE(*,'(1X,A,F5.1,A)')
+     &    '   was inside the dead band (',DeadBandUlp,
+     &    ' ulp) and was NOT applied; later ones are counted only.'
+	END IF
+	END SUBROUTINE DeadBandNote
+!<--
 
 
         END MODULE math_mod

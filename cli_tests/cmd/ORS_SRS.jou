@@ -1,0 +1,98 @@
+# ORS then SRS (PLAN_CONSOLIDATION 1.2 (w); Dave 2026-10-19: fix now).
+# Leg 1, a sound deck: CassWithExitPupil.in, the exit-pupil Return surface (element 5) and the
+#   detector (element 6).  The surface's focal length is first set 2.5% long with MODify; ORS
+#   recovers the design value (5.5601, pinned to 5 figures), SRS re-slaves the detector to it, and
+#   the OPD at the detector is back at the round-off floor (a bound, pin rule 1).
+# Leg 2, a starved deck: a COPY of ImageDemo.in with its primary's tenth Zernike coefficient set to
+#   50 mm (ten times the defect the manual's extracted listing carried for a day: a PDF line wrap split
+#   '-3.536721061D-05' and the reader took the orphaned '05' as a 5 mm term; finding 1.2 (cc), resolved
+#   2026-10-19).  At 5 mm the 15 surviving rays are all OBSCURED ones near the axis, and since leg 0b an
+#   obscured ray counts, so ORS fits them; at 50 mm one test ray in 317 reaches the surface and ORS aborts.  ORS used to print
+#   'TTL OPD= NaN' there and offer a surface optimized on NaN comparisons; the trial rms now counts
+#   only rays that reach the surface, an empty trial is a huge merit, and a start with fewer than
+#   three data rays is named and aborted -- the must-fail leg: the pre-fix binary prints the NaN.
+# Leg 0b, the OCCULTED surface (macos-fd 2026-10-19, the Section 7 walk): CoroExample's ret2_2 (element 7) sits
+#   behind the occulter (element 6), which obscures every test ray; an obscured ray is still traced and still
+#   defines the wavefront, so ORS fits through a mask (ef15ab23 aborted here: it counted only status-OK rays).
+#   The same leg fixes the Return-branch orientation sign that was UNDEFINED for an even fold count (ifx
+#   offered a psi that was no unit vector) and a chief-ray miss that struck the chief off every later trial:
+#   element 7 disturbed to f 7.0 comes back to 6.3293 with psi (0,0,-1) as the deck writes it, both compilers.
+# Leg 0, the manual's example (Dave 2026-10-19: an exit pupil is FEX's job; ORS is for a NEAR-FIELD reference
+#   surface): CoroExample.in, the first near-field reference surface ret2_1 (element 5, PropType NF1) set 4%
+#   long with MODify; ORS recovers the design 6.3293 (5 figures).  Then SRS on the near-field pair (1.2 (gg),
+#   Dave: SRS is important): ret2_2 (element 7) disturbed to f 7.0 / z -7.0 and slaved to 5 comes back to
+#   f 6.3293 with z NEGATIVE (the diverging end of the through-focus leg: before, the asymmetric-Returns
+#   branch wrote the unsigned radius, +6.329, and INT 7 moved 6%); slaving 5 to 7 returns z POSITIVE; a 'no'
+#   to the accept prompt leaves the element alone (before, 'no' was accepted: the test was .NE.'n'.OR..NE.'N'),
+#   proved by INT 7 reading the design deck's peak after a declined SRS that would have flipped z.
+# COPY: $ROOT/docs/macos-manual/examples/CoroExample.in
+# COPY: $ROOT/docs/macos-manual/examples/CassWithExitPupil.in
+# COPY: $ROOT/docs/macos-manual/examples/ImageDemo.in
+old $TMP/CoroExample.in
+mod
+fElt(5)=6.6
+q
+ors
+5
+yes
+mod
+fElt(7)=7.0
+q
+mod
+zElt(7)=-7.0
+q
+srs
+7
+5
+yes
+srs
+5
+7
+yes
+old $TMP/CoroExample.in
+srs
+7
+5
+no
+int 7
+/null
+old $TMP/CoroExample.in
+mod
+fElt(7)=7.0
+q
+ors
+7
+yes
+old $TMP/CassWithExitPupil.in
+mod
+fElt(5)=5.7
+q
+ors
+5
+yes
+srs
+6
+5
+yes
+opd 6
+/null
+! perl -i -pe 's/-3\.536721061D-05/5d1/' $TMP/ImageDemo.in
+old $TMP/ImageDemo.in
+ors
+12
+# EXPECT: fElt\(\s*5\) =\s+6\.600000000D\+00\s+KrElt[\s\S]*?Old f=\s+6\.600000000D\+00\s+New f=\s+6\.3293\d*D\+00
+# EXPECT: Old f=\s+7\.000000000D\+00\s+New f=\s+6\.3293\d*D\+00\s+Old z=\s+-7\.000000000D\+00\s+New z=\s+-6\.3293\d*D\+00
+# EXPECT: Enter number of element to slave to: \[1\]: 7\s+Reference surface recalculation results:\s+Old f=\s+6\.3293\d*D\+00\s+New f=\s+6\.3293\d*D\+00\s+Old z=\s+6\.3293\d*D\+00\s+New z=\s+6\.3293\d*D\+00
+# EXPECT: Accept the new element\? \[YES\]: no[\s\S]*?Peak intensity= 1\.3052\d*D-05
+# EXPECT-NOT: New z=\s+6\.329334644D\+00
+# EXPECT: Enter number of element to be optimized: \[1\]: 7\s+Reference surface optimization results:\s+TTL OPD=\s+\d\.\d+D-1\d\s+nCalls=\s+\d+\s+Old f=\s+7\.000000000D\+00\s+New f=\s+6\.3293\d*D\+00\s+Old z=\s+-6\.3293\d*D\+00\s+New z=\s+-6\.3293\d*D\+00\s+Old psi=\s+0\.0+D\+00 New psi=\s+-?0\.0+D\+00\s+0\.0+D\+00\s+-?0\.0+D\+00\s+-1\.0+D\+00\s+-1\.0+D\+00
+# EXPECT-NOT: reach element\s+6
+# EXPECT: fElt\(\s*5\) =\s+5\.700000000D\+00
+# EXPECT: Reference surface optimization results:\s+TTL OPD=\s+\d\.\d+D-1\d\s+nCalls=\s+\d+\s+Old f=\s+5\.700000000D\+00\s+New f=\s+5\.5601\d*D\+00
+# EXPECT: Enter number of element to slave to: \[1\]: 5\s+Reference surface recalculation results:
+# EXPECT: OPD: nPassRays =\s+112,[\s\S]*RMS OPD error is\s+\d\.\d+D-1\d
+# EXPECT: ORS: only\s+\d+ of\s+317 test rays reach element\s+11 \(the surface before it\); at least 3 are needed\.\s+ORS: command aborted\.
+# EXPECT-NOT: TTL OPD=\s+NaN
+# EXPECT-NOT: New f=\s+\d\.\d+D\+41
+# EXPECT-NOT: Debug: VAR_NAM
+# EXPECT-NOT: forrtl

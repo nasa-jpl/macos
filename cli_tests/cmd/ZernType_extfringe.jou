@@ -1,0 +1,17 @@
+# ZernType= ExtFringe traces (PLAN_CONSOLIDATION 1.2, 2026-10-12).  Extended Fringe continues
+# Fringe's ordering past 37 (the converter surfsub ZerntoMon_ZFE matches the textbook rule on
+# all 56 of its entries and Fringe's ZerntoMon3 on modes 1-36); it existed, but no Zernike
+# dispatch chain called it, so an ExtFringe surface traced as its bare conic.  The twins
+# tst_zerndef_{fringe,extfringe}.in carry mode 9 = 2e-7 m (spherical in both orderings): they
+# must print the IDENTICAL RMS and P-V, and differ from the ANSI twin (mode 9 = trefoil there).
+# Pre-fix: the ExtFringe twin reads the bare conic -- red.
+old $ROOT/ZGD_test_files/tst_zerndef_fringe.in
+opd 6
+/null
+old $ROOT/ZGD_test_files/tst_zerndef_extfringe.in
+opd 6
+old $ROOT/ZGD_test_files/tst_zerndef_ansi.in
+opd 6
+# EXPECT: tst_zerndef_fringe\.in[\s\S]*?RMS OPD error is\s+(\S+)[^\n]*\n\s*P-V OPD error is\s+(\S+)[\s\S]*?tst_zerndef_extfringe\.in[\s\S]*?RMS OPD error is\s+\1\s[^\n]*\n\s*P-V OPD error is\s+\2\s
+# EXPECT-NOT: tst_zerndef_extfringe\.in[\s\S]*?RMS OPD error is\s+(\S+)[\s\S]*?tst_zerndef_ansi\.in[\s\S]*?RMS OPD error is\s+\1\s
+# EXPECT-NOT: no ZerntoMon implementation

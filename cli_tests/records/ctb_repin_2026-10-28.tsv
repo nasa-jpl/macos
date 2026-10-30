@@ -1,0 +1,41 @@
+# (zzz) CTB hand decks re-pinned to the generator (TO 2026-10-28, Dave's ruling of 2026-10-28; PLAN_CONSOLIDATION 1.2 (zzz)); resources 1b45af8.
+# Generator ctb_prop_layout.m and its source ctb_planar_stageF.in are unchanged since 9798277 (2026-08-19). Today's run differs
+# from the committed August generator output (ctb_dcr_gen.in / ctb_s2s_dcr_gen.in) only in the four reference-sphere radii and the
+# sphere vertices that follow them, plus the ExitPupil direction at 2.5e-13. The drift is the engine's FEX measurement since August.
+# Deck rule: in ctb_dcr.in, ctb_s2s_dcr.in and ctb_dm.in only the radius-dependent lines change: KrElt, zElt, VptElt, RptElt
+# on the 7 sphere elements, and in the full deck the three mask zElt copies of +R. Each new vertex is the hand deck's
+# own focus flat minus R_new along the hand deck's own unit vector, so every sphere stays centered on its focus flat
+# (old centre error <= 9.1e-13 mm, the quartet audit's 1e-9 holds). Every other line of the hand decks is unchanged.
+# ctb_dm_rx(ctb_dcr.in) reproduces the committed ctb_dm.in byte for byte, both before and after the re-pin.
+# Verdicts: accept = the move is small (Dave: diagnose only on a LARGE change); every move here is <= 6.1e-4 rel.
+kind	item	old	new	rel_change	tolerance	verdict
+radius	Focus23 (mm)	7017.8526119081	7019.2344144799	+1.97e-4	generator pin RelTol 1e-9 (stays; values updated)	accept
+radius	FPM (mm)	1000.0841052380	1000.1049125641	+2.08e-5	generator pin RelTol 1e-9	accept
+radius	FieldStop (mm)	415.9277598855	415.9293036170	+3.71e-6	generator pin RelTol 1e-9	accept
+radius	ExitPupil (mm)	359.9460692499	360.0435930486	+2.71e-4	generator pin RelTol 1e-9	accept
+vertex	Focus23 spheres moved along the chief (mm)	0	1.381803	n/a	quartet centre 1e-9 mm	accept
+vertex	FPM spheres (mm)	0	0.020807	n/a	quartet centre 1e-9 mm	accept
+vertex	FieldStop spheres (mm)	0	0.001544	n/a	quartet centre 1e-9 mm	accept
+vertex	ExitPupil (mm)	0	0.097524	n/a	none	accept
+suite	tCtbProp PeakCompact	6.98980e-2	6.99361e-2	+5.4e-4	RelTol 1e-3 (pin updated)	accept
+suite	tCtbProp PeakFull	6.02965e-2	6.03292e-2	+5.4e-4	RelTol 1e-3 (pin updated)	accept
+suite	tCtbProp CorrCompactFull	0.9988948	0.9988948	0	AbsTol 1e-4	unchanged
+suite	tCtbDm ContrastCoro (ctb_chain 3-15 lam/D)	2.934319e-7	2.934319e-7	0 (7 digits)	RelTol 5%	unchanged
+suite	./run_mmacos_tests.sh ctb	21 pass / 1 fail (generator radii)	22 pass / 0 fail	n/a	n/a	green
+manual	ch08_dz_hard ch08_dz_blc ch08_dz_aplc ch08_dz_vortex ch08_dz_roddier ch08_dz_dualzone	as pinned	as pinned	0 at sig5	sig5	unchanged
+manual	ch08_th_hard ch08_th_blc ch08_th_aplc ch08_th_vortex ch08_th_roddier ch08_th_dualzone	25 36 27 81 81 81 %	same	0 at sig5	sig5	unchanged
+manual	ch08 masks listing: bare peak	6.990e-02	6.994e-02	+5.4e-4	printed digits	accept (re-pinned)
+manual	ch08_efc_before	2.9343192e-7	2.9343193e-7	+1.5e-8	sig5	unchanged
+manual	ch08_efc_after	8.0547105e-9	8.0596118e-9	+6.1e-4	sig5 (shown 8.05e-9 -> 8.06e-9)	accept (re-pinned)
+manual	ch08_efc_gain	36.429853	36.407700	-6.1e-4	sig5 (shown 36)	accept (re-pinned)
+manual	ch08_efc_iter	19	19	0	sig5	unchanged
+manual	ch08_efc_s1 (nm)	9.9425316	9.9387443	-3.8e-4	sig5 (shown 9.9)	accept (re-pinned)
+manual	ch08_efc_s2 (nm)	8.6056863	8.6042117	-1.7e-4	sig5 (shown 8.6)	accept (re-pinned)
+manual	ch08_efc_nact	1760	1760	0	sig5	unchanged
+manual	ch08_vx_before	1.7159507e-8	1.7159507e-8	+9e-9	sig5	unchanged
+manual	ch08_vx_after	5.8124152e-13	5.8123597e-13	-9.5e-6	sig5	unchanged
+manual	ch08_pol_before	2.1897194e-8	2.1897194e-8	-7e-9	sig5	unchanged
+manual	ch08_pol_after	5.7719780e-13	5.7716328e-13	-6.0e-5	sig5 (shown 5.8e-13)	accept (re-pinned)
+manual	ch08_pol_floor	1.0653490e-15	1.0653491e-15	+1.2e-7	sig5	unchanged
+readme	bench_ctb README EFC floor	8.055e-9 (36x)	8.060e-9 (36x)	+6.1e-4	n/a	updated; the band, single-DM and linear-floor rows are from the August decks and were not re-run
+not-regenerated	bench_ctb committed products (ctb_efc.mat, ctb_mask_compare.mat, ctb_dst_*.mat, ctb_dm_jacobian_*.fp.json)	August/September decks	not rerun	n/a	n/a	left as committed; made on the August decks

@@ -4,6 +4,10 @@
 #   make pdf        -> build/macosMan.pdf   (docx -> PDF via LibreOffice)
 #   make appendix-c -> regenerate src/93_appendix_c_commands.md from
 #                      macos_f90/macos_help.inc
+#   make transcripts -> regenerate src/transcripts/ (the example listings and the CLI
+#                      dialogs, tools/regen_transcripts.py; MACOS_BIN= picks the binary)
+#   make zernike-table -> regenerate src/transcripts/zernike_orderings.md (Appendix E, measured
+#                      through pymacos, tools/gen_zernike_table.py)
 #   make clean
 #
 # Section order is the lexical order of src/*.md (numbered prefixes).
@@ -13,11 +17,18 @@ PANDOC     ?= pandoc
 SOFFICE    ?= soffice
 BUILD      := build
 SRC        := $(sort $(wildcard src/[0-9]*.md))
+# the generated listings and dialogs the chapters include by marker (tools/include_transcripts.lua)
+TRANSCRIPTS := $(wildcard src/transcripts/*.md)
+# the figures: a regenerated or re-cropped image must rebuild the docx/html (2026-10-20: a PDF shipped a stale figure 31)
+MEDIA      := $(wildcard src/media/*)
 REFDOC     := reference.docx
 TITLE      := MACOS Manual
 
 PANDOC_OPTS := --resource-path=src --toc --toc-depth=3 \
                --metadata title="$(TITLE)"
+# the docx (and the PDF made from it) has a cover page and a Word contents field in
+# src/00_frontmatter.md instead of pandoc's title block and front TOC (Dave 2026-10-19)
+DOCX_OPTS  := --resource-path=src
 
 CMDSRC     := $(sort $(wildcard cmdref/[0-9]*.md))
 CMDREF_OPTS := --resource-path=cmdref --toc --toc-depth=2 \
@@ -38,7 +49,7 @@ POLVALSUM  := polval/05_summary.md
 POLVALSUM_OPTS := --resource-path=polval \
                --metadata title="MACOS Polarization Validation — Executive Summary"
 
-.PHONY: all docx html pdf appendix-c clean \
+.PHONY: all docx html pdf appendix-c transcripts zernike-table clean publish \
         cmdref cmdref-pdf cmdref-regen \
         polval polval-pdf polval-regen polval-check polval-summary
 
@@ -48,12 +59,18 @@ docx: $(BUILD)/macosMan.docx
 html: $(BUILD)/macosMan.html
 pdf:  $(BUILD)/macosMan.pdf
 
-$(BUILD)/macosMan.docx: $(SRC) $(REFDOC) | $(BUILD)
-	$(PANDOC) $(PANDOC_OPTS) --reference-doc=$(REFDOC) -o $@ $(SRC)
+# number_sections.lua: heading numbers in the 3.2 pattern (4.5.2 ...) and a page break before
+# every Section / Appendix (2026-10-18).
+NUMBER     := --lua-filter=tools/include_transcripts.lua \
+              --lua-filter=tools/number_sections.lua --lua-filter=tools/figure_captions.lua
+FILTERS    := tools/include_transcripts.lua tools/number_sections.lua tools/figure_captions.lua
 
-$(BUILD)/macosMan.html: $(SRC) | $(BUILD)
-	$(PANDOC) $(PANDOC_OPTS) --standalone --embed-resources \
-	  -o $@ $(SRC)
+$(BUILD)/macosMan.docx: $(SRC) $(TRANSCRIPTS) $(MEDIA) $(REFDOC) $(FILTERS) | $(BUILD)
+	$(PANDOC) $(DOCX_OPTS) $(NUMBER) --reference-doc=$(REFDOC) -o $@ $(SRC)
+
+$(BUILD)/macosMan.html: $(SRC) $(TRANSCRIPTS) $(MEDIA) $(FILTERS) tools/manual.css | $(BUILD)
+	$(PANDOC) $(PANDOC_OPTS) $(NUMBER) --standalone --embed-resources --mathml \
+	  --css tools/manual.css -o $@ $(SRC)
 
 # No LaTeX on this box: go docx -> PDF through headless LibreOffice.
 # tools/docx2pdf.py refreshes the TOC field (page numbers) before export;
@@ -64,6 +81,19 @@ $(BUILD)/macosMan.pdf: $(BUILD)/macosMan.docx
 appendix-c:
 	python3 tools/gen_appendix_c.py
 
+# every listing and dialog the chapters print: examples/* verbatim, tools/transcripts/*.jou on the
+# engine (default binary: the ifx build of the clean worktree ~/dev/macos_cli_base)
+transcripts:
+	python3 tools/regen_transcripts.py $(MACOS_BIN)
+
+# Appendix E's Zernike orderings, MEASURED through pymacos (tools/gen_zernike_table.py; the gate is
+# MACOS_resources/pymacos/tests/test_zernike_orderings.py).  PYMACOS= picks the pymacos tree.
+PYMACOS ?= $(HOME)/dev/MACOS_resources/pymacos
+zernike-table:
+	bash -c 'source /opt/intel/oneapi/setvars.sh intel64 >/dev/null 2>&1; \
+	  PYMACOS_SRC=$(PYMACOS)/src MACOS_HOME=$(abspath ../../macos_f90) MPLBACKEND=Agg \
+	  $(PYMACOS)/.venv/bin/python tools/gen_zernike_table.py'
+
 # ---- MACOS Command Reference (cmdref/) ------------------------------
 cmdref: $(BUILD)/macosCmdRef.docx $(BUILD)/macosCmdRef.html
 cmdref-pdf: $(BUILD)/macosCmdRef.pdf
@@ -71,13 +101,14 @@ cmdref-pdf: $(BUILD)/macosCmdRef.pdf
 # regenerate the auto-skeleton catalogs from engine + binding sources
 cmdref-regen:
 	python3 tools/gen_cmdref.py
+	python3 ../../../MACOS_resources/mmacos/src/gen_mex_wrappers.py --targets defaults
 
 $(BUILD)/macosCmdRef.docx: $(CMDSRC) $(REFDOC) | $(BUILD)
 	$(PANDOC) $(CMDREF_OPTS) --reference-doc=$(REFDOC) -o $@ $(CMDSRC)
 
-$(BUILD)/macosCmdRef.html: $(CMDSRC) | $(BUILD)
+$(BUILD)/macosCmdRef.html: $(CMDSRC) tools/manual.css | $(BUILD)
 	$(PANDOC) $(CMDREF_OPTS) --standalone --embed-resources \
-	  -o $@ $(CMDSRC)
+	  --css tools/manual.css -o $@ $(CMDSRC)
 
 $(BUILD)/macosCmdRef.pdf: $(BUILD)/macosCmdRef.docx
 	python3 tools/docx2pdf.py $< $@
@@ -125,6 +156,13 @@ $(BUILD)/macosPolVal_summary.pdf: $(BUILD)/macosPolVal_summary.docx
 
 $(BUILD):
 	mkdir -p $(BUILD)
+
+# publish: the two PDFs the repo carries at docs/ (the current manual and command reference;
+# docs/macosMan3.2.pdf beside them is the heritage).  Refresh them before a push that changes
+# the manual.
+publish: $(BUILD)/macosMan.pdf $(BUILD)/macosCmdRef.pdf
+	cp $(BUILD)/macosMan.pdf ../macosMan.pdf
+	cp $(BUILD)/macosCmdRef.pdf ../macosCmdRef.pdf
 
 clean:
 	rm -rf $(BUILD)

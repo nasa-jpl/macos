@@ -1,0 +1,11 @@
+# MOD with spaces around '=' once killed the CLI (forrtl severe 24, EOF on an empty value);
+# the guard prints one warning and the prompt continues (macos_f90/CLAUDE.md "MOD command: empty-value crash guard")
+old $ROOT/docs/macos-manual/examples/Cassegrain.in
+mod ngridpts = 33
+q
+mod ngridpts=33
+q
+opd 5
+# EXPECT: no spaces around
+# EXPECT-NOT: forrtl
+# EXPECT: RMS OPD error is

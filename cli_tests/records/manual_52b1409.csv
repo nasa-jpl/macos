@@ -1,0 +1,11 @@
+deck,status,nelt,npass,rms,pv,lost,flips,rt_status,rt_nelt,roundtrip,dt
+/home/dcr/dev/macos/docs/macos-manual/examples/AOExample.in,ok,26,11936,3.104584307D-04,1.513180910D-03,,,ok,26,same,1.1
+/home/dcr/dev/macos/docs/macos-manual/examples/Cassegrain.in,ok,5,1756,1.293791606D-12,4.463984737D-12,121,,ok,5,same,1.1
+/home/dcr/dev/macos/docs/macos-manual/examples/CassWithExitPupil.in,ok,6,112,1.173788733D-12,4.098055228D-12,13,,ok,6,same,1.1
+/home/dcr/dev/macos/docs/macos-manual/examples/CornerCube.in,ok,5,3096,6.633497860D-06,2.841451494D-05,,,ok,5,ulp,1.0
+/home/dcr/dev/macos/docs/macos-manual/examples/CoroExample.in,ok,16,,9.999900000D+36,0.000000000D+00,50618,,ok,16,same,1.1
+/home/dcr/dev/macos/docs/macos-manual/examples/FFSegDemoAll.in,ok,10,49318,3.671709126D-04,2.628606517D-03,,,ok,10,same,1.2
+/home/dcr/dev/macos/docs/macos-manual/examples/GratingExample.in,ok,2,3096,7.879932722D-02,3.061887893D-01,,,ok,2,same,1.1
+/home/dcr/dev/macos/docs/macos-manual/examples/HOEExample.in,ok,4,3001,6.903706658D-16,4.440892099D-15,,,ok,4,ulp,1.1
+/home/dcr/dev/macos/docs/macos-manual/examples/Luneberg.in,ok,17,789,4.271175381D+00,1.859129002D+01,8,,ok,17,same,1.1
+/home/dcr/dev/macos/docs/macos-manual/examples/SegDemo.in,ok,10,404,6.179211807D-12,2.138111910D-11,,,ok,10,same,1.1

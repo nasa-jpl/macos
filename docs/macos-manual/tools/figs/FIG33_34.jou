@@ -1,0 +1,18 @@
+# Figures 33 and 34 (Section 5): Cassegrain.in, the OPD at element 3 as a GRAY plot and as a ROW plot (the manual's
+# dialog: opd 3; its RMS 1.609e-2 was the 3.2 engine's, today 1.545e-2).  Pages: 0 gray, 1 row (+ a repeat).  fig_engine_33.png = page 0, fig_engine_34.png = page 1.
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in fig33
+cd $TMP/fig33
+old Cassegrain.in
+pgd
+/png
+gray
+opd 3
+row
+opd 3
+26
+opd 3
+26
+! mkdir -p $ROOT/docs/macos-manual/build/figs/fig33; cp $TMP/fig33/giza_*.png $ROOT/docs/macos-manual/build/figs/fig33/
+# EXPECT: Plot type set to ROW
+# EXPECT: (RMS OPD error is\s+1\.5453\d+D-02[\s\S]*){3}
+# EXPECT-NOT: forrtl

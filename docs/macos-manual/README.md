@@ -26,10 +26,20 @@ macos-manual/
 ├── reference.docx                  ← Word/PDF styling (see Gotchas)
 ├── tools/                          ← build + one-time migration scripts
 ├── examples/                       ← .in/.jou files shown in Appendix A
+├── edits/                          ← Dave's Word edit copies + their baselines
 ├── FIGURE_RESCUE_LOG.md            ← figure-migration status + audit
-├── RECONCILE_4_01.md               ← how the Writer fork was folded in
-└── (legacy: macosMan*.docx snapshots — frozen provenance)
+└── RECONCILE_4_01.md               ← how the Writer fork was folded in
 ```
+
+The directory above it, `docs/`, carries three PDFs and nothing else:
+`macosMan3.2.pdf` (the heritage 3.2 manual, the vector source the figures
+and equations were taken from), `macosMan.pdf` and `macosCmdRef.pdf` (the
+current renders, refreshed by `make publish`).  The heritage Word file is
+in `docs/Archive/`.  The migration's Word snapshots (`macosMan3_2_styled`,
+`macosMan4_0_styled`, `macosMan4_01`, `macosMan4.1beta`, `macosMan4.1`,
+`macosMan4.2beta`) and the structural audit were removed from the tree on
+2026-10-18; they remain in git history before that commit, and
+`RECONCILE_4_01.md` records what each contributed.
 
 This directory also produces two further documents:
 
@@ -110,8 +120,16 @@ Open the `src/` file for the section, edit, `make`, look at the HTML
   (The migrated grid tables `+---+` work too; no need to convert.)
 - **Math** — LaTeX between dollar signs: `$W(x,y) = \sum a_j Z_j$` or
   `$$...$$` for display equations.  Renders natively in HTML and
-  converts to Word equations in the docx.  This is the preferred
-  replacement for the ~73 legacy equation images (see Open items).
+  converts to Word equations in the docx.  The printed manual's 17
+  equations — (4.1)–(4.3), the aspheric and monomial (4.1), (EQ 1),
+  (8.1)–(8.9) — are entered this way (2026-10-17, from the vector
+  `docs/macosMan3.2.pdf`); the HTML build passes `--mathml` (without it
+  pandoc renders only what Unicode can carry and warns "Could not
+  convert TeX math").  Two rules learned on the docx path (LibreOffice
+  render): write an equation label bare, `\qquad (8.3)` — a
+  `\textbf{(8.3)}` label prints its parentheses with backslashes — and
+  give a pre-superscript a space base, `\text{ }^{G}T^{iElt}` — an
+  empty `{}` base prints a placeholder box.
 
 ### Adding a new command or feature
 
@@ -229,16 +247,55 @@ Two clean-ups happened at migration:
   `src/media/fig_rescued_NN.png` (`tools/rescue_figures.py`; status
   and debris audit in `FIGURE_RESCUE_LOG.md`).
 
+## Heading numbers and section page breaks
+
+`tools/number_sections.lua` (on the manual's docx and html builds, 2026-10-18)
+numbers the headings in the printed 3.2 manual's pattern — `## SECTION 4:`
+sets the chapter, `###` becomes 4.1, `####` becomes 4.1.1, an appendix's
+letter likewise — and puts a page break before every Section and Appendix.
+The numbers are generated at build time, so the sources carry none.  A cross
+reference is a link whose text holds a `?`: `[Section ?](#conic-surfaces)`
+renders as "Section 4.5.2" (and stays a link) in docx, HTML and PDF; the
+target is the heading's pandoc id (`pandoc -t json` shows them).  The same
+filter resolves it on every build, so a reference can never go stale, and
+an unresolved one prints `no numbered heading for #…` on stderr.  Word's
+own REF fields cannot do this here: they return a heading's number only
+when Word numbers the headings itself, and ours come from the filter.  All
+63 dotted references of the 3.2 text were converted this way on
+2026-10-18; chapter-level references ("Section 4") stay literal.
+
+## End-product edits (`edits/`)
+
+`edits/macosMan_edit.docx` and `edits/macosCmdRef_edit.docx` are Dave's
+copies of the Word renders for editing in Word; the matching
+`*_baseline.docx` beside each is the render they were copied from
+(refreshed 2026-10-19 from the render after the generated listings and dialogs, `make transcripts` on the bba2e362 engine).  The flow is the deck
+flow: edit the `_edit` copy only; CC diffs it against the baseline (text,
+tables, figure placement), folds every change into `src/*.md` or the cmdref
+NOTES, rebuilds, and refreshes both copies from the new render.  The
+Markdown stays the source; nothing is folded by hand into the docx.
+
 ## Open items
 
-1. **Equations**: ~73 remain as low-resolution images or Symbol-font
-   fragments inherited from the PDF extraction; re-enter as LaTeX
-   math (they were broken in every docx generation too — this is the
-   one manual-labor item left).
-2. **Figures 31, 56, 59** need hand-tightened crops (see
-   `FIGURE_RESCUE_LOG.md`).
+1. ~~**Equations**~~ DONE 2026-10-17.  Measured first: the "~73
+   equation images" were 36 glyph fragments on 15 lines (figure-label
+   debris, all removed) plus 17 real equations, now LaTeX (see Math
+   above); the monomial generating function was blank in the printed
+   3.2 manual and is written from the engine's `MonomialEval`.
+2. ~~**Figures 31, 56, 59**~~ DONE 2026-10-17.  Figure 59 was cropped
+   from `docs/macosMan3.2.pdf`; figures 31, 56 and 58 had NO artwork in
+   any source (the 3.2 PDF prints their captions over blank space), so
+   they come from the running engine: `tools/figs/FIG31.jou`,
+   `FIG56.jou`, `FIG58.jou` are journals the CLI suite's driver runs on
+   the `/png` device, and `python3 tools/regen_engine_figs.py` reruns
+   them and assembles `src/media/fig_rescued_{31,56,58}.png` (a journal
+   whose EXPECT fails stops its figure).  `examples/ImageDemo.in`, the
+   deck of figure 31, was extracted from the appendix listing that
+   `examples/ImageDemo.jou` turned out to be.  Figures 5, 26 and 29, which
+   had no image at all, were cropped from the PDF the same day.
 3. **New-feature content**: FreeForm details, SLSQP optimization, XPS,
    COMPOSE/broadband, giza graphics, design layer, etc. still need
    sections written.
-4. **Appendix A automation**: regenerate example transcripts from
-   `examples/*.jou` via the live engine at build time.
+4. ~~**Appendix A automation**~~ DONE 2026-10-19: every listing and CLI
+   dialog is generated (`make transcripts`, see CLAUDE.md and
+   `TRANSCRIPT_DIFF.md`).

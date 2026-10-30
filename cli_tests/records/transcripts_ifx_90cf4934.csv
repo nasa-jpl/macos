@@ -1,0 +1,15 @@
+journal,kind,status,missed,dt
+s03_devices.jou,journal,pass,,2.7
+s03_ui.jou,journal,pass,,8.4
+s04_cmds.jou,journal,pass,,10.1
+s05_cass.jou,journal,pass,,19.2
+s05_cassxp.jou,journal,pass,,11.5
+s05_misc.jou,journal,pass,,11.2
+s06_beam.jou,journal,pass,,4.2
+s06_ors_srs.jou,journal,pass,,10.1
+s07_amp.jou,journal,pass,,5.4
+s07_coro.jou,journal,pass,,21.5
+s07_gblur.jou,journal,pass,,7.3
+s08_linear.jou,journal,pass,,9.3
+s09_example.jou,journal,pass,,2.7
+s11_pol.jou,journal,pass,,2.0

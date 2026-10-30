@@ -1,0 +1,30 @@
+    [jac] dark zone 3-15 lam/D (annulus): 2748 px, initial mean contrast 2.934e-07
+    [jac] done: 1760 actuators, central differences, 3520 pokes in <t> min (<t> s/poke)
+    [efc] G: 2748 px x 1760 acts (real-stacked), s_max=9.995e+02 cond=1.29e+15
+    [efc] iter 0: contrast 2.934e-07
+    [efc] iter 1: contrast 1.001e-07 (alpha 1.0e-04, stroke rms [6.98 5.42] nm)
+    [efc] iter 2: contrast 1.791e-08 (alpha 1.0e-04, stroke rms [8.30 6.82] nm)
+    [efc] iter 3: contrast 1.155e-08 (alpha 1.0e-03, stroke rms [8.41 7.00] nm)
+    [efc] iter 4: contrast 1.084e-08 (alpha 1.0e-03, stroke rms [8.56 7.16] nm)
+    [efc] iter 5: contrast 1.036e-08 (alpha 1.0e-03, stroke rms [8.69 7.30] nm)
+    [efc] iter 6: contrast 9.974e-09 (alpha 1.0e-03, stroke rms [8.82 7.44] nm)
+    [efc] iter 7: contrast 9.654e-09 (alpha 1.0e-03, stroke rms [8.94 7.57] nm)
+    [efc] iter 8: contrast 9.385e-09 (alpha 1.0e-03, stroke rms [9.05 7.69] nm)
+    [efc] iter 9: contrast 9.157e-09 (alpha 1.0e-03, stroke rms [9.16 7.80] nm)
+    [efc] iter 10: contrast 8.964e-09 (alpha 1.0e-03, stroke rms [9.27 7.91] nm)
+    [efc] iter 11: contrast 8.803e-09 (alpha 1.0e-03, stroke rms [9.37 8.02] nm)
+    [efc] iter 12: contrast 8.668e-09 (alpha 1.0e-03, stroke rms [9.47 8.13] nm)
+    [efc] iter 13: contrast 8.558e-09 (alpha 1.0e-03, stroke rms [9.56 8.23] nm)
+    [efc] iter 14: contrast 8.471e-09 (alpha 1.0e-03, stroke rms [9.66 8.33] nm)
+    [efc] iter 15: contrast 8.404e-09 (alpha 1.0e-03, stroke rms [9.75 8.43] nm)
+    [efc] iter 16: contrast 8.355e-09 (alpha 1.0e-03, stroke rms [9.84 8.52] nm)
+    [efc] iter 17: contrast 8.324e-09 (alpha 1.0e-03, stroke rms [9.93 8.62] nm)
+    [efc] iter 18: contrast 8.298e-09 (alpha 1.0e-02, stroke rms [9.94 8.63] nm)
+    [efc] iter 19: contrast 8.297e-09 (alpha 1.0e-02, stroke rms [9.94 8.64] nm)
+    [efc] iter 20: contrast 8.297e-09 (alpha 1.0e-02, stroke rms [9.95 8.65] nm)
+    [efc] iter 21: contrast 8.297e-09 (alpha 1.0e-02, stroke rms [9.96 8.66] nm)
+    [efc] iter 22: contrast 8.297e-09 (alpha 1.0e-02, stroke rms [9.97 8.67] nm)
+    [efc] iter 23: contrast 8.296e-09 (alpha 1.0e-02, stroke rms [9.98 8.68] nm)
+    [efc] iter 24: contrast 8.296e-09 (alpha 1.0e-02, stroke rms [9.99 8.69] nm)
+    [efc] iter 25: no alpha improves (best 8.296e-09) -- stop
+    [efc] final: 2.934e-07 -> 8.296e-09 (35.4x) in 24 iterations

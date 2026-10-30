@@ -1,0 +1,6 @@
+# Non-vacuity for the CALIB_*_rigid pins: the SAME spoil regex on the UNsolved deck must NOT match
+# (psiElt y is the spoil, 1.0E-03).  If this journal ever passes, the pin accepts the spoil.
+# COPY: $ROOT/ZGD_test_files/tst_calib_rigid.in
+old $DECK
+show 1
+# EXPECT: psiElt=\s+0\.0E\+00\s+(0\.0E\+00|-?\d\.\d+E-(09|[1-9]\d))\s+-\d\.\d+E\+00

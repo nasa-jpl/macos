@@ -63,6 +63,27 @@ C Last modified: 07/2008
 
 	Contains
 
+!-->  The pupil a Zernike fit sees (2026-10-12, PLAN_CONSOLIDATION 1.2).
+!     It was OPDin /= 0, and under the chief-ray OPD reference (the
+!     default since 2026-10-10) a valid ray whose path equals the
+!     chief's reads EXACTLY 0 -- the value OPDMat holds where there is
+!     no ray -- so it was dropped from the fit (ZCO, ZRM, ZAB and
+!     CALIB's WFE_ZMODE target).  Now the pixels the last OPD wrote
+!     (traceutil_mod%opdValid, set at exactly the statements that write
+!     OPDMat; it follows iObsOpt).  A map that is not on the OPD grid
+!     (a different shape) keeps the value test.
+	Function zern_valid(OPDin)
+	use traceutil_mod, only : opdValid
+	Real*8, dimension(:,:) :: OPDin
+	Logical, dimension(size(OPDin,1),size(OPDin,2)) :: zern_valid
+	zern_valid=(OPDin/=0d0)
+	If (.NOT.allocated(opdValid)) Return
+	If (size(opdValid,1).NE.size(OPDin,1)) Return
+	If (size(opdValid,2).NE.size(OPDin,2)) Return
+	zern_valid=(opdValid.EQ.1)
+	End Function zern_valid
+!<--
+
 
 	! Extract Zernike modes from a given OPD map
 	! Input: OPD, Zernike coefficients for each mode
@@ -77,7 +98,7 @@ C Last modified: 07/2008
 	  Integer :: act
 
 	  OPDzern = 0d0;
-          pmask   = (OPD/=0d0)
+          pmask   = zern_valid(OPD)
 	  call zern_fit(OPD,pmask,mode,OPDzern,act)
 
 	end subroutine zern_aberrate
@@ -104,7 +125,7 @@ C   Remove one or more Zernike modes from an OPD map
 
         if (.not.usrOpt) then
 	  !print*,'In zern_remove(): size(z_modes)=',size(z_modes)
-	  pmask=(OPDin/=0d0)
+	  pmask=zern_valid(OPDin)
 	else
           pmask(1:nGridPts,1:nGridPts)=mask_m(1:nGridPts,1:nGridPts)
         end if
@@ -128,7 +149,7 @@ C  ***************************************************************************
         Logical, dimension(size(OPDin,1),size(OPDin,2)) :: pmask
 
         if (.not.usrOpt) then
-          pmask=(OPDin/=0d0)
+          pmask=zern_valid(OPDin)
 	else
           pmask(1:nGridPts,1:nGridPts)=mask_m(1:nGridPts,1:nGridPts)
         end if
@@ -488,6 +509,7 @@ C compiled by Intel compiler ifort (on malfoy). -jzlou, 08/2014
         !Integer, dimension(size(OPDin,1),size(OPDin,2)) :: yidx
         Integer, dimension(:), allocatable :: yidx
 	Integer :: nrow,ncol,ir,ic,inz,k,strt_iz,end_iz,iz
+	Logical, dimension(size(OPDin,1),size(OPDin,2)) :: valid
 
         !print*,'** zern_fit: size(OPDin,1) =',size(OPDin,1)
         !print*,'** zern_fit: size(OPDin,2) =',size(OPDin,2)
@@ -500,12 +522,14 @@ C compiled by Intel compiler ifort (on malfoy). -jzlou, 08/2014
 
 	nrow=size(OPDin,1); ncol=size(OPDin,2)
 
-	! Extract non-zeros from OPDin
+	! Extract the valid pixels of OPDin (zern_valid: the rays the
+	! last OPD wrote, not the non-zeros -- 2026-10-12)
+	valid=zern_valid(OPDin)
 	inz=0; k=0
 	Do ic=1,ncol
 	  Do ir=1,nrow
 	    k=k+1
-	    if (OPDin(ir,ic)/=0) then
+	    if (valid(ir,ic)) then
 	      inz=inz+1; yidx(inz)=k
 	      ovec(inz)=OPDin(ir,ic)
 	    end if

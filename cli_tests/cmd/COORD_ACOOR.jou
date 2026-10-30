@@ -1,0 +1,18 @@
+# COORD at one element and ACOOR over a range (writes xyzLocal.txt in the working directory, so the
+# journal moves to $TMP first) on the manual's Cassegrain with exit pupil (cmdref: Ray Tracing).
+# The source frame is left-handed (xGrid = -1 0 0): its projection at the detector is x = -1 0 0,
+# y = 0 -1 0, z = 0 0 1; at the mirrors the axes tilt by the differential chief rays (1e-7 class).
+cd $TMP
+old $ROOT/docs/macos-manual/examples/CassWithExitPupil.in
+coord 6
+acoor
+1
+6
+! cat $TMP/xyzLocal.txt
+# EXPECT: Computed xLocal= -(1\.0000\d*D\+00|9\.9999\d*D-01)\s+(-?0\.0+D\+00|-?\d\.\d+D-(1\d|[2-9]\d))\s+(-?0\.0+D\+00|-?\d\.\d+D-(1\d|[2-9]\d))
+# EXPECT: Computed zLocal=\s+(-?0\.0+D\+00|-?\d\.\d+D-(1\d|[2-9]\d))\s+(-?0\.0+D\+00|-?\d\.\d+D-(1\d|[2-9]\d))\s+(1\.0000\d*D\+00|9\.9999\d*D-01)
+# EXPECT: Result is saved in file xyzLocal\.txt
+# EXPECT: iElt =\s+1\s+xLocal= -(1\.0000\d*D\+00|9\.9999\d*D-01)
+# EXPECT: iElt =\s+6\s+xLocal= -(1\.0000\d*D\+00|9\.9999\d*D-01)
+# EXPECT: iElt =\s+2\s+xLocal= -(9\.9999\d*D-01|1\.0000\d*D\+00)
+# EXPECT-NOT: forrtl

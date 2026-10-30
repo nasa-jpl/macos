@@ -1,0 +1,24 @@
+# CALIB's LM loop must not depend on the PREVIOUS CALIB (PLAN_CONSOLIDATION 3.3, macos 2026-10-11).
+# The old loop exited on itr_done, a logical never set before the loop and static under
+# nls_optim_dvr's blanket Save: it checked convergence only at itr = int(.21T/.5T/.71T) and only
+# for T > 4, so a T=4 CALIB exited on whatever the previous CALIB had left.  Pre-fix: the T=4
+# deck runs 4 iterations fresh and 3 after a converged T=20 CALIB in the same process -- red.
+# The new loop judges the rms merit sqrt(chisq/rows) against OptTol (absolute), the same way on
+# every call: the T=4 deck takes the SAME count fresh and after the T=20 CALIB (the backreference),
+# and each run says why it stopped.  This SPOT solve converges quadratically to the round-off
+# floor (every accepted step lowers chisq by orders of magnitude, so none is flat): measured
+# 4 'OptMaxItrs reached' / 14 'at the round-off floor' / 4, both compilers.
+old $ROOT/ZGD_test_files/tst_calib_spot4.in
+calib
+no
+no
+old $ROOT/ZGD_test_files/tst_calib_spot20.in
+calib
+no
+no
+old $ROOT/ZGD_test_files/tst_calib_spot4.in
+calib
+no
+no
+# EXPECT: tst_calib_spot4\.in\s+being loaded[\s\S]*?Optimization iterations =\s+(\d+)\s[\s\S]*?tst_calib_spot20\.in\s+being loaded[\s\S]*?Optimization iterations =\s+\d+\s[\s\S]*?tst_calib_spot4\.in\s+being loaded[\s\S]*?Optimization iterations =\s+\1\s
+# EXPECT: tst_calib_spot20\.in\s+being loaded[\s\S]*?Stopped: at the round-off floor \(10 rejected trials\)

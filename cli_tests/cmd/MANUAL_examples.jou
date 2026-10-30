@@ -1,0 +1,15 @@
+# every example deck of the manual loads (cmdref: Prescription I/O); their re-emitted forms are produced
+# by `run_cli_tests.sh manual` (the load gate's first SAVE of each, kept under docs/macos-manual/examples/emitted/)
+old $ROOT/docs/macos-manual/examples/AOExample.in
+old $ROOT/docs/macos-manual/examples/Cassegrain.in
+old $ROOT/docs/macos-manual/examples/CassWithExitPupil.in
+old $ROOT/docs/macos-manual/examples/CornerCube.in
+old $ROOT/docs/macos-manual/examples/CoroExample.in
+old $ROOT/docs/macos-manual/examples/GratingExample.in
+old $ROOT/docs/macos-manual/examples/HOEExample.in
+old $ROOT/docs/macos-manual/examples/Luneberg.in
+old $ROOT/docs/macos-manual/examples/SegDemo.in
+# EXPECT: SegDemo\.in\s+being loaded
+# EXPECT: Tracing rays past\s+10 elements
+# EXPECT-NOT: validation failed
+# EXPECT-NOT: forrtl

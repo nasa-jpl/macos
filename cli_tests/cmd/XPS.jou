@@ -1,0 +1,10 @@
+# XPS: the exit-pupil SURFACE from the full ray grid on the manual's Cassegrain with exit pupil
+# (cmdref: Ray Tracing).  Needs a STOP; modifies no element.  The chief-ray crossing (the FEX vertex)
+# is at z = -5.2907 with zp = 6.7907 -- the FEX radius the manual's example reports (6.790667844).
+old $ROOT/docs/macos-manual/examples/CassWithExitPupil.in
+stop obj 0 0 0
+xps 5
+# EXPECT: XPS: vertex =\s+0\.0+(E\+000)?\s+0\.0+(E\+000)?\s+-5\.29066784375\d+
+# EXPECT: XPS: zp\(chief\) =\s+6\.79066784375\d+
+# EXPECT: XPS: exit-pupil surface computed; crossings in the ray buffer
+# EXPECT-NOT: forrtl

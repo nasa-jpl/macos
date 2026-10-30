@@ -1,0 +1,95 @@
+# Section 4, Element Types, Lens Arrays: the NEW dialog for a hexagonal conic lens array (LensArray, element
+# 1; lenslet radius -0.8, width 0.1, index 1.5).  Dave 2026-10-19: regenerate the NEW tutorials as plain
+# dialogs.  The element answers are 3.2's (aperture, obscuration and element-based-coordinate prompts taken at
+# their defaults, as 3.2 did).  Differences from 3.2: the glass prompt reads 'Enter glass type (FixedIndex):
+# [FixedIndex]:'; the dialog no longer echoes 'Orthoganalized zMon= ...' after the zMon prompt; it echoes the
+# element and asks 'Is this correct? [YES]:' (default); the menus list the current element and surface types;
+# the element block carries KrElt/KcElt without fElt/eElt, adds nCoat, and prints LensArrayType before
+# LensArrayWidth.  3.2 printed only the element, so the source (collimated, 1 unit wide, 15 points, from z=-1),
+# a flat Refractor back surface at z=0.05 (index back to 1) and a flat FocalPlane at z=1.65 (about the lenslet
+# focus, -0.8/(1.5-1)) are setup (not printed).  Pins: the element as SHOW prints it, and the OPD at the focal
+# plane (rays, mean path, RMS).
+cd $TMP
+new
+lensarr
+0,0,1
+0,0,-1
+1d22
+1
+0
+none
+1d-6
+1
+Circular
+1
+15
+-1,0,0
+0,-1,0
+3
+# TRANSCRIPT: s04_lensarray from=Enter\selement\sname upto=Enter\sElement\s+2\sData
+LensArray
+LensArray
+Conic
+0,0,0
+0,0,0
+0,0,1
+2
+0
+-0.8
+
+
+1d22
+Geometric
+
+FixedIndex
+1.5
+0
+0,0,0
+1,0,0
+0,1,0
+0,0,1
+0.1
+1
+
+# TRANSCRIPT-OFF
+back
+Refractor
+Flat
+0,0,0.05
+0,0,0.05
+0,0,1
+no
+0
+1d22
+Geometric
+no
+FixedIndex
+1
+0
+
+fp
+FocalPlane
+Flat
+0,0,1.65
+0,0,1.65
+0,0,1
+
+
+1d22
+Geometric
+
+
+1,0,0
+0,1,0
+# TRANSCRIPT-OFF
+show
+1
+# TRANSCRIPT-OFF
+opd 3
+/null
+# EXPECT: File lensarr\.in being created\.
+# EXPECT: Enter number of element \(0=aperture\): \[0\]: 1\s+iElt=\s+1\s+EltName=\s+LensArray\s+Element=\s+LensArray\s+Surface=\s+Conic\s+KrElt=-8\.0000\d*E-01\s+KcElt=0\.0E\+00\s+psiElt=\s+0\.0E\+00\s+0\.0E\+00\s+1\.0E\+00\s+VptElt=\s+0\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+RptElt=\s+0\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+pMon=\s+0\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+xMon=\s+1\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+yMon=\s+0\.0E\+00\s+1\.0E\+00\s+0\.0E\+00\s+zMon=\s+0\.0E\+00\s+0\.0E\+00\s+1\.0E\+00\s+LensArrayType=\s+1\s+LensArrayWidth=1\.0000\d*E-01\s+IndRef=1\.5E\+00\s+Extinc=0\.0E\+00[\s\S]*?zElt=1\.0E\+22
+# EXPECT: OPD: nPassRays =\s+124,\s+DAvgCumL =\s+26\.750\d*D-01[\s\S]*?RMS OPD error is\s+5\.5444\d*D-06
+# EXPECT-NOT: values expected
+# EXPECT-NOT: Unknown (grid|surface|element|command)
+# EXPECT-NOT: forrtl

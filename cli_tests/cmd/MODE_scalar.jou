@@ -1,0 +1,18 @@
+# Session mode SCALAR (under POLARIZATION) across a LOAD (PLAN_CONSOLIDATION 3.3 rule-6 audit, 2026-10-11).
+# SCALAR works with or without a deck; until 2026-10-11 every LOAD reset ifVecDif3 to its start-up value
+# (macos_mod_init_vars, run by reinitialise_variables), with no message.  The ruling is Dave's
+# (PLAN section 4) -- RULED 2026-10-11: (a), the mode is a SESSION mode and survives the load
+# (macos_mod_init), and the load names it ('LOAD: session modes in force: ...').  The active
+# EXPECT is outcome (a); the per-load reset it replaced is kept below for the record.  STATUS prints the flag
+# (extended 2026-10-11).  Outcome (a): no POLARIZATION after the load -- polarization survives,
+# and re-issuing it would itself switch vector back on.
+old $ROOT/ZGD_test_files/tst_calib_spot4.in
+polarization
+1,0
+0,0
+scalar
+status
+old $ROOT/ZGD_test_files/tst_calib_spot4.in
+status
+# EXPECT: Scalar diffraction enabled[\s\S]*Vector diffraction=\s*F[\s\S]*being loaded[\s\S]*Status for file[\s\S]*?Polarization=\s*T[\s\S]*?Vector diffraction=\s*F
+# BEFORE 2026-10-11 (the per-load reset): EXPECT: Scalar diffraction enabled[\s\S]*Vector diffraction=\s*F[\s\S]*being loaded[\s\S]*Polarization turned on[\s\S]*Status for file[\s\S]*?Vector diffraction=\s*T

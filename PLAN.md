@@ -17,9 +17,55 @@ task.
 
 ## 0. Hygiene / quick fixes
 
+- [x] **Re-traces were not idempotent (strict 2-cycle, the dwdsurf 'speckle' floor).**  CLOSED 2026-09-08 (Dave: "let's try the dead band").  The candidate below was WRONG and was falsified before coding: the cycle is present with NO stop and ChfRayPos never moves; `srcaim.inc` is a dead include.  The cause is the source-frame re-orthogonalisation at every grid setup, which has no floating-point fixed point (xGrid alternates by 1 ulp each trace); fix = `OrthoSrcFrame` (math_mod, dead band 1e-14, four call sites) + the same dead band on the object-space STOP translation (the eac2_7seg SAVE 2-ulp oscillation).  Measured: ten traces bit-identical on jwst/e5hex1; elt-4 dw/dsurf column 1.19e-6 -> exactly 0; live columns unchanged.  See macos_f90/CLAUDE.md "Re-traces are IDEMPOTENT".  ORIGINAL NOTE (kept for the record of a wrong first guess):  Surfaced 2026-09-08 by Terminal Opus's `REPORT_sens_noise_center.md` (Luis's dwdsurf 'centre-channel speckle'): on the jwst zoom deck at its nominal field, ten identical traces ALTERNATE in a strict 2-cycle, max 2.18e-11 mm = 6 ulp of the 24 459 mm accumulated path, on 379 of 2184 rays; bit-for-bit in the pty CLI; e5hex1 and Rx_Cass_NS exactly idempotent.  It is the FD noise floor of every dw/dsurf column (1/delta, 1.19e-6 at delta 1e-6) and the whole 'speckle'.  **Mechanism candidate (CCL, not yet measured):** the per-trace chief-ray re-aim under a set stop (`srcaim.inc`, collimated branch: translate ChfRayPos in the (xGrid,yGrid) plane to pass through StopPos) is applied from the CURRENT ChfRayPos every trace; on a deck whose chief is tilted (jwst 2.3e-3 rad, yGrid not exactly perpendicular at the ulp level) the projection has no fixed point and alternates between two ulp-neighbours, which the SAVE round-trip work already met on eac2_7seg as 'a pre-existing 2-ulp ChfRayPos re-aim oscillation under ApStop' (2026-07-03).  e5hex1 is idempotent because its translation is exactly zero after the first application.  Discriminator: the 2-cycle must vanish with no stop set (no re-aim) and with the re-aim skipped when |x|,|y| < ~1e-13*max(1,|ChfRayPos|).  Fix candidate: that dead band in `srcaim.inc` (aim converges instead of alternating); gate = ten traces bit-identical on jwst + eac2_7seg SAVE pass2==pass3, e5hex1 unchanged.  Engine change -- Dave's go.
+- [x] **`Get_Values` (iosub.inc:3432) reads past its buffer -- `ArrWaveLen=` / `ArrIndRef=` lines parse NONDETERMINISTICALLY.**  FIXED 2026-09-09 (loop bounded by `LEN(ValBuf)`, token and output array capped, a token open at the buffer end completed); gate: 20 consecutive CLI loads of tst_save_keys.in on gfortran AND ifx, 20/20 each (was 3 of 5).  `ValBuf` is `CHARACTER(len=MacosValLen)` = 220 (realtype.h) but the tokenizer loop runs `c` to `MacosCharLen` = 256 and indexes `ValBuf(c:c)`: 36 bytes of whatever follows the caller's `VALUE` are tokenized, and a non-blank byte there becomes a bogus token -> `Read(tok,*)` -> gfortran "Bad real number in item 1 of list input" at iosub.inc:3449 (ifx: silent garbage or the same).  Measured 2026-09-09: `ZGD_test_files/tst_save_keys.in` (the July round-trip fixture; its `ArrWaveLen=` line is the only local caller) failed to LOAD on 2 of 5 identical CLI runs on the gfortran release build and loaded cleanly on the other 3; the SAVEd copy behaves the same way.  Only callers: msmacosio.inc:403/405 (ArrWaveLen) and :2696 (ArrIndRef).  Fix = bound the loop by `LEN(ValBuf)` (one line) + a gate that loads tst_save_keys 20x.  Found while chasing CCMac's iris_dp_ZGD save_rx->reload SIGSEGV (which is a DIFFERENT site, SFFSrf/FreeFormSrf, and did NOT reproduce here on 7 FreeForm/grid/NS decks x 2 engines x +/-stop).
+- [x] **IRIS `save_rx` phantom-grid frame over-emission.**  FIXED
+  2026-09-09 (`cda178e`: `surfsub.F` grid term gated on a positive pitch;
+  `iosub.inc` SAVE emits the grid frame / `GridSrfdx` only for a DEFINED
+  grid, `GridDefinedElt`, blank `GridFile` -> `none`).  The 38
+  `nGridMat= 99` / `GridFile= none` phantoms no longer gain a frame
+  (CCMac round 3: pData/GridSrfdx 44 -> 6).  Gate: 7 real-grid decks
+  byte-identical, 2 phantoms clean, both compilers.
+- [x] **IRIS `save_rx` -> reload SIGSEGV on the REAL ZrnGrData grids
+  (iElt 17/19/21/35/37/39) -- CLOSED 2026-10-10 (CCMac, two engine
+  defects; `BRIEF_ccmac_iris_save_crash.md`, `REPORT_iris_save_crash.md`
+  closure section).**  NOT a corrupted rewrite: TWO independent defects
+  chained.  (A) `save_rx` DROPPED `NSCount=` -- the writer
+  (`PrtSingleEltInfo`, iosub.inc) never emitted it, so the deck's 21
+  non-sequential segment hit-budgets were lost on round-trip; on reload
+  the NS group search runs UNBOUNDED, the composite-grid bracket solver
+  (`SFFZPB`) diverges and `L`/`xi` grow without bound.  (B) the grid
+  pixel-index guard (`SFFSrf`/`FreeFormSrf`/`SGSrf`/`NGSrf`, surfsub.F)
+  tested `i0<1 .OR. i1>nGridMat` AFTER `i0=IDFLOOR(xi); i1=i0+1`, which
+  OVERFLOWS INT32 for a huge `xi` (i0 -> INT_MAX, i1 wraps to INT_MIN),
+  defeating the test -> `GridMat` indexed far out of bounds -> SIGSEGV
+  in `INTNORM`.  Proven one-variable (`iris_clean_gridfile` minus
+  `NSCount` crashes identically; with it, 12737 survive, round-trips
+  clean, NSCount preserved).  Fix: (A) iosub.inc emits `NSCount=` when
+  declared (Dave's ruling: emit in SAVE, do NOT auto-derive -- the budget
+  is authoring intent, 0/absent = unlimited for CornerCube); (B) surfsub.F
+  rejects a non-finite / >=2e9 `xi`/`yj` in floating point before IDFLOOR
+  (clean off-grid miss, counted `nGridIdxOvf`, api `grid_idx_ovf_get`,
+  WARN).  Public gates (two focused fixtures; the IRIS deck stays
+  JPL-private): `ZGD_test_files/tst_zrngr_roundtrip.in` (SAVE preserves
+  NSCount; pre-fix drops it) + `tst_zrngr_overflow.in` (tiny GridSrfdx ->
+  xi overflow; pre-fix SIGSEGV, post-fix clean miss + count).  Both
+  must-fail on the pre-fix binary, gfortran verified; ifx + mmacos/pymacos
+  twins + full corpus A/B are the Linux/MATLAB-side remainder.
+- [x] CLOSED 2026-10-09 (TO, macos 29f8e24): not an overrun -- CTRACE's Return branch stamped the running medium's index onto the Return after every ray; removed; gates `tTraceKeepsRx` CLI/mmacos/pymacos; 3b (Refractor stamp) + 3c (GRIN NaN) carried in PLAN_CONSOLIDATION 1.1b.  ORIGINAL: **lensarr trace-time overrun (resurfaced 2026-09-09).**  Tracing a
+  deck with `LensArrayIndRef=` stamps a lenslet index onto a later
+  element's `IndRef` (seen on `tst_save_keys.in`: load->save clean,
+  load->opd->save shows `IndRef 1.0 -> 1.51242597` on the element after
+  the LensArray, same binary).  The `lensarr_indexes.inc` heap-stomp
+  class `662e86e` addressed at parse time but not on the trace path.
+  Not surfaced by any real optical deck yet; `tst_save_keys` is a keys
+  fixture that traces to NaN.  Chase the lenslet index array bounds in
+  the trace (`lensarr_indexes.inc` + the LensArray trace path).
+- [x] CLOSED 2026-10-09 (TO, macos f755e78): the per-ray Return parity was reset on a restart; rebuilt at `iStartElt`; `tTraceRestart` pair sweep.  ORIGINAL: **`macos.trace(26)` followed by `macos.trace(27)` returns a wrong first OPD on the jwst zoom deck** (3.72982e-05 vs 6.85038e-06; the next trace corrects it; only that element pair -- 26 is the flat Return at the image, 27 the ExitPupil Return).  Noticed by Terminal Opus 2026-09-08, not chased; the harvests never see it (they trace to one element).  Smells like the incremental-trace / cached-state path continuing from a Return that reversed the beam with a stale OPD reference.  Reproduce, then decide whether `trace(iElt)` after a trace to a Return must restart from the source.
+- [x] **CLI STOP: multi-value prompt crash + Segment veto.**  Closed 2026-09-08 (Dave, j18sc `fex 27`).  (1) `stop obj 0 0 0` on one line crashed with `forrtl severe (24)` -- `DACCEPT`/`RACCEPT`/`IACCEPT` read ABSN values from ONE buffered token and `ERR=` does not catch EOF; they now gather tokens across the line (and further lines / journal lines) under `IOSTAT`.  (2) STOP/CENTER refused `Segment` elements (`Invalid element type = 11`, EltID indexed before the range check); the veto now names and keeps only the non-sequential types, and a Segment stop maps the chief ray to the segment's source segment for the aiming trace (`RayToSegMap`/`EltToSegMap`).  `stop_info_set` lifted the same veto for the bindings.  Also the FEX Rx-order flag REMOVED the same day (see the FEX entry).  Details: `macos_f90/CLAUDE.md` "STOP on a Segment element".  **OPEN for Dave (pre-existing, measured en route):** every ELEMENT stop rebuilds the source frame right-handed (`define_local_csys` in UpdSrcGrid) while the OBJ stop preserves the deck's frame; on a left-handed deck frame (e5hex1: `xGrid= -1 0 0`) xGrid flips sign, FEX's `5d-6*xGrid` probe flips with it, and the exit-pupil radius moves 6.2e-4 (1.58 mm along the chief ray).  **RULED + DONE 2026-09-08 (Dave: "Make FEX's probe frame-independent"):** `FEXProbeCross` -- four probes (+/-5d-6 about two orthonormal axes perpendicular to the chief ray), mean crossing; FEX and SXP both use it; symmetric decks unchanged to round-off.  **ELT-stop handedness flip FIXED the same day** (UpdSrcGrid preserves the deck triad's handedness): it was also mirroring the SEGMENTED source grid against the segment->element map -- 732/985 rays obscured on e2e6m s3_imager_full after any element stop (the 'add_pupil kills rays on segmented decks' symptom); see macos_f90/CLAUDE.md 'Element STOP preserves the source frame's HANDEDNESS'.  **CONSEQUENCE, OPEN for Dave -- reviewed re-pin needed:** the medial pupil is not the legacy tangential one on off-axis decks (e5hex1 2548.00 -> 2523.74, 1%; j18 family +0.9 mm, 3e-4; jwst zoom null radii +0.7..1.2 mm), so `tFocalSurface` failed 3 pinned tests (`test_null_radii_are_pinned`, `..._match_the_ab_report_...`, `..._fex_radius_follows_the_fit`) by exactly that shift and `tPupilFindMethod` 2 (cross-config vertex separation; e5hex1 FEX-vs-cone-fit gap) -- **all five RE-PINNED to the medial values 2026-09-08 (Dave)**; REPORT_wnom_cli_ab / REPORT_focal_surface numbers and any campaign artefact that recorded a FEX radius on an off-axis deck are legacy-definition records (REPORT_focal_surface carries a dated note).  Corpus blast radius: see the 45-deck pre/post sweep in the 2026-09-08 session record (symmetric decks unchanged to round-off).
 - [x] **ORS / reference-surface optimizer ran away on an obscured chief ray.**  Closed 2026-06-15 (sls-dev `1d11935`, cherry-picked opt-dev `b2dcacf`).  `RSTRACE` (driving `CRSOPTIMIZE`, used by the ORS command and the FEX reference-surface fit) minimizes the whole-beam RMS OPD via `MNZPB`+`ZPSolve`, referencing each ray's OPD to the chief ray's path `L1`.  The trace loop gated every ray on `LRayOK.AND.LRayPass`, which EXCLUDES the chief ray whenever it is obscured — the normal case for an on-axis telescope / coronagraph (the FPM blocks the chief ray).  With ray 1 skipped, `L1` stayed at a stale pre-loop value, the RMS-OPD(f) landscape lost its minimum, and `mnbrak`'s golden expansion ran the reference focal length to ~1e40 (observed `New f=1.5e40`, psi off the unit sphere) — wrecking the subsequent diffraction prop.  Fix: include the chief ray by `LRayOK` alone (it's still geometrically traced when obscured; obscuration only blocks it from the image); data rays still require `.AND.LRayPass`.  Unobscured-chief-ray results stay bit-exact; mmacos suite green.
-- [x] **Make FEX adopt SXP's exit-pupil-radius geometry (EP→FP), retiring the legacy iEm1→EP definition.**  DONE 2026-07-03 (macos sls-dev, spec converged with Dave in-session).  **FEX's EP radius is now ALWAYS the chief-ray distance from the EP to the iElt+1 PLANE — whatever iElt+1 is (FP, coronagraph mask, ZWFS…)** — that is the far-field propagation distance for physical optics; no element-type scan (coronagraphs put pupils at intermediate foci where the at-focus element isn't a FocalPlane).  Sign per EP EltID (Return reverses beam, Reference passes).  Legacy `zp_iEm1` = fallback (no iElt+1 / degenerate plane) + footprint-autoswitch alternative.  Three noisy guards: telecentric detection (parallel probe chief rays — FindCrossPt would 0/0; keeps station, radius = station→iElt+1, FLAT 1d22 fallback); beam-footprint sanity autoswitch (sphere smaller than beam ⇒ k2<0 mass miss — the SegDemo3 failure below); Rx-order flag (Return immediately before the EP return should usually be a passive Reference — pattern Reference@FP, Return@EP, Return@FP; fires on most legacy Rx, deliberate nudge).  **Compatibility pass (fex_sweep, `MACOS_resources/mmacos/tools/fex_sweep/`):** conforming double-pass Rx have the pre-EP Return AT the focus → legs equal by construction → round-off no-op (e5hex1, 6MST, iris, j18*, dmt6mono, lst3zern, CoroExample, HOEExample, CassWithExitPupil, SegDemo3conic).  Divergent: manual `Cassegrain.in` legacy −1.2295 → new +6.7907 == exactly CassWithExitPupil's value (rework computes the right answer where legacy was degenerate); `eac2_7seg` −289.7 → +52597.6 (material shift — Dave to review).  GMI regression all-pass; mmacos 30 classes / 0 verification failures (tProperCompareCassFF heap crash pre-existing).  pymacos has no FEX tests (n/a).  SXP retained (now largely redundant — alias-or-remove later).  Remaining: footprint-autoswitch arm not yet exercised by a real Rx; journals not regressed.  ORIGINAL NOTE — Proposed 2026-06-27 (surfaced by the SegDemo3conic dw/dgrid example).  FEX and `SXP` (`tracesub.F`) find the SAME exit-pupil VERTEX (chief-ray-pair crossing via `FindCrossPt`) but set the reference-sphere RADIUS (the EP "focal length" written to elt nElt-1) from different legs of the chief ray: FEX uses `zp_iEm1` = iEm1→EP (iEm1 = the element BEFORE the pupil); SXP uses `t_FP` = EP→FP (iElt+1), the true exit-pupil focal length.  FEX's leg goes DEGENERATE when the EP lands near the preceding element — on SegDemo3conic the EP sits ~0.1 m from elt 8, so FEX's radius collapses to 0.10 m (`New f=1.03D-01`): the reference sphere is far smaller than the beam, ~half the rays miss elt 9 (25 243 `surface miss`), and the OPD residual is a ~50 mm defocus bowl (verified — that's the dead OPD canvas the example produced).  SXP's EP→FP radius is independent of iEm1, so it stays correct → clean OPD.  Fix = port SXP's `t_FP` block into FEX (keep SXP's `iElt+1`-out-of-range fall-back to `zp_iEm1`); SXP then becomes redundant (alias-or-remove) and GMI's `ifFEX` path (§11.4) inherits it.  **Compatibility caveat — why this is a PLAN item and not a quick fix:** FEX is depended on by a large corpus of prescriptions / journals / GMI workflows, and SXP was deliberately made a SEPARATE command precisely to avoid changing FEX's behavior.  Adopting SXP logic shifts the EP radius — hence the OPD reference and every computed OPD/sensitivity — for any Rx where iEm1→EP ≠ EP→FP (most real imagers, not only the degenerate ones).  Do a compatibility pass first: regress the FEX-using suite (mmacos + GMI + journals), quantify the result deltas, and choose an outright swap vs. a gated/opt-in mode (legacy FEX default + EP→FP under a flag) before promoting.  See CLAUDE.md "SXP command" section + §6.3's "SXP vs FEX" worked-example item.
-- [ ] **Add `ApStop` to the variables written by the prescription SAVE path; review the other not-currently-saved variables.**  Added 2026-06-29 (Dave).  **ApStop SHIPPED 2026-07-03** (macos sls-dev): SAVE now writes BOTH forms — header `ApStop= x y z` (`StopPos`, when `ifStopSet .AND. .NOT.EltStopSet`, so interactive-STOP state round-trips too) in `PrtSourceInfo`, and element-bound `ApStop= dx dy [auto]` (`StopOffset`/`LStopAtEltAutoSet`, inside `StopElt`'s block) in `PrtSingleEltInfo` — plus `OPDRefRayLen` (Dave: "include OpdRefRayLen if it has been given a value") and `RxNoStopSet`.  Verified: eac2_7seg header values full-precision; `macos.stop(2)`+save→reload→fex works stop-less-prompt-free; re-saved Cassegrain fex radius == the FEX-rework sweep value (cross-validates both slices).  **En-route fix: `macos_IO.f90` assembled a malformed runtime format `(A17,'=',,…)` (double comma, 6 sites) — ifx tolerated it, gfortran hard-errored, so EVERY gfortran-build SAVE (CLI + mmacos `save_rx`) crashed at the first array write.**  Diagnosed per the GDB-first rule (pty-driven CLI under gdb; MATLAB's bundled libstdc++ blocks gdb inside `matlab -Dgdb`).  ifx/gfortran SAVE output now byte-identical.  **ELEMENT-DATA BUCKET SHIPPED 2026-07-04** (Dave: "confirm each as a .in-file element, then — if it appears in memory — include it in the SAVEd .in-file"): all 18 element-data keys now round-trip, each gated on the value actually being set in memory (legacy SAVE output byte-identical — e5hex1 diff 0 vs the 2026-07-03 baseline).  Coating (thickness un-scaled ×IndRef/Wavelen to invert the parse-time scaling), GradInd/GradCoef/GradLensZ, DoeWL/DoePhase/DoeFl + OrderHOE (new `CASE (DoeTrGratingElt)` — DOE had no writer at all), nAmplMat/AmplFile/AmplSrfdx, LensArrayIndRef (canonical explicit-value form, also covers XYIndRefFile input), ArrIndRef + header ArrWaveLen (multi-λ; writes λ2..λn so `Wavelen=` restores slot 1 on reload), SegApType/SegApVec, ZernCenter/XDir/YDir/Rad (gate zernUsrOpt), ZernAnnularRatio (**writer misspelled it `ZernAnnualRatio` since birth — the ratio was silently lost on every reload of a SAVEd annular-Zernike Rx**; also now emitted for FF/Mon annular types), ZCOZernType, GridSrfOrder, lData, nMetPos/tMetElt, EdgeSensors.  Two structural losses found en route and fixed: grid frame `pData..zData` widened to any `nGridMat>0` element (SrfType 9/11 use the frame in the trace since the GridSrf null-frame fix), and **`nGridMat/GridFile/GridSrfdx` on non-grid SrfTypes** (Conic NSReflector segments carrying GridData figures — iris_dp_ZGD — lost their whole grid figure on SAVE).  Rode along: **`lensarr_indexes.inc` heap stomp** (hardwired 107×107 rec-lenslet table vs `mLenslet=250` — any `LensArrayIndRef=`/`XYIndRefFile=` Rx corrupted memory at parse time; table now sized from mLenslet + clamp + parse-site count guard) and FmtD −0.0→0.0 normalization (keeps ifx/gfortran SAVEs byte-identical when computed frame defaults carry −0.0).  Fixture `ZGD_test_files/tst_save_keys.in` (+ `tst_save_ampl.dat`) exercises every key: load→SAVE→reload→SAVE byte-identical under BOTH compilers and ifx==gfortran; iris grid Rx converges after the known one-time 1-ulp psiElt DUNITIZE settle.  Resolution table in `macos_f90/SAVE_KEYWORD_AUDIT.md`.  **REMAINING (why the box is open): policy call for Dave** — should SAVE also write the `Opt*`/CALIB family (25 keys; they round-trip a *workflow*, not the optical system) and the trace-state singles (`FEXCentroid`, `UseChfRay4OPD`, `RayTgtElt`, source local frame, …)?  Cross-check against `macos_f90/Lou-UpdateNotes.txt` items.
+- [x] **Make FEX adopt SXP's exit-pupil-radius geometry (EP→FP), retiring the legacy iEm1→EP definition.**  DONE 2026-07-03 (macos sls-dev, spec converged with Dave in-session).  **FEX's EP radius is now ALWAYS the chief-ray distance from the EP to the iElt+1 PLANE — whatever iElt+1 is (FP, coronagraph mask, ZWFS…)** — that is the far-field propagation distance for physical optics; no element-type scan (coronagraphs put pupils at intermediate foci where the at-focus element isn't a FocalPlane).  Sign per EP EltID (Return reverses beam, Reference passes).  Legacy `zp_iEm1` = fallback (no iElt+1 / degenerate plane) + footprint-autoswitch alternative.  Three noisy guards: telecentric detection (parallel probe chief rays — FindCrossPt would 0/0; keeps station, radius = station→iElt+1, FLAT 1d22 fallback); beam-footprint sanity autoswitch (sphere smaller than beam ⇒ k2<0 mass miss — the SegDemo3 failure below); Rx-order flag (**REMOVED 2026-09-08**, Dave: it prescribed a Reference@FP/Return@EP/Return@FP pattern that exists nowhere — the documented sequence is Return@FP, Return@EP, FocalPlane, which FEX's own legacy leg assumes — so it fired on every conforming deck; 514-deck census 119 vs 0).  **Compatibility pass (fex_sweep, `MACOS_resources/mmacos/tools/fex_sweep/`):** conforming double-pass Rx have the pre-EP Return AT the focus → legs equal by construction → round-off no-op (e5hex1, 6MST, iris, j18*, dmt6mono, lst3zern, CoroExample, HOEExample, CassWithExitPupil, SegDemo3conic).  Divergent: manual `Cassegrain.in` legacy −1.2295 → new +6.7907 == exactly CassWithExitPupil's value (rework computes the right answer where legacy was degenerate); `eac2_7seg` −289.7 → +52597.6 (material shift — Dave to review).  GMI regression all-pass; mmacos 30 classes / 0 verification failures (tProperCompareCassFF heap crash pre-existing).  pymacos has no FEX tests (n/a).  SXP retained (now largely redundant — alias-or-remove later).  Remaining: footprint-autoswitch arm not yet exercised by a real Rx; journals not regressed.  ORIGINAL NOTE — Proposed 2026-06-27 (surfaced by the SegDemo3conic dw/dgrid example).  FEX and `SXP` (`tracesub.F`) find the SAME exit-pupil VERTEX (chief-ray-pair crossing via `FindCrossPt`) but set the reference-sphere RADIUS (the EP "focal length" written to elt nElt-1) from different legs of the chief ray: FEX uses `zp_iEm1` = iEm1→EP (iEm1 = the element BEFORE the pupil); SXP uses `t_FP` = EP→FP (iElt+1), the true exit-pupil focal length.  FEX's leg goes DEGENERATE when the EP lands near the preceding element — on SegDemo3conic the EP sits ~0.1 m from elt 8, so FEX's radius collapses to 0.10 m (`New f=1.03D-01`): the reference sphere is far smaller than the beam, ~half the rays miss elt 9 (25 243 `surface miss`), and the OPD residual is a ~50 mm defocus bowl (verified — that's the dead OPD canvas the example produced).  SXP's EP→FP radius is independent of iEm1, so it stays correct → clean OPD.  Fix = port SXP's `t_FP` block into FEX (keep SXP's `iElt+1`-out-of-range fall-back to `zp_iEm1`); SXP then becomes redundant (alias-or-remove) and GMI's `ifFEX` path (§11.4) inherits it.  **Compatibility caveat — why this is a PLAN item and not a quick fix:** FEX is depended on by a large corpus of prescriptions / journals / GMI workflows, and SXP was deliberately made a SEPARATE command precisely to avoid changing FEX's behavior.  Adopting SXP logic shifts the EP radius — hence the OPD reference and every computed OPD/sensitivity — for any Rx where iEm1→EP ≠ EP→FP (most real imagers, not only the degenerate ones).  Do a compatibility pass first: regress the FEX-using suite (mmacos + GMI + journals), quantify the result deltas, and choose an outright swap vs. a gated/opt-in mode (legacy FEX default + EP→FP under a flag) before promoting.  See CLAUDE.md "SXP command" section + §6.3's "SXP vs FEX" worked-example item.
+- [x] RULED 2026-10-10 (Dave): SAVE writes `ApStop` (shipped 2026-07-03, below); the `Opt*`/CALIB keys and the trace-state singles DEFERRED (PLAN_CONSOLIDATION 1.1b; `UseChfRay4OPD= N` is written since 2026-10-10).  ORIGINAL: **Add `ApStop` to the variables written by the prescription SAVE path; review the other not-currently-saved variables.**  Added 2026-06-29 (Dave).  **ApStop SHIPPED 2026-07-03** (macos sls-dev): SAVE now writes BOTH forms — header `ApStop= x y z` (`StopPos`, when `ifStopSet .AND. .NOT.EltStopSet`, so interactive-STOP state round-trips too) in `PrtSourceInfo`, and element-bound `ApStop= dx dy [auto]` (`StopOffset`/`LStopAtEltAutoSet`, inside `StopElt`'s block) in `PrtSingleEltInfo` — plus `OPDRefRayLen` (Dave: "include OpdRefRayLen if it has been given a value") and `RxNoStopSet`.  Verified: eac2_7seg header values full-precision; `macos.stop(2)`+save→reload→fex works stop-less-prompt-free; re-saved Cassegrain fex radius == the FEX-rework sweep value (cross-validates both slices).  **En-route fix: `macos_IO.f90` assembled a malformed runtime format `(A17,'=',,…)` (double comma, 6 sites) — ifx tolerated it, gfortran hard-errored, so EVERY gfortran-build SAVE (CLI + mmacos `save_rx`) crashed at the first array write.**  Diagnosed per the GDB-first rule (pty-driven CLI under gdb; MATLAB's bundled libstdc++ blocks gdb inside `matlab -Dgdb`).  ifx/gfortran SAVE output now byte-identical.  **ELEMENT-DATA BUCKET SHIPPED 2026-07-04** (Dave: "confirm each as a .in-file element, then — if it appears in memory — include it in the SAVEd .in-file"): all 18 element-data keys now round-trip, each gated on the value actually being set in memory (legacy SAVE output byte-identical — e5hex1 diff 0 vs the 2026-07-03 baseline).  Coating (thickness un-scaled ×IndRef/Wavelen to invert the parse-time scaling), GradInd/GradCoef/GradLensZ, DoeWL/DoePhase/DoeFl + OrderHOE (new `CASE (DoeTrGratingElt)` — DOE had no writer at all), nAmplMat/AmplFile/AmplSrfdx, LensArrayIndRef (canonical explicit-value form, also covers XYIndRefFile input), ArrIndRef + header ArrWaveLen (multi-λ; writes λ2..λn so `Wavelen=` restores slot 1 on reload), SegApType/SegApVec, ZernCenter/XDir/YDir/Rad (gate zernUsrOpt), ZernAnnularRatio (**writer misspelled it `ZernAnnualRatio` since birth — the ratio was silently lost on every reload of a SAVEd annular-Zernike Rx**; also now emitted for FF/Mon annular types), ZCOZernType, GridSrfOrder, lData, nMetPos/tMetElt, EdgeSensors.  Two structural losses found en route and fixed: grid frame `pData..zData` widened to any `nGridMat>0` element (SrfType 9/11 use the frame in the trace since the GridSrf null-frame fix), and **`nGridMat/GridFile/GridSrfdx` on non-grid SrfTypes** (Conic NSReflector segments carrying GridData figures — iris_dp_ZGD — lost their whole grid figure on SAVE).  Rode along: **`lensarr_indexes.inc` heap stomp** (hardwired 107×107 rec-lenslet table vs `mLenslet=250` — any `LensArrayIndRef=`/`XYIndRefFile=` Rx corrupted memory at parse time; table now sized from mLenslet + clamp + parse-site count guard) and FmtD −0.0→0.0 normalization (keeps ifx/gfortran SAVEs byte-identical when computed frame defaults carry −0.0).  Fixture `ZGD_test_files/tst_save_keys.in` (+ `tst_save_ampl.dat`) exercises every key: load→SAVE→reload→SAVE byte-identical under BOTH compilers and ifx==gfortran; iris grid Rx converges after the known one-time 1-ulp psiElt DUNITIZE settle.  Resolution table in `macos_f90/SAVE_KEYWORD_AUDIT.md`.  **REMAINING (why the box is open): policy call for Dave** — should SAVE also write the `Opt*`/CALIB family (25 keys; they round-trip a *workflow*, not the optical system) and the trace-state singles (`FEXCentroid`, `UseChfRay4OPD`, `RayTgtElt`, source local frame, …)?  Cross-check against `macos_f90/Lou-UpdateNotes.txt` items.
 - [x] **Add `Surface=Zernike` support for `Element=Reference` in the engine.**  DONE 2026-07-02 (macos sls-dev `c9fa767`, pushed): PASSIVE — Reference accepts Surface=Zernike(8)/Aspheric(3) and CARRIES the basis (segment shapes) but never injects into the wavefront (RefSrf unchanged; `EltSurfCompat` gate only) + 2 shared-parser fixes (ZernModes single-vs-wrapped read; SrfTypeName warning mislabel).  Example `e5hex2_refzern`; see [[project-conforming-reference]].  ORIGINAL NOTE — Added 2026-06-30 (Dave).  Needed to use the per-segment GridMat generator (`MACOS_resources/mmacos/sensitivities/examples/gen_segment_gridmat` + `macos.segment_grid_basis`) with **FreeForm** segments: the generator traces to a near-pupil Reference to recover each segment's footprint.  A Conic Reference suffices for conic / Zernike-segmented prescriptions (e.g. SegDemo3conic), but a FreeForm-segmented aperture needs the Reference to reproduce the freeform figure as a valid trace target — i.e. a `Surface=Zernike` (or freeform) Reference.  Engine work: prescription parser + the `Element=Reference` surface-type dispatch.
 - [x] **`GridFile=` names kept the trailing TAB(s) from an Rx inline comment → `GridInit` "does not exist" → the grid figure was silently dropped.**  Fixed 2026-07-01 (reported by Luis via Dave; `seg_dp_zgd` / `iris_dp_ZGD` in `MACOS_resources/mmacos/examples/ns_griddata`).  A line like `GridFile=  zern41em5z155em3.txt<TAB><TAB>% flat.txt` parses to `VALUE = "zern41em5z155em3.txt<TAB><TAB>"` (the `%` comment is stripped, the tabs before it are not); `ICLEN` counts a tab as non-blank, so `GridInit` tried to open `zern41...txt<TAB><TAB>` → file-not-found → `GridMat=0` → no figure.  Shared parser, so GMI/mmacos/command-line all hit it (Luis saw it in GMI+mmacos on a tab-laden Rx; a clean/SAVE'd Rx works).  Proven on the SAVE'd `seg_dp_zgd.in`: clean → "Reading surface grid data file …"; re-tabbed → "does not exist".  Fix: strip trailing blanks+TABS from the GridFile value at parse (`msmacosio.inc:1959`) + harden `GridInit` (`surfsub.F`, before the `INQUIRE`).  Verified: the tab-laden Rx now reads the grid.  Ship: sls-dev + cherry-pick opt-dev.
 - [x] **Parser: preserve WHOLE-LINE comments through SAVE (not inline comments).**  DONE 2026-07-03 (macos sls-dev).  Whole-line `%` comments are captured at load in `GET_EQ`'s comment branch (`RxCommentCapture`, gated by `LRxCommentCapture` so the MOD dialog — which also calls GET_EQ — never captures) into `elt_mod` storage (`RxCommentLine/Anchor`, 500-line cap), anchored to the element context at capture (0 = header, iElt = that element's block; `RxCommentCtx` maintained by MBFile6), and re-emitted by SAVE (`RxCommentEmit` at `PrtSourceInfo` end + `PrtSingleEltInfo` end — a comment preceding `iElt= k+1` is read during block k, so end-of-block-k emission reproduces its position).  SAVE's own banner furniture (dashes-only lines + the three section titles) is filtered at capture so load(SAVE'd)→SAVE stays idempotent.  Inline comments deliberately NOT preserved per spec.  Verified on eac2_7seg (14 comment lines incl. commented-out keyword lines survive at correct positions; pass2==pass3 except a pre-existing 2-ulp `ChfRayPos` re-aim oscillation under ApStop).  Rode along: `FmtD` now prints **17 sig digits** (was 16 — not always bit-exact on reload) and the unset-units placeholder `BaseUnits/WaveUnits= (default-unit)` is no longer written (GET_EQ eats parens on reload → the value came back empty; was a second idempotency breaker).  ORIGINAL NOTE — Added 2026-07-01 (Dave): so a load→SAVE round-trip keeps documentation comment LINES; deliberately NOT inline (`key= value % comment`) comments, which are the fragile case that produced the GridFile-tab bug above.
@@ -219,6 +265,145 @@ task.
   (overlaps too much with the jGridSrf + FreeForm grid-component
   work).
 - [x] Renormalize `psiElt` after the `Q·psi` rotation in `CPERTURB_PROG` (funcsub.F:349-350).  Closed 2026-06-04 (commit 0ee4b23): one-line normalization after the matrix multiply.  `sin²(θ) + cos²(θ) ≠ 1` exactly in IEEE 754 for some θ (1e-6, 3e-5 notably) used to leave psi off by 1 ULP and drift slowly under repeated perturbs, producing a ~3e-14 OPD round-trip residual.  Regression probe at `MACOS_resources/mmacos/tests/tPerturbRoundtrip.m` was written defensively to allow both pre-fix (within 4*eps) and post-fix behaviour; now post-fix.
+
+### 0.y Engine fixes of the dyson5 cycle (2026-09-30 .. 10-04) — closed, recorded in `macos_f90/CLAUDE.md`
+
+All CLOSED on dev-candidate; each has a mmacos gate in SUITE_FAST and a
+CLAUDE.md section with the measured numbers.  Listed here so PLAN carries
+the cycle; the mechanics live in the nested file.
+- [x] `GlassElt=` dead engine-wide (catalog wiped per load) — `elt_mod_init_vars` resets prescription state only (b000390; tGlassDispersion).
+- [x] Physical-optics kernels medium-aware (`WaveMed = WaveBU/LegIndRef` per leg; test_prop_medium).
+- [x] Gratings on curved surfaces chord-ruled, and the grating OPL jump to match (tGratingImmersed, tGratingOpl; Dave's rule: OPD across a grating is defined modulo lambda).
+- [x] Short `AsphCoef=`/`AnaCoef=` lines pad with zero (`ReadRealsPad`; tRxShortAsph).
+- [x] CALIB: SPOT-target derivative stride; asphere step 1e-3|coef| / sag-based zero step; LM failure path restores the optics and returns a flag (host survives); the `lmlsq` SAVE'd-array leak on that path (tAsphCalib, 0d257ff..64c0a90).
+- [x] CALIB beam rows ride on ANY target; `OptBeamPosFov=`/`OptBeamWt=`/`OptBeamCentroid=`; api `calib_set_beam*` (tBeamRows).
+- [x] `ifLNsrf` root pick = hit nearest `RptElt` (`LNsrfRoot`); `PrevNonSeg` reset per ray on restarted traces (tTraceRestart; TO's one-call Schwarzschild).
+- [x] Far-field evanescent cut, opt-in (`ffcut_set`; tFFCut).
+- [x] **Forward conic root pick lands on the VERTEX sheet (`FwdRoot`, 1ba6874, 2026-10-04).**  The `|L^2-mpr|` metric put 40 of 1185 rays on M3's far hyperboloid sheet on dyson5's eccentric TMA section — every ray "passing", 44 mm of extra path, 7.8 mm rms FP OPD that CALIB faithfully reported and an outlier-cut spot metric hid.  Rule: `sign(Kr+(1+Kc)z) = sign(Kr)` on the real sheet; first crossing on a tie; legacy otherwise.  "First crossing" alone is WRONG (M2's far sheet sits IN the beam: 125 rays, 350 lost — measured).  Corpus A/B 406 decks identical to 10 digits; flips counted (`fwd_root_flips_get`).  Gate tFwdRoot.  Design-layer twin the same day: the asphere hook's enclosing circle now covers EVERY solve field (125ea9f; a nominal-only circle clipped the strip edges to 0 rays = CALIB's 9.9999e36 sentinel, and tAsphHook's pin [55 117 308] nm was the WFE of 180/97 of 253 surviving rays → re-pinned [496 407 467]).
+- [x] CLOSED 2026-10-09 (TO, macos 1d318ac `ReadCoefBlock`; 52b1409 named load refusals for the no-natural-zero reads; 6671d10 CR/CRLF at OPEN; 8d0bafe parser STOPs -> 99).  ORIGINAL: **`ZernCoef=` (and MonCoef/FFZernCoef...) multi-value lines are still bare `READ(VALUE,*)` -- a short block is an uncaught Fortran read error that kills the HOST (TO 2026-10-05, msmacosio.inc:1805, from a malformed hand-edited deck).  Extend `ReadRealsPad` there as for AsphCoef/AnaCoef (CLAUDE.md 'Short multi-value lines').  Needs a relink window.
+- [x] CLOSED 2026-10-09 (TO, macos d6e2fc5: `LNsrfRoot` at the four sites; corpus A/B 0 moved).  ORIGINAL: **Still open from the same sweep:** `ifLNsrf` in RefSrf/ObsSrf/PolElt/IntSrf still uses the old vertex-distance metric (LNsrfRoot was applied in surfsub's five only); a ray whose only forward hit is the far sheet keeps that spurious hit (counted, guards-warn rule); NSRefractor's grid frame; `tst_save_keys.in` traces to NaN on both engines (the lensarr trace-time item above).
+
+### 0.x OPD reference — chief ray vs whole-aperture mean (2026-08-19)
+
+Diagnosis: **Luis Marchen**; measurement, fix and gates: this tree.
+
+- [x] **`UseChfRay4OPD= Y` now parses** (`msmacosio.inc`).  The keyword
+  had a branch only for `N` — the value already in force — so the
+  chief-ray OPD reference was unreachable from a prescription.
+- [x] **`opd_ref_set` / `opd_ref_get`** (`macos_api_mod.F90`), surfaced as
+  `macos.opd_ref('chief'|'mean')` + a Session method.  Bit-identical to
+  the Rx keyword (`mmacos/tests/tOpdRef.m`).
+- [x] **`init` resets `rxLoaded`** when it rebuilds the engine.  It did
+  not, so after a model-size change `SystemCheck()` kept passing on a
+  wiped model instead of reporting "no Rx".
+- [x] **`macos_cmd_loop.inc:366` annotated as dead** — it sets
+  `LUseChfRayIfOK=.TRUE.` *before* `MBFile6`, whose first statement
+  (both `macosio.F` and `smacosio.F`) is `reinitialise_variables()`,
+  which puts it back to `.FALSE.`.
+
+**Measured** (`e5hex1.in`, 7 hex segments, model 128, OPD at the exit
+pupil): the chief ray is ALIVE at all five `dw_dx_multi` fields
+(`LRayOK(1)=1`) and the map is mean-referenced anyway — the flag was the
+gate, not the chief ray.  Poking one segment by `Tz = 1e-8 m` pistons the
+other six by `+2.849e-06` (16.7% of the peak response); under the
+chief-ray reference that piston is **exactly zero** and the poked
+segment's own peak recovers by exactly the same constant
+(`1.711e-05 → 1.996e-05`).
+
+**CLOSED 2026-10-10 — the global default is the CHIEF RAY (Dave: match the
+manual).**  TO, macos 1d132fd → 68ed8e2 / res 54117fd: `LOpdRefChief` set
+once at allocation (`opd_ref_init_opts`), `LUseChfRayIfOK` restored from it
+on every load, `UseChfRay4OPD= Y|N`, CLI `OPDREF CHIEF|MEAN`, every OPD run
+prints its reference, SAVE writes `N` when the mean is in force, the
+`opdValid` mask (`opd_mask_get`) because zero is no longer "no ray".  The
+sweep below was run: corpus A/B 406 decks both compilers, RMS / P-V / nPass
+/ lost identical, the per-ray map moves by `Average OPD` on 397/396 decks
+(`cli_tests/records/ab_opdref_moved_51a5624.txt`); re-pins with the
+mechanism in `tDwDx`, `tDesignTelescope`, `tRunSensitivities`; fast suite
+593/0, pymacos 6676/0.  Found en route: the CLI's printed RMS / P-V /
+Average CANNOT move (mean-removed, max−min, `DAvgl`); chief−mean dw_dx is
+ONE constant per column on every deck, monolithic included.  Full record:
+`macos_f90/CLAUDE.md` "OPD reference".  ORIGINAL NOTE: The 2008 documented intent
+(`Lou-UpdateNotes.txt` item 45) is chief-ray-by-default, and
+`macos_cmd_loop.inc:366` is a fossil of that intent.  Flipping it means
+moving that assignment after `MBFile6` (or initialising
+`LUseChfRayIfOK=.TRUE.` in `ray_mod_init_vars`).  **Not done here** — it
+changes the absolute piston of every OPD map in the corpus on decks
+whose chief survives, which needs the same compatibility sweep the FEX
+EP-radius rework got:
+- CLI/binding sweep over the Rx corpus recording `RMS`, `P-V`, map mean
+  and `nPassRays` before/after, flagging every deck whose map MEAN moves
+  (RMS/P-V cannot move — the two maps differ by a constant);
+- GMI regression 6/6 (its references carry absolute OPD);
+- every committed sensitivity baseline (see the regen list below);
+- the pymacos PROPER-compare phases, which feed OPD into
+  `prop_add_phase` — a constant piston is harmless to intensity but the
+  comparison harnesses do their own referencing and must be re-checked,
+  not assumed.
+
+**2026-09-09 — the sensitivity path now carries the reference (Luis's
+"residual on the other segments when one segment is poked", round 4).**
+`opd_ref` {'mean','chief'} added to all eight `dw_d*` drivers, the
+supervisor core (re-applied after EVERY reload) and `run_sensitivities`
+(which also gained `orient` / `sign` — it forwarded neither, so no
+`run_dwd*` user could choose the orientation — and now forwards `elts`
+to the dwdsurf channel, which it alone had dropped: a one-segment
+request harvested all 42 Kr/Kc channels on jwst_ote_designc).  Defaults stay `'mean'`
+(no baseline moves).  **Ruling (Dave 2026-09-10): the mean-referenced
+and PTT-removed columns are NOT a leak -- they are the same correct data
+presented under a different convention.**  Measured on the DRIVER path (`macos.dw_dsurf`,
+e5hex1 segment 2, Kr / Kc, orient xy, remove_ptt false): under `mean`
+the six other segments read one constant, `-(N_k/N)*mean(poked)` =
+4.32e-4 / 2.04e-2 per unit parameter (14.7% / 12.0% of the poked
+segment's rms, std 3e-16); under `chief` exactly 0.  What `chief` does
+NOT localise: the chief ray's OWN segment (its reference moves with the
+poke; the others read `-m(chief)` = -2.18e-5 per unit Kr on e5hex1, 5.0%
+of that segment's own rms).  Found the same day from Luis's own pictures: the per-element
+CENTRE-FIELD page plotter scrambled the map under `orient xy` (index
+rebuilt from the transposed nominal map; fixed, `per_field_indx`, gated).
+**Recommended next step, unchanged:
+(b) below — a nominal-anchored fixed-length reference via the existing
+`OPDRefRayLen` branch (`opd_ref_len_set`), which makes EVERY column
+local; then the drivers can default to it.**  Gate: `tOpdRef/
+test_driver_single_segment_poke_is_local_under_chief`; doc:
+`mmacos/doc/SENSITIVITY_TOOLS.md` (OPD conventions section).
+
+**DEFERRED, and LOWER priority than first scoped — a stable reference
+that survives a geometrically dead chief.**  The branch gates on
+`LRayOK(1)`, the GEOMETRIC flag, not `LRayPass(1)`: an OBSCURED chief
+still serves.  Measured at the exit pupil, `CassWithExitPupil` and
+`Rx_Cass_FarField` run `LRayOK(1)=1, LRayPass(1)=0, RayStatus=Obscured`
+and the chief reference is available on both; `e5pie`, `e5pie_polyap`
+and `e5hex1` have a fully unobscured chief.  **No deck checked has a
+geometrically dead chief**, so the fallback is not the live problem it
+was first written up as (that write-up misread the structural
+`nPassRays = nRay − 1` — OPD loops from `iRay=2` — as a lost chief).
+What remains true: the fallback is SILENT, so a deck that does miss
+geometrically gets the coupling back with no warning.  A reference that
+does not depend on one ray tracing would close the class: candidates are
+(a) a designated surviving ray, chosen once on the NOMINAL trace and
+reused for every poke — cheap, but the choice must be recorded in the
+output or the map is not reproducible; (b) an Rx-declared
+`OPDRefRayLen`, which ALREADY EXISTS as branch 2 of `SUBROUTINE OPD`
+and is the cheapest path to a stable reference today — the missing piece
+is a way to *capture* the nominal value into it (`opd_ref_len_set`, one
+more api wrapper); (c) a nominal-trace-anchored reference maintained by
+the engine across pokes, which is the cleanest and the largest change.
+**(b) is the recommended next step** — it reuses a tested branch and is
+a wrapper, not new trace physics.
+
+**REGEN IMPACT (nothing regenerated here — a reviewed step).**  Adopting
+the chief reference anywhere it currently is not changes the PISTON
+CONTENT of Jacobian columns and therefore these committed artifacts:
+`mmacos/templates/50_sensitivities/**/*_sens.mat` and their
+`_sens_report.txt` / `_opdall` / `_dwdx_channels` figures (e5hex1 +
+e5hex1_grid, all four `run_dwd*` runners), `mmacos/examples/sensitivities/e5hex1/*`,
+and anything downstream that consumed them (`run_compare`, `run_simulator`
+stage `.mat`s, the e2e s4–s7 pages).  Mean-removed statistics (RMS WFE,
+P-V, conditioning, singular-value spectra) do NOT move; per-segment
+piston columns DO.  `macos.opd_ref` defaults to `'mean'`, so **no
+baseline moves unless a caller opts in.**
+
 
 ---
 
@@ -462,6 +647,8 @@ Each function → regression test → manual entry → fix what surfaces. Order 
   - [ ] Or remove from the enum + parser so users can't silently pick a non-functional mode
   - [ ] Either way, document the resolution in pymacos's `m.calib_set_target` docstring and mmacos's `+macos/calib_set_target.m` help text
 - [ ] Diagnose `SPOT_TARGET` reporting 0 iterations even with `dopt_init_vars` fixed
+- [ ] **Asphere + Zernike on ONE mirror as a first-class surface option (Dave 2026-10-05).**  Today the design layer emits `Surface= Aspheric` (even-radial `AsphCoef`) OR `Surface= Zernike` (one monomial field), never both, and the combined path errors on purpose (CCMac, PLAN_DESIGN_LAYER Sprint 6+).  TO's dyson5 freeform ladder (addendum 44, resources 0258faa) showed the exact way around it with NO engine change: `Surface= FreeForm` with TWO channels -- the **Mon** channel about the element VERTEX carrying the even-radial asphere exactly (unnormalised ANSI modes 1/5/13/25 reproduce h^4/h^6: R0' == R0 to 7.8e-15 m over 7 fields, the sign-flipped leg misses by 7 cm), and the **FF** channel about the section POLE (pole frame, `lFF` = 1.05x footprint) carrying the non-symmetric Zernike modes.  Make that the emitter's option: `Telescope.build` emits FreeForm with Mon = asphere-as-monomials (vertex) + FF = freeform (pole) whenever an element has both `asph` and `freeform`; `optimize` keeps `OptAsph=` on the Mon side and `optimize_freeform` points `OptZern=` at the FF channel (engine: confirm the OptZern DOF reaches `FFZernCoef`, else that is the one engine touch).  Gates: (a) the two-channel FreeForm == `Surface= Aspheric` on the same deck to engine precision (TO's R0' identity); (b) coaxial decks byte-identical (no pole -> Mon and FF share the vertex); (c) `tFreeformPole`'s pole leg on the FF channel.  Supersedes CCMac's `asph_to_zern_` fold (an ABSOLUTE conversion through `ZernCoef`'s normalisation, the ~2x wall); their `ansi_zernike_eval` norm work stays reusable.  Owner CC-Linux; sequence with EPFIX below.
+- [ ] **`WFE_TARGET`'s reference on a tilted / near-telecentric image surface — EPFIX, the fixed-station exit-pupil Return (Dave 2026-10-05, deferred with CCMac's asph+Zernike co-emit; design in PLAN_DESIGN_LAYER Sprint 6+).**  Measured on dyson5's eccentric TMA section (TO, BRIEF_to_dyson5 addendum 42): the default merit (OPD at the terminal FP, chiefs at 31 deg) has a 16 um floor at every field and ranks the strip edge at 2.1x the centre where the strict reference sphere ranks it 13.7x; `OptFEX` cannot run there at all (FEX finds a far astigmatic crossing, the EP sphere loses every ray, 9.9999e36), and FEX's telecentric fallback is a FLAT Return = a sphere centred at infinity.  Fix = `EPFIX iElt`, a sibling of SXP: Vpt fixed at a station, psi/Kr re-aimed per field at the chief's image point (same five assignments as FEX's caller, no probe crossing); `OptEPFix=` beside `OptFEX=`; FEX/SXP untouched.  Gates: coaxial identity vs OptFEX (rodgers1 2.7e-9 class), TO's section vs the hand STRICT numbers (both chief-intercept and best-focus forms), tTmaTelecentric.  Not urgent for dyson5 (cp2: symmetric DOFs move the edge 3% under the strict merit — the wall is the optics), required before the next freeform ladder on that section.
   - [ ] Find the early-exit gate
   - [ ] Fix and add regression case
 
@@ -651,6 +838,17 @@ Data model in place today: per-element arrays `iEltToMetSrf`, `nMetPos`, `tMetSr
 - [ ] Manual chapter (see §6.2)
 
 ---
+
+### 4.6 Atmosphere beyond the single pupil screen (entered 2026-10-18 from the ATMOS memo, `cli_tests/records/atmos_fix_2026-10-18.md` §5; Dave: yes)
+
+The RAY screen (ATMosphere) is now the correct pupil-conjugate single-layer model: deterministic under SEED, Kolmogorov to 6 % at 1-8 px, Noll's tilt to the digit, refused by name off the source grid frame (PLAN_CONSOLIDATION 1.2 (p)).  What a physical non-pupil (altitude) screen needs, each a feature after the freeze; the sequencing and gates for the first two are in `PLAN_ATMOSPHERE.md` (§6a):
+
+- [ ] **Anisoplanatism.**  A layer at altitude h is seen by field angle theta shifted by h theta; the RAY option indexes the screen by ray-grid position and the ATMospheric grid positions rays relative to the CHIEF ray, which removes the shift.  Needs screen positions from a fixed origin on the element and a screen larger than the union of the field footprints.
+- [ ] **Scintillation / near-field coupling.**  A screen away from the pupil changes the amplitude downstream by Fresnel propagation; rays cannot carry that.  Needs the screen to multiply the FIELD at its plane (the dead `ztdir` path) with a near-field propagation onward, and then NOT also enter the ray OPL; the coupling depends on the propagation type after the element.
+- [ ] **Layers.**  Several plates with propagation between; today the command applies one per call and a later trace from the source discards it.
+- [ ] **Time.**  One frozen realization per call; Taylor frozen flow would shift the screen per step.
+- [ ] **The ATMospheric grid route** before it is trusted for non-pupil placement: (a) positions from a fixed origin, (b) its own carry/tilt gate (`cli_tests/tools/atmos_map_check.py` does both), (c) the same RFOURN-era review of its `nAtmPts` radius.
+- Scales, recorded: no power beyond N dx (20 m at model 256) except the re-added tilt; none below the ray spacing.
 
 ## 5. Wrapper layer (Python + MATLAB sharing one Fortran API)
 
@@ -1124,10 +1322,7 @@ Phases 4, 6, 7 are the user-facing milestones; 1, 2, 3 are scaffolding.
 
 ### 6.1 Infrastructure
 
-- [ ] Source-of-truth decision
-  - [ ] Keep `macosMan4_01.docx` as canonical
-  - [ ] Or switch canonical to a less-fragile format (LaTeX, Markdown + pandoc)
-  - [ ] Likely stay with Word given user familiarity
+- [x] Source-of-truth decision — **Markdown + pandoc is canonical** (`docs/macos-manual/src/`, since 2026-07; the Word snapshots were removed from the tree 2026-10-18, `RECONCILE_4_01.md` records the fork's contribution); Word is an end-product edit copy (`edits/`) that is folded back into the Markdown
 - [ ] Formatting cleanup pass on existing chapters
   - [ ] Consistent section / heading / cross-ref / equation styles
   - [ ] Fix the broken cross-references and ToC
@@ -1143,8 +1338,8 @@ Phases 4, 6, 7 are the user-facing milestones; 1, 2, 3 are scaffolding.
 - [ ] Optimization: `np_optim_dvr` (USE_NPSOL only, opt-dev branch)
 - [ ] Optimization: target types, DOF taxonomy, convergence controls (see §3)
 - [ ] Sensitivity-matrix workflow (Thrust A headline) — engine-level recipes + the design-layer `from_rx`/`vary`/`sensitivities` surface (PLAN_DESIGN_LAYER Sprint 2A-i) as the recommended entry point
-- [ ] Polarization ray trace + metrics
-- [ ] Vector diffraction
+- [x] Polarization ray trace + metrics — **Manual SECTION 11 (2026-10-18, CC)**: the switch, conventions, the trace at bare and coated surfaces, the elements, the analysis layer, the design rules, the validation ladder, the gaps; written from `notes/polarization.md`, which now points at it
+- [x] Vector diffraction — Section 11.5 (with §6's SCALAR / VECTOR command text)
 - [ ] Multi-field-point metrics
 - [ ] FreeForm surface authoring (`SrfType=14`, FF/Mon/grid composition, `FFZernType` / `MonZernType`)
 - [ ] Generalized FreeForm on Toric / Anamorphic bases
@@ -1178,6 +1373,13 @@ Phases 4, 6, 7 are the user-facing milestones; 1, 2, 3 are scaffolding.
 - [ ] Source-side optimization (`VarSrc`, `OptSrcRpt`)
 
 ---
+
+## 6a. Atmosphere (FUTURE, designed 2026-10-18 — `PLAN_ATMOSPHERE.md`)
+
+- [ ] ATMOS single-screen fix (PLAN_CONSOLIDATION 1.2 (p), TO) — the prerequisite
+- [ ] Layered-screen generator runner (von Kármán, L0, subharmonics, Cn² profile, wind, field margin) — resources, gated on the structure function and the scintillation index
+- [ ] Rays-and-field regrid at the entrance pupil: `ReGrid` extended to take L, tilt and amplitude from the field with the ray phase guiding the unwrap, a named refusal above the residual threshold, an api entry — gated against the two pure workflows
+- [ ] Anisoplanatism gate (θ₀ of the standard profile)
 
 ## 7. Infrastructure / existing-work absorption
 
