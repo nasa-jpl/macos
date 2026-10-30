@@ -212,5 +212,8 @@ and imaginary parts as one stacked real system, and `ctb_dm.apply` refuses compl
   'r_lyot_frac', 0.70)`, the 25-step study from one configuration.
 - *"Close the loop on probe estimates with fewer photons, or with smaller probes."* --
   `ctb_efc('sensing', struct('photons', 1e7, 'probe_nm', 3))`.
-- *"Do this on the telescope with the CTB behind it."* -- not yet: the coupled system needs a
-  diffraction model (Dave's call).
+- *"Do this on the telescope with the CTB behind it."* -- the thread's stage 9
+  (`templates/80_end_to_end/e2e/s9_diffraction.m`, after this manual) builds that model: the CTB's
+  generator inserts the mask quartets and the terminal behind the folded train of Section 2, and the
+  chain, Jacobian and EFC of this section run on it unchanged. Its numbers are in `s9_report.txt`;
+  this section's pages stay on the bench until the next regeneration.
