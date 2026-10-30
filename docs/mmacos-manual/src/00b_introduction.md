@@ -21,6 +21,39 @@ Each worked example is told in three voices, always in the same order.
   listings are the console output of that run; the figures are the files it wrote; a number in the
   prose is pinned to the run that produced it.
 
+### What the library holds
+
+Part I follows one large segmented telescope, but the library is wider than that thread, and most
+requests will start from one of its other templates (Part II, in the order of
+`templates/00_INDEX.md`).
+
+- **Telescopes of several types and sizes**: two-mirror Ritchey-Chrétien designers, on-axis and
+  unobscured off-axis; a wide-field two-mirror freeform; three-mirror anastigmats on-axis,
+  off-axis, centered-and-folded, freeform, and sphere-plus-Zernike; the 3+1 coronagraph front end
+  with its pupil relay; the long-slit front end for a slit-fed spectrometer; an offset-field
+  wide-field imager; and afocal telescopes with a controlled interface pupil (the challenges).
+  Each designer takes an aperture, f-numbers and a field and returns a prescription, its
+  first-order properties, and a layout.
+- **Spectrometers and relays**: the concentric Offner relay, used in Section 2 as the telescope's
+  instrument relay and available from the design layer (`offner_layout`); the concentric Dyson
+  imaging spectrometer, seeded in closed form and verified by trace (`dyson_layout`,
+  `dyson_scaling`, the `spectrometer_*` scoring chain) and worked through as the `dyson5`
+  challenge; and the long-slit TMA page that feeds either one.
+- **Coronagraphs**: the coronagraph testbed bench, a walkthrough, planet injection, and the
+  end-to-end 6 m coronagraph flows.
+- **Benches and gauges**: a Twyman-Green interferometer with phase-shifting data reduction, bench
+  layout and optimization, and the deformable-mirror gauge campaigns against one DM truth: the
+  phase-shifting gauge and its all-reflective variant, the Zernike wavefront sensor, the
+  point-diffraction gauges, and the heterodyne camera interferometer.
+- **Segmentation, sensitivities, metrology, control and budgets**: segmented primaries with
+  physical apertures and edge sensors, the sensitivity harvest, laser metrology, closing the loop,
+  and the error-budget tool, each a template as well as a section of Part I.
+- **Polarization**: ray-level Jones scoring on a bench and the polarization-aware gauges.
+
+One thing the catalog does not yet hold is a refractive design template. Lenses appear only as
+ideal lenses (`ideal_lens`) and as single real elements on the benches (collimators, plates, the
+cube). Lens design is the next addition to the library.
+
 ### How to use the manual
 
 - **To learn the library, read Part I in order.** Its eight sections follow one 4 m telescope from
