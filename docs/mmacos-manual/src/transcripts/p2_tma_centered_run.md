@@ -17,12 +17,12 @@
     [3] clearance: 2/4 optics clear -- the CENTERED price is the
         central obscuration (M2 shadows the pupil).
 
-    [4] SECTION (unobscured, decenter 0.97 D): worst ring field 0.1530 waves
+    [4] SECTION (unobscured, decenter 0.66 D): worst ring field 0.0807 waves
 
     ================== A/B: 5'-dia circular field @ 1 um ==================
                            worst    -tilt   -focus  -astig    (waves)
      CENTERED (obscured)   0.0575   0.0572  0.0385  0.0148
-     SECTION (unobscured)  0.1530   0.1180  0.0924  0.0354
+     SECTION (unobscured)  0.0807   0.0730  0.0686  0.0198
      Read: the section's wavefront collapses once ASTIG is removed --
      the unobscured cut buys its clear pupil with induced field
      astigmatism.  j18's remaining edge is its 2.3 um yardstick
