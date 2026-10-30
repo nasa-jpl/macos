@@ -247,8 +247,8 @@ end
 function f = field_deck_(txt, d0, L0, dxy, work, k)
 % the coupled deck with its chief ray turned by DXY (rad) about the field center
     d = d0 + [dxy(1); dxy(2); 0];  d = d/norm(d);
-    t2 = regexprep(txt, 'ChfRayDir=[^\n]*', sprintf('ChfRayDir=  %.16E  %.16E  %.16E', d));
-    t2 = regexprep(t2, 'ChfRayPos=[^\n]*', sprintf('ChfRayPos=  %.16E  %.16E  %.16E', -L0*d));
+    t2 = regexprep(txt, '(?m)^(\s*ChfRayDir=)[^\n]*', sprintf('$1  %.16E  %.16E  %.16E', d));
+    t2 = regexprep(t2, '(?m)^(\s*ChfRayPos=)[^\n]*', sprintf('$1  %.16E  %.16E  %.16E', -L0*d));
     f = fullfile(work, sprintf('field_%02d.in', k));
     fid = fopen(f, 'w');  fwrite(fid, t2);  fclose(fid);
 end

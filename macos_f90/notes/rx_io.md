@@ -48,6 +48,9 @@ copy (a `*Tr` array, a local), never overwrite the Rx array.**
   the warning cannot see:** a short `LCMP` match CAPTURES look-alikes -- `OptFOVWt` is
   matched on 5 chars, so `OptFooKey= 1` is read as FOV weights.  When adding a header key,
   check that no shorter prefix above it already swallows it (and vice versa).
+  **The same trap on the TOOLING side (2026-10-30):** a `regexprep` that matches `KEY=` mid-line
+  rewrites `OptRayGrid=` through `yGrid=` and every `OptChfRayDir=` / `JZLouChfRayDir=` row through
+  `ChfRayDir=`; anchor it `(?m)^(\s*KEY=\s*)[^\n]*`.  mmacos `tests/tRxHeaderRewrite.m` lints the tree.
   **Since 2026-10-12 every active header match is the FULL key name** (23 lengthened, the
   table is `cli_tests/records/hdr_prefix_audit.md`; no deck in the 1353-deck extended corpus nor
   any binding writer used a shorter spelling), so `OptFooKey=` is reported, not read as

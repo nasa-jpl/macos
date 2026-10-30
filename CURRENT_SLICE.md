@@ -3843,3 +3843,35 @@ promote-on-land pass.**
 > still the room's open question).  TO reports A.1 (kkk) DONE (res 1f32955 + 6efff8f local; run_sensitivities defaults to chief,
 > harvest records its reference, run_compare/run_simulator read it; fast 712/0 after the localization-gate fix) and A.2 (fff)
 > DIAGNOSED (no defect: the July clip predates the 36a5f5aa ColSource radius change; a Pie source never seeds a gap ray).**
+
+> **2026-10-30 (CCL, hand-off written for TO's restart on Fable; Dave interrupted TO before it wrote its own).  STATE, all LOCAL,
+> nothing pushed, Dave's word pending for the lot.**  Resources dev-candidate is 6 above origin: 91535b0 + e383cfc (e2e stage 9, the
+> coupled telescope+CTB diffraction model) + 5d10fb0 (deck_ctb slides 14-15) are CCL's; 0ad44ff + be4d12b (check_clipping source fix;
+> realize_apertures sizes ApVec in the element frame, Telescope.m/tApertureFrame.m/tma_offaxis.in) are TO's.  Macos is 10 above origin:
+> a5ebf063, 180af1ba (the fold in chapter 2, the stage-9 record), 4a2519ca/784a4286/c5553b5f/d6bfa2a3 (TO's items 1-3: records,
+> re-pins, "the fixed Jacobian sets the EFC floor"), 38f96d58/1f04eb6d/82e4d498 (the mmacos manual INTRODUCTION: three voices, how to use,
+> the library's breadth incl. the lens gap, the step-by-step getting started).  **IN FLIGHT (CCL):** the header-key rewrite fix from
+> CCMac's roll-up -- `(yGrid=\s*)` matched `OptRayGrid=`, `ChfRayDir=` matches `OptChfRayDir=`/`JZLouChfRayDir=`; every rewrite anchored
+> `(?m)^(\s*KEY=\s*)[^\n]*` (86 sites, 38 mmacos files + the manual's ch02b tool); gates tRxHeaderRewrite (fast, tree lint) +
+> planted-key tests in tPupilMap/tAfocalKernel (must-fail recorded); the freeform group is running on the shared tree -- NOBODY touches
+> the shared mmacos tree until CCL commits (PLAN 1.2 (gggg) carries the record with [RUN RESULT]/[SHA] placeholders to fill).
+> **TO's OPEN ITEMS (from TO's last message, 10-30):** (1) tCtbProp f fails -- the full-deck peak pins differ by rel 3.6e-5; CCL proved
+> it PRE-EXISTING (the committed generator yields byte-identical decks), TO was to diagnose in its worktree and re-pin or fix; (2) fold
+> the two jac_fingerprint.m copies into one (design/src: old, no-complex handling; bench_ctb: the (bbbb) fix with abs; MATLAB path order
+> decides which runs -- the stage uses bench_ctb's); after CCL's commits are in.  **TO's NEW ORDER (Dave 10-30): start the IODC
+> challenge** -- BRIEF_to_iodc_challenge.md build section, ruled order 2010 green lens first (`mmacos/challenges/iodc2010/`), 2014,
+> 2023; papers in ~/dev/MACOS_sandbox/IODC/ (76522I.pdf = 2010); FIRST deliverable the EVALUATOR cross-checked on one lens vs CODE V
+> or the rx_converter round trip, metric stated before the number; N-BK7 Sellmeier line into macos_glass_list.txt with provenance.
+> Work in the worktree until CCL's commits land.  **Also today:** HWO will fund the DM gauge (design refinement + tolerancing is ours;
+> others build); heliCam C4 is NOT vacuum-rated (25-30 W, air-cooled, 0-45 C; baseline = camera outside a viewport; vendor question
+> for Max Ferstl queued).  Manual edit practice: mmacosMan.pdf + mmacosMan_edit.docx kept beside the sources after every rebuild
+> (memory feedback_mmacos_manual_edit_copies).  NEXT SESSION (TO on Fable): read this tail, BRIEF_to_iodc_challenge.md, PLAN_MMACOS_MANUAL
+> "Challenges from the literature", then start the evaluator; pick up (1)-(2) when CCL says the tree is free.  **WORKTREES
+> (checked 10-30 by CCL):** TO's session worktree (`.../d4118342.../scratchpad/wt_res`, detached at 0ad44ff) holds Telescope.m +
+> tApertureFrame.m IDENTICAL to be4d12b -- nothing uncommitted, prune it (`git worktree prune` after the scratchpad goes);
+> CLEANUP (Dave's word, 10-30): the nine stale worktrees (macos_to_b2/e1/e3/hex, MACOS_res_dev, MACOS_res_polifo, res_to_b2/e1/e3)
+> and tst_dir/tst_GMI are DELETED (~14 GB); every commit in them was already in dev-candidate by patch; the res_to_e1/e3 10-17 test
+> diffs and the two rodgers3 review decks are saved in ~/dev/MACOS_sandbox/cleanup_2026-10-30/.  ~/dev now holds macos, macos_cli_base
+> (the A/B gate tree, KEEP), MACOS_resources, MACOS_sandbox, proper_matlab.  Local branches to-b2c/to-e1/to-e4 remain (merged by patch).**
+
+> **2026-10-30 (TO, IODC 2010 challenge): the EVALUATOR landed (macos 9c92f3de; resources `mmacos/challenges/iodc2010/`, committing next): metric argued from the 2006 paper, gated against an independent skew-ray tracer (2e-10 wave per ray, 1e-13 mm geometry, chief through the stop centre), paraxial EFL / pupils / yP from a y-nu trace, apertures sized at the limit and re-verified, reports + `.seq` per lens; N-BK7 + N-SF6 rows in `macos_glass_list.txt` (+ builtin regenerated; proven at runtime); `tIodc2010` 5/0/1 standalone (the table-row leg Incomplete until the rebuild -- now rebuilt). SEARCH STAGE landed too (`iodc2010_search.m`): CALIB spacing solve in an R x stop scan, best 20.2 from 11.1 (winner 3537); findings: thickness collapse (rejected by the rules check), header ApStop drifts (now element-bound), CALIB's off-axis 1e37 at R 130 OPEN. NEXT: the outer loop over sign patterns / element counts; the corpus load gate from macos_cli_base at 9c92f3de (CCL's ask). Record: PLAN_CONSOLIDATION 1.2 (hhhh).**
