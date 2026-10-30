@@ -205,6 +205,26 @@ untouched and MATLAB alive.  Measured on TO's reproducer
 (`dyson5_s4_r4n_seed.in` + `OptAsph= 2 1 2`): pre-fix singular at once;
 post-fix 4 iterations in 9 s; the no-aperture variant returns to the prompt.
 
+## A field whose rays are all lost is a FAILED trial (2026-10-30, IODC 2010 outer loop, TO)
+`funcs_app` built the WFE rows of every (wavelength, field) block from `OPDm` as `MACOS_OPS`
+returned it.  When a trial step loses EVERY ray of a field (a surface walked past the source
+plane; a wild LM step), `OPD` zeroes `OPDMat` before its ray loop, finds no passing ray, prints
+'All rays are obscured or lost' and returns the 99999d32 sentinel in the RMS ONLY -- the map
+stays zero, so that field's rows read ZERO, the trial's chisq FELL, and lmlsq ACCEPTED it: the
+optimizer was rewarded for losing a field.  Measured on the IODC 2010 symmetric pair at R 130
+(three fields, PIST on four surfaces + the image plane): fields 2-3 lost mid-solve, the solve ran
+to the cap with chisq 1.8e-9 on the axis alone, the AFTER print showed 9.9999E+36 for the two
+fields; the zero Jacobian columns that follow are the `gaussj: singular matrix (2)` failures the
+later runs hit.  Now, after each `smacos_compute_perturbed` (the value and every derivative
+probe), `wfe_rms >= 1d30` on a WFE / WFE_ZMODE target sets `lOpsFail`, and the PLAN 3.4 tail
+(yfit = 1d100, `nFailTrials`) rejects the trial -- the same rule as a lost chief ray, no new
+refusal.  The deck-side half of the IODC item (the CALIB chief rows started 100 mm ahead of the
+SEED's pupil and the solve moved surface 1 upstream by 31 mm, past the source plane) is the
+emitter's to fix and is fixed there (`iodc2010_emit`: a CALIB deck backs its source off by the
+lens's length, every field's chief starts on that plane).  Gates: tCalibStop 4, tCalibMatrix 18,
+tCalibTargets 3, tAsphCalib 2, tBeamRows 3, tCalib 9 (39/39 on the fixed mex); the corpus A/B
+record names the movers (expected none: the branch fires only on the sentinel).
+
 ## Field weights default to 1 (2026-10-17, PLAN 1.2 (a))
 `fov_weight` was 0 after every load: the LOAD handler's `fov_weight=1.0` ran before `MBFile6`,
 whose `reinitialise_variables -> dopt_init_vars` zeroed it (the `LOptIfFEX` trap), and
