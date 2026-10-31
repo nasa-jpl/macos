@@ -455,6 +455,49 @@ the FocalPlane (path to the landing point: FP = screen + delta.x / EFL).
   -> 0.71750 (`cli_tests/cmd/BEAM_gaussian.jou`, 5 figures).  No core-corpus deck is Gaussian,
   so the load A/B does not see this change.
 
+## OPEN (2026-10-31, TO): FEX mis-centres the sphere of a pupil BEYOND iElt+1 (a virtual exit pupil); CALIB dies on such a lens
+*(Found by the IODC 2010 on-axis work, `MACOS_resources/mmacos/challenges/iodc2010`, README "A virtual exit pupil".  Evaluator-side fix landed there; the engine side waits on Dave.)*
+
+**What:** when the chief's crossing of the iElt+1 plane (the FP) lies UPSTREAM of the pupil
+station -- the paraxial exit pupil beyond the image plane: a stop inside a rear group's front
+focal distance, or ahead of a diverging front, the retrofocus form of every long IODC entry --
+the "Sign per EP EltID (Return reverses the beam -> -cr1dir)" rule above gives the station->FP
+distance a negative sign, FEX keeps the vertex at the station and writes that signed value as the
+radius, and the sphere's centre `vpt - Kr*psi` lands 2r on the FAR side of the station instead of
+on the chief's image point.  Every ray then misses the XP Return (`Surface miss: 741` of 741) and
+the trace to the FP behind it dies with it.  Measured (mm, three retrofocus trains, R 318-443):
+z_xp - z_img = +26.65 and +1069.69; FEX wrote `vpt_z 2100.4501, psi +z, rad -26.6518` for
+`z_img 2073.798` ("Old f= -2.665D+01, New f= +2.665D+01, New z= -2.665D+01" on the console);
+the real-pupil case on the same deck family reads `vpt_z 1643.344, rad -430.4544, z_img 2073.798`
+-- centre on the image, 741/741 rays.
+
+**Inside CALIB** (`OptFEX= Yes`) the same thing: the solve on any such lens stops at round 1,
+every field "lost", the funcs_app rejection of PLAN 3.4 doing its job on a sphere that is wrong.
+`OptFEX= No` is not a way round: with the deck's own (correct) sphere the LM's derivative
+columns all vanish -- `gaussj: singular matrix (2)` right after the probes on a 9-variable deck
+whose `OptFEX= Yes` twin solves -- a second engine item (not understood; recorded).
+
+**The evaluator's fix (the gate shape for the engine fix):** after FEX, compare the sphere's
+centre with the chief's image point read from the image Return (which precedes the XP Return);
+when it is off, `set_xp` to the MIRROR sphere -- same centre, same radius |d|, the vertex r
+BEFORE the image along the chief, psi downstream, Kr = -r: the geometry FEX writes for a real
+pupil.  Engine on that sphere vs the independent skew-ray tracer on the same rays: 2.09e-9 wave
+max; the near vs far crossing of the same sphere (the mirror vs the true virtual vertex, both on
+the tracer): 2.1e-7 wave at D 1 mm, 3.5e-4 wave (0.2 % of the RMS) at D 5 mm -- rho^2 / r,
+second order in the transverse aberration.  With psi REVERSED and the vertex beyond the image the
+engine already evaluates the near sheet of such a sphere (measured: identical to the mirror
+placement to the digit); with psi reversed and the vertex before the image it loses every ray.
+Test: `tIodc2010/test_virtual_exit_pupil_is_scored_on_the_mirror_sphere` -- the must-fail leg is
+FEX's own sphere losing 741/741.
+
+**Engine fix, proposed (Dave's ruling):** FEX/SXP centre the sphere on the chief's crossing of
+iElt+1 regardless of the distance's sign (radius |d|, vertex at the station, curvature reversed),
+with the root pick checked for both psi orientations; a retrofocus deck with a virtual pupil goes
+into the corpus as the mover that names itself, and the A/B runs from `macos_cli_base`.  Until
+then CALIB's field solves on retrofocus lenses are not possible; iodc2010's on-axis solves move
+the stop behind the last surface for the solve (the pupil is then real; on axis the wavefront does
+not depend on the stop) and put it back.
+
 ## SRS: a near-field zElt keeps its CONVERGENCE sign; the slave-to centre comes from the RADIUS (2026-10-19)
 *(Manual §6 SRS, the CoroExample.in dialog; PLAN_CONSOLIDATION 1.2 (gg).)*
 - `zElt` of a near-field reference surface is SIGNED (Table 14: + converging, - diverging) and the
