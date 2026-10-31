@@ -216,4 +216,14 @@ and imaginary parts as one stacked real system, and `ctb_dm.apply` refuses compl
   (`templates/80_end_to_end/e2e/s9_diffraction.m`, after this manual) builds that model: the CTB's
   generator inserts the mask quartets and the terminal behind the folded train of Section 2, and the
   chain, Jacobian and EFC of this section run on it unchanged. Its numbers are in `s9_report.txt`;
-  this section's pages stay on the bench until the next regeneration.
+  this section's pages stay on the bench until the next regeneration. Stage 10 (`s10_sensing.m`)
+  closes the loop on probe estimates on that model and found three things the bench did not show:
+  the estimator's default amplitude rule (probe intensity = the speckle level) is a 37 nm, 0.94 rad
+  probe on the secondary shadow's 5.3e-7 halo, whose second-order response leaves the estimate
+  47 % off the field (0.3x the default, 11 nm, brings it to 4.4 %; `ctb_probe_estimate`'s
+  `'probe_rel'`); the probe-intensity ratio reads 1.22 at every amplitude there, so on a bright
+  halo it flags a gross mismatch but does not meter the Jacobian; and the estimate needs a Jacobian
+  about the CURRENT state (33 % off at a neighbouring dug state, 1.2 % at the Jacobian's own
+  point), which stalls every probed fixed-gain loop at iteration 3 until it relinearizes
+  (`s10_report.txt`; stage 11, `s11_cycles.m`, carries both chains to 1e-8 by
+  recompute-and-restart cycles).
