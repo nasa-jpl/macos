@@ -3889,3 +3889,12 @@ promote-on-land pass.**
 > PLAN 1.2 (gggg) (fixture question CLOSED).  TO's engine finding (CALIB rewards a lost field; design_optim.F funcs_app fix staged in its worktree)
 > lands after CCL's TREE FREE, sent at this commit.  Push word pending for: resources 1c324c7 + macos this commit (the earlier set is pushed:
 > macos df6d66e2, resources aa81761).**
+
+> **2026-10-30 (CCL, evening): stage 11 DONE -- recompute-and-restart cycles on the coupled model (Dave's ruling, 10-30): perfect sensing reaches
+> the 1e-8 goal in 4 cycles / 57 iterations (9.685e-10), the probed loop in 5 cycles / 31 iterations (5.646e-9); each cycle a Jacobian about the
+> chain's own state (62-74 min).  Code resources 8cdee33, record + six cycle truths d68043f, macos 5699ba55 + this commit (PLAN 3a stage-11 entry).
+> ONE GATE FAILS by design: the probe estimate at cycle 4's fresh Jacobian is 17.3 % (gate 10 %) -- diagnosed (the amplitude window closes at
+> 1.7e-8, the error in the sinc probes' null pixels; 5 pairs -> 13 %); CC's recommendation for Dave: a weighted per-pixel solve, testable on the
+> saved cycle-4 state (s11_sens_state.mat + ctb_dm_jacobian_N512_e2e_sens_c4.mat, local blobs).  Push word pending for: macos 280b5ff3 (TO),
+> 5699ba55, 84126efd (TO), this commit; resources 8cdee33, fa2130b (TO), d68043f.  Nothing running.  TO's manual item (stage-10 sentence in
+> 08_coronagraph.md, now also stage 11) stays queued.**
