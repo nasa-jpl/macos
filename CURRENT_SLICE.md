@@ -3905,3 +3905,8 @@ promote-on-land pass.**
 > now 31-61; 136 pp; PDF + edit copies refreshed, edit copy was pristine), deck_ctb v7 slides 16-17 (+ Next, References, README).  Style gate
 > clean; Dave approves both sources before send.  TO's 970e1194 bullet subsumed into the section (TO told).  Nothing running.  Open for Dave:
 > the weighted per-pixel probe solve (next beat), the 24 benign Mac fails, CCMac's post-push Mac run of tCtbProbe + tE2eSensing.**
+
+## 2026-10-31 (CCL, evening) -- the weighted solve beat ended in an engine finding
+- Dave "Go!" on the weighted per-pixel probe solve.  Measured on the saved cycle-4 state: no gain (the error is in the probe fields).  Cause found: the grid DMs are C0 (bilinear) surfaces; a ray whose DM2 footprint crosses a cell boundary under a sub-nm DM1 change kinks by the two cells' slope difference and steps its path by 30 nm (ray 21226 at 0.42 -> 0.43 nm; ray 7643 at 0.04 nm).  Record: PLAN 3a (the last bullet), `notes/surfaces.md` "Grid surfaces are C0".  Diagnostic `ctb_dm_linearity.m`; pin `tE2eSensing/test_grid_dm_c0_steps_pinned`.
+- WAITING on Dave: the C1 grid-interpolation engine option (corpus A/B will move every grid deck); the HWO review of manual 8.7 + deck v7; the push word (macos 970e1194 / 28f9d4d0 / d473a56e / d47bad4b + this record; resources 34c7b65 / 006da2b / 2e84a81 + this beat's commit).
+- Scratch (not products): /tmp/claude-1000/-home-dcr-dev-macos-macos-f90/224a8c3d-16bb-4bea-9ef2-6777b0fabc2e/scratchpad/wsolve/ (c4_*.m scripts and logs; the private tolerance build in ../macos_tol, ../mm_tol; the ng-scan param file in wsolve/ng/).

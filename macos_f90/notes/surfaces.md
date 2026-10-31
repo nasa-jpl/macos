@@ -553,3 +553,39 @@ ray is lost and the field is silently all zero.
   the element does not behave as a grating (it should reduce to Snell's law, order 0).  Unguarded.
 - `Calc_RayDielectricTC` / `Calc_RayMetalTC` (utilsub.F) are stubs returning 0 into `rayTC`, which
   nothing reads: the grating transmission coefficient is not implemented.
+
+## Grid surfaces are C0: a ray that crosses a cell boundary STEPS (OPEN, 2026-10-31, e2e stage 11 follow-up)
+*(Measured by CCL on the coupled telescope + CTB deck at stage 11's cycle-4 state, model 512, DM grids 256 over 45 mm = 3.8 cells per 0.66-mm actuator pitch; the record is PLAN_CONSOLIDATION 3a; the diagnostic is `bench_ctb/ctb_dm_linearity.m`, the pin `tE2eSensing/test_grid_dm_c0_steps_pinned` on the cycle-4 state -- a seeded random 10-nm-rms state with four 90-nm actuators shows no step up to 5 nm; the EFC solution's structure carries the large cell-edge slope jumps.)*
+- The grid term of `FreeFormSrf` (surfsub.F, `GridSrf`/`MonGridSrf` wrap it) interpolates `GridMat` BILINEARLY
+  (`INTNORM`, mathsub.F) inside the cell `IDFLOOR(xi), IDFLOOR(yj)`: the sag is continuous across cell boundaries,
+  the GRADIENT (hence the normal, hence the reflected direction) is not.  On a 10-nm-rms DM state with a few
+  90-nm actuators the slope jump across a boundary is 2e-6 rad median, 1e-5 at the 90th percentile, 9e-5 max
+  (an influence function's curvature x the cell).
+- A sub-nm change on DM1 tilts every ray by ~3e-7 rad per nm and moves its footprint on DM2 (0.5 m downstream)
+  by ~1e-7 m per nm.  The rays within that shift of a DM2 cell boundary take the slope jump as a direction kink
+  and walk off their path: ray 21226 steps between 0.42 and 0.43 nm of probe 1 (footprint moved 7.4e-9 m,
+  kink 7.9e-5 rad at element 14, 0.1-0.3 mm off downstream, path length +29.6 nm at the apodizer, -250 nm at
+  the end) -- 35x the probe's own OPD on that ray, a single-pixel field step of 8 % at the apodizer plane,
+  2.6e-12 of contrast in the dark zone (23 % of the probe's field there).  Ray 7643 steps at 0.04 nm (its
+  footprint 4.36e-9 m from a boundary; the kink 1.87e-5 rad = the two cells' gradient difference to the
+  digit).  68 rays have stepped by 1 nm of probe, 156 by 2 nm; the odd field response per unit amplitude
+  differs 26 % between 0.3 and 2 nm.  A random full-DM step of the loop's size is linear to 6e-3 (its own
+  field is large); a deep probe is not (its field is small by design).  The Jacobian's 2-nm central pokes carry
+  their own steps (2 % of DM1 columns differ from 0.2-nm pokes by > 2 %, one by 16 %).
+- Consequences measured: the probe-field model error 9 % at 2 nm and 33 % at <= 0.3 nm against the Jacobian;
+  the stage-11 estimate at 1.7e-8 (17 % off, 95 % of the error along the per-pixel weak eigen-direction);
+  a Tikhonov / energy-floor per-pixel solve (`ctb_probe_solve` 'reg', 'energy_floor') buys NOTHING
+  (17.3 -> 16.2 % at best, worse beyond): the error is in the probe fields, not the solve.  Plausibly the
+  1e-9 floor of the cycles as well (0.3-nm late steps toggle a few rays per iteration).
+- NOT the cause, ruled out on the way: the propagation sampling (`DXCALC` dxAvg from the ray slice moves
+  2e-5 per nm, continuously); the aim dead bands (2 notes per run, constant); the OPD reference / chief ray
+  (obscured, status 1; its own path moves 1e-12); the `AsphGridSrf` / `UDSrf` `tol=1d-10` (ABSOLUTE in deck
+  units -- 0.1 nm on a metre deck; latent, the GridData path does not use it: `FreeFormSrf`'s `SFFZPSolve`
+  stops at 2 EPS |B| + 1e-15 with EPS = machine epsilon); a finer grid (ng 512 / 1024 under a private
+  `macos_param.txt` with mGridMat 1024): the 2-nm odd error 26 -> 19 -> 8 %, the step count unchanged, the
+  kicks smaller -- a scaling, not a cure.
+- The cure is a C1 grid interpolation (continuous gradient: bicubic / Catmull-Rom on the 16 nodes) in the
+  grid term of `FreeFormSrf` and `AsphGridSrf`'s `GSZPSolve`/`NGSrf` path, as an OPTION until the corpus A/B
+  is read (every grid deck will move; the manual's "Interpolated Surfaces Using Regularly Gridded Data" says
+  linear).  Dave's ruling.  The gate: `ctb_dm_linearity` reports zero steps at every amplitude (the pinned
+  test flips its EXPECT).
