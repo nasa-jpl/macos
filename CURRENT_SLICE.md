@@ -3898,3 +3898,10 @@ promote-on-land pass.**
 > saved cycle-4 state (s11_sens_state.mat + ctb_dm_jacobian_N512_e2e_sens_c4.mat, local blobs).  Push word pending for: macos 280b5ff3 (TO),
 > 5699ba55, 84126efd (TO), this commit; resources 8cdee33, fa2130b (TO), d68043f.  Nothing running.  TO's manual item (stage-10 sentence in
 > 08_coronagraph.md, now also stage 11) stays queued.**
+
+> **2026-10-31 (CCL): the stage-11 set PUSHED on Dave's word (macos 3e6055e6..61829870, resources 1c324c7..d68043f).  Then Dave's ask -- update
+> mmacosMan and deck_ctb with the latest results for an early send to HWO colleagues -- DONE (macos this commit; resources the deck commit):
+> manual Section 8.7 "The coronagraph on the telescope" (driver ch08e_telescope.m reads the stage products, no template run; FIGURES 28-30, Part II
+> now 31-61; 136 pp; PDF + edit copies refreshed, edit copy was pristine), deck_ctb v7 slides 16-17 (+ Next, References, README).  Style gate
+> clean; Dave approves both sources before send.  TO's 970e1194 bullet subsumed into the section (TO told).  Nothing running.  Open for Dave:
+> the weighted per-pixel probe solve (next beat), the 24 benign Mac fails, CCMac's post-push Mac run of tCtbProbe + tE2eSensing.**

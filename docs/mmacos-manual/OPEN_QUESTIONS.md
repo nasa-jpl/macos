@@ -136,6 +136,9 @@ The report on Dave's return gathers this list (BRIEF_to_mmacos_manual.md, Report
   generator work, and it waits on PLAN 1.2 (zzz) (the generator's reference spheres no longer reproduce the
   committed decks).  Do you want it, and before or after the fold?  **RULED 2026-10-28 (Dave): AFTER the fold.**
   Until then the manual refers to the CTB bench example (`bench_ctb`).
+  **DONE 2026-10-31 (CCL):** the coupled model is e2e stage 9 (PLAN_CONSOLIDATION 3a); Section 8's last part,
+  "The coronagraph on the telescope" (driver ch08e, FIGURES 28-30), reads the products of stages 9-11 (the stages
+  cost about eight hours; the driver says how to refresh the page).  Part II's figures are now 31-61.
 - **Ch. 8, focal-plane sensing:** the EFC loop reads the complex field from the engine (perfect sensing).
   Pairwise probing (estimating the field from probe-pair images) is not in the library; chapter 8 says so
   and points to the DM-surface gauges instead.  Do you want the estimator built (a library change), and
@@ -143,3 +146,6 @@ The report on Dave's return gathers this list (BRIEF_to_mmacos_manual.md, Report
   first, then the fold, then the coupled model, then pairwise probing on the coupled system.
   **CTB leg DONE 2026-10-28 (TO):** `ctb_probe_estimate` and `ctb_efc('sensing', ...)`; Section 8 runs EFC on
   estimated fields (driver ch08d, FIGURES 24-27).  The fold, the coupled model and pairwise on it follow.
+  **Fold, coupled model and pairwise on it DONE 2026-10-30 (CCL):** stages 8-11; stage 11's recompute-and-restart
+  cycles reach 1e-8 on probe estimates (5 cycles) and on perfect sensing (4).  Open: the estimate at the fifth fresh
+  matrix is 17 % off (null pixels of the probes' field) -- a weighted per-pixel solve, for Dave's ruling.

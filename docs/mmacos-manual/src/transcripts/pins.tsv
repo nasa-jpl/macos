@@ -156,6 +156,46 @@ ch08_probe_ph6	3.7e-7
 ch08_probe_efcT	9.0e-9
 ch08_probe_efcE	9.1e-9
 ch08_probe_efcP	9.4e-9
+ch08_tel_static	5.8e-6
+ch08_tel_bench	2.9e-7
+ch08_tel_noobs	2.4e-7
+ch08_tel_shadow	0.4 %
+ch08_tel_blocker	0.08
+ch08_tel_lyot	5.3e-7
+ch08_tel_thr	97 %
+ch08_tel_wfe	0.0024
+ch08_tel_anam	4.2 %
+ch08_tel_efc0	1.4e-7
+ch08_tel_efc0_it	7
+ch08_tel_efc1	6.7e-8
+ch08_tel_efc1_it	10
+ch08_tel_gain9	8
+ch08_tel_def_nm	37 nm
+ch08_tel_def_rad	0.94 rad
+ch08_tel_def_rel	47 %
+ch08_tel_pick_nm	11 nm
+ch08_tel_pick_rel	4.4 %
+ch08_tel_lin_rel	0.5 %
+ch08_tel_ratio	0.22
+ch08_tel_ph10_rel	12 %
+ch08_tel_ph8_floor	8.1e-7
+ch08_tel_dug_rel	33 %
+ch08_tel_ctl_rel	1.2 %
+ch08_tel_sefc0	1.9e-7
+ch08_tel_sefc1	7.7e-8
+ch08_tel_goal	1.0e-8
+ch08_tel_jac_min	69
+ch08_tel_perf_nc	4
+ch08_tel_perf_it	57
+ch08_tel_perf_end	9.7e-10
+ch08_tel_perf_last	25
+ch08_tel_sens_nc	5
+ch08_tel_sens_it	31
+ch08_tel_sens_end	5.6e-9
+ch08_tel_sens_c3	1.7e-8
+ch08_tel_est_last	17 %
+ch08_tel_est_max3	4.4 %
+ch08_tel_stroke	12 nm
 p2_bench_ctb_chief	< 1e-09
 p2_bench_ctb_wfe	0.001423
 p2_bench_ctb_rays	3002
