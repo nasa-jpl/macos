@@ -1,8 +1,8 @@
 ### The functions no template calls
 
-Counted by a word-boundary search of every template script for each function's name: `design/src`, 40 of 75; `sensitivities`, 12 of 24. They are kept (Dave, 2026-10-26): a runner or a test may still call them.  Entry scripts are listed apart from the functions: a script is run by a user, not called, so no template naming it says nothing about it.
+Counted by a word-boundary search of every template script for each function's name: `design/src`, 40 of 80; `sensitivities`, 12 of 24. They are kept (Dave, 2026-10-26): a runner or a test may still call them.  Entry scripts are listed apart from the functions: a script is run by a user, not called, so no template naming it says nothing about it.
 
-**`design/src`** (the design layer's helpers, 40 of 75: 40 functions, 0 entry scripts)
+**`design/src`** (the design layer's helpers, 40 of 80: 40 functions, 0 entry scripts)
 
 | Function | What its help line says |
 |---|---|

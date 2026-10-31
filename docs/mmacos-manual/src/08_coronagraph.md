@@ -7,15 +7,17 @@ mirrors make it under control, what the mirrors' coatings cost through polarizat
 the field can be sensed from images alone, as a lab must. Each
 answer is a template in `templates/30_instruments/bench_ctb`, run unchanged on a scratch copy.
 
-These analyses run on the CTB's own diffraction model: the bench fed by its own point source, from
-the committed decks `ctb_dcr.in` and `ctb_dm.in` (the reference spheres as committed). The library
-has no diffraction model of the telescope and the CTB together yet; the open questions list says so.
+These analyses run first on the CTB's own diffraction model: the bench fed by its own point source,
+from the committed decks `ctb_dcr.in` and `ctb_dm.in` (the reference spheres as committed). The last
+part of the section runs the same chain, control matrix and loop on the thread's telescope with the
+CTB folded behind it, the thread's stages 9 to 11.
 
 ### You ask
 
 > On the CTB, show me how dark each coronagraph mask gets on its own, then dig a dark hole with the
 > two deformable mirrors, and tell me what the mirror coatings' polarization costs. Then close the
-> loop on fields estimated from probe images instead of the model's.
+> loop on fields estimated from probe images instead of the model's. Then put the CTB behind the
+> thread's telescope and do it all again there, down to 10⁻⁸.
 
 ### The assistant reads
 
@@ -30,6 +32,8 @@ has no diffraction model of the telescope and the CTB together yet; the open que
 - `ctb_probe_estimate.m`, its help text -- the pairwise-probe estimator, and `ctb_efc`'s
   `'sensing'` option that closes the loop on it.
 - `MACOS_resources/optical_design/CORONAGRAPH_DESIGN_RULES.md` -- the coronagraph rules.
+- `templates/80_end_to_end/e2e/README.md`, the rows for stages 9 to 11 -- the coupled model, probing
+  on it, and the recompute-and-restart cycles.
 
 ### The dark zone before control
 
@@ -185,6 +189,95 @@ actuator DM: a polarization phase-shifting Twyman-Green (`tg_psi_dm96`, and `tg_
 scale), a Zernike wavefront sensor (`zwfs_dm96`), point-diffraction gauges (`pdi_dm96`) and a
 heterodyne camera interferometer (`cophi_dm96`).
 
+### The coronagraph on the telescope
+
+Section 2 folded the CTB behind the thread's telescope. The thread's stages 9 to 11
+(`templates/80_end_to_end/e2e`: `s9_diffraction.m`, `s10_sensing.m`, `s11_cycles.m`) put this
+section's diffraction model behind it and run the same chain, control matrix and loop there. The
+three stages cost about eight hours, most of it six control matrices of 3520 chain runs each, so this
+page reads their products instead of running them; the driver says how to refresh it.
+
+<!-- transcript: ch08_tel_run -->
+
+**The coupled model.** The CTB's generator inserts its three mask quartets, the DM leg and the
+far-field terminal behind the nine telescope elements of the folded train; the chief ray at every
+optic is within 10⁻¹³ mm of the bare train, and the point image lands on the centre pixel. With the
+bench's plain Lyot disk the static dark zone is %pin:ch08_tel_static%, twenty times the bench's own
+%pin:ch08_tel_bench%. It is not the wavefront: the pupil carries %pin:ch08_tel_wfe% waves rms, and
+flattening it with DM1 changes the dark zone by nothing. It is the secondary's shadow,
+%pin:ch08_tel_shadow% of the pupil area, whose diffraction the occulter throws into the Lyot plane
+around the shadow's image, where a plain disk passes it; the same deck without the obscuration sits
+at %pin:ch08_tel_noobs%, below the bench. A central blocker of %pin:ch08_tel_blocker% pupil radii in
+the Lyot stop covers the shadow's image: %pin:ch08_tel_lyot% at %pin:ch08_tel_thr% of the stop's
+throughput, the best of the scan in the listing (a larger blocker's own edge diffracts). The model's
+limit is on record: the telescope's beam is %pin:ch08_tel_anam% anamorphic and the engine carries the
+field on the ray lattice with one spacing, so the model's point image is round; scaling the occulter
+over that ratio moves the static number between the bracket's ends in the listing.
+
+![](media/ch08_tel_fields.png)
+
+**FIGURE 28** The telescope (top) against the bench alone (bottom): the bare point image, the
+coronagraph image over 3-15 λ/D, and the exit pupil with the secondary's shadow (`s9_diffraction`).
+
+The loop runs as on the bench, given the deck and its station map. The control matrix measured at
+the flat mirrors digs %pin:ch08_tel_lyot% to %pin:ch08_tel_efc0% in %pin:ch08_tel_efc0_it%
+iterations; measured again about that state, to %pin:ch08_tel_efc1% in %pin:ch08_tel_efc1_it% more:
+%pin:ch08_tel_gain9% times, where the bench alone digs %pin:ch08_efc_gain%. What remains is the
+shadow's diffraction outside the blocker, an amplitude hole at the pupil's centre that the mirrors
+fill only with strokes past their linear range; the step the bench's regularization grid proposes
+overshoots on this brighter halo, so the loop takes smaller steps.
+
+**Sensing the field on it.** Stage 10 closes the loop on pairwise-probe estimates, as on the bench
+above, and finds three things the bench did not show. The estimator's default amplitude, probe
+intensity equal to the speckle level, is a %pin:ch08_tel_def_nm% probe (%pin:ch08_tel_def_rad% of
+wavefront phase) on the shadow's halo, and its second-order response leaves the estimate
+%pin:ch08_tel_def_rel% off the field; the error falls as the amplitude squared, and 0.3 times the
+default (%pin:ch08_tel_pick_nm%; `ctb_probe_estimate`'s `'probe_rel'`) brings it to
+%pin:ch08_tel_pick_rel%, the smallest probe tried to %pin:ch08_tel_lin_rel%. The probe-intensity
+ratio reads %pin:ch08_tel_ratio% above 1 at every amplitude there: the probe's second-order field
+projected on the halo, which the pairwise difference cancels and the sum keeps, so on a bright halo
+the ratio flags a gross mismatch and does not meter the control matrix. And the estimate needs a
+matrix measured about the current state: at the dug state of the previous paragraph the flat-state
+matrix estimates the field %pin:ch08_tel_dug_rel% off, the matrix about its own point
+%pin:ch08_tel_ctl_rel%. The loop closed on the estimate with the matrix held fixed stalls after
+three iterations at %pin:ch08_tel_sefc0%, against perfect sensing's %pin:ch08_tel_efc0%; re-measured
+on the estimate it reaches %pin:ch08_tel_sefc1% against %pin:ch08_tel_efc1%. The line search still
+scores the measured contrast, so a wrong estimate costs depth, never stability. With 10¹⁰ photons
+per image at the bare peak the pick's error is %pin:ch08_tel_ph10_rel%; with 10⁸ the floor is
+%pin:ch08_tel_ph8_floor%, above the dark zone itself.
+
+![](media/ch08_tel_probe.png)
+
+**FIGURE 29** Pairwise probing on the telescope (`s10_sensing`): the estimation floor against probe
+amplitude, noiseless and at 10¹⁰ photons; the probe-intensity diagnostic; the floor against photon
+count at the static and dug states; the per-pixel error with no cut; the amplitude and phase error
+maps at the pick.
+
+**Recompute-and-restart cycles.** Stage 11 does what a testbed does: measure the control matrix
+about the loop's own state, run the loop until it stalls, measure again from where it ended, and
+repeat until the dark zone reaches a goal, here %pin:ch08_tel_goal% (`e2e_cycles`, resumable from
+a state file; each matrix about %pin:ch08_tel_jac_min% minutes here). With perfect sensing the goal
+takes %pin:ch08_tel_perf_nc% cycles and %pin:ch08_tel_perf_it% iterations, ending at
+%pin:ch08_tel_perf_end%; the last cycle alone gains %pin:ch08_tel_perf_last% times. On probe
+estimates it takes %pin:ch08_tel_sens_nc% cycles and %pin:ch08_tel_sens_it% iterations, ending at
+%pin:ch08_tel_sens_end%: one cycle more and fewer iterations than perfect sensing, since a cycle on
+estimates stalls sooner. Strokes stay under %pin:ch08_tel_stroke% rms on both mirrors.
+
+<!-- transcript: ch08_tel_cycles -->
+
+![](media/ch08_tel_cycles.png)
+
+**FIGURE 30** The cycles (`s11_cycles`): dark-zone contrast against iteration for the probed loop
+(squares; dotted, its own estimate) and for perfect sensing (circles); each dotted vertical is a
+control matrix re-measured about the state; the goal dashed.
+
+The estimate at each fresh matrix is within %pin:ch08_tel_est_max3% of the field through the first
+four cycles and %pin:ch08_tel_est_last% at the fifth, from %pin:ch08_tel_sens_c3%. The stage's
+report marks that check as failed and says why: at that depth no probe amplitude tried estimates the
+field within the bound, and the error sits in the few pixels where the probes' own field is near a
+null and the per-pixel solve divides by almost nothing. The loop dug to the goal on that estimate
+anyway. A solve that weights those pixels by the probes' energy is the open item.
+
 ### Checking the assistant's work
 
 The hard occulter appears twice in this section, scored at two grid sizes: %pin:ch08_dz_hard% on
@@ -212,18 +305,8 @@ and imaginary parts as one stacked real system, and `ctb_dm.apply` refuses compl
   'r_lyot_frac', 0.70)`, the 25-step study from one configuration.
 - *"Close the loop on probe estimates with fewer photons, or with smaller probes."* --
   `ctb_efc('sensing', struct('photons', 1e7, 'probe_nm', 3))`.
-- *"Do this on the telescope with the CTB behind it."* -- the thread's stage 9
-  (`templates/80_end_to_end/e2e/s9_diffraction.m`, after this manual) builds that model: the CTB's
-  generator inserts the mask quartets and the terminal behind the folded train of Section 2, and the
-  chain, Jacobian and EFC of this section run on it unchanged. Its numbers are in `s9_report.txt`;
-  this section's pages stay on the bench until the next regeneration. Stage 10 (`s10_sensing.m`)
-  closes the loop on probe estimates on that model and found three things the bench did not show:
-  the estimator's default amplitude rule (probe intensity = the speckle level) is a 37 nm, 0.94 rad
-  probe on the secondary shadow's 5.3e-7 halo, whose second-order response leaves the estimate
-  47 % off the field (0.3x the default, 11 nm, brings it to 4.4 %; `ctb_probe_estimate`'s
-  `'probe_rel'`); the probe-intensity ratio reads 1.22 at every amplitude there, so on a bright
-  halo it flags a gross mismatch but does not meter the Jacobian; and the estimate needs a Jacobian
-  about the CURRENT state (33 % off at a neighbouring dug state, 1.2 % at the Jacobian's own
-  point), which stalls every probed fixed-gain loop at iteration 3 until it relinearizes
-  (`s10_report.txt`; stage 11, `s11_cycles.m`, carries both chains to 1e-8 by
-  recompute-and-restart cycles).
+- *"Run the cycles on the telescope to a deeper goal, or more of them."* -- `s11_cycles.m` with
+  `P.sens.cycles` in `e2e_params.m` (`goal`, `max`, `stop_gain`); a run resumes from its state file.
+- *"Probe with five pairs, or a smaller probe."* -- `P.sens.npairs` and `P.sens.amp_rel` in
+  `e2e_params.m`; `s10_sensing.m` picks the largest amplitude whose noiseless error is within the
+  bound.
