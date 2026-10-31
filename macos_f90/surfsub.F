@@ -1937,8 +1937,8 @@ C***********************************************************************
          FUNCTION SGSrf(Kc,Kr,psi,pv,prel,ihat,
      &   nGridMat,mGridMat,GridMat,dAct,
      &   pmon,rhoc,xhat,yhat,zhat,L)
-            use param_mod, only : mGridSrf
-            use elt_mod, only : iEltToGridSrf,GridSrfOrder
+            use param_mod, only : mElt
+            use elt_mod, only : GridSrfOrder
             use traceutil_mod, only : crnt_Elt
             use math_mod
 
@@ -1946,7 +1946,7 @@ C  Computes surface function for gridded data surface
 
             IMPLICIT NONE
 
-            INTEGER nGridMat,mGridMat,gridSrfIdx
+            INTEGER nGridMat,mGridMat,iord
             REAL*8 GridMat(mGridMat,mGridMat)
 
             INTEGER i,i1,i0,j1,j0
@@ -1995,25 +1995,17 @@ C  Computes surface function for gridded data surface
                tiltx=0d0
                tilty=0d0
             ELSE
-               If (GridSrfOrder(crnt_Elt)==1) Then
-                  ! bi-linear interpolation of GridMat
-                  CALL INTNORM(x,y,GridMat(i0,j0),GridMat(i0,j1),GridMat(i1,j0),
-     &            GridMat(i1,j1),fh,tiltx,tilty)
-               Else IF (GridSrfOrder(crnt_Elt)==3) Then
-                  ! cubic-spline interpolation of GridMat
-                  gridSrfIdx=iEltToGridSrf(crnt_Elt)
-!           print*,'******* mGridSrf,crnt_Elt,gridSrfIdx =',
-!    &	           mGridSrf,crnt_Elt,gridSrfIdx
-                  x=xi*dAct; y=yj*dAct
-                  CALL INTCUBIC(gridSrfIdx,crnt_Elt,
-     &                          x,y,GridMat(1:nGridMat,1:nGridMat),
-     &                          mGridMat,nGridMat,mGridSrf,
-     &                          i0,j0,fh,tiltx,tilty)
-               Else
-                  WRITE(*,*)'*** Function SGSrf: Invalid SrfOrder: ',
-     &                        GridSrfOrder(crnt_Elt)
-                  Stop
-               End If
+!-->           GridSrfOrder= 1 bilinear, 3 the C1 bicubic (GRIDINTERP, math_mod;
+!              2026-10-31).  The global cubic spline INTCUBIC that order 3 used
+!              to call here is retired: its spline table was built once and never
+!              refreshed when the grid changed (set_elt_grid), and it cost a full
+!              row of splines per ray.
+               iord=1
+               IF ((crnt_Elt.GE.1).AND.(crnt_Elt.LE.mElt))
+     &            iord=GridSrfOrder(crnt_Elt)
+               CALL GRIDINTERP(iord,x,y,GridMat,mGridMat,nGridMat,
+     &                         i0,j0,fh,tiltx,tilty)
+!<--
             END IF
 
             ! Compute surface function
@@ -2181,8 +2173,12 @@ C***********************************************************************
             USE macos_debug
             USE math_mod
             USE Constants, ONLY: EPS
+            USE param_mod, ONLY: mElt
+            USE elt_mod, ONLY: GridSrfOrder
+            USE traceutil_mod, ONLY: crnt_Elt
 
             IMPLICIT NONE
+            INTEGER iord
 
             REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),
      &      coef(120),coefFF(120),
@@ -2196,7 +2192,7 @@ C***********************************************************************
      &      zc(3),dFdrho(3),dFdrhoFF(3),
      &      d2Fdrho2(3,3),d2Fdrho2FF(3,3),
      &      rho(3),psitzc,fh,fhFF,
-     &      i0,i1,j0,j1,xi,yj,diCtr,
+     &      xi,yj,diCtr,
      &      dzcdrho(3,3),dNvecdp(3,3),
      &      rhoc(3),rhoFF(3),rhom(3),rhomFF(3),
      &      zmtzc,psitzm,zFFtzc,psitzFF,S2_mon,S2_FF,
@@ -2205,7 +2201,10 @@ C***********************************************************************
      &      Lconic,dAct,Fgrid,tiltx,tilty,
      &      Sconic,deltaS,zc_dum(3),psitzc_dum
 
-            INTEGER i,j,nGridMat,mGridMat,iAxis,jAxis
+!-->        i0,i1,j0,j1 were REAL*8 here (legacy real subscripts); the
+!           GRIDINTERP interface needs the integers they are (2026-10-31)
+            INTEGER i,j,nGridMat,mGridMat,iAxis,jAxis,i0,i1,j0,j1
+!<--
             LOGICAL LROK,ifBuild,ifLNsrf
             LOGICAL ifMon,ifFF,ifGridTerm
 
@@ -2421,10 +2420,13 @@ C  Evaluate grid data and add grid contribution to normal vector (if active)
                   tiltx=0d0
                   tilty=0d0
                ELSE
-                  CALL INTNORM(x,y,
-     &            GridMat(i0,j0),GridMat(i0,j1),
-     &            GridMat(i1,j0),GridMat(i1,j1),
-     &            fh,tiltx,tilty)
+!-->              the element's GridSrfOrder (1 bilinear, 3 C1 bicubic; 2026-10-31)
+                  iord=1
+                  IF ((crnt_Elt.GE.1).AND.(crnt_Elt.LE.mElt))
+     &               iord=GridSrfOrder(crnt_Elt)
+                  CALL GRIDINTERP(iord,x,y,GridMat,mGridMat,nGridMat,
+     &                            i0,j0,fh,tiltx,tilty)
+!<--
                END IF
 !<--
 
@@ -2558,10 +2560,13 @@ C***********************************************************************
 
             USE math_mod
             USE Constants, ONLY: EPS
+            USE param_mod, ONLY: mElt
+            USE elt_mod, ONLY: GridSrfOrder
+            USE traceutil_mod, ONLY: crnt_Elt
 
             IMPLICIT NONE
 
-            INTEGER i,nGridMat,mGridMat,i0,i1,j0,j1
+            INTEGER i,nGridMat,mGridMat,i0,i1,j0,j1,iord
 
             REAL*8 Kc,Kr,psi(3),pv(3),prel(3),ihat(3),mcoef(120),
      &      xhat(3),yhat(3),zhat(3),lMon,pmon(3),L,
@@ -2658,10 +2663,13 @@ C  Compute dSgrid (if active)
      &             (j0.LT.1).OR.(j1.GT.nGridMat)) THEN
                   fh=0d0
                ELSE
-                  CALL INTNORM(x,y,
-     &            GridMat(i0,j0),GridMat(i0,j1),
-     &            GridMat(i1,j0),GridMat(i1,j1),
-     &            fh,tiltx,tilty)
+!-->              the element's GridSrfOrder (1 bilinear, 3 C1 bicubic; 2026-10-31)
+                  iord=1
+                  IF ((crnt_Elt.GE.1).AND.(crnt_Elt.LE.mElt))
+     &               iord=GridSrfOrder(crnt_Elt)
+                  CALL GRIDINTERP(iord,x,y,GridMat,mGridMat,nGridMat,
+     &                            i0,j0,fh,tiltx,tilty)
+!<--
                END IF
 !<--
                CALL ConicDeltaS(rho,fh,zhat,psi,Kc,Kr,Sconic,
@@ -3045,10 +3053,13 @@ C***********************************************************************
      &   dFdrho,d2Fdrho2)
             use macos_debug
             use math_mod
+            use param_mod, only : mElt
+            use elt_mod, only : GridSrfOrder
+            use traceutil_mod, only : crnt_Elt
 
             IMPLICIT NONE
 
-            INTEGER nGridMat,mGridMat
+            INTEGER nGridMat,mGridMat,iord
             REAL*8 GridMat(mGridMat,mGridMat)
             LOGICAL ifBuild
             INTEGER i,iAxis,jAxis,i1,i0,j1,j0
@@ -3089,8 +3100,13 @@ C***********************************************************************
                tiltx=0d0
                tilty=0d0
             ELSE
-               CALL INTNORM(x,y,GridMat(i0,j0),GridMat(i0,j1),
-     &         GridMat(i1,j0),GridMat(i1,j1),fh,tiltx,tilty)
+!-->           the element's GridSrfOrder (1 bilinear, 3 C1 bicubic; 2026-10-31)
+               iord=1
+               IF ((crnt_Elt.GE.1).AND.(crnt_Elt.LE.mElt))
+     &            iord=GridSrfOrder(crnt_Elt)
+               CALL GRIDINTERP(iord,x,y,GridMat,mGridMat,nGridMat,
+     &                         i0,j0,fh,tiltx,tilty)
+!<--
             END IF
 
             tiltx=tiltx/dAct
