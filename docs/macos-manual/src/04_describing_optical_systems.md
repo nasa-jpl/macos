@@ -876,6 +876,8 @@ The i and j indices correspond to the xMon and yMon coordinates, respectively:. 
 
 The grid spans (nGridMat − 1)·GridSrfdx base units in each direction, centered on the grid frame origin pData; a ray outside the span sees no figure (this is not an error), so a GridSrfdx too small for the element leaves figure only near its center. A grid declared larger than the compile-time mGridMat is not traced: the file is declined by name at load and the grid term is inert. When an element carries both a grid and Zernike terms, the grid frame xData, yData should equal the Zernike frame xMon, yMon, or a figure applied to one segment will not localize.
 
+Between the nodes the surface is interpolated bilinearly by default: the height is continuous across the cells, the slope is not, and a ray whose footprint moves across a cell edge by a few nanometres (a deformable-mirror probe, a late control step) takes the two cells' slope difference as a kink. `GridSrfOrder= 3` selects a C1 bicubic interpolation (Catmull-Rom on the 4 by 4 nodes around the cell; the grid's outer ring of cells stays bilinear): the slope is continuous everywhere and the sag error of a smooth figure sampled at a few cells per feature drops by an order of magnitude. `GridSrfOrder= 1` is the default and the value a prescription without the keyword gets; SAVE writes the keyword only when it is 3.
+
 The data is read in when the prescription is read. No setup computations are required (no SINT command). Interpolation data can also be provided to SMACOS directly from a calling program that includes the appropriate common statements (see [Section ?](#sharing-data-via-fortran-modules)).
 
 #### Interpolated Surfaces Using X-Y-Z Data

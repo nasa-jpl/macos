@@ -746,6 +746,73 @@ C***********************************************************************
       RETURN
       END SUBROUTINE INTNORM
 
+!--> C1 grid interpolation (2026-10-31, PLAN_CONSOLIDATION 3a; notes/surfaces.md
+!    "Grid surfaces are C0"): the bilinear cells' slope jumps kink a ray whose
+!    footprint crosses a cell edge; GridSrfOrder= 3 selects this kernel.
+      SUBROUTINE CRWGT(T,W,DW)
+C     Catmull-Rom (Keys 1981, a = -1/2) weights of the four nodes at
+C     t = -1, 0, 1, 2 for 0 <= T < 1, and their derivatives in T.
+      IMPLICIT NONE
+      REAL*8 T,W(4),DW(4),T2,T3
+      T2=T*T
+      T3=T2*T
+      W(1)=0.5D0*(-T3+2D0*T2-T)
+      W(2)=0.5D0*(3D0*T3-5D0*T2+2D0)
+      W(3)=0.5D0*(-3D0*T3+4D0*T2+T)
+      W(4)=0.5D0*(T3-T2)
+      DW(1)=0.5D0*(-3D0*T2+4D0*T-1D0)
+      DW(2)=0.5D0*(9D0*T2-10D0*T)
+      DW(3)=0.5D0*(-9D0*T2+8D0*T+1D0)
+      DW(4)=0.5D0*(3D0*T2-2D0*T)
+      RETURN
+      END SUBROUTINE CRWGT
+
+      SUBROUTINE INTCUBIC16(X,Y,U,LDU,I0,J0,FH,DUDX,DUDY)
+C     Catmull-Rom bicubic on the 16 nodes U(I0-1:I0+2,J0-1:J0+2) of a
+C     grid with leading dimension LDU, at the fractional position (X,Y)
+C     in [0,1) of cell (I0,J0).  Interpolates the nodes; C1 across cell
+C     edges (the gradient is continuous).  DUDX, DUDY are per cell unit
+C     like INTNORM's.  The caller guards 2 <= I0,J0 <= n-2.
+      IMPLICIT NONE
+      INTEGER LDU,I0,J0,IA,IB
+      REAL*8 X,Y,U(LDU,*),FH,DUDX,DUDY
+      REAL*8 WX(4),WY(4),DWX(4),DWY(4),V
+      CALL CRWGT(X,WX,DWX)
+      CALL CRWGT(Y,WY,DWY)
+      FH=0D0
+      DUDX=0D0
+      DUDY=0D0
+      DO IB=1,4
+        DO IA=1,4
+          V=U(I0-2+IA,J0-2+IB)
+          FH=FH+WX(IA)*WY(IB)*V
+          DUDX=DUDX+DWX(IA)*WY(IB)*V
+          DUDY=DUDY+WX(IA)*DWY(IB)*V
+        END DO
+      END DO
+      RETURN
+      END SUBROUTINE INTCUBIC16
+
+      SUBROUTINE GRIDINTERP(IORD,X,Y,U,LDU,N,I0,J0,FH,DUDX,DUDY)
+C     The one grid interpolator of the surface kernels (SGSrf, NGSrf,
+C     FreeFormSrf, SFFSrf): IORD = 3 (GridSrfOrder= 3) is the C1 bicubic
+C     where its 4x4 stencil fits the N x N grid; otherwise (IORD = 1, or
+C     the grid's outer ring of cells) the bilinear INTNORM.  (I0,J0) is
+C     the cell, 1 <= I0,J0 <= N-1; (X,Y) the fractional position in it.
+      IMPLICIT NONE
+      INTEGER IORD,LDU,N,I0,J0
+      REAL*8 X,Y,U(LDU,*),FH,DUDX,DUDY
+      IF ((IORD.EQ.3).AND.(I0.GE.2).AND.(I0.LE.N-2).AND.
+     &    (J0.GE.2).AND.(J0.LE.N-2)) THEN
+        CALL INTCUBIC16(X,Y,U,LDU,I0,J0,FH,DUDX,DUDY)
+      ELSE
+        CALL INTNORM(X,Y,U(I0,J0),U(I0,J0+1),U(I0+1,J0),U(I0+1,J0+1),
+     &               FH,DUDX,DUDY)
+      END IF
+      RETURN
+      END SUBROUTINE GRIDINTERP
+!<--
+
 C***********************************************************************
 
       SUBROUTINE INTCUBIC(srfIdx,eltIdx,
