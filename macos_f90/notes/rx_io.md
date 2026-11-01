@@ -273,3 +273,28 @@ round-trip record.
   a line`, and the next line is read (SMACOS's one-line STACK returns nothing instead: re-reading it
   would loop).  Both live parsers (macosio.F PARSE_LOH, smacosio.F PARSE_LOH) count past the limit
   without storing; the uncalled PARSE_LOH_SAVE is clamped.  Gate LOH_tokens.jou.
+
+## `GlassElt=` matches the FULL name; an unknown glass is said (2026-11-01, PLAN 1.2)
+The three catalog lookups (the parser shared by the CLI and SMACOS at `msmacosio.inc`
+`GlassElt=`, the NEW dialog and MOD in `macosio.F`) compared with `LCMP` over ONE name's
+length -- a prefix match.  The parser and the dialog used the DECK name's length: a name
+not in the table that is a prefix of a row (`SF`) took that row (SF1) silently.  MOD used
+the ROW's length: `MOD GlassElt(6)=SF10` wrote SF1's coefficients, and 49 of the 203 names
+are captured by a shorter earlier row that way (SF10..SF19 by SF1, SF53..SF59 by SF5,
+SK10..SK18A by SK1, FK51/52/54 by FK5, BaSF10/12/13 by BaSF1, LaSF32..36A by LaSF3, ...).
+Found by TO building the lens catalog (`macos.design.glass`).  Fix (macos 4ed926b4, Dave's
+word "fix it now"): `LGLASSEQ(C1,C2)` in utilsub.F, trimmed lengths equal and `LCMP` over
+that length, at all three sites; the parser now prints `** GlassElt= SF (elt   6): not in
+the glass table (GlassCoef= or IndRef sets the index)` -- a note, never a refusal (the
+element traces with the GlassCoef= that follows, else IndRef as written, as before).  No
+corpus deck names anything but Silica and CaF2 (both exact), so the fix moves no trace.
+**Rows added the same day:** N-SF5 and N-F2 (the Newport achromats PAC097AR.14 / PAC095AR.14
+in the lens catalog use them), constants from the Schott optical glass datasheet collection
+of 2017-01-17; each row reproduces the sheet's nd / vd to five figures (1.67271 / 32.25;
+1.62005 / 36.43).  Edit `macos_glass_list.txt`, run `tools/gen_glass_builtin.py`, commit
+both.  Gate: `cmd/GLASSELT_exact.jou` (MOD SF10 / N-SF5 / N-F2 save their own B1; a deck's
+`GlassElt= SF` is said at load and SF1's B1 1.55912923 is absent) and
+`cmd/must_fail/glasselt_prefix.jou` (the old capture; must not pass).  The mmacos lens
+catalog keeps writing `GlassCoef=` with every `GlassElt=` (an older engine then still traces
+the right glass); `tGlassDispersion`'s assumption gate is the pattern for a test that needs a
+row the shared engine build may not carry yet.
