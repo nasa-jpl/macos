@@ -274,9 +274,15 @@ control matrix re-measured about the state; the goal dashed.
 The estimate at each fresh matrix is within %pin:ch08_tel_est_max3% of the field through the first
 four cycles and %pin:ch08_tel_est_last% at the fifth, from %pin:ch08_tel_sens_c3%. The stage's
 report marks that check as failed and says why: at that depth no probe amplitude tried estimates the
-field within the bound, and the error sits in the few pixels where the probes' own field is near a
-null and the per-pixel solve divides by almost nothing. The loop dug to the goal on that estimate
-anyway. A solve that weights those pixels by the probes' energy is the open item.
+field within the bound. The loop dug to the goal on that estimate anyway. The cause was then run down
+to the engine, not the estimator: the deformable mirrors are grid surfaces, and between its nodes a
+grid was interpolated bilinearly, so a ray whose footprint on the second mirror crosses a cell edge
+under a sub-nanometre change of the first takes the two cells' slope difference as a kink and steps
+its path by tens of nanometres. The engine now offers a continuous-slope interpolation
+(`GridSrfOrder= 3` in the mirror's block; the emitter's `'order', 3`); at the same state with a
+control matrix measured on it the estimate reads 0.3% of the field, and the loop from that state
+reaches 1.1×10⁻⁹ in twenty iterations. The stage records above were measured on the bilinear
+surface; re-measuring them on the continuous one is the open item.
 
 ### Checking the assistant's work
 
