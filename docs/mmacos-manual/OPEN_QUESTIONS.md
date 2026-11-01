@@ -147,5 +147,7 @@ The report on Dave's return gathers this list (BRIEF_to_mmacos_manual.md, Report
   **CTB leg DONE 2026-10-28 (TO):** `ctb_probe_estimate` and `ctb_efc('sensing', ...)`; Section 8 runs EFC on
   estimated fields (driver ch08d, FIGURES 24-27).  The fold, the coupled model and pairwise on it follow.
   **Fold, coupled model and pairwise on it DONE 2026-10-30 (CCL):** stages 8-11; stage 11's recompute-and-restart
-  cycles reach 1e-8 on probe estimates (5 cycles) and on perfect sensing (4).  Open: the estimate at the fifth fresh
-  matrix is 17 % off (null pixels of the probes' field) -- a weighted per-pixel solve, for Dave's ruling.
+  cycles reach 1e-8 on probe estimates (5 cycles) and on perfect sensing (4).  The estimate at the fifth fresh
+  matrix was 17 % off: CAUSE FOUND 2026-10-31 (the bilinear grid-DM surface kinks rays at cell edges; macos
+  a3b6a00b adds `GridSrfOrder= 3`, a C1 bicubic; the same state then estimates to 0.3 %).  Open: the stage
+  records re-measured at order 3 (Dave's call).
