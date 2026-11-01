@@ -589,3 +589,32 @@ ray is lost and the field is silently all zero.
   is read (every grid deck will move; the manual's "Interpolated Surfaces Using Regularly Gridded Data" says
   linear).  Dave's ruling.  The gate: `ctb_dm_linearity` reports zero steps at every amplitude (the pinned
   test flips its EXPECT).
+- **FIXED as an option (Dave 2026-10-31 "I accept your recommendation. Go!"; macos a3b6a00b):** `GridSrfOrder= 3`
+  selects a Catmull-Rom bicubic (`INTCUBIC16` / `GRIDINTERP` in math_mod; C1 across cell edges, the grid's outer
+  ring stays bilinear) in all four grid sites -- SGSrf, NGSrf (AsphGridSrf's path), FreeFormSrf's normal and
+  SFFSrf's sag -- so sag and normal always use one interpolant; order 1 (every existing deck; the LOAD reset to 1
+  and the parser's 1|3 check are unchanged) is bit-identical: corpus A/B 280b5ff3 -> a3b6a00b, 0 movers ifx and
+  gfortran, load 160/160, must-fail 3/3 (records in the commit that carries this line).  The keyword existed
+  (parsed, SAVEd when 3) but only AsphGridSrf's sag honoured it, through the global spline `INTCUBIC` whose
+  table was built once per surface and never refreshed when the grid changed (set_elt_grid) and which evaluated
+  a full row of splines per ray -- retired from the dispatch, not deleted.  FreeFormSrf's cell indices were
+  REAL*8 (legacy real subscripts); now INTEGER.  The manual's gridded-surface section documents the keyword.
+  MEASURED on the private C1 build (the kernels are bit-identical in the gate build): ray 21226's kink at DM2
+  7.9e-5 -> 1.8e-8 rad, its walk-off 0.16 mm -> 36 nm; the cycle-4 state (its surfaces re-interpolated: dark
+  zone 1.68e-8 -> 2.08e-8 over the Jacobian's zone) gets a fresh order-3 Jacobian (70.6 min) and the probe
+  estimate reads 0.32 % (order 1: 17.3 %; 5 pairs 0.27 % vs 13.3 %), the Jacobian predicts the probes to
+  [0.10 0.03 0.05] % (order 1: [9.3 2.8 3.1]), the sum-ratio diagnostic is back at 1.01, no ray steps at
+  0.3 / 1 / 2 nm and the odd response is linear to 2 % (order 1: 62 % and 6 steps), the probed loop from that
+  state digs 2.08e-8 -> 1.14e-9 in 20 iterations (order 1 stalled at 5.65e-9 after 3; perfect sensing
+  8.6e-10 vs 1.34e-9).  Against the DM model's own continuous Gaussian influence function (`tGridInterp`,
+  SUITE_CTB_512): order 1 misses the surface by 3.7 % rms (one 100-nm actuator) / 3.6 % (a rough state),
+  order 3 by 0.60 / 0.57 %; a pitch planted 10 % wrong reads 12.7 % (the check is not vacuous).  Gates:
+  `tGridInterp`, `tE2eSensing/test_grid_dm_c1_no_steps` (order 3 on the cycle-4 state: zero steps) beside the
+  order-1 pin; `ctb_dm_rx 'order'`, `e2e_params P.grid_order` (default 1: every committed stage record is
+  order 1; switching re-measures the Jacobian truths -- Dave's call).  Two traps met on the way, both
+  recorded in mmacos/CLAUDE.md: a "private mex" run that calls a templates function loads the SHARED mex
+  (the templates addpath the shared src -- every private-build number before 09:40 that day was the shared
+  engine), and a MATLAB launched from the editor's Bash tool lives in the editor's cgroup (a 23-GB runaway
+  from a units bug in the new gate took the editor and both sessions down three times: run heavy jobs as
+  `systemd-run --user --scope -p MemoryMax=12G`).
+
