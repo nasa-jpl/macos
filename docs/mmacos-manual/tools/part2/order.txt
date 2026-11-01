@@ -33,3 +33,6 @@ e2e6m_r2
 bench_ifo_pol
 tg_psi_dm
 tg_psi_dm_v2
+singlet
+doublet
+triplet

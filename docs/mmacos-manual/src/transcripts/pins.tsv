@@ -219,6 +219,11 @@ p2_design_layer_api_recovered	< 1e-09
 p2_design_layer_api_k1	-1.002185
 p2_design_layer_api_k2	-1.524259
 p2_design_layer_api_pert	1.752e-05
+p2_doublet_sse	-0.04895
+p2_doublet_sstb	0.04993
+p2_doublet_worstcal	0.076
+p2_doublet_worstpar	0.267
+p2_doublet_vefl	250.32
 p2_e2e2_dk	3.03e-01
 p2_e2e6m_s0	0.8594
 p2_e2e6m_s1	0.3512
@@ -255,6 +260,10 @@ p2_rc_onaxis_dl0	2.7
 p2_rc_onaxis_dl1	3.3
 p2_rc_unobscured_dec	0.642
 p2_rc_unobscured_field	0.0281
+p2_singlet_xtb	0.7397
+p2_singlet_xcal	0.7393
+p2_singlet_rmstb	1.2941
+p2_singlet_rmscp	1.4006
 p2_sz_tma_s0	0.0054
 p2_sz_tma_s2	4.1915
 p2_sz_tma_s2a	2.3925
@@ -299,6 +308,10 @@ p2_tma_unobscured_ring1	0.022
 p2_tma_widefield_rc0	0.4519
 p2_tma_widefield_tma15	0.0613
 p2_tma_widefield_tma20	0.1200
+p2_triplet_m0	143.4
+p2_triplet_m1	1.009
+p2_triplet_rmsedge	1.164
+p2_triplet_distedge	-0.41
 p2_wf2_freeform_one0	0.0801
 p2_wf2_freeform_one1	0.0023
 p2_wf2_freeform_wide	0.143

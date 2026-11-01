@@ -49,10 +49,10 @@ requests will start from one of its other templates (Part II, in the order of
   physical apertures and edge sensors, the sensitivity harvest, laser metrology, closing the loop,
   and the error-budget tool, each a template as well as a section of Part I.
 - **Polarization**: ray-level Jones scoring on a bench and the polarization-aware gauges.
-
-One thing the catalog does not yet hold is a refractive design template. Lenses appear only as
-ideal lenses (`ideal_lens`) and as single real elements on the benches (collimators, plates, the
-cube). Lens design is the next addition to the library.
+- **Lenses**: a best-form singlet, a cemented achromat solved from its glass pair, and a Cooke
+  triplet that carries a field, each checked against its textbook solution; real lenses with
+  catalog glasses (`macos.design.Lens`, placed on a bench by `Bench.add_optic`), and a vendor-lens
+  catalog (`lens_catalog`) for as-bought achromats.
 
 ### How to use the manual
 
