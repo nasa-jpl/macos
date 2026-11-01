@@ -3135,8 +3135,10 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
               LGlass(iElt)    = .FALSE.
               i=1
               DO WHILE (((.NOT.LGlass(iElt))).AND.(i.LE.mGlass))
-                IF (LCMP(GlassElt(iElt),GlassName(i),
-     &                   ICLEN(GlassElt(iElt)))) THEN
+!-->  full-name match (LGLASSEQ, utilsub.F; 2026-11-01): the LCMP over
+!     the deck name's length matched any row the name is a prefix of.
+                IF (LGLASSEQ(GlassElt(iElt),GlassName(i))) THEN
+!<--
                   LGlass(iElt)=.TRUE.
                   CALL DEQUATE(GlassCoef(1,iElt),GlassTable(1,i),6)
                 END IF
@@ -3146,6 +3148,15 @@ C             WRITE(*,*)' Surface='//SrfTypeName(SrfType(iElt))(1:12)
                 GlassCoef_FLG=.TRUE.
               ELSE
                 GlassCoef_FLG=.FALSE.
+!-->  say so (2026-11-01): an unknown glass name was silent before, and
+!     the element traced with IndRef as written (or the GlassCoef= that
+!     follows).  Warns, never refuses.
+                WRITE(emsgRec,'(3A,I4,3A)') '** GlassElt= ',
+     &            TRIM(GlassElt(iElt)),' (elt',iElt,
+     &            '): not in the glass table',
+     &            ' (GlassCoef= or IndRef sets',' the index)'
+                CALL emsg_put
+!<--
               END IF
               GO TO 61
 

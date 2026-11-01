@@ -1,0 +1,36 @@
+# GlassElt= is matched by its FULL name (2026-11-01, PLAN_CONSOLIDATION 1.2; found by TO building the lens catalog).
+# Before, LCMP over one name's length was a PREFIX match at all three lookup sites: MOD GlassElt(6)=SF10 took SF1's
+# Sellmeier row (49 catalog names are captured by a shorter earlier row that way: SF10..SF19 by SF1, SF53..SF59 by
+# SF5, BaSF10/12/13 by BaSF1, SK10..SK18A by SK1, FK51/52/54 by FK5, ...), and a deck naming a glass that is not in
+# the table but is a prefix of a row (SF) took that row with no message.  Now MOD SF10 writes SF10's row, a deck's
+# unknown name is SAID at load (warns, never refuses) and the element keeps its IndRef, and the two rows added the
+# same day resolve by name (N-SF5, N-F2: the Schott datasheet-collection constants, the Newport achromats' glasses).
+# Non-vacuity: must_fail/glasselt_prefix.jou asserts the old capture and must NOT pass.
+# COPY: $ROOT/docs/macos-manual/examples/ImageDemo.in
+cd $TMP
+old ImageDemo.in
+mod
+GlassElt(6)=SF10
+q
+save sf10
+mod
+GlassElt(6)=N-SF5
+q
+save nsf5
+mod
+GlassElt(6)=N-F2
+q
+save nf2
+! cp $DECK sf.in
+! perl -i -pe 's/^(\s*IndRef=\s+1\.61783d\+00)$/$1\n  GlassElt=  SF/' sf.in
+old sf.in
+save sf
+! grep -A1 'GlassElt=' sf10.in nsf5.in nf2.in sf.in
+# EXPECT: GlassElt\(\s*6\) = SF10
+# EXPECT: sf10\.in-\s*GlassCoef=\s+1\.61625977
+# EXPECT: nsf5\.in-\s*GlassCoef=\s+1\.52481889
+# EXPECT: nf2\.in-\s*GlassCoef=\s+1\.39757037
+# EXPECT: sf\.in\s+being loaded[\s\S]*?\*\* GlassElt= SF \(elt\s+6\): not in the glass table
+# EXPECT-NOT: GlassCoef=\s+1\.55912923
+# EXPECT-NOT: Unknown glass
+# EXPECT-NOT: forrtl
