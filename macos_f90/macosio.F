@@ -57,7 +57,7 @@ C***********************************************************************
 
 	CHARACTER*8 CNUM
 	CHARACTER(len=MacosCharLen) :: ANS,TypeString
-	LOGICAL exist,ifOld,LCMP,IHSTPM,IHSTSM,ifGridInit,
+	LOGICAL exist,ifOld,LCMP,LGLASSEQ,IHSTPM,IHSTSM,ifGridInit,
      &          ifAmplInit,ifFid,LOAD_SUCCESS
 	INTEGER i,j,k,l,g,iaxis,iElt,npts,iopt,iCoord,IDEF(7),ICLEN,
      &          iSeg,iObs,jGridSrf,eltGrpStrt,eltGrpEnd,grpRange(20),
@@ -928,8 +928,9 @@ C  Get Optical Parameters
 !<--
 	        i=1
 	        DO WHILE (((.NOT.LGlass(iElt))).AND.(i.LE.mGlass))
-	          IF (LCMP(GlassElt(iElt),GlassName(i),
-     &	          ICLEN(GlassElt(iElt)))) THEN
+!-->  full-name match (2026-11-01; see utilsub.F LGLASSEQ)
+	          IF (LGLASSEQ(GlassElt(iElt),GlassName(i))) THEN
+!<--
 	            LGlass(iElt)=.TRUE.
 	            CALL DEQUATE(GlassCoef(1,iElt),GlassTable(1,i),6)
 	          END IF
@@ -1537,7 +1538,7 @@ c  24Jul97 loh:  Added flag to indicate zernike type
 	CHARACTER(len=MacosVarNamLen) :: VAR_NAM
         CHARACTER(len=MacosValLen) :: VALUE
 	!CHARACTER*128 VALUE
-	LOGICAL ARR_FLG,LCMP,EXIST,LNOTSET,ifGridInit,ifUDSinit
+	LOGICAL ARR_FLG,LCMP,LGLASSEQ,EXIST,LNOTSET,ifGridInit,ifUDSinit
 	INTEGER MB_I(3),MB_J,npts,i,j,ICLEN
 	REAL*8 S1,S2
 
@@ -1847,8 +1848,10 @@ c	    READ(VALUE,*)GridType
 	    LNOTSET=.TRUE.
 	    i=1
 	    DO WHILE (LNOTSET.AND.(i.LE.mGlass))
-	      IF (LCMP(VALUE,GlassName(i),
-     &	      ICLEN(GlassName(i)))) THEN
+!-->  full-name match (2026-11-01): LCMP over the ROW's length took the
+!     first row the typed name begins with (SF10 -> SF1's coefficients).
+	      IF (LGLASSEQ(VALUE,GlassName(i))) THEN
+!<--
 	        LNOTSET=.FALSE.
 	        CALL DEQUATE(GlassCoef(1,MB_I(1)),GlassTable(1,i),6)
 !-->  a glass set by MOD is a glass: the model and the flag, as the

@@ -1,0 +1,11 @@
+# Non-vacuity for GLASSELT_exact: the PREFIX capture must NOT happen -- MOD GlassElt(6)=SF10 writing SF1's Sellmeier
+# row (B1 1.55912923) into the saved deck.  If this journal ever passes, the full-name glass match is gone.
+# COPY: $ROOT/docs/macos-manual/examples/ImageDemo.in
+cd $TMP
+old ImageDemo.in
+mod
+GlassElt(6)=SF10
+q
+save sf10
+! grep -A1 'GlassElt=' sf10.in
+# EXPECT: GlassCoef=\s+1\.55912923

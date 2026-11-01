@@ -45,7 +45,7 @@ C***********************************************************************
         LOGICAL :: isRxOpen
 
         CHARACTER(len=MacosCharLen) :: TypeString
-        LOGICAL exist,LCMP,ifGridInit,ifAmplInit,LOAD_SUCCESS
+        LOGICAL exist,LCMP,LGLASSEQ,ifGridInit,ifAmplInit,LOAD_SUCCESS
         INTEGER i,j,k,l,iaxis,iElt,iopt,IDEF(7),ICLEN,
      &          iSeg,iObs,jGridSrf,eltGrpStrt,eltGrpEnd,grpRange(20),
      &          nValsPerRow,g,jAmplSrf,jMetSrf,

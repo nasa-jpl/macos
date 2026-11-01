@@ -55,6 +55,25 @@ C***********************************************************************
 	RETURN
 	END FUNCTION LCMP
 
+!-->  Exact, case-insensitive match of a glass name against a catalog
+!     row (2026-11-01, PLAN_CONSOLIDATION 1.2).  LCMP over ONE name's
+!     length is a prefix match: MOD GlassElt(n)=SF10 took SF1's row (49
+!     catalog names are captured by a shorter earlier row that way), and
+!     a deck naming a glass that is not in the table but is a prefix of
+!     a row (SF) took that row with no message.
+	FUNCTION LGLASSEQ(C1,C2)
+	IMPLICIT NONE
+	CHARACTER*(*) C1,C2
+	LOGICAL LGLASSEQ,LCMP
+	INTEGER ICLEN,n1,n2
+	n1=ICLEN(C1)
+	n2=ICLEN(C2)
+	LGLASSEQ=.FALSE.
+	IF ((n1.NE.n2).OR.(n1.EQ.0)) RETURN
+	LGLASSEQ=LCMP(C1,C2,n1)
+	END FUNCTION LGLASSEQ
+!<--
+
 
 ! By jzlou
 	FUNCTION LCMP2(C1,C2,clen)
