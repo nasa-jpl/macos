@@ -7,5 +7,5 @@ mod
 GlassElt(6)=SF10
 q
 save sf10
-! grep -A1 'GlassElt=' sf10.in
+! grep -A2 'GlassElt=' sf10.in
 # EXPECT: GlassCoef=\s+1\.55912923

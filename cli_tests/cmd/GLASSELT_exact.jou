@@ -24,13 +24,19 @@ save nf2
 ! cp $DECK sf.in
 ! perl -i -pe 's/^(\s*IndRef=\s+1\.61783d\+00)$/$1\n  GlassElt=  SF/' sf.in
 old sf.in
-save sf
-! grep -A1 'GlassElt=' sf10.in nsf5.in nf2.in sf.in
+save sfsaid
+! grep -A2 'GlassElt=' sf10.in nsf5.in nf2.in
+! grep -c 'GlassElt=' sfsaid.in
+! grep 'IndRef=' sfsaid.in
 # EXPECT: GlassElt\(\s*6\) = SF10
-# EXPECT: sf10\.in-\s*GlassCoef=\s+1\.61625977
-# EXPECT: nsf5\.in-\s*GlassCoef=\s+1\.52481889
-# EXPECT: nf2\.in-\s*GlassCoef=\s+1\.39757037
+# EXPECT: sf10\.in-\s*GlassCoef=\s+1\.616259
+# EXPECT: nsf5\.in-\s*GlassCoef=\s+1\.524818
+# EXPECT: nf2\.in-\s*GlassCoef=\s+1\.397570
 # EXPECT: sf\.in\s+being loaded[\s\S]*?\*\* GlassElt= SF \(elt\s+6\): not in the glass table
+# An unresolved name is not SAVEd: the element keeps its IndRef (SAVE writes GlassElt only for a resolved glass).
+# EXPECT: grep -c 'GlassElt=' sfsaid\.in\s+0\s
+# EXPECT: grep 'IndRef=' sfsaid\.in[\s\S]*?IndRef=\s*1\.61783
+# EXPECT-NOT: Replace\? \[YES\]
 # EXPECT-NOT: GlassCoef=\s+1\.55912923
 # EXPECT-NOT: Unknown glass
 # EXPECT-NOT: forrtl
