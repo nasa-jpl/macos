@@ -139,6 +139,17 @@ engine defect): `make_corpus.sh` aborts under `set -euo pipefail` before writing
 to one shard (correct results, serial wall). `OBS_POLYGON.jou`'s sed portability was already fixed at gate 5.
 No engine-source defect.
 
+**2026-11-02 freeze re-check (pair macos `3c5018de` + resources `e66e2c8`, six docs/tooling commits above
+gate 14; no engine Fortran change).** A short re-check, not the full gate (that reruns as release part B on
+the rewritten repo). All three gate-14 findings confirmed fixed: (1) `cli_tests/make_corpus.sh` now runs to
+its final line and prints `core: 165`, the list fully resolved to the clone (0 stale paths) — resources/macos
+freeze fix `3df6b4c9`; (2) `./run_mmacos_tests.sh -j 2 tSessionModes` reads **"31 GB available, 10 cores"**
+(not 0) and runs **2 of 2 shards at once**, tSessionModes **6/0/0** — the near-zero `test_fex_follows_the_session_axis`
+bounded at 1e-18 (resources `e66e2c8`), and the Mac-way memory/core probe (resources `bfcc8b29`); the empty
+second shard's "NO RESULTS" exit-1 is the known runner quirk. (3) the camera/view_rx drawing change:
+**tViewRx 7/0, tSmallCamera 8/0, tCassCamera 6/0**. Engine binary unchanged from gate 14 (0 Fortran diffs
+`0984cd34..3c5018de`); re-check done on a rebuilt engine+mex at the freeze SHAs.
+
 ### 2026-10-23 (11) — re-gate (pair macos `0c0c98c7` + resources `0b39b0a`) — the (ee) message buffer
 Full record: `cli_tests/records/mac_gate_gfortran_0c0c98c7.md`. Engine changed: TO's round 2, the api
 message buffer (`emsg_mod`, `messages_count/get/clear`) that resolves 1.2 (ee) — the root cause found at
