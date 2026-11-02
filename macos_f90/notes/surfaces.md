@@ -554,7 +554,7 @@ ray is lost and the field is silently all zero.
 - `Calc_RayDielectricTC` / `Calc_RayMetalTC` (utilsub.F) are stubs returning 0 into `rayTC`, which
   nothing reads: the grating transmission coefficient is not implemented.
 
-## Grid surfaces are C0: a ray that crosses a cell boundary STEPS (OPEN, 2026-10-31, e2e stage 11 follow-up)
+## Grid surfaces are C0: a ray that crosses a cell boundary STEPS (2026-10-31; FIXED as the `GridSrfOrder= 3` option the same day; the e2e stage records re-measured on it 2026-11-02)
 *(Measured by CCL on the coupled telescope + CTB deck at stage 11's cycle-4 state, model 512, DM grids 256 over 45 mm = 3.8 cells per 0.66-mm actuator pitch; the record is PLAN_CONSOLIDATION 3a; the diagnostic is `bench_ctb/ctb_dm_linearity.m`, the pin `tE2eSensing/test_grid_dm_c0_steps_pinned` on the cycle-4 state -- a seeded random 10-nm-rms state with four 90-nm actuators shows no step up to 5 nm; the EFC solution's structure carries the large cell-edge slope jumps.)*
 - The grid term of `FreeFormSrf` (surfsub.F, `GridSrf`/`MonGridSrf` wrap it) interpolates `GridMat` BILINEARLY
   (`INTNORM`, mathsub.F) inside the cell `IDFLOOR(xi), IDFLOOR(yj)`: the sag is continuous across cell boundaries,
@@ -617,4 +617,19 @@ ray is lost and the field is silently all zero.
   engine), and a MATLAB launched from the editor's Bash tool lives in the editor's cgroup (a 23-GB runaway
   from a units bug in the new gate took the editor and both sessions down three times: run heavy jobs as
   `systemd-run --user --scope -p MemoryMax=12G`).
+- **RE-MEASURED at order 3 (2026-11-02, CCL; Dave 2026-11-01 "go ahead with the long Jacobian ... OK to go longer"):**
+  e2e stages 9-11 re-run with `P.grid_order = 3`, the cycle cap 20 and the goal 1e-10 (18.5 h, one MATLAB in a
+  12-GB scope; the bilinear products are kept in `~/dev/MACOS_sandbox/e2e_bilinear_2026-11-01/`).  The model does
+  not move: static 5.795e-6 / 5.267e-7 with the blocker, the same digits as the bilinear run; stage 9's EFC
+  1.435e-7 -> 6.877e-8 (x8, the x10 gate still FAILS, as before).  What moves is the sensing: the pick's
+  estimate 4.4 -> 2.8 %, the default rule 47 -> 31 %, the dug state 33 -> 24 % (about its own point 1.2 ->
+  0.8 %).  Stage 11 to 1e-10: perfect sensing 7 cycles / 115 iterations to 7.3e-11 (one cycle x33), the probed
+  chain 9 / 149 to 6.2e-11 with the estimate 2.8 % at the reused flat-state Jacobian and 0.06-0.8 % at every
+  Jacobian about the loop's own state, FALLING with depth (bilinear: 17 % at the fifth and the gate red) --
+  ALL stage-11 gates pass.  Below 1e-9 every cycle of either chain hits the 20-iteration cap at a gain near 2:
+  the last decade costs cycles, not sensing.  Thirteen Jacobians, 57-73 min each.  The 15 `.fp.json` truths,
+  `s9_coupled_dm.in` (now carries `GridSrfOrder=  3` on both DMs), manual Section 8 (ch08e re-pinned, the
+  cycle prose rewritten) and deck_ctb slides 15-18 are the order-3 record; `tE2eSensing`'s C0 pin now re-emits
+  the deck at order 1 to keep the defect visible, the C1 gate re-emits at order 3 (both on the order-3 cycle-4
+  state).  Open: the Timoshenko / analytic influence-function element as the long-term DM model.
 

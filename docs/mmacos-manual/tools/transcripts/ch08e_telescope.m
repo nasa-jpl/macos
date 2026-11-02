@@ -126,7 +126,7 @@ mm_pin('ch08_tel_sens_nc',   numel(R.sens.cycles), 'sig5', sprintf('%d', numel(R
 mm_pin('ch08_tel_sens_it',   R.sens.total_iters, 'sig5', sprintf('%d', R.sens.total_iters));
 mm_pin('ch08_tel_sens_end',  R.sens.c_final,  'sig5', e2(R.sens.c_final));
 mm_pin('ch08_tel_sens_c3',   R.sens.cycles(end-1).c_end, 'sig5', e2(R.sens.cycles(end-1).c_end));
-mm_pin('ch08_tel_est_last',  R.sens.cycles(end).est_rel0, 'sig5', sprintf('%.0f %%', 100*R.sens.cycles(end).est_rel0));
+mm_pin('ch08_tel_est_last',  R.sens.cycles(end).est_rel0, 'sig5', sprintf('%.2f %%', 100*R.sens.cycles(end).est_rel0));
 mm_pin('ch08_tel_est_max3',  max([R.sens.cycles(1:end-1).est_rel0]), 'sig5', sprintf('%.1f %%', 100*max([R.sens.cycles(1:end-1).est_rel0])));
 mm_pin('ch08_tel_stroke',    max([R.perf.cycles.stroke_rms_nm, R.sens.cycles.stroke_rms_nm]), 'sig5', ...
     sprintf('%.0f nm', max([R.perf.cycles.stroke_rms_nm, R.sens.cycles.stroke_rms_nm])));
