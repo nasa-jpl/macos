@@ -27,7 +27,7 @@ out = doublet();
 
 ![](media/p2_doublet_fig.png)
 
-**FIGURE 62** Chromatic focal shift of the N-BK7 + F2 achromat from 450 to 700 nm, the paraxial achromat (F and C joined) and the CALIB lens, with the engine's three single-wavelength traces at F, d and C marked (`doublet_focus.png`).
+**FIGURE 64** Chromatic focal shift of the N-BK7 + F2 achromat from 450 to 700 nm, the paraxial achromat (F and C joined) and the CALIB lens, with the engine's three single-wavelength traces at F, d and C marked (`doublet_focus.png`).
 
 **The number it reproduces.** On the paraxial achromat, the d focus minus the common F/C focus is %pin:p2_doublet_sse% mm, measured on three engine traces; the thin-lens secondary spectrum predicts -%pin:p2_doublet_sstb% mm. CALIB at F, d and C holds the worst RMS across the band at %pin:p2_doublet_worstcal% waves against %pin:p2_doublet_worstpar%. The catalog's Newport PAC095AR.14 traces to an EFL of %pin:p2_doublet_vefl% mm against the vendor's 250.
 

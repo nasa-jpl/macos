@@ -21,7 +21,7 @@ out = singlet();
 
 ![](media/p2_singlet_fig.png)
 
-**FIGURE 61** RMS wavefront error against Coddington's shape factor for N-BK7 singlets at f = 100 mm, f/5, at the paraxial focus and at best focus, with the textbook bending, CALIB's and the two plano orientations marked (`singlet_bending.png`).
+**FIGURE 63** RMS wavefront error against Coddington's shape factor for N-BK7 singlets at f = 100 mm, f/5, at the paraxial focus and at best focus, with the textbook bending, CALIB's and the two plano orientations marked (`singlet_bending.png`).
 
 **The number it reproduces.** Coddington's minimum-aberration bending is X = %pin:p2_singlet_xtb%; CALIB on both radii, started from an equi-convex lens, lands at X = %pin:p2_singlet_xcal%. The best form's RMS wavefront error at f/5 is %pin:p2_singlet_rmstb% waves against %pin:p2_singlet_rmscp% for the benches' convex-plano lens.
 

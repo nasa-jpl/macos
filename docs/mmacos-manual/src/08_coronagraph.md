@@ -219,6 +219,32 @@ over that ratio moves the static number between the bracket's ends in the listin
 **FIGURE 28** The telescope (top) against the bench alone (bottom): the bare point image, the
 coronagraph image over 3-15 λ/D, and the exit pupil with the secondary's shadow (`s9_diffraction`).
 
+**The instrument, and the field through it.** `ctb_e2e_figures` (in `bench_ctb`) draws the folded
+train from the stage-8 deck and walks the stage-9 model plane by plane. The views show where the
+bench sits: on the primary's back, under the returning beam, its accordion stood up in the vertical
+plane, the whole within the 5.0 m envelope of Section 2. The walk reads the field at eight planes
+of the static model, from the primary to the camera: the log amplitude at each, and as the phase
+the ray-traced wavefront at the pupil planes (piston and tilt removed) and the propagated field's
+phase at the focal planes. The camera plane reads the static dark zone of the listing to the digit.
+What the wavefront row shows is worth knowing before reading a pupil phase map: at DM1 and DM2 the
+relay's own astigmatism, about a wave rms, which the apodizer plane has cancelled (the telescope's
+%pin:ch08_tel_wfe% waves from there on); the field's own phase on the grid carries the propagation
+frame's tilt and curvature besides, which is why the walk shows it only at the focal planes.
+
+![](media/ch08_tel_views.png)
+
+**FIGURE 29** The folded instrument (`ctb_e2e_figures`, `macos.view_rx` on the stage-8 deck): the
+whole train from the side (light from below, the 4 m primary at z = 0, the secondary 6.3 m below
+it, the bench on the primary's back), the whole train isometric, the same elevation zoomed on the
+bench, and the folded bench alone with its elements labelled.
+
+![](media/ch08_tel_walk.png)
+
+**FIGURE 30** The field through the train at the static state (`ctb_e2e_figures`): the primary,
+DM1, DM2, the apodizer, the focal-plane mask after the occulter, the Lyot stop after the annular
+stop, the exit pupil and the camera; log amplitude above, below the ray-traced wavefront at the
+pupil planes (waves, piston and tilt removed) and the propagated phase at the focal planes.
+
 The loop runs as on the bench, given the deck and its station map. The control matrix measured at
 the flat mirrors digs %pin:ch08_tel_lyot% to %pin:ch08_tel_efc0% in %pin:ch08_tel_efc0_it%
 iterations; measured again about that state, to %pin:ch08_tel_efc1% in %pin:ch08_tel_efc1_it% more:
@@ -239,8 +265,8 @@ projected on the halo, which the pairwise difference cancels and the sum keeps, 
 the ratio flags a gross mismatch and does not meter the control matrix. And the estimate needs a
 matrix measured about the current state: at the dug state of the previous paragraph the flat-state
 matrix estimates the field %pin:ch08_tel_dug_rel% off, the matrix about its own point
-%pin:ch08_tel_ctl_rel%. The loop closed on the estimate with the matrix held fixed stalls after
-three iterations at %pin:ch08_tel_sefc0%, against perfect sensing's %pin:ch08_tel_efc0%; re-measured
+%pin:ch08_tel_ctl_rel%. The loop closed on the estimate with the matrix held fixed stalls within
+a few iterations at %pin:ch08_tel_sefc0%, against perfect sensing's %pin:ch08_tel_efc0%; re-measured
 on the estimate it reaches %pin:ch08_tel_sefc1% against %pin:ch08_tel_efc1%. The line search still
 scores the measured contrast, so a wrong estimate costs depth, never stability. With 10¹⁰ photons
 per image at the bare peak the pick's error is %pin:ch08_tel_ph10_rel%; with 10⁸ the floor is
@@ -248,7 +274,7 @@ per image at the bare peak the pick's error is %pin:ch08_tel_ph10_rel%; with 10�
 
 ![](media/ch08_tel_probe.png)
 
-**FIGURE 29** Pairwise probing on the telescope (`s10_sensing`): the estimation floor against probe
+**FIGURE 31** Pairwise probing on the telescope (`s10_sensing`): the estimation floor against probe
 amplitude, noiseless and at 10¹⁰ photons; the probe-intensity diagnostic; the floor against photon
 count at the static and dug states; the per-pixel error with no cut; the amplitude and phase error
 maps at the pick.
@@ -269,7 +295,7 @@ costs cycles, not sensing. Strokes stay under %pin:ch08_tel_stroke% rms on both 
 
 ![](media/ch08_tel_cycles.png)
 
-**FIGURE 30** The cycles (`s11_cycles`): dark-zone contrast against iteration for the probed loop
+**FIGURE 32** The cycles (`s11_cycles`): dark-zone contrast against iteration for the probed loop
 (squares; dotted, its own estimate) and for perfect sensing (circles); each dotted vertical is a
 control matrix re-measured about the state; the goal dashed.
 
