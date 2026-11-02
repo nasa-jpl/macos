@@ -264,8 +264,7 @@ p2_singlet_xtb	0.7397
 p2_singlet_xcal	0.7393
 p2_singlet_rmstb	1.2941
 p2_singlet_rmscp	1.4006
-p2_small_camera_zfocus	0.332
-p2_small_camera_dsep	-6.08
+p2_small_camera_rms700	0.0295
 p2_small_camera_merit	0.0447
 p2_small_camera_q700	0.538
 p2_sz_tma_s0	0.0054
