@@ -42,10 +42,14 @@ each repo (amended 2026-10-21, reviewed in `RELEASE_EXCLUSIONS_REVIEW.md`).
 > **ANNOUNCED 2026-11-02 (Dave to the group, `DRAFT_email_group_done_for_now.md`): steps 1 and 2 of the room's
 > order are DONE on our side.**  The freeze is the tip of `dev-candidate` in both repositories at the announcement; its code and
 > library content is macos `3c5018de` + MACOS_resources `e66e2c8` (pushed 2026-11-02 evening; the morning's
-> `0984cd34` + `ef2d7f9` is CCMac's gate-14 pair), and any commit above those on the branch is a line of this
-> runbook or of the exclusions review (process files the strip removes from `main`) or CCMac's Mac gate
-> record (`MAC_PORT.md` Part 2 and `cli_tests/records/`, which ship: gate 14 on the morning pair, the freeze
-> re-check on this one, all three of its tooling findings confirmed fixed).  Nothing further is pushed to either public repository until Andy announces the redo complete;
+> `0984cd34` + `ef2d7f9` is CCMac's gate-14 pair), and any commit above those on the branch is documentation:
+> a line of this runbook or of the exclusions review (process files the strip removes from `main`), CCMac's Mac
+> gate record (`MAC_PORT.md` Part 2 and `cli_tests/records/`, which ship: gate 14 on the morning pair, the freeze
+> re-check on this one, all three of its tooling findings confirmed fixed), the manual's transcript-wrap filter
+> and the Mac guide's note that the corpus abort is fixed (`34d2d177`, `3dcc80d3`, pushed 2026-11-02 evening), and
+> the resources README corrections of the same evening (`94c255b`: the mmacos test table and counts, the README
+> pointers to records the strip removes, each now marked "dev branch only").  Andy said on 11-02 that he starts
+> in a day or three; no code is pushed in that window.  Nothing further is pushed to either public repository until Andy announces the redo complete;
 > work continues locally and in the private repositories (`ajax147/macos-local`, `ajax147/MACOS_resources-local`
 > as history-free snapshots of `dev-candidate`; `ajax147/MACOS_private` for program-specific content).  The three
 > published PDFs at `docs/` (`macosMan.pdf` 244 pp, `macosCmdRef.pdf` 120 pp, `mmacosMan.pdf` 146 pp, the last
