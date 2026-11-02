@@ -49,3 +49,18 @@ Every file that ships was grepped for the names of files that do not.  The three
 note's audit pointer are marked "dev branch only".  The remaining mentions are citations of the form
 "PLAN_CONSOLIDATION 1.2 (tt)" or "BRIEF_to_bindings A.2" in the notes -- provenance of a rule, declared as such
 in the root `CLAUDE.md`, not files an agent is told to open.
+
+## 2026-11-02 (CCL) -- the dry run on the freeze pair, and four patterns added
+
+Simulated on macos `0984cd34` + resources `ef2d7f9` with the two `release-exclude.txt` lists (basename globs for
+the patterns without `/`, path prefixes otherwise): macos strips 497 of 7899 tracked files, keeping the 5
+`CLAUDE.md`, `macos_f90/notes/`, `MAC_PORT.md`, `cli_tests/` and its records; no process file is kept.  Resources
+kept 28 process records the named lines and the 10-27 patterns missed, all of one genus -- the challenge and
+template RUN REPORTS and LOGS in suffix form (`dyson5/t3/*_REPORT.md` x12, `rodgers3/{t3/r3t,t5_unguided}_REPORT.md`
+and `DECK2_PLAN.md`, `offset_imager/t4_*/t5_*/*_REPORT.md` x8, `e2e2/E2E2_REPORT.md`, `e2e6m*/e2e6m*_LOG.md`,
+`bench_ctb/CTB_PROP_STATUS.md`, `segmirmaker/SEG_AUDIT_STATUS.md`) -- so the resources list gains `*_REPORT.md`,
+`*_LOG.md`, `*_PLAN.md`, `*_STATUS.md` (72 of 6162 stripped).  Not matched by any pattern and SHIPPING on purpose:
+`cli_tests/records/*` (the gate records are the suite's result), `mmacos/tools/pol_validation_report/` (a tool),
+the IODC 2010 `search/*_report.txt` run products (part of the 2267-class artifact decision for the room).
+`docs/mmacosMan.pdf` was ignored by the root `*.pdf` rule while the other two published PDFs were tracked; it is
+now tracked beside them.  Still open for Dave (10-27): the README links to the six template `REPORT_*.md`.
