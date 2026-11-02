@@ -53,6 +53,10 @@ requests will start from one of its other templates (Part II, in the order of
   triplet that carries a field, each checked against its textbook solution; real lenses with
   catalog glasses (`macos.design.Lens`, placed on a bench by `Bench.add_optic`), and a vendor-lens
   catalog (`lens_catalog`) for as-bought achromats.
+- **Cameras**: the small dedicated imager, a Cassegrain with a refractive field corrector whose
+  telescope and instrument are one design (`macos.design.cass_camera`): the manual's
+  `ImageDemo.in` stripped of its figure, refocused, put in catalog glass, and re-designed from its
+  spec, with the sampling it was built for.
 
 ### How to use the manual
 
