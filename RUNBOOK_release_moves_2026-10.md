@@ -38,6 +38,21 @@ each repo (amended 2026-10-21, reviewed in `RELEASE_EXCLUSIONS_REVIEW.md`).
 > bug fix or feature; human-readable commits (clear, concise, plain language, readable without deep MACOS
 > experience); PRs reviewed, merged and their branch deleted within a week; otherwise the order of events as
 > written here.
+>
+> **ANNOUNCED 2026-11-02 (Dave to the group, `DRAFT_email_group_done_for_now.md`): steps 1 and 2 of the room's
+> order are DONE on our side.**  The freeze pair is macos `0984cd34` + MACOS_resources `ef2d7f9` on `dev-candidate`
+> (both on origin).  Nothing further is pushed to either public repository until Andy announces the redo complete;
+> work continues locally and in the private repositories (`ajax147/macos-local`, `ajax147/MACOS_resources-local`
+> as history-free snapshots of `dev-candidate`; `ajax147/MACOS_private` for program-specific content).  The three
+> published PDFs at `docs/` (`macosMan.pdf` 244 pp, `macosCmdRef.pdf` 120 pp, `mmacosMan.pdf` 146 pp, the last
+> now tracked) are rebuilt from the freeze sources.  Strip dry run on the pair: macos 497 of 7899 files stripped,
+> resources 72 of 6162 after today's four suffix patterns (`*_REPORT.md`, `*_LOG.md`, `*_PLAN.md`, `*_STATUS.md`:
+> the challenge and template run reports and logs), `RELEASE_EXCLUSIONS_REVIEW.md` 2026-11-02.  The Mac release
+> gate on the pair (`BRIEF_ccmac_release_gate.md`: the clean-clone gate now, and again from the new repository
+> after the rewrite as the Mac's sign-off) is CCMac's; Linux at the pair: load 160/160 both compilers, 0 movers,
+> cmd 122 + 3 must-fail, mmacos fast 805/0, pymacos ~7000.  For Andy's wiki page the checklist below stands; two
+> items still open for the room: the 2267 run artifacts, and the README links to the six template REPORT files
+> that break on `main` (Dave 2026-10-27).
 
 ## Step 1 -- archive the full history (before anything is rewritten)
 ```bash

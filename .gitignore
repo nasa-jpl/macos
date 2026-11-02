@@ -210,6 +210,7 @@ docs/macos-manual/tools/__pycache__/
 # the two current renders the repo carries at docs/ (make publish); the heritage 3.2 PDF is tracked beside them
 !docs/macosMan.pdf
 !docs/macosCmdRef.pdf
+!docs/mmacosMan.pdf
 
 # the manual's edit copy and pdf live beside the sources, untracked (STANDARD PRACTICE, 2026-10-29)
 docs/mmacos-manual/mmacosMan_edit.docx
