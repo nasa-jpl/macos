@@ -94,6 +94,16 @@ PYTHONPATH=<clone>/MACOS_resources/pymacos/src \
   other machine **run `cli_tests/make_corpus.sh` first** (it rebuilds the lists
   from the local tree and resolves `MACOS_RESOURCES` as the sibling clone, so
   clone both repos side by side).
+  - **macOS gotcha (gate 14):** `make_corpus.sh` has `set -euo pipefail`, and its
+    `is_rx()` helper ends each pipeline with `grep -q` that returns nonzero when
+    the last (sorted) file has no `nElt`/`Element` line — so on macOS the script
+    aborts after writing `corpus_committed.txt` but **before** rebuilding
+    `corpus_core.txt`, leaving core the stale committed Linux copy. After running
+    it, regenerate core by hand (and confirm it resolves to your clone, 165 decks
+    on Mac): `grep -E '/ZGD_test_files/|/docs/macos-manual/|/tests/Rx/|/GMI/test_ff/'
+    corpus_committed.txt | grep -v '/tst_nzern_conic\.in$' > corpus_core.txt`.
+    (Real fix pending in the tool: `|| true` on the is_rx grep, or drop pipefail
+    around it — it is ordering-dependent and can bite Linux too.)
 - **BSD vs GNU in test journals.** A `cli_tests/cmd/*.jou` that shells out with
   `sed -i -e` (GNU form) fails on BSD/macOS sed (`sed -i '' -e` is the Mac
   form). One journal (`OBS_POLYGON.jou`) hits this.
@@ -109,6 +119,25 @@ PYTHONPATH=<clone>/MACOS_resources/pymacos/src \
 ---
 
 ## Part 2 — Validation record
+
+### 2026-11-02 (14) — release gate part A, clean clone (pair macos `0984cd34` + resources `ef2d7f9a`)
+Full record: `cli_tests/records/mac_gate_gfortran_0984cd34.md`. The full clean-clone gate on the pair the
+release is cut from, before Andy's repo consolidation (part B — re-clone the rewritten repo, gate from
+`main`+`dev` — is the Mac's release sign-off). **Gate (14), not (12):** the queued pairs 12 (`08b92085`)
+and 13 (`c6c83d55`) were never gated on this Mac (no clone/log/record/commit for either); per Dave they
+consume their numbers. On Mac: build OK (**194 api syms**, 192→194); self-contained (`~/matlab` off the
+path → tDesignTelescope 73/0; no external addpath; pymacos clone-path only); /png renders clean (white-bg +
+ink, not giza-inverted); pymacos **6985/0/1 skip** (the capfd parity leg); load **165/165, 0 movers**; cmd
+**122 pass + 3 must-fail red, 0 genuine fail**; mmacos fast **757/1/46 incomplete**. **The one mmacos fail**
+is `tSessionModes/test_fex_follows_the_session_axis` — a cross-architecture near-zero (FEX index 2
+`1.891e-24` vs `9.507e-25` against ~1e3-scale, `AbsTol 0`), a magnitude bound (`< 1e-23`) not a re-pin; the
+46 incomplete are the arm64-filtered classes (tRunCompare/segmentation/MET + SegMirMaker not built). The
+pair's new work lands clean on arm64 (GridSrfOrder=3, exact glass match, modes_set, the `(?m)^` header-key
+anchor fix, real lenses, the camera family, e2e 9–11). **Two gate-tooling findings for CCL** (neither an
+engine defect): `make_corpus.sh` aborts under `set -euo pipefail` before writing `corpus_core.txt` on macOS
+(worked around; Part 1 note added); the sharded `-j N` MemAvailable probe reads 0 GB on Darwin and clamps
+to one shard (correct results, serial wall). `OBS_POLYGON.jou`'s sed portability was already fixed at gate 5.
+No engine-source defect.
 
 ### 2026-10-23 (11) — re-gate (pair macos `0c0c98c7` + resources `0b39b0a`) — the (ee) message buffer
 Full record: `cli_tests/records/mac_gate_gfortran_0c0c98c7.md`. Engine changed: TO's round 2, the api
