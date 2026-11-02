@@ -63,4 +63,7 @@ and `DECK2_PLAN.md`, `offset_imager/t4_*/t5_*/*_REPORT.md` x8, `e2e2/E2E2_REPORT
 `cli_tests/records/*` (the gate records are the suite's result), `mmacos/tools/pol_validation_report/` (a tool),
 the IODC 2010 `search/*_report.txt` run products (part of the 2267-class artifact decision for the room).
 `docs/mmacosMan.pdf` was ignored by the root `*.pdf` rule while the other two published PDFs were tracked; it is
-now tracked beside them.  Still open for Dave (10-27): the README links to the six template `REPORT_*.md`.
+now tracked beside them.  The 10-27 item on the README links to the six template `REPORT_*.md` is CLOSED (resources 94c255b, 2026-11-02 evening):
+a strip simulation found 72 records gone and nine READMEs directing the reader to one of them; each pointer now says
+"dev branch only", the one Markdown link that would 404 (zoom_5x5 -> `design/PLAN_CONFIGURATIONS.md`) points at the
+shipped `sensitivities/README.md` section instead, and code-comment citations stay as provenance pointers.
