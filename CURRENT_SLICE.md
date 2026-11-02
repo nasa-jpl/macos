@@ -3930,3 +3930,11 @@ promote-on-land pass.**
 - Pushed on Dave's word: macos a791b271..33b5f0e7, resources 5be3a4c..c8d7ca3.  TO's camera rework (resources
   b0f0f9b, macos b8ff6433) and the order-3 record await his next push word.  `BRIEF_ccmac_release_gate.md`
   written (two runs of the Mac gate: now, and after Andy's rewrite = the Mac release sign-off).
+- CCMac's Mac gate 14 on the pair (b18805bb on the Mac, LOCAL there): all green but one near-zero pin; three
+  tooling items fixed here the same day: `make_corpus.sh` returned the last file's grep status under pipefail
+  (macOS abort; the regenerated lists add the 5 fixtures since the last regeneration -> core 165, the Mac's
+  count; load gate 165/165 both compilers, 0 changed vs the 160-deck record, records at c14069bc from the clean
+  worktree), the sharded runner's memory/cpu probes get a Darwin branch (res bfcc8b2), tSessionModes' fex pin
+  AbsTol 0 -> 1e-18 (same commit).  Runner quirk noted, not fixed: `-j 2` on one small class makes an empty
+  second shard and exits 1 on "NO RESULTS".  Freeze push list after Dave's word: macos 4c24448f 97edc34b + this
+  commit; resources 57144eb c75157a bfcc8b2; CCMac's b18805bb from the Mac.

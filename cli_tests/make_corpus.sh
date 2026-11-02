@@ -12,7 +12,10 @@ macos=$(cd "$here/.." && pwd)
 res=${MACOS_RESOURCES:-$(cd "$macos/../MACOS_resources" && pwd)}
 sandbox=${MACOS_SANDBOX:-$HOME/dev/MACOS_sandbox}
 # a prescription declares elements; autoconf templates (giza/*.in) and the like do not
-is_rx() { while IFS= read -r f; do grep -q -m1 -E '^[[:space:]]*(nElt|Element)[[:space:]]*=' "$f" 2>/dev/null && echo "$f"; done; }
+# (the function returns 0 whatever the LAST file was: under `set -o pipefail` its status is
+#  the pipeline's, and a non-prescription sorted last aborted the script on macOS before
+#  corpus_core.txt was written -- CCMac's Mac gate 14, 2026-11-02)
+is_rx() { while IFS= read -r f; do grep -q -m1 -E '^[[:space:]]*(nElt|Element)[[:space:]]*=' "$f" 2>/dev/null && echo "$f"; done; return 0; }
 {
   (cd "$macos" && git ls-files -- '*.in' | sed "s|^|$macos/|")
   (cd "$res"   && git ls-files -- '*.in' | sed "s|^|$res/|")
