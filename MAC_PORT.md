@@ -94,16 +94,12 @@ PYTHONPATH=<clone>/MACOS_resources/pymacos/src \
   other machine **run `cli_tests/make_corpus.sh` first** (it rebuilds the lists
   from the local tree and resolves `MACOS_RESOURCES` as the sibling clone, so
   clone both repos side by side).
-  - **macOS gotcha (gate 14):** `make_corpus.sh` has `set -euo pipefail`, and its
-    `is_rx()` helper ends each pipeline with `grep -q` that returns nonzero when
-    the last (sorted) file has no `nElt`/`Element` line — so on macOS the script
-    aborts after writing `corpus_committed.txt` but **before** rebuilding
-    `corpus_core.txt`, leaving core the stale committed Linux copy. After running
-    it, regenerate core by hand (and confirm it resolves to your clone, 165 decks
-    on Mac): `grep -E '/ZGD_test_files/|/docs/macos-manual/|/tests/Rx/|/GMI/test_ff/'
-    corpus_committed.txt | grep -v '/tst_nzern_conic\.in$' > corpus_core.txt`.
-    (Real fix pending in the tool: `|| true` on the is_rx grep, or drop pipefail
-    around it — it is ordering-dependent and can bite Linux too.)
+  - It runs to its last line and prints `core: 165` on macOS since `3df6b4c9`
+    (2026-11-02). Before that its `is_rx()` helper returned the status of whatever
+    file sorted last under `set -o pipefail`, and on a Mac the script aborted
+    after `corpus_committed.txt` and before `corpus_core.txt` (gate 14's finding,
+    the re-check's confirmation in Part 2). If an older checkout shows that abort,
+    update it; do not hand-build the core list.
 - **BSD vs GNU in test journals.** A `cli_tests/cmd/*.jou` that shells out with
   `sed -i -e` (GNU form) fails on BSD/macOS sed (`sed -i '' -e` is the Mac
   form). One journal (`OBS_POLYGON.jou`) hits this.
