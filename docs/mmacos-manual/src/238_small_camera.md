@@ -1,6 +1,6 @@
 ### `small_camera`: the small dedicated imager: a Cassegrain with a refractive field corrector
 
-A single-purpose camera whose telescope and instrument are one design: two mirrors, a corrector behind the primary's hole, a filter and one detector.  The relay's power is part of the camera's focal length.  That is what sets this family apart from an observatory front end feeding a `Bench` (the mmacos manual's chapter 2 thread).
+A single-purpose remote sensing camera whose telescope and instrument are one design: two mirrors, a corrector behind the primary's hole, a filter and one detector.  The relay's power is part of the camera's focal length.  That is what sets this family apart from an observatory front end feeding a `Bench` (the mmacos manual's chapter 2 thread).
 
 The worked case is the deck beside the runner, `small_camera.in`: a 350 mm, f/10 Ritchey–Chrétien imager with a 2048-pixel line array of 13 µm pixels (3.7 µrad per pixel, a 0.44° field) and a 500–900 nm band.  These design values are the runner's defaults, and the deck is checked against them.
 
@@ -39,7 +39,7 @@ out = small_camera();
 
 ![](media/p2_small_camera_fig.png)
 
-**FIGURE 64** RMS wavefront error (log scale) and distortion against field for the small dedicated imager: the deck small_camera.in in its matched catalog glasses at 500, 700 and 900 nm; the camera re-designed from its spec; and the bare Ritchey-Chretien without its corrector (`small_camera_field.png`).
+**FIGURE 64** The small dedicated imager. Top: the deck small_camera.in drawn from the side by macos.view_rx, with the on-axis bundle (green) and the two field-edge bundles at +/-0.217 deg (blue, orange): the source plane, the secondary and its spider plane, the primary, and the corrector behind it. Middle: behind the primary, the corrector, the filter and the detector, where the edge bundles land 13.5 mm off axis. Bottom: RMS wavefront error (log scale) and distortion against field for the deck in its matched catalog glasses at 500, 700 and 900 nm, the camera re-designed from its spec, and the bare Ritchey-Chretien without its corrector (`small_camera_field.png`).
 
 **The number it reproduces.** As shipped, the deck's worst RMS at 700 nm is %pin:p2_small_camera_rms700% waves, at the edge of its 0.44 deg field.  Re-designed from its spec (D 350 mm, f 3500 mm, 500-900 nm), the camera's worst RMS over the band and the field is %pin:p2_small_camera_merit% waves, and at 700 nm the pixel samples the image at Q = lambda N / p = %pin:p2_small_camera_q700%, under Nyquist by design.
 
