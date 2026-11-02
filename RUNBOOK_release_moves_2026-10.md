@@ -40,8 +40,10 @@ each repo (amended 2026-10-21, reviewed in `RELEASE_EXCLUSIONS_REVIEW.md`).
 > written here.
 >
 > **ANNOUNCED 2026-11-02 (Dave to the group, `DRAFT_email_group_done_for_now.md`): steps 1 and 2 of the room's
-> order are DONE on our side.**  The freeze pair is macos `3c5018de` + MACOS_resources `e66e2c8` on `dev-candidate`
-> (both on origin, pushed 2026-11-02 evening; the morning's `0984cd34` + `ef2d7f9` is CCMac's gate-14 pair).  Nothing further is pushed to either public repository until Andy announces the redo complete;
+> order are DONE on our side.**  The freeze is the tip of `dev-candidate` in both repositories at the announcement; its code and
+> library content is macos `3c5018de` + MACOS_resources `e66e2c8` (pushed 2026-11-02 evening; the morning's
+> `0984cd34` + `ef2d7f9` is CCMac's gate-14 pair), and any commit above those on the branch is a line of this
+> runbook or of the exclusions review, process files that the strip removes from `main`.  Nothing further is pushed to either public repository until Andy announces the redo complete;
 > work continues locally and in the private repositories (`ajax147/macos-local`, `ajax147/MACOS_resources-local`
 > as history-free snapshots of `dev-candidate`; `ajax147/MACOS_private` for program-specific content).  The three
 > published PDFs at `docs/` (`macosMan.pdf` 244 pp, `macosCmdRef.pdf` 120 pp, `mmacosMan.pdf` 146 pp, the last
