@@ -1,0 +1,117 @@
+# Section 4, Example Light Source, the second NEW tutorial: the Cassegrain turned beam projector (zsourc),
+# a diverging source (zSource=-0.1 from ChfRayPos z=-1, so the point source sits at z=-1.1, Figure 16) whose
+# Aperture is now an angle.  Dave 2026-10-19: regenerate the NEW tutorials as plain dialogs.  The source answers
+# are 3.2's.  Differences from 3.2: the current dialog adds the base-units prompt (answered none, as the
+# Cassegrain tutorial does; the engine then prints 'Unknown units, unitless operation assumed'); the wavelength
+# and grid-point defaults read 6.328E-07 and 256 (3.2: 6.0E-07 and 65); the yGrid default is 0,-1,0; and SHOW 0
+# no longer lists nElt (3.2's prescription block ended 'nElt= 6').  3.2 printed only the source dialog and named
+# none of the six elements, so they are setup here (not printed): five flat Reference surfaces at z=0.15, 0.5,
+# 1.0, 1.5, 2.0 and a flat FocalPlane at z=3.0 (the stations of Figure 16's axis), plus the output frame; the
+# OPD at the focal plane is the one trace pin (rays and mean path; the elements are passive).
+cd $TMP
+# TRANSCRIPT: s04_zsourc upto=Enter\sElement\s+1\sData
+new
+zsourc
+0,0,1
+0,0,-1
+-0.1
+1
+0
+none
+1d-3
+1
+Circular
+0.1076
+25
+-1,0,0
+0,-1,0
+6
+# TRANSCRIPT-OFF
+ref0.15
+Reference
+Flat
+0,0,0.15
+0,0,0.15
+0,0,1
+no
+0
+1d22
+Geometric
+no
+
+ref0.5
+Reference
+Flat
+0,0,0.5
+0,0,0.5
+0,0,1
+no
+0
+1d22
+Geometric
+no
+
+ref1.0
+Reference
+Flat
+0,0,1.0
+0,0,1.0
+0,0,1
+no
+0
+1d22
+Geometric
+no
+
+ref1.5
+Reference
+Flat
+0,0,1.5
+0,0,1.5
+0,0,1
+no
+0
+1d22
+Geometric
+no
+
+ref2.0
+Reference
+Flat
+0,0,2.0
+0,0,2.0
+0,0,1
+no
+0
+1d22
+Geometric
+no
+
+fp
+FocalPlane
+Flat
+0,0,3
+0,0,3
+0,0,1
+no
+0
+1d22
+Geometric
+no
+
+1,0,0
+0,1,0
+# TRANSCRIPT: s04_zsourc_show
+show
+0
+# TRANSCRIPT-OFF
+opd 6
+/null
+# EXPECT: File zsourc\.in being created\.
+# EXPECT: Enter number of elements\s*\[no default\]: 6\s+Enter Element\s+1 Data:
+# EXPECT: Enter number of element \(0=aperture\): \[0\]: 0[\s\S]*?ChfRayDir=\s+0\.0E\+00\s+0\.0E\+00\s+1\.0E\+00\s+ChfRayPos=\s+0\.0E\+00\s+0\.0E\+00\s+-1\.0E\+00\s+zSource=-1\.0000\d*E-01
+# EXPECT: Enter number of element \(0=aperture\): \[0\]: 0[\s\S]*?Wavelen=1\.0E-03[\s\S]*?Aperture=1\.076E-01[\s\S]*?GridType=\s+Circular\s+nGridpts=\s+25\s+xGrid=\s+-1\.0E\+00\s+0\.0E\+00\s+0\.0E\+00\s+yGrid=\s+0\.0E\+00\s+-1\.0E\+00\s+0\.0E\+00
+# EXPECT: OPD: nPassRays =\s+441,\s+DAvgCumL =\s+40\.028\d*D-01
+# EXPECT-NOT: values expected
+# EXPECT-NOT: Unknown (grid|surface|element|command)
+# EXPECT-NOT: forrtl

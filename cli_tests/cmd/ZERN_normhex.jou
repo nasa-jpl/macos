@@ -1,0 +1,42 @@
+# PLAN_CONSOLIDATION 1.2 (uu), Dave 2026-10-20 (repair): `ZernType= NormHex` opened -- ZernType_MaxMode
+#   was 0 ('implemented ???'), so every nZernCoef= on a NormHex surface was refused at load, although
+#   ZerntoMon4 (hzdef.inc) is called by all three dispatch chains.  The 45 hzdef.inc polynomials were first
+#   checked against an independent construction (cli_tests/tools/hzdef_check.py: the Noll circle Zernikes
+#   Gram-Schmidt-orthonormalized over the unit hexagon, Mahajan & Dai JOSA A 2007; worst mode 38, 8e-12 of its
+#   largest coefficient; the vertices are on +-xMon -- the vertex-on-yMon set differs in 29 modes).  The
+#   table's 313 literals carried no exponent letter and compiled as REAL(4) (1.8e-6 relative error, mode 38);
+#   they are d0 now.  NormHex takes 45 modes (ZernType_MaxMode 45).
+# Legs: (1) tst_zern_normhex.in -- a flat mirror, lMon 1, hexagon mode 10 = 1e-4 m -- loads; SRT at (0.5, 0)
+#   meets it at sag 4.1219281000687e-05 m = 1e-4 * 4 sqrt(70/103) (0.5)^3 cos(0), Mahajan & Dai's closed form
+#   (the vertex-on-yMon mode 10 would give 5.2705e-05); at (0, 0.5) cos(3A) = 0 and the ray meets z = 0.
+#   (2) SAVE writes `ZernType= NormHex`, the reload traces the same ray to the same digit.  (3) Mode 46 is
+#   refused, sparse and dense.  Pre-fix binary: leg 1's load is refused ('outside 1 .. 0') -> red.
+# COPY: $ROOT/ZGD_test_files/tst_zern_normhex.in
+cd $TMP
+! perl -pe 's/^ZernModes= 10$/ZernModes= 46/' tst_zern_normhex.in > hex46.in
+! perl -pe 's/^nZernCoef= 1$/nZernCoef= 46/; s/^ZernModes= 10\n//; s/^ZernCoef= 1e-4$/ZernCoef= 0/' tst_zern_normhex.in > hexdense46.in
+! grep -c "^ZernModes= 46" hex46.in; grep -c "^nZernCoef= 46" hexdense46.in
+old tst_zern_normhex.in
+srt
+2
+0.5,0
+srt
+2
+0,0.5
+save hexsaved
+! grep -c "ZernType=  NormHex" hexsaved.in
+old hexsaved.in
+srt
+2
+0.5,0
+old hex46.in
+old hexdense46.in
+# EXPECT: ^\s*1\s*\n\s*1\s*$
+# EXPECT: tst_zern_normhex\.in\s+being loaded(?:(?!being loaded)[\s\S])*?0\.5,0[\s\S]*?Element\s+0 \(InputRay\s*\) to Element\s+1 \(Z\s*\):[\s\S]*?Segment Length=\s+5\.0000412192810\d*D\+00
+# EXPECT: 0,0\.5[\s\S]*?Element\s+0 \(InputRay\s*\) to Element\s+1 \(Z\s*\):[\s\S]*?Segment Length=\s+5\.00000000000000D\+00
+# EXPECT: grep -c "ZernType=  NormHex" hexsaved\.in\s+1\s
+# EXPECT: hexsaved\.in\s+being loaded(?:(?!being loaded)[\s\S])*?0\.5,0[\s\S]*?Element\s+0 \(InputRay\s*\) to Element\s+1 \(Z\s*\):[\s\S]*?Segment Length=\s+5\.0000412192810\d*D\+00
+# EXPECT: hex46\.in\s+being loaded(?:(?!being loaded)[\s\S])*?Rx load refused: ZernModes \(elt\s+1\): a mode is outside 1 \.\.\s+45 \(NormHex has\s+45 modes\)
+# EXPECT: hexdense46\.in\s+being loaded(?:(?!being loaded)[\s\S])*?is outside 1 \.\.\s+45
+# EXPECT-NOT: tst_zern_normhex\.in\s+being loaded(?:(?!being loaded)[\s\S])*?is outside 1 \.\.
+# EXPECT-NOT: forrtl

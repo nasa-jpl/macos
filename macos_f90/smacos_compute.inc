@@ -56,7 +56,7 @@ C
 
 	CHARACTER(len=MacosCharLen) :: cmd,CARG(9)
         REAL*8 DARG(9)
-        INTEGER IARG(9),idof,ie,je,id,ia,iz,ias,i,j,k,m_err_rtn
+        INTEGER IARG(9),idof,ie,je,id,ia,iz,ias,i,j,k,m_err_rtn,nCen
         LOGICAL LARG
         SREAL RARG(9)
 	Integer, save :: entry_count=0
@@ -379,7 +379,7 @@ C Apply perturbations in ptbArr to a selected set of DOFs
      &                     varZernArr(1:1), ! place holder
      &                     ptbArr(1:1), ! place holder
      &                     varAsphArr(ias+1:ias+n_optAsphArr(ie)),
-     &                     ptbArr(ia+1:ia+n_optZernArr(ie)))
+     &                     ptbArr(ia+1:ia+n_optAsphArr(ie)))  ! was n_optZernArr: an empty slice when the element has no Zernike DOF (TO, 2026-10-01)
 	    ias=ias+n_optAsphArr(ie)
 	    ia=ia+n_optAsphArr(ie)
 	  End If
@@ -419,7 +419,15 @@ C Compute OPD
 
 C Trace chief ray or whole beam when BEAM_TARGET
 	  If (opt_tgt_m==BEAM_TARGET) Then
-	    if (OptBeam_m%ifOptBeamDir .OR. OptBeam_m%ifOptBeamPos) then
+	    if (OptBeam_m%ifOptBeamPos .AND.
+     &          OptBeam_m%ifBeamCentroid) then
+	      ! the centroid needs the whole beam at beamPosElt (2026-10-03)
+	      cmd='GBS'
+	      IARG(1)=OptBeam_m%beamPosElt
+              CALL MACOS_OPS(cmd,CARG,DARG,IARG,LARG,RARG,
+     &                       OPDMat,SpotMat,WFErms,PixMat)
+	    else if (OptBeam_m%ifOptBeamDir .OR.
+     &               OptBeam_m%ifOptBeamPos) then
 	      cmd='CRT'
 	      IARG(1)=optElt_m
               CALL MACOS_OPS(cmd,CARG,DARG,IARG,LARG,RARG,
@@ -473,9 +481,24 @@ C Get chief ray direction at beamDirElt
             beamDir_m(1:3)=ChfRayDirAtElt(1:3)
           end if
 
-C Get chief ray position at beamPosElt
+C Get chief ray position at beamPosElt -- or, with OptBeamCentroid= Y,
+C the centroid of the rays that pass the whole train (2026-10-03).
           if (OptBeam_m%ifOptBeamPos) then
             beamPos_m(1:3)=ChfRayPosAtElt(1:3)
+            if (OptBeam_m%ifBeamCentroid) then
+              nCen=0; beamPos_m(1:3)=0d0
+              Do j=2,nRay
+                if (LRayOK(j) .and. LRayPass(j)) then
+                  nCen=nCen+1
+                  beamPos_m(1:3)=beamPos_m(1:3)+RayPosAtElt(1:3,j)
+                end if
+              End Do
+              if (nCen>0) then
+                beamPos_m(1:3)=beamPos_m(1:3)/DBLE(nCen)
+              else
+                beamPos_m(1:3)=ChfRayPosAtElt(1:3)
+              end if
+            end if
           end if
 
 C Get beam size at beamSize at beamSizeElt

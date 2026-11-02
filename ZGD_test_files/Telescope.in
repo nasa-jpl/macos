@@ -1,0 +1,224 @@
+
+% ---------------------------------------------------------------------------------------
+% Source Definition
+% ---------------------------------------------------------------------------------------
+
+        ChfRayDir=  0.0E+00  0.0E+00  1.0E+00
+        ChfRayPos=  0.0E+00  0.0E+00  -7.0E+01
+          zSource=1.0E+21
+
+        WaveUnits=  none
+
+           IndRef=1.0E+00
+           Extinc=0.0E+00
+          Wavelen=1.628E-04
+             Flux=1.0E+00
+
+         Aperture=2.6E+01
+         Obscratn=0.0E+00
+
+         GridType=  Circular
+         nGridpts=  128
+            xGrid=  1.0E+00  0.0E+00  0.0E+00
+            yGrid=  0.0E+00  1.0E+00  0.0E+00
+
+           ApStop=  0.0E+00  0.0E+00  -5.8061126679831432E-06
+
+       OptRayGrid=  32
+
+% ---------------------------------------------------------------------------------------
+% Element Definitions
+% ---------------------------------------------------------------------------------------
+
+             nElt=  9
+
+
+             iElt=  1
+          EltName=  sm_obs
+          Element=  Obscuring
+          Surface=  Conic
+            KrElt=-1.0E+22
+            KcElt=0.0E+00
+           psiElt=  0.0E+00  0.0E+00  1.0E+00
+           VptElt=  0.0E+00  0.0E+00  -5.8125E+01
+           RptElt=  0.0E+00  0.0E+00  -5.8125E+01
+           IndRef=1.0E+00
+           Extinc=1.0E+22
+            nCoat=  0
+             xObs=  7.0710678118654757E-01  7.0710678118654757E-01  0.0E+00
+             nObs=  3
+          ObsType=  Circle
+           ObsVec=  3.3374999999999999E+00  0.0E+00  0.0E+00
+          ObsType=  Rectangle
+           ObsVec=  -3.125E-02  3.125E-02  -1.3E+01  1.3E+01
+          ObsType=  Rectangle
+           ObsVec=  -1.3E+01  1.3E+01  -3.125E-02  3.125E-02
+           ApType=  Circular
+            ApVec=  1.3E+01  0.0E+00  0.0E+00
+         PropType=  Geometric
+             zElt=1.0E+22
+          nECoord= -6
+
+             iElt=  2
+          EltName=  pm_obs
+          Element=  Obscuring
+          Surface=  Conic
+            KrElt=-1.44E+02
+            KcElt=-1.0E+00
+           psiElt=  0.0E+00  0.0E+00  -1.0E+00
+           VptElt=  0.0E+00  0.0E+00  -5.0E-01
+           RptElt=  0.0E+00  0.0E+00  -5.0E-01
+           IndRef=1.0E+00
+           Extinc=1.0E+22
+            nCoat=  0
+             xObs=  -1.0E+00  0.0E+00  0.0E+00
+             nObs=  0
+           ApType=  Circular
+            ApVec=  1.2E+01  0.0E+00  0.0E+00
+         PropType=  Geometric
+             zElt=1.0E+22
+          nECoord= -6
+
+             iElt=  3
+          EltName=  pm
+          Element=  Reflector
+          Surface=  Conic
+            KrElt=-1.44E+02
+            KcElt=-1.0E+00
+           psiElt=  0.0E+00  0.0E+00  -1.0E+00
+           VptElt=  0.0E+00  0.0E+00  0.0E+00
+           RptElt=  0.0E+00  0.0E+00  0.0E+00
+           IndRef=1.0E+00
+           Extinc=1.0E+22
+            nCoat=  0
+             nObs=  0
+           ApType=  None
+         PropType=  Geometric
+             zElt=1.0E+22
+       UpdateTElt=  Y
+          nECoord=  6
+             TElt=  0.0E+00  1.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00
+                    1.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00
+                    0.0E+00  0.0E+00  -1.0E+00  0.0E+00  0.0E+00  0.0E+00
+                    0.0E+00  0.0E+00  0.0E+00  0.0E+00  1.0E+00  0.0E+00
+                    0.0E+00  0.0E+00  0.0E+00  1.0E+00  0.0E+00  0.0E+00
+                    0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  -1.0E+00
+
+             iElt=  4
+          EltName=  sm
+          Element=  Reflector
+          Surface=  Conic
+            KrElt=-3.9622689999999999E+01
+            KcElt=-2.297880047E+00
+           psiElt=  0.0E+00  0.0E+00  -1.0E+00
+           VptElt=  0.0E+00  0.0E+00  -5.625E+01
+           RptElt=  0.0E+00  0.0E+00  -5.625E+01
+           IndRef=1.0E+00
+           Extinc=1.0E+22
+            nCoat=  0
+             nObs=  0
+           ApType=  None
+         PropType=  Geometric
+             zElt=1.0E+22
+          nECoord= -6
+
+             iElt=  5
+          EltName=  f_window
+          Element=  Refractor
+          Surface=  Conic
+            KrElt=-1.0E+22
+            KcElt=0.0E+00
+           psiElt=  0.0E+00  0.0E+00  1.0E+00
+           VptElt=  0.0E+00  0.0E+00  1.85E+01
+           RptElt=  0.0E+00  0.0E+00  1.85E+01
+           IndRef=1.5150889999999999E+00
+           Extinc=0.0E+00
+            nCoat=  0
+             nObs=  0
+           ApType=  None
+         PropType=  Geometric
+             zElt=1.0E+22
+          nECoord= -6
+
+             iElt=  6
+          EltName=  b_window
+          Element=  Refractor
+          Surface=  Conic
+            KrElt=-1.0E+22
+            KcElt=0.0E+00
+           psiElt=  0.0E+00  0.0E+00  1.0E+00
+           VptElt=  0.0E+00  0.0E+00  1.9E+01
+           RptElt=  0.0E+00  0.0E+00  1.9E+01
+           IndRef=1.0E+00
+           Extinc=0.0E+00
+            nCoat=  0
+             nObs=  0
+           ApType=  None
+         PropType=  Geometric
+             zElt=1.0E+22
+          nECoord= -6
+
+             iElt=  7
+          EltName=  detector
+          Element=  Return
+          Surface=  Conic
+            KrElt=-1.0E+18
+            KcElt=0.0E+00
+           psiElt=  0.0E+00  0.0E+00  1.0E+00
+           VptElt=  0.0E+00  0.0E+00  2.0749757540000001E+01
+           RptElt=  0.0E+00  0.0E+00  2.0749757540000001E+01
+           IndRef=1.0E+00
+           Extinc=1.0E+22
+            nCoat=  0
+             nObs=  0
+           ApType=  None
+         PropType=  Geometric
+             zElt=1.0E+22
+          nECoord= -6
+
+             iElt=  8
+          EltName=  exit_pup
+          Element=  Return
+          Surface=  Conic
+            KrElt=-9.1480947600787147E+01
+            KcElt=0.0E+00
+           psiElt=  0.0E+00  0.0E+00  1.0E+00
+           VptElt=  0.0E+00  0.0E+00  -7.0731190060787142E+01
+           RptElt=  0.0E+00  0.0E+00  -7.0731190060787142E+01
+           IndRef=1.0E+00
+           Extinc=1.0E+22
+            nCoat=  0
+             nObs=  0
+           ApType=  None
+         PropType=  FarField
+             zElt=9.1480947600787147E+01
+          nECoord= -6
+
+             iElt=  9
+          EltName=  detector
+          Element=  FocalPlane
+          Surface=  Flat
+            KrElt=-1.0E+22
+            KcElt=0.0E+00
+           psiElt=  0.0E+00  0.0E+00  1.0E+00
+           VptElt=  0.0E+00  0.0E+00  2.0749757540000001E+01
+           RptElt=  0.0E+00  0.0E+00  2.0749757540000001E+01
+           IndRef=1.0E+00
+           Extinc=1.0E+22
+            nCoat=  0
+             nObs=  0
+           ApType=  None
+         PropType=  Geometric
+             zElt=1.0E+22
+          nECoord= -6
+
+% ---------------------------------------------------------------------------------------
+% Output Coordinate System Definition
+% ---------------------------------------------------------------------------------------
+
+         nOutCord=  5
+             Tout=  1.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00
+                    0.0E+00  1.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00
+                    0.0E+00  0.0E+00  0.0E+00  1.0E+00  0.0E+00  0.0E+00  0.0E+00
+                    0.0E+00  0.0E+00  0.0E+00  0.0E+00  1.0E+00  0.0E+00  0.0E+00
+                    0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  0.0E+00  1.0E+00

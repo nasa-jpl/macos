@@ -1,0 +1,16 @@
+# PREAD: a .pert file of one 6-vector per element (rotations then translations, GLOBAL), here a 1e-4 rad
+# tilt of element 3 about x, applied as a PERTURB of each element, then OPD (cmdref: Perturbation).  The
+# file is written with a `!` printf into $TMP; the Cassegrain deck is a COPY there.  Unperturbed RMS is
+# 1.29e-12 (OPD.jou); the tilt gives 3.566e-11 (PERTURB.jou's 1e-3 rad gives 3.70e-9).
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in
+cd $TMP
+! printf '0 0 0 0 0 0\n0 0 0 0 0 0\n1e-4 0 0 0 0 0\n0 0 0 0 0 0\n0 0 0 0 0 0\n' > $TMP/Cassegrain.pert
+old $DECK
+pread
+$TMP/Cassegrain.pert
+opd 5
+/null
+# EXPECT: File \S+/Cassegrain\.pert read\.
+# EXPECT: RMS OPD error is\s+-?\d\.\d+D-(1\d|[2-9]\d)
+# EXPECT-NOT: not compatible with current system
+# EXPECT-NOT: forrtl

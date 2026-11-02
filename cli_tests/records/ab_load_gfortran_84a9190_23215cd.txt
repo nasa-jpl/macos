@@ -1,0 +1,3 @@
+# A/B: pre load_gfortran_84a9190.csv  post load_gfortran_23215cd.csv  (114 decks in common, 0 only in pre, 0 only in post)
+# columns compared: status nelt npass lost rms pv avg roundtrip
+# 0 decks moved

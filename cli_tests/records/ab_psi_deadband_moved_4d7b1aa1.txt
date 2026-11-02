@@ -1,0 +1,21 @@
+# The psiElt= dead band (macos 4d7b1aa1, PLAN_CONSOLIDATION section 4 item 4 / CCMac's Mac gate): the core A/B decks
+# that MOVED, pre = e2c93d0b, post = 4d7b1aa1, load gate (opd nElt, model 256, 160 decks).  The SAME 14 on both
+# compilers; rms / P-V / avg at round-off only (avg in the 11th-13th digit, rms unchanged except two decks at
+# 1e-14..1e-16) -- status, nElt, nPass and lost unchanged on every deck.  Mechanism: a psiElt= written to 17 digits
+# is within 64 ulp of unit and is now kept as written instead of re-unitized at load (every mover carries at least
+# one such line: the census is in the commit); a 1-ulp change of a surface normal.  The same rule as OptBeamDir=
+# (dfc2b476), made for the SAVE generations that walked an ulp per load on arm64.
+/home/dcr/dev/macos/docs/macos-manual/examples/AOExample.in  avg 5.4933923594840104D-04 -> 5.4933923594114318D-04
+/home/dcr/dev/macos/docs/macos-manual/examples/CornerCube.in  avg -1.8610573888944273D-05 -> -1.8610573888968946D-05
+/home/dcr/dev/macos/docs/macos-manual/examples/emitted/CornerCube.in  avg -1.8610573889516312D-05 -> -1.8610573888944273D-05
+/home/dcr/dev/macos/docs/macos-manual/examples/emitted/HOEExample.in  rms 7.057822903D-16 -> 6.903706658D-16  pv 3.552713679D-15 -> 4.440892099D-15  avg -1.6425825489289221D-16 -> -1.0565801260677931D-16
+/home/dcr/dev/macos/docs/macos-manual/examples/HOEExample.in  rms 6.903706658D-16 -> 7.110016968D-16  pv 4.440892099D-15 -> 3.552713679D-15  avg -1.0565801260677931D-16 -> 1.6588603940083979D-15
+/home/dcr/dev/MACOS_resources/mmacos/tests/Rx/Rx_CornerCube.in  avg -1.8610573888944273D-05 -> -1.8610573888968946D-05
+/home/dcr/dev/MACOS_resources/pymacos/tests/Rx/e2e_pie.in  rms 3.446945557D-09 -> 3.446945567D-09  pv 1.639129366D-08 -> 1.639128655D-08  avg -2.9308298862007996D-09 -> -2.9308290022861072D-09
+/home/dcr/dev/MACOS_resources/pymacos/tests/Rx/opt_example.in  avg 2.9495515906134983D-05 -> 2.9495515902397606D-05
+/home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_Mask_Parabolas_glb.in  rms 2.934418196D-14 -> 2.727818388D-14  avg -1.0135008070914985D-14 -> -1.8724692732712675D-14
+/home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_Roll180Frame.in  avg 5.0348421067802711D-08 -> 5.0348421093123590D-08
+/home/dcr/dev/macos/ZGD_test_files/e2e_pie.in  rms 3.446945557D-09 -> 3.446945567D-09  pv 1.639129366D-08 -> 1.639128655D-08  avg -2.9308298862007996D-09 -> -2.9308290022861072D-09
+/home/dcr/dev/macos/ZGD_test_files/opt_example_asph.in  avg -1.6568502779356503D+01 -> -1.6568502779356546D+01
+/home/dcr/dev/macos/ZGD_test_files/opt_example_constrained.in  avg 2.9495515906134983D-05 -> 2.9495515902397606D-05
+/home/dcr/dev/macos/ZGD_test_files/opt_example.in  avg 2.9495515906134983D-05 -> 2.9495515902397606D-05

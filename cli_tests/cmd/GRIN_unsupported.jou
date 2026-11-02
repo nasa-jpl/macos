@@ -1,0 +1,11 @@
+# A GradInd= model the Refractor cannot integrate (macos 2026-10-10, PLAN 1.1b 3c): only
+# model 5 is implemented, and every other model returned rays built from UNINITIALISED
+# integrator state.  tst_save_keys.in (GradInd 6, a SAVE-keys fixture "not meant to
+# trace") traced to NaN on both compilers.  Now the rays are LOST by name (RayStat_Undef,
+# 'GRIN model not implemented'), counted, and ONE note prints.  Pre-fix: NaN -- red.
+old $ROOT/ZGD_test_files/tst_save_keys.in
+opd 10
+/null
+# EXPECT: \*\* GradInd= model\s+6 is not implemented \(only 5 is\): its rays are LOST
+# EXPECT: Rays through a GradInd= model that is not implemented \(lost\):\s+61
+# EXPECT-NOT: NaN

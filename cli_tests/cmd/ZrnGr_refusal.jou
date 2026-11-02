@@ -1,0 +1,9 @@
+# nZernCoef= with no ZernType= declared (macos 2026-10-10).  On a surface that carries
+# no Zernike terms the load is REFUSED and the refusal names the key and the element;
+# on a Zernike-carrying surface (PLAN item 7) the ANSI default applies and the deck
+# loads.  The pre-fix engine refused BOTH silently (ZernType_MaxMode(0), out of the
+# array): red on it.
+old $ROOT/ZGD_test_files/tst_nzern_conic.in
+old $ROOT/ZGD_test_files/tst_nzern_no_type.in
+# EXPECT: \*\* Rx load refused: nZernCoef \(elt\s+1\): no ZernType= declared before it
+# EXPECT: tst_nzern_no_type\.in\s+being loaded\.[\s\S]*Default used for ZernType\(\s+2\)[\s\S]*Tracing rays past\s+6 elements

@@ -1,0 +1,99 @@
+# Section 4, "Reflective Non-Sequential Surfaces": NEW entering the two NSReflector faces Face1 and Face2
+# of the corner-cube discussion (Figure 25: a roof of two flat faces whose order of strike depends on the
+# ray).  The answers to the two face dialogs are 3.2's (vertex and rotation point 0,0,0, principal axes
+# -.7071,0,-.7071 and .7071,0,-.7071, zElt 1d22, Geometric, index 1d0).  3.2 printed only the two face
+# dialogs; NEW needs a complete deck, so the source (rays along +z toward the roof, the chief ray offset
+# 1d-5 off the ridge as in examples/CornerCube.in), the sequential Reference before the faces and the
+# FocalPlane after them are entered as setup and not printed.  Differences from 3.2's dialog: the
+# current dialog adds the glass-type prompt (answered with its default, FixedIndex), prints the element
+# back and asks "Is this correct?" (default YES); the element and surface type lists are longer;
+# psiElt is stored normalized (0.70711, not .7071).  The roof returns every ray to the reference plane
+# with the same path: the OPD at the focal plane is at the round-off floor.
+cd $TMP
+new
+Roof
+0,0,1
+1d-5,1d-5,-10
+1d22
+1
+0
+none
+1d-6
+1
+Circular
+1
+11
+1,0,0
+0,1,0
+4
+RefSrf
+Reference
+Flat
+0,0,-3.5
+0,0,-3.5
+0,0,1
+
+
+0
+Geometric
+
+
+# TRANSCRIPT: s04_nonseq upto=Enter\sElement\s+4\sData
+Face1
+NSReflector
+Flat
+0,0,0
+0,0,0
+-.7071,0,-.7071
+
+
+1d22
+Geometric
+
+
+1d0
+
+
+Face2
+NSReflector
+Flat
+0,0,0
+0,0,0
+.7071,0,-.7071
+
+
+1d22
+Geometric
+
+
+1d0
+
+
+# TRANSCRIPT-OFF
+FP
+FocalPlane
+Flat
+0,0,-3.5
+0,0,-3.5
+0,0,1
+
+
+0
+Geometric
+
+
+1,0,0
+0,1,0
+show
+2
+show
+3
+opd 4
+/null
+# EXPECT: File Roof\.in being created\.
+# EXPECT: EltName=\s+Face1\s+Element=\s+NSReflector\s+Surface=\s+Flat[\s\S]*?psiElt=\s+-7\.07106\d*E-01\s+0\.0E\+00\s+-7\.07106\d*E-01\s+VptElt=\s+0\.0E\+00\s+0\.0E\+00\s+0\.0E\+00[\s\S]*?IndRef=1\.0E\+00[\s\S]*?PropType=\s+Geometric\s+zElt=1\.0E\+22
+# EXPECT: EltName=\s+Face2\s+Element=\s+NSReflector\s+Surface=\s+Flat[\s\S]*?psiElt=\s+7\.07106\d*E-01\s+0\.0E\+00\s+-7\.07106\d*E-01\s+VptElt=\s+0\.0E\+00\s+0\.0E\+00\s+0\.0E\+00[\s\S]*?IndRef=1\.0E\+00[\s\S]*?PropType=\s+Geometric\s+zElt=1\.0E\+22
+# EXPECT: OPD: nPassRays =\s+60,\s+DAvgCumL =\s+13\.500\d*D\+00[\s\S]*?RMS OPD error is\s+\d\.\d+D-1[4-7]
+# EXPECT-NOT: values expected
+# EXPECT-NOT: Unknown (grid|surface|element|command)
+# EXPECT-NOT: forrtl

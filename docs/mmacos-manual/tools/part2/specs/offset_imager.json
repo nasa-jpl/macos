@@ -1,0 +1,43 @@
+{
+ "section": "10_telescopes",
+ "entry": "OUT = offset_imager();",
+ "knobs": {
+  "file": "offset_imager_params.m",
+  "from": "% ---- the rodgers3 challenge instance",
+  "to": "^\\s*P\\.clear_m "
+ },
+ "figure": "oi_s5_map.png",
+ "run": {
+  "from": "=+\\n\\s*S1 ",
+  "to": ""
+ },
+ "pins": [
+  {
+   "name": "s1max",
+   "pattern": "\\n\\s*s1\\s+(\\S+)\\s+\\S+\\s+\\S+",
+   "rule": "printed",
+   "format": "%.1f"
+  },
+  {
+   "name": "s1avg",
+   "pattern": "\\n\\s*s1\\s+\\S+\\s+(\\S+)\\s+\\S+",
+   "rule": "printed",
+   "format": "%.1f"
+  },
+  {
+   "name": "s3max",
+   "pattern": "\\n\\s*s3\\s+(\\S+)\\s+\\S+\\s+\\S+",
+   "rule": "printed",
+   "format": "%.1f"
+  },
+  {
+   "name": "s5max",
+   "pattern": "\\n\\s*s5\\s+(\\S+)\\s+\\S+\\s+\\S+",
+   "rule": "printed",
+   "format": "%.1f"
+  }
+ ],
+ "caption": "The S5 field map the default run draws (`oi_s5_map.png`): strict rms wavefront error at 11 x 11 points over the 20 x 20 degree box centered 22 degrees off axis, centroid reference; the triangle marks the worst field.",
+ "number": "The on-axis stage reproduces the challenge's record exactly: S1, the coaxial symmetric aspheres, reads %pin:p2_offset_imager_s1max% nm maximum and %pin:p2_offset_imager_s1avg% nm mean over the dense map, as in `challenges/rodgers3/t3/r3t_REPORT.md`. The offset stages do not: run with the template's defaults today, S3 ends at %pin:p2_offset_imager_s3max% nm against the record's 252.0 and S5 at %pin:p2_offset_imager_s5max% nm against 118.2 (and 45.4 nm for the 25-field re-solve). The record was made by `run_t3`, which pins the exit beam (0.1 degree) and runs 30 iterations a stage where the defaults run 12, but the two already part at S2, a focal-plane refit alone, so those differences are not shown to be the cause. Not diagnosed; the open questions list has it, and this page prints the run as it is.",
+ "prompt": "Using templates/10_telescopes/offset_imager, run the five-stage ladder for a 150 mm F/3.3 imager with a 15 x 15 degree box offset 22.5 degrees, walking the box open with oi_walk if a cold solve stalls, and report each stage's map maximum and clearance."
+}

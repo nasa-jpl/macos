@@ -1,0 +1,18 @@
+# MRESET to model 512, then reload and trace (cmdref: Session & Files).  MRESET re-allocates every model
+# array and unloads the prescription (STATUS says so); the run-limits banner shows the new size.  Until
+# 2026-10-16 the scratch re-allocation FAILED ("MACOS: allocate failed!") because two of its arrays were
+# missing from the preceding deallocate, and every scratch buffer silently kept the old model's size
+# (PLAN_CONSOLIDATION 1.2 (g); red on 6ccd86d).
+old $ROOT/docs/macos-manual/examples/Cassegrain.in
+mreset 512
+status
+old $ROOT/docs/macos-manual/examples/Cassegrain.in
+opd 5
+/null
+# EXPECT: Resetting MACOS model size
+# EXPECT: Diffraction grid size is\s+512 by\s+512
+# EXPECT: Must load optical data first: use NEW or OLD
+# EXPECT: Must load optical data first[\s\S]*?RMS OPD error is\s+-?\d\.\d+D-(1\d|[2-9]\d)
+# EXPECT-NOT: allocate failed
+# EXPECT-NOT: deallocate failed
+# EXPECT-NOT: forrtl

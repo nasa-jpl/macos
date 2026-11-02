@@ -1,0 +1,7 @@
+journal,kind,status,missed,dt
+s03_devices.jou,journal,pass,,2.7
+s03_ui.jou,journal,pass,,8.1
+s05_cass.jou,journal,pass,,19.6
+s05_cassxp.jou,journal,pass,,11.5
+s05_misc.jou,journal,pass,,11.6
+s06_ors_srs.jou,journal,pass,,10.2

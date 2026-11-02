@@ -1,0 +1,26 @@
+# GPERTURB: a rigid-body perturbation of an element GROUP (pymacos Rx_e5hex1, EltGrp= 5 9 10 11 12 13 declared
+# on elements 9-13), then the refusal on a deck with no group (cmdref: Perturbation).  A 1 urad tilt of the
+# group about x moves the focal-plane OPD from 3.622346888e-5 to 3.621855806e-5 mm.  The deck's segments read
+# GridFile= flat.txt.  Since PLAN_CONSOLIDATION 1.2 (f) (Dave's ruling; 2026-10-22) the fixture directory
+# carries one -- ZGD_test_files/flat.txt, an existing 256 x 256 zero grid, repurposed -- so the journal loads
+# the deck in place and stages nothing (it was staged from the e5_seg template; CCMac's Mac gate 2026-10-19
+# read 'File flat.txt does not exist' without it).  GridFile= resolves against the CLI's working directory,
+# not the deck's, hence the CD (GPERTURB writes nothing).  Red on the fixture without flat.txt.
+cd $RES/pymacos/tests/Rx
+old Rx_e5hex1.in
+opd 13
+/null
+gperturb
+9
+global
+1e-6,0,0
+0,0,0
+opd 13
+old $ROOT/docs/macos-manual/examples/Cassegrain.in
+gperturb
+3
+# EXPECT: RMS OPD error is\s+3\.62234\d*D-05 mm[\s\S]*?MACOS> gperturb[\s\S]*?RMS OPD error is\s+3\.62185\d*D-05 mm
+# (six figures: arm64 reads 3.622346865 against 3.622346888 here, CCMac's gate 3; the tilt moves the 5th figure)
+# EXPECT: No element group defined at element\s+3
+# EXPECT-NOT: does not exist -sub GridInit
+# EXPECT-NOT: forrtl

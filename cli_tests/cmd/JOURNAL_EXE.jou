@@ -1,0 +1,21 @@
+# JOURNAL / EXEcute: record a session to a .jou file, then replay it (cmdref: Session & Files)
+# JOUrnal toggles recording (READ_LOH journals per token: prompt answers included);
+# EXEcute (also LQW) replays a .jou through the command stack (give the STEM: .jou is appended, as JOUrnal does).  The replay must
+# re-run the load and the OPD and print a second RMS line.  The /null answers the
+# plot-device prompt (the first OPD of a session asks); the replay re-asks and the
+# journal carries the answer.
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in
+journal
+$TMP/rec_session
+old $DECK
+opd 3
+/null
+journal
+exe
+$TMP/rec_session
+# EXPECT: Writing journal file .*rec_session\.jou
+# EXPECT: Closing journal file \S*rec_session\.jou\.
+# (pre-fix the closing line printed stack garbage: JOU_LOH's file name was not SAVEd)
+# EXPECT: Reading from journal file
+# EXPECT: (RMS OPD error is[\s\S]*){2}
+# EXPECT-NOT: Couldn't find journal file

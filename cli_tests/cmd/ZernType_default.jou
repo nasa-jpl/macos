@@ -1,0 +1,16 @@
+# PLAN_CONSOLIDATION item 7 (Dave 2026-10-10): every Zernike-carrying surface defaults
+# to ZernType= ANSI whatever its element type.  Three twins (ZGD_test_files/
+# tst_zerndef_*.in): a ZrnGrData NS primary with ZernCoef mode 9 = 2e-7 m and NO type /
+# ANSI / Fringe.  The undeclared twin must trace EXACTLY as the ANSI one (RMS and P-V
+# printed identically); Fringe must differ.  Pre-change the undeclared twin traced as
+# the bare conic (ZernTypeL 0: its coefficients never reached the trace) -- red.
+old $ROOT/ZGD_test_files/tst_zerndef_none.in
+opd 6
+/null
+old $ROOT/ZGD_test_files/tst_zerndef_ansi.in
+opd 6
+old $ROOT/ZGD_test_files/tst_zerndef_fringe.in
+opd 6
+# EXPECT: tst_zerndef_none\.in[\s\S]*?RMS OPD error is\s+(\S+)[^\n]*\n\s*P-V OPD error is\s+(\S+)[\s\S]*?tst_zerndef_ansi\.in[\s\S]*?RMS OPD error is\s+\1\s[^\n]*\n\s*P-V OPD error is\s+\2\s
+# EXPECT: tst_zerndef_none\.in[\s\S]*?Default used for ZernType\(\s+2\)[\s\S]*?tst_zerndef_ansi\.in
+# EXPECT-NOT: tst_zerndef_ansi\.in[\s\S]*?RMS OPD error is\s+(\S+)[\s\S]*?tst_zerndef_fringe\.in[\s\S]*?RMS OPD error is\s+\1\s

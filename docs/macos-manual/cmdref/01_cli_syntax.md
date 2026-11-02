@@ -24,6 +24,21 @@ Enter 6-vector perturbation:
 
 - Hitting return accepts the bracketed default.
 - Vectors are entered space-separated on one line.
+
+### The *Syntax:* and *Defaults:* lines of Part I
+
+Each engine entry's notes open with two lines (added 2026-10-17, written
+from the CLI suite's transcripts and the dispatcher):
+
+- ***Syntax:*** the command with its arguments in the order of its prompts.
+  Any leading run of them may be typed on the command line — the tokens of
+  the line answer the prompts in order (`pix 5 64 2e-6` is `pix`, then `5`
+  to the element prompt, `64` to the pixel count, `2e-6` to the pixel size)
+  and the first prompt without an answer is asked.  `[x]` has a default
+  (return takes it), `<x>` has none.
+- ***Defaults:*** where each default comes from — the deck, the element or
+  value the last command used, a session option (`25_defaults.md`), or a
+  literal.
 - Fortran-style numbers are accepted: `1e-6`, `1d-6`, `0.25`, `1d22`.
 - `Ctrl-C` at the `MACOS>` prompt exits cleanly.
 
@@ -33,7 +48,7 @@ A typical first session:
 
 ```
 $ macos
-Enter model size: 256
+MACOS model size: 256
 MACOS>old
 Enter file name: Cassegrain
 MACOS>summarize
@@ -43,7 +58,10 @@ MACOS>quit
 ```
 
 - The **model size** prompt (before the first `MACOS>`) sizes the
-  runtime arrays; 256 is a good default for the bundled examples.
+  runtime arrays; 256 is a good default for the bundled examples, and
+  Return takes it.  The answer must be one of 128, 256, 512, 1024,
+  2048, 4096, 8192: anything else is refused, naming it, and asked
+  again; five refusals, or end of input, stop MACOS with exit status 1.
 - `OLD` loads an existing `.in` prescription (the `.in` extension is
   implied); `NEW` builds one interactively; `SAVe` writes the current
   system back out.

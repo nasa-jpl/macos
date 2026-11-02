@@ -1,10 +1,54 @@
 # Figure rescue — status & audit log
 
+## 2026-10-19 — every engine-made figure regenerated from the current macos (Dave)
+
+26 figures are now PRODUCED BY THE ENGINE on the /png device and assembled by
+`tools/regen_engine_figs.py` (its SPEC table: figure -> page directory -> pages side by
+side) from the journals in `tools/figs/` -- `FIG03 FIG04 FIG06 FIG10 FIG31 FIG33_34
+FIG36_37 FIG39 FIG47_55 FIG56 FIG58 FIG60_64`, each the manual's own example macro
+(`examples/*.jou`) or its printed dialog, run by the CLI suite's driver so a failed
+EXPECT stops the figure: 3, 4, 6, 10, 31, 33, 34, 36, 37, 39, 47-49, 51-58, 60-64, written
+as `src/media/fig_engine_NN.png`.  The 3.2-era `image*.png` and the two rescued crops they
+replace (31, 56, 58 were engine-made already) stay in media/ unreferenced until the next
+cleanup.  Kept as artwork (diagrams and schematics, not engine output): 1, 2, 5, 7-9,
+11-30, 32, 35, 38, 40-45, 50, 59, 65, 66.  Figure 46 (beam profiles) is remade on
+CassWithExitPupil.in, its 25-element beam-expander deck being absent from the tree.  Changes beside the pictures: figure 34 is the ROW plot its caption
+always named (the 3.2 dialog said WIRE); figures 60-62 are made at the detector (element
+6, where the 3.2 pictures were taken) and their dialogs re-emitted; the Section 5 OPD
+example's RMS is today's 1.545e-2 (the 3.2 text's 1.609e-2).  Each journal copies its
+pages into its own `$TMP/figNN` (the gate's scratch directory is shared by every journal
+of a run; the first regeneration mixed pages).  The axis labels' multiplication sign
+(finding 1.2 (t)) is fixed in giza the same day: the vendored cairo has no FreeType, its built-in
+font is ASCII only, so the escape now draws `x` -- the labels read `-1x10^-10`, not a box.
+
 34 composite line-art figures (FrameMaker-era, exploded to fragments by
 the PDF->docx conversion) were rasterized from `docs/macosMan3.2.pdf`
 (vector-clean) into `src/media/fig_rescued_NN.png` and inserted before
 their captions; fragment debris near the captions was removed (audit
 trail below).
+
+## 2026-10-17 — three figures that had no image, hand-cropped
+
+Figures 5 (exit pupil for Cassegrain.in, p. 18), 26 (conic mirror
+parameters, p. 65) and 29 (obscuration types, p. 74) existed in the
+Markdown only as label debris: `pdftoppm -r 150` of the page from
+`docs/macosMan3.2.pdf`, cropped with PIL, saved as
+`fig_rescued_05/26/29.png`, inserted before the caption.  The label
+debris around figures 5, 6, 11, 12, 18, 26, 27, 29, 30, 65 and 66 was
+removed by hand (36 tiny glyph images on 15 lines, the remaining
+"equation images" of the README), with the running-header artifacts
+('Background', 'Commands for Building Models', 'Element Surface Types',
+'Ray-Trace Commands') and the `{.underline}` wrappers on four prose
+lines.  The two-panel OPD figure 6 keeps its panel labels as an italic
+line under the image.  GOOD is now 34.  Later the same day: figure 59 (complex plane, p. 132)
+cropped from the PDF; figures 31 (DRAW views of ImageDemo.in), 56 (GBLUR
+example) and 58 (Luneberg gain) have NO artwork in the 3.2 PDF either —
+their captions sit over blank space, which is why every crop of them
+caught text — so they are PRODUCED BY THE ENGINE: `tools/figs/FIG31.jou`,
+`FIG56.jou`, `FIG58.jou` through `cli_tests/cli_cmd_gate.py` on the /png
+device, assembled by `tools/regen_engine_figs.py` (31: the two views side
+by side; 56: the two composites; 58: the column cut of the gain).  Nothing
+is pending.
 
 ## Review status (2026-07-06)
 

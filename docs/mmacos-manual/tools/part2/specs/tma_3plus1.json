@@ -1,0 +1,37 @@
+{
+ "section": "10_telescopes",
+ "entry": "run(fullfile(pwd,'tma_3plus1.m'));",
+ "knobs": {
+  "file": "tma_3plus1.m",
+  "from": "^% =+  USER DESIGN CHOICES",
+  "to": "^% =+$"
+ },
+ "figure": "tma_3plus1_layout.png",
+ "run": {
+  "from": "=+\\n 3\\+1 coronagraph",
+  "to": ""
+ },
+ "pins": [
+  {
+   "name": "patch",
+   "pattern": "patch balance: worst (\\S+) waves",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "ast",
+   "pattern": "relayed pupil: dia \\S+ mm, defocus \\S+ mm, astig (\\S+) mm",
+   "rule": "printed",
+   "format": "%.3f"
+  },
+  {
+   "name": "aoi",
+   "pattern": "worst AOI spread (\\S+) deg",
+   "rule": "printed",
+   "format": "%.1f"
+  }
+ ],
+ "caption": "The 3+1 chain with real rays, YZ and XZ planes (`tma_3plus1_layout.png`): the three-mirror telescope to its focus, and M4 just past it relaying the coronagraph channel to FP2 and the exit pupil.",
+ "number": "The 30\u2033 coronagraph patch is balanced to %pin:p2_tma_3plus1_patch% waves worst, and the relayed pupil carries %pin:p2_tma_3plus1_ast% mm of astigmatism against the bare TMA's 1.1 mm. The template reports its own limit: the worst AOI spread is %pin:p2_tma_3plus1_aoi% degrees, outside the 15-degree preference on M1 and M2, which its sibling `tma_3plus1_aoi_search.m` addresses.",
+ "prompt": "Using templates/10_telescopes/tma_3plus1, run tma_3plus1_aoi_search for a 6.6 m f/20 front end that keeps every mirror's AOI spread under 15 degrees, then rebuild the 3+1 chain on the result and report the patch balance and the relayed pupil."
+}

@@ -1,0 +1,55 @@
+# Section 5 on CassWithExitPupil.in (Appendix A): RRAY and TPR, COORD, FFP, PFP, FEX.
+# COPY: $ROOT/docs/macos-manual/examples/CassWithExitPupil.in s05x
+cd $TMP/s05x
+old CassWithExitPupil
+# TRANSCRIPT: s05_rray
+rray
+# TRANSCRIPT: s05_tpr
+tpr
+# TRANSCRIPT: s05_coord
+coord
+1
+coord 5
+coord 6
+# TRANSCRIPT: s05_ffp
+stop
+obj 0,0,0
+ffp 6
+1e-3,-2e-3
+yes
+# TRANSCRIPT: s05_ffp_ray
+ray 1
+# TRANSCRIPT: s05_pfp
+PFP 6
+15e-4
+20,-100
+yes
+# TRANSCRIPT: s05_pfp_ray
+ray 1
+# TRANSCRIPT-OFF
+old CassWithExitPupil
+stop obj 0,0,0
+mod
+VptElt(3,5)=-4.5
+RptElt(3,5)=-4.5
+fElt(5)=6
+zElt(5)=6
+q
+# TRANSCRIPT: s05_fex_show
+show 4
+show 5
+# TRANSCRIPT: s05_fex
+fex
+5
+yes
+# TRANSCRIPT-OFF
+# EXPECT: Tracing rays past\s+6 elements
+# EXPECT: Ref\. ray XY offsets from chief ray:\s+1\.6923,\s+-0\.1538,\s+ID =\s+63
+# EXPECT: Reference ray indices \(chief \+ 4 marginal\) =\s+1\s+63\s+122\s+52\s+4
+# EXPECT: TPR ray 63 at element 6:\s+-?\d\.\d+E-1[0-9]\s+-?\d\.\d+E-1[0-9]\s+1\.50000\d*E\+00
+# EXPECT: Enter element number: \[1\]: 5\s+Computed xLocal= -9\.9999\d*D-01
+# EXPECT: Field angle finder results:\s+Did\s+\d+ iterations, error=\s+\d\.\d+D-1[0-9][\s\S]*?New dx=\s+1\.0000\d*D-03\s+0\.0+D\+00\s+-2\.0000\d*D-03[\s\S]*?New crd=\s+4\.4583\d*D-05
+# EXPECT: New dx=\s+3\.0000\d*D-02\s+-2\.0000\d*D-03\s+-1\.5000\d*D-01
+# EXPECT: Ray\s+1 segment from Element\s+5 \(ExitPupil\s*\) to Element\s+6 \(Detector\s*\):\s+Starting point=[^\n]*\n\s+End point=\s+3\.0000\d*D-02\s+-1\.5000\d*D-01
+# EXPECT: Old f=\s+6\.000000000D\+00\s+New f=\s+6\.7906\d*D\+00[\s\S]*?-4\.500000000D\+00\s+-5\.2906\d*D\+00
+# EXPECT-NOT: forrtl

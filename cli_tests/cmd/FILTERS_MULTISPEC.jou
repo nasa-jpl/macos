@@ -1,0 +1,59 @@
+# NFILT (enter a filter: wavelength / flux pairs, 0 ends), SFILT (write it as <name>.filt), RFILT (read it back),
+# MULTISPEC (the multi-color stack) on a COPY of the manual's Cassegrain in $TMP (cmdref: Source & Wavelength).
+# The .filt format is the reader's and the field files': a header line '<name> <nWavelen>', one line of
+# wavelengths, one line of fluxes per star type (the cmdref example reads 10 wavelengths and 2 star types).
+# Fixed 2026-10-18 (PLAN_CONSOLIDATION 1.2 (o), ruled): the WRITER was wrong -- a stray 'nStarType=0' wrote no
+# flux rows (and zeroed the session's count), so RFILT read 0 star types and MULTISPEC refused every one; its
+# list-directed header wrote the 256-wide name.  And the READER's list-directed header read stopped at the first
+# '/' (a path) before the count.  Now SFILT -> RFILT -> MULTISPEC round-trips the NFILT filter (both wavelengths
+# at their fluxes), a path name round-trips, and a field-format file whose header name holds a '/' reads 3
+# wavelengths / 2 star types and feeds star type 2.  Before any filter is loaded MULTISPEC says so.
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in
+cd $TMP
+old $DECK
+none
+multispec
+nfilt
+myfilt
+6.0e-7
+1.0
+6.5e-7
+0.5
+0
+sfilt
+myfilt
+! cat $TMP/myfilt.filt
+rfilt
+myfilt
+multispec
+5
+1
+64
+2e-6
+sfilt
+$TMP/sub_dir_name
+rfilt
+$TMP/sub_dir_name
+! printf 'field/filt 3\n5.0e-7 6.0e-7 7.0e-7\n1.0 1.0 1.0\n0.5 1.0 0.5\n' > $TMP/field.filt
+rfilt
+field
+multispec
+5
+2
+64
+2e-6
+! ls $TMP
+# EXPECT: Load filter data first\.
+# EXPECT: Filter includes information for\s+2 wavelengths and\s+1 star types\.
+# EXPECT: Filter file created\.
+# EXPECT: ^myfilt\.filt 2\s*$
+# EXPECT: ^\s+1\.0+\s+0\.50*\s*$
+# EXPECT: MACOS> rfilt\s+Enter filter file name: myfilt\s+Filter includes information for\s+2 wavelengths and\s+1 star types\.
+# EXPECT: Enter StarType \(1-1\): \[1\]: 1[\s\S]*?Wavelength= 6\.0000000D-07;  Source Flux= 1\.0000000D\+00[\s\S]*?Sum of intensity= 9\.2031079D\+08[\s\S]*?Wavelength= 6\.5000000D-07;  Source Flux= 5\.0000000D-01[\s\S]*?Sum of intensity= 3\.9208507D\+08
+# EXPECT: Enter filter file name: \S+/sub_dir_name\s+Filter includes information for\s+2 wavelengths and\s+1 star types\.
+# EXPECT: Enter filter file name: field\s+Filter includes information for\s+3 wavelengths and\s+2 star types\.
+# EXPECT: Enter StarType \(1-2\): \[1\]: 2[\s\S]*?Wavelength= 5\.0000000D-07;  Source Flux= 5\.0000000D-01[\s\S]*?Wavelength= 6\.0000000D-07;  Source Flux= 1\.0000000D\+00[\s\S]*?Wavelength= 7\.0000000D-07;  Source Flux= 5\.0000000D-01
+# EXPECT: myfilt\.filt
+# EXPECT-NOT: Invalid star type
+# EXPECT-NOT: not in expected format
+# EXPECT-NOT: forrtl

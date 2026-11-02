@@ -1,0 +1,17 @@
+# PLAN 3.4 matrix: OptTarget SPOT x aspheric (OptAsph h^4) DOF (CC 2026-10-11; the programmatic twins are
+# tCalibMatrix / test_calib_matrix.py, TO).  The deck (tst_calib_asph.in) is spoiled: h^4 5e-3 m^-3;
+# CALIB must remove the spoil, print its merit and say why it stopped.  SPOT is the deck's own
+# target; WFE / ZWF are selected through SETP (SETP offers WFE, ZWF and Beam -- not SPOT).
+# DEADLINE: 120
+# COPY: $ROOT/ZGD_test_files/tst_calib_asph.in
+old $DECK
+calib
+no
+yes
+show 1
+# EXPECT: Final LM merit \(chisq\) =\s+\S+
+# EXPECT: Stopped: 
+# EXPECT-NOT: Optimization aborted
+# EXPECT-NOT: singular
+# EXPECT: AsphCoef=\s+(0\.0E\+00|-?\d\.\d+E-(09|[1-9]\d))
+# (measured 2026-10-11 at 338416c, both compilers: every cell stops at the cap T=10; TIP -> <= 1.8e-9, h^4 -> <= 3.3e-9, Z12 -> <= 5.5e-17)

@@ -1,0 +1,11 @@
+# PLAN 3.4 follow-on: an already-optimal START stops 'stalled' (reason 5), converged, no step taken
+# (macos 70ea2c7; the amended ruling: stalled is not a failure -- the start IS the optimum).  The deck
+# is the unspoiled paraboloid with h^4 free under SPOT; no trial lowers the merit, none fails to trace.
+# COPY: $ROOT/ZGD_test_files/tst_calib_optimal.in
+old $DECK
+calib
+no
+no
+# EXPECT: Stopped: stalled
+# EXPECT-NOT: Optimization aborted
+# EXPECT-NOT: lost the chief ray

@@ -1,0 +1,16 @@
+# RX (the numbered .in listing), FID (load by that number), LS (every file) in the manual's examples
+# directory (cmdref: Session & Files).  The numbering is the directory's sorted order, so adding an example
+# that sorts before CassWithExitPupil.in moves id 2 -- update the FID line then.
+cd $ROOT/docs/macos-manual/examples
+rx
+fid
+2
+ls
+# EXPECT: Listing Files in: \S+/docs/macos-manual/examples
+# EXPECT: 1\s+AOExample\.in\s+2\s+CassWithExitPupil\.in\s+3\s+Cassegrain\.in
+# EXPECT: Use FID command to load a Rx file\. Syntax: FID file_id
+# EXPECT: Enter file id: \[1\]: 2\s+Input file CassWithExitPupil\.in\s+being loaded
+# EXPECT: Tracing rays past\s+6 elements
+# EXPECT: AOExample\.jou
+# EXPECT-NOT: Invalid file id
+# EXPECT-NOT: forrtl

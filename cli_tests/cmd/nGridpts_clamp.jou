@@ -1,0 +1,13 @@
+# MODEL: 256
+# Rx_Coro.in (a point source, nGridpts= 511) at model 256 (macos 2026-10-10).  The
+# load clamps the grid to the model (the long-standing "Too many grid points" reset,
+# CLI macosio.F and SMACOS smacosio.F alike), and the trace must complete.  The defect
+# behind it: PtSource placed an EVEN grid one row high, so the clamped 256-point grid
+# wrote RayID(., 257) -- the gfortran DEBUG build aborted there (measured 2026-10-10);
+# the release build overran by one row silently, so on release this journal is a
+# no-crash regression gate, not a must-fail.
+old $RES/pymacos/tests/Rx/Rx_Coro.in
+opd 21
+/null
+# EXPECT: Too many grid points\. Resetting npts to\s+256
+# EXPECT: RMS OPD error is

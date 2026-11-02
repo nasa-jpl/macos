@@ -1,0 +1,19 @@
+journal,kind,status,missed,dt
+GRIN_unsupported.jou,journal,pass,,1.5
+INT_LOG.jou,journal,pass,,2.5
+IndRef_stamp.jou,journal,fail,"EXPECT RMS OPD error is[\s\S]*EltName=\s+SecMirObs[\s\S]*?IndRef=1\.0E\+00 | EXPECT-NOT RMS OPD error is[\s\S]*EltName=\s+SecMirObs\s[\s\S]{0,400}?IndRef=1\.5E\+00",2.1
+JOURNAL_EXE.jou,journal,pass,,3.2
+LONG_PATH.jou,journal,pass,,2.7
+MANUAL_examples.jou,journal,pass,,4.9
+MOD_spaces.jou,journal,pass,,4.6
+OPD.jou,journal,pass,,2.7
+OPD_reference.jou,journal,pass,,6.8
+PERTURB.jou,journal,pass,,4.8
+SAVE_roundtrip.jou,journal,pass,,2.3
+SPOT_text.jou,journal,pass,,2.6
+STOP_FEX_SXP.jou,journal,pass,,4.0
+VALIDATE.jou,journal,pass,,0.8
+ZernType_default.jou,journal,pass,,3.3
+ZrnGr_refusal.jou,journal,pass,,1.3
+nGridpts_clamp.jou,journal,pass,,1.5
+selftest.jou,must_fail,fail,EXPECT THIS_LINE_IS_NEVER_PRINTED_BY_MACOS,0.8

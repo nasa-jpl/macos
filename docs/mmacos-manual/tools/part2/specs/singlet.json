@@ -1,0 +1,43 @@
+{
+ "section": "35_lenses",
+ "entry": "out = singlet();",
+ "knobs": {
+  "file": "singlet.m",
+  "from": "^% =+  USER DESIGN CHOICES",
+  "to": "^% =+$"
+ },
+ "figure": "out/singlet_bending.png",
+ "run": {
+  "from": "=+\\n Best-form singlet",
+  "to": ""
+ },
+ "pins": [
+  {
+   "name": "xtb",
+   "pattern": "X = -2\\(n\\^2-1\\)p/\\(n\\+2\\) = (\\S+)",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "xcal",
+   "pattern": "shape factor: engine (\\S+) vs",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "rmstb",
+   "pattern": "RMS (\\S+) waves at the paraxial focus \\(",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "rmscp",
+   "pattern": "curved face to the object \\(X = \\+1\\): RMS (\\S+) waves",
+   "rule": "printed",
+   "format": "%.4f"
+  }
+ ],
+ "caption": "RMS wavefront error against Coddington's shape factor for N-BK7 singlets at f = 100 mm, f/5, at the paraxial focus and at best focus, with the textbook bending, CALIB's and the two plano orientations marked (`singlet_bending.png`).",
+ "number": "Coddington's minimum-aberration bending is X = %pin:p2_singlet_xtb%; CALIB on both radii, started from an equi-convex lens, lands at X = %pin:p2_singlet_xcal%. The best form's RMS wavefront error at f/5 is %pin:p2_singlet_rmstb% waves against %pin:p2_singlet_rmscp% for the benches' convex-plano lens.",
+ "prompt": "Using templates/35_lenses/singlet, find the best-form N-SF6 singlet for f = 50 mm at f/4 imaging an object 200 mm away, and tell me its shape factor, the engine's, and how much it beats the plano-convex lens."
+}

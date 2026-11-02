@@ -1,0 +1,79 @@
+# Figures 47-55 and 57 (Section 7): the coronagraph walk of examples/CoroExample.jou on the /png device.  Pages:
+#  0 DRAW 0-16 XZ (47); 1 INT 6 unocculted, sqrt stretch (48); 2 INT 10, 3 INT 11, 4 INT 16 (49: pupil, Lyot stop,
+#  detector); 5 PIX 6 unocculted, 6 PIX 6 occulted (51); 7 PIX 6 log10, 8 PIX 6 sqrt (52); 9 ADD on-axis (53);
+#  10 INT 6 off-axis, log10 (54); 11 ADD off-axis, sqrt (55); 12 DAD linear SLICE (57); 13 DAD WIRE (62: the composed
+#  image as a wire mesh, 64 x 64 -- a 256-point PSF under WIRE is one spike); 14 a repeat of 13 to flush.
+# MODEL: 512
+# DEADLINE: 900
+# COPY: $ROOT/docs/macos-manual/examples/CoroExample.in fig47
+cd $TMP/fig47
+old CoroExample.in
+pgd
+/png
+draw
+0
+16
+xz
+stretch
+sqrt
+mod ngridpts=128
+nObs(6)=0
+q
+int 6
+int 10
+int 11
+int 16
+pix 6
+64
+2.804186E-06
+mod nObs(6)=3
+q
+pix 6
+64
+2.804186E-06
+stretch
+log10
+pix 6
+64
+2.804186E-06
+stretch
+sqrt
+pix 6
+64
+2.804186E-06
+win Tout 1.392542d-6 0,0 0,0
+compose
+16
+64
+1.392542E-06
+add
+yes
+stop elt 11 0,0
+ffp 6 2d-5,2d-5
+yes
+ors 5
+yes
+ors 7
+yes
+fex 15
+yes
+mod flux=0.01
+q
+stretch
+log10
+int 6
+stretch
+sqrt
+add
+yes
+stretch
+linear
+slice
+dad
+wire
+dad
+dad
+! mkdir -p $ROOT/docs/macos-manual/build/figs/fig47; cp $TMP/fig47/giza_*.png $ROOT/docs/macos-manual/build/figs/fig47/
+# EXPECT: Tracing rays past  16 elements
+# EXPECT: (Image added\. Plot composed image\? \[YES\]: yes[\s\S]*){2}
+# EXPECT-NOT: forrtl

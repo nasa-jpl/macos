@@ -125,9 +125,32 @@ C***********************************************************************
           use src_mod,  only: ChfRayDir, xGrid, yGrid, zGrid
           use math_mod, only: define_local_csys
           implicit none
+          logical :: lh
           ! - - - - - - - - - - - - - - -
 
+!-->  Preserve the deck frame's HANDEDNESS (Dave 2026-09-08).
+!     define_local_csys always returns a right-handed (x,y,z); the
+!     corpus is full of left-handed source frames (xGrid = -1 0 0 with
+!     ChfRayDir +z: e5hex1, 6MST, every Telescope-emitted deck), and
+!     an element STOP -- the only caller, via ChiefRayAiming -- used
+!     to flip xGrid to +1 0 0 on them.  A mirrored xGrid mirrors the
+!     SEGMENTED source grid while the segment->element map does not
+!     move, so rays hit segments they are not mapped to: measured on
+!     e2e6m s3_imager_full, 732 of 985 rays obscured after ANY element
+!     stop (Segment or Reflector), 2 after an object-space stop.  The
+!     OBJ path re-orthogonalises the deck frame instead (cmd_loop
+!     label 205) and never had the problem.  Flip x back when the
+!     incoming triad was left-handed: y and z are unchanged, so this
+!     is exactly the triad the OBJ path produces.
+          lh = dot_product(xGrid, [yGrid(2)*ChfRayDir(3)-yGrid(3)*ChfRayDir(2),
+     &                            yGrid(3)*ChfRayDir(1)-yGrid(1)*ChfRayDir(3),
+     &                            yGrid(1)*ChfRayDir(2)-yGrid(2)*ChfRayDir(1)])
+     &         < 0d0
+!<--
           call define_local_csys(ChfRayDir, xGrid, yGrid, zGrid, ok, yGrid)
+!-->
+          if (ok .and. lh) xGrid = -xGrid
+!<--
 
 	end function UpdSrcGrid
         !
@@ -171,16 +194,9 @@ C***********************************************************************
 
 	nRayToSeg(1:mRay)=0
 
-	CALL DXPROD(zGrid,xGrid,yGrid)
-	IF (DDOTC(zGrid,ChfRayDir).GT.0d0) THEN
-	  zGrid = ChfRayDir
-	ELSE
-	  zGrid = -ChfRayDir
-	END IF
-	CALL DUNITIZE(zGrid)  ! nomalize z
-	CALL DXPROD(yGrid,zGrid,xGrid)  ! cross-product z and x to get y
-	CALL DUNITIZE(yGrid)
-	CALL DXPROD(xGrid,yGrid,zGrid)
+!-->  idempotent frame (see OrthoSrcFrame in math_mod)
+	CALL OrthoSrcFrame(ChfRayDir,xGrid,yGrid,zGrid)
+!<--
 	Tbg(1:3,1)=xGrid(1:3)
 	Tbg(1:3,2)=yGrid(1:3)
 
@@ -542,7 +558,16 @@ C  Set source amplitude if propagating for polarized light
 	  iWFA=1
 	  IF (BeamType.EQ.2) THEN
 C  Gaussian beam...
-	    S=SQRT(Flux)
+!-->  normalized to the UNIFORM beam's flux (Dave 2026-10-19, PLAN_CONSOLIDATION
+!     1.2 (y)): the amplitude S*exp(-(x/wx)^2-(y/wy)^2) carries intensity
+!     S^2 exp(-2 r^2/w^2), whose integral over the whole plane is
+!     S^2 pi wx wy / 2 per dx^2; S = sqrt(Flux 2 dx^2 / (pi wx wy)) makes the
+!     untruncated beam carry Flux, so a beam the aperture truncates sums to
+!     LESS than Flux -- the tail outside is lost, not renormalized in.  Before,
+!     S = sqrt(Flux) put Flux at EVERY ray (218 x the uniform sum on the
+!     Cassegrain with a 1 m waist).
+	    S=SQRT(Flux*2d0*dxSource*dxSource/(2d0*pio2*rxBeam*ryBeam))
+!<--
 	    rx2=rxBeam*rxBeam
 	    ry2=ryBeam*ryBeam
 	    IF (ifPol) THEN
@@ -694,19 +719,9 @@ C***********************************************************************
 
 	nRayToSeg(1:nRay)=0
 
-        ! zGrid = cross-product of xGrid and yGrid - jzlou
-	CALL DXPROD(zGrid,xGrid,yGrid)
-
-	IF (DDOTC(zGrid,ChfRayDir).GT.0d0) THEN
-	  CALL DEQUATE(zGrid,ChfRayDir,3)
-	ELSE
-	  CALL DNEGATE(zGrid,ChfRayDir,3)
-	END IF
-
-	CALL DUNITIZE(zgrid)
-	CALL DXPROD(yGrid,zGrid,xGrid)
-	CALL DUNITIZE(yGrid)
-	CALL DXPROD(xGrid,yGrid,zgrid)
+!-->  idempotent frame (see OrthoSrcFrame in math_mod)
+	CALL OrthoSrcFrame(ChfRayDir,xGrid,yGrid,zGrid)
+!<--
 	Tbg(1:3,1)=xgrid(1:3)
 	Tbg(1:3,2)=ygrid(1:3)
 
@@ -807,8 +822,12 @@ C  Find the segment for the chief ray
 	      ChfRayPos(1:3)=RayPos(1:3,iRay)
 	      ChfRayDir(1:3)=RayDir(1:3,iRay)
 	    end if
-            jwf=j+(mdttl-nGridPts)/2+1
-	    iwf=i+(mdttl-nGridPts+1)/2
+!-->      PR #70 completed (2026-10-10, CC's ruling): ColSource's
+!         even-grid centring; the original put an even grid one row
+!         high, and at nGridPts == mdttl wrote RayID(.,mdttl+1).  For
+!         odd grids, and for iwf at any size, it is the same formula.
+            jwf=j+(mdttl-nGridPts+mod(nGridPts,2))/2
+	    iwf=i+(mdttl-nGridPts+mod(nGridPts,2))/2
             RayIndex(1,iRay)=i; RayIndex(2,iRay)=j;
             RayMap(i,j)=iRay
             RayID(iwf,jwf)=iRay
@@ -841,12 +860,16 @@ C  Find the segment for the chief ray
 	  thy=-Aperture/2d0-ds
 
           DO 10 j=1,nGridPts
-            jwf=j+(mdttl-nGridPts)/2+1
+!-->      PR #70 completed (2026-10-10, CC's ruling): ColSource's
+!         even-grid centring; the original put an even grid one row
+!         high, and at nGridPts == mdttl wrote RayID(.,mdttl+1).  For
+!         odd grids, and for iwf at any size, it is the same formula.
+            jwf=j+(mdttl-nGridPts+mod(nGridPts,2))/2
             thy=thy+ds
             thx=-Aperture/2d0-ds
 
             DO 9 i=1,nGridPts
-              iwf=i+(mdttl-nGridPts+1)/2
+              iwf=i+(mdttl-nGridPts+mod(nGridPts,2))/2
               thx=thx+ds
               ! ---------------------------------------
               ! GridType: Circular
@@ -983,7 +1006,16 @@ C  ifPropagate is true when performing diffraction commands -jzlou
 	  iWFA=1
 	  IF (BeamType.EQ.2) THEN
 C  Gaussian beam...
-	    S=SQRT(Flux)
+!-->  normalized to the UNIFORM beam's flux (Dave 2026-10-19, PLAN_CONSOLIDATION
+!     1.2 (y)): the amplitude S*exp(-(x/wx)^2-(y/wy)^2) carries intensity
+!     S^2 exp(-2 r^2/w^2), whose integral over the whole plane is
+!     S^2 pi wx wy / 2 per dx^2; S = sqrt(Flux 2 dx^2 / (pi wx wy)) makes the
+!     untruncated beam carry Flux, so a beam the aperture truncates sums to
+!     LESS than Flux -- the tail outside is lost, not renormalized in.  Before,
+!     S = sqrt(Flux) put Flux at EVERY ray (218 x the uniform sum on the
+!     Cassegrain with a 1 m waist).
+	    S=SQRT(Flux*2d0*dxSource*dxSource/(2d0*pio2*rxBeam*ryBeam))
+!<--
 	    rx2=rxBeam*rxBeam  ! rxBeam = beam waist in X axis -jzlou
 	    ry2=ryBeam*ryBeam  ! ryBeam = ...
 	    IF (ifPol) THEN
@@ -1286,15 +1318,20 @@ C  ***  end rotate segemnt frame of reference
 	L2=w2*1.154700538d0
 	xBctr=DBLE(S(2)-S(3))*w2
 	dxB=w2-gap/2d0
-	slopex=x*0.5773502692d0
+!-->  use the SegXgrid-rotated coordinates, as HSEG does.  xt/yt were
+!     computed above but never used, so GridType=Pie silently ignored
+!     SegXgrid while Hex honoured it (180-deg ray<->element permutation
+!     whenever xGrid.SegXgrid < 0).
+	slopex=xt*0.5773502692d0
 	bLctr=DBLE(S(2))*L2
-	bL=y+slopex
+	bL=yt+slopex
 	bRctr=DBLE(S(3))*L2
-	bR=y-slopex
+	bR=yt-slopex
 	db=L2-gap*0.5773502692d0
 	PSEG=.TRUE.
-	IF (S(1).GE.0) PSEG=PSEG.AND.(x.GE.(xBctr-dxB))
-	IF (S(1).LE.0) PSEG=PSEG.AND.(x.LT.(xBctr+dxB))
+	IF (S(1).GE.0) PSEG=PSEG.AND.(xt.GE.(xBctr-dxB))
+	IF (S(1).LE.0) PSEG=PSEG.AND.(xt.LT.(xBctr+dxB))
+!<--
 	IF (S(2).GE.0) PSEG=PSEG.AND.(bL.GE.(bLctr-db))
 	IF (S(2).LE.0) PSEG=PSEG.AND.(bL.LT.(bLctr+db))
 	IF (S(3).GE.0) PSEG=PSEG.AND.(bR.GE.(bRctr-db))
@@ -1570,7 +1607,7 @@ C***********************************************************************
 
 	SUBROUTINE AddAtmos(iElt,npts,iWFA,R1,CD2,r0,atmWavelen,pTilt,
      &	  NoiseSeed,ifPol,ifGrid,ifPropagate,Dicr,Djcr,
-     &	  dxSource,xhat,yhat,zhat)
+     &	  dxSource,xhat,yhat,zhat,ifAtmOK)
 	use param_mod
         use src_mod
         use elt_mod
@@ -1578,7 +1615,7 @@ C***********************************************************************
 	IMPLICIT NONE
 
 	LOGICAL ifPol,ifGrid,ifPropagate,ifOPDCalc,
-     &	 ifRegrid(mElt)
+     &	 ifRegrid(mElt),ifAtmOK
 	INTEGER i,j,iElt,npts,iWFA,iray,k,NoiseSeed(2),
      &	 im1,ip1,jm1,jp1,iwf,jwf
 	SREAL R1(mdttl,mdttl),r0,rsamp,pTilt,atmWavelen
@@ -1587,8 +1624,16 @@ C***********************************************************************
      &	 Rij,Rip1j,Rim1j,Rijp1,Rijm1,Rip1jp1,Rim1jp1,Rip1jm1,Rim1jm1
 	COMPLEX*8 CD2(mdttl,mdttl)
 	COMPLEX*16 cztdir
+!-->  Placement test (PLAN_CONSOLIDATION 1.2 (p), 2026-10-18)
+	INTEGER nv
+	REAL*8 su,sv,suu,svv,suv,spos(3),sup(3),svp(3),gA(3),gB(3),
+     &	 dBar(3),det,u,v,ca,cb,dax,day,rn
+	REAL*8, PARAMETER :: cTol=0.99984769515639d0  ! cos 1 deg
+	REAL*8, PARAMETER :: sTol=0.01745240643728d0  ! sin 1 deg
+!<--
 
 	ztdir = 0.0d0  ! -jzlou
+	ifAtmOK = .TRUE.
 
 C  Generate ray grid if not previously done
 	IF ((iElt.EQ.0).AND..NOT.ifGrid) THEN
@@ -1610,6 +1655,84 @@ C  Generate ray grid if not previously done
      &	  dxAvg,dxDev,ifRegrid,ifOPDCalc,npts)
 	  dx=dxElt(iElt)
 	END IF
+
+!-->  The screen is sampled on the ray grid by grid index and tilts the
+!     rays along xhat/yhat (the SOURCE grid frame).  That is the
+!     beam's own geometry only where the ray grid at the element is
+!     still the source grid -- index i along +xhat, j along +yhat, the
+!     beam along zhat -- i.e. before any fold, image rotation or
+!     inversion.  Measured 2026-10-18: consistent (spot = -F grad W,
+!     R^2 = 1) at the Cassegrain's entrance pupil, primary and
+!     secondary and on a periscope before/after its fold pair;
+!     between the folds the x tilt went ALONG the beam (spot x 1e-8 vs
+!     7e-5).  Fit the grid vectors from the ray positions on the
+!     element; refuse by name when they are not the source frame
+!     within 1 degree.  The ATMospheric-grid option uses the
+!     element's local beam frame and is not restricted.
+	IF (iElt.GT.0) THEN
+	  nv=0
+	  su=0d0; sv=0d0; suu=0d0; svv=0d0; suv=0d0
+	  spos=0d0; sup=0d0; svp=0d0; dBar=0d0
+	  DO iRay=2,nRay
+	    IF (.NOT.LRayOK(iRay)) CYCLE
+	    nv=nv+1
+	    u=DBLE(RayWFMap(1,iRay))
+	    v=DBLE(RayWFMap(2,iRay))
+	    su=su+u; sv=sv+v
+	    suu=suu+u*u; svv=svv+v*v; suv=suv+u*v
+	    DO k=1,3
+	      spos(k)=spos(k)+RayPos(k,iRay)
+	      sup(k)=sup(k)+u*RayPos(k,iRay)
+	      svp(k)=svp(k)+v*RayPos(k,iRay)
+	      dBar(k)=dBar(k)+RayDir(k,iRay)
+	    END DO
+	  END DO
+	  IF (nv.GE.3) THEN
+	    rn=1d0/DBLE(nv)
+	    suu=suu-su*su*rn; svv=svv-sv*sv*rn; suv=suv-su*sv*rn
+	    DO k=1,3
+	      sup(k)=sup(k)-su*spos(k)*rn
+	      svp(k)=svp(k)-sv*spos(k)*rn
+	    END DO
+	    det=suu*svv-suv*suv
+	  ELSE
+	    det=0d0
+	  END IF
+	  IF (det.LE.0d0) THEN
+	    WRITE(*,'(A,I0,A)')' ATMOS: element ',iElt,' refused for'//
+     &	      ' the RAY grid: fewer than 3 rays reach it in a 2-D grid.'
+	    ifAtmOK=.FALSE.
+	    RETURN
+	  END IF
+	  DO k=1,3
+	    gA(k)=(svv*sup(k)-suv*svp(k))/det
+	    gB(k)=(suu*svp(k)-suv*sup(k))/det
+	  END DO
+	  CALL DUNITIZE(gA)
+	  CALL DUNITIZE(gB)
+	  CALL DUNITIZE(dBar)
+	  ca=gA(1)*xhat(1)+gA(2)*xhat(2)+gA(3)*xhat(3)
+	  cb=gB(1)*yhat(1)+gB(2)*yhat(2)+gB(3)*yhat(3)
+	  dax=dBar(1)*xhat(1)+dBar(2)*xhat(2)+dBar(3)*xhat(3)
+	  day=dBar(1)*yhat(1)+dBar(2)*yhat(2)+dBar(3)*yhat(3)
+	  IF ((ca.LT.cTol).OR.(cb.LT.cTol).OR.
+     &	      (ABS(dax).GT.sTol).OR.(ABS(day).GT.sTol)) THEN
+	    WRITE(*,'(A,I0,A)')' ATMOS: element ',iElt,' refused for'//
+     &	      ' the RAY grid: the screen tilts rays in the source grid'
+	    WRITE(*,'(A)')'   frame (xGrid, yGrid) and the ray grid'//
+     &	      ' here is not that frame -- the beam was folded,'
+	    WRITE(*,'(A,2F10.6,A,2F10.6)')'   rotated or inverted:'//
+     &	      ' grid x.xGrid, y.yGrid =',ca,cb,
+     &	      '; beam.xGrid, beam.yGrid =',dax,day
+	    WRITE(*,'(A)')'   Place the screen where the ray grid is'//
+     &	      ' the source grid (a pupil before the first fold),'
+	    WRITE(*,'(A)')'   or answer ATM: the separate atmospheric'//
+     &	      ' grid uses the local beam frame.'
+	    ifAtmOK=.FALSE.
+	    RETURN
+	  END IF
+	END IF
+!<--
 
 C  Generate phase screen: note that this should be at a pupil!
 	nGridPts=npts+1
@@ -1641,7 +1764,12 @@ c	  ztdir=-1d0
 c	END IF
 c	C1=ztdir*0.5d0/dx
 
-	C1=0.5d0/dx
+!-->  The stencil below sums the central difference over THREE rows
+!     (i-1, i, i+1 in the other index), so its normalization is
+!     1/(3*2*dx); 0.5/dx (the one-row form above) tilted every ray
+!     3x its gradient.
+	C1=1d0/(6d0*dx)
+!<--
 
 	DO iRay=2,nRay
 	  iwf=RayWFMap(1,iRay)

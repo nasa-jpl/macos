@@ -27,13 +27,30 @@ C
         ! call ray_mod_init(mElt,mRay)
         ! call dopt_init
 
-        call src_mod_init_vars()
-        call cfiles_mod_init_vars()
-        call elt_mod_init_vars()
-        call macos_mod_init_vars()
-        call dopt_init_vars()
-
-        call ray_mod_init(mElt,mRay)
+!-->    PLAN_CONSOLIDATION 1.2 (ooo), 2026-10-24: POLARIZATION is a session
+!       mode and survives a load (PLAN 4 item 2, 2026-10-11), but the source
+!       Jones vector Ex0/Ey0 it was switched on with lives in src_mod and was
+!       zeroed by src_mod_init_vars on every load -- the mode survived with NO
+!       field (an INTENSITY after polarization-then-load summed to zero; found
+!       by macos-fd on the tg_psi_dm templates).  Keep Ex0/Ey0 across the load
+!       when the mode is in force; a deck's own Ex0Ey0= line, parsed after
+!       this, still overrides.
+        block
+          complex(kind(Ex0)) :: svEx0, svEy0
+          logical :: keepPol
+          keepPol = ifPol
+          svEx0 = Ex0; svEy0 = Ey0
+          call src_mod_init_vars()
+          call cfiles_mod_init_vars()
+          call elt_mod_init_vars()
+          call macos_mod_init_vars()
+          call dopt_init_vars()
+          call ray_mod_init(mElt,mRay)
+          if (keepPol) then
+            Ex0 = svEx0; Ey0 = svEy0
+          end if
+        end block
+!<--
 
       end subroutine reinitialise_variables
 
@@ -52,6 +69,7 @@ C
         call cfiles_mod_init
         call elt_mod_init
         call macos_mod_init
+        call opd_ref_init_opts  ! session option, before ray_mod_init
         call ray_mod_init(mElt,mRay)
         call dopt_init
 

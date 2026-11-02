@@ -1,0 +1,25 @@
+# Figure 39 (Section 5): AOExample.in, the exit-pupil OPD (element 16) with the deformable mirror flattened and an
+# atmospheric phase screen at the entrance pupil (the manual's dialog: element 1, r0 24, the source wavelength, tilt 0,
+# ATM grid at 20).  Pages: 0 the DM test pattern, 1 with the atmosphere (+ a repeat).  fig_engine_39.png = page 1.
+# COPY: $ROOT/docs/macos-manual/examples/AOExample.in fig39
+# DEADLINE: 300
+cd $TMP/fig39
+old AOExample.in
+pgd
+/png
+opd 16
+modify Surface(7)=Flat
+q
+seed 7
+atm
+1
+24
+2.854331e-5
+0
+atm
+20
+opd 16
+opd 16
+! mkdir -p $ROOT/docs/macos-manual/build/figs/fig39; cp $TMP/fig39/giza_*.png $ROOT/docs/macos-manual/build/figs/fig39/
+# EXPECT: (RMS OPD error is[\s\S]*){3}
+# EXPECT-NOT: forrtl

@@ -1,0 +1,33 @@
+{
+ "section": "40_benches",
+ "entry": "run(fullfile(pwd,'example_bench_ifo.m'));",
+ "figure": "ifo_surface_recovery.png",
+ "run": {
+  "from": "glass path: test",
+  "to": "post-fit residual[^\\n]*"
+ },
+ "pins": [
+  {
+   "name": "vis",
+   "pattern": "fringe visibility \\(median in pupil\\): (\\S+)",
+   "rule": "printed",
+   "format": "%.3f"
+  },
+  {
+   "name": "resid",
+   "pattern": "post-fit residual: (\\S+) nm rms",
+   "rule": "printed",
+   "format": "%.4f"
+  }
+ ],
+ "caption": "The surface the interferometer recovers (`ifo_surface_recovery.png`): the fitted truth model (tilt plus sphere) and the residual after the fit, in nm.",
+ "number": "With the test optic a flat (the injected sphere radius is effectively infinite), the phase-shifted interferometer recovers it to a post-fit residual of %pin:p2_bench_ifo_resid% nm rms surface, at a median fringe visibility of %pin:p2_bench_ifo_vis%; the two phase-recovery algorithms (de Groot 7-frame and Hariharan 5-frame) agree to the floor of the arithmetic, printed as a bound.",
+ "prompt": "Using templates/40_benches/bench_ifo, make the test optic a 5 m radius sphere with 20 urad of tilt and rerun, and tell me the recovered radius and tilt errors and the post-fit residual.",
+ "zeros": [
+  {
+   "name": "agree",
+   "pattern": "deGroot-7 vs Hariharan-5 agreement: (\\S+) rad",
+   "bound": 1e-08
+  }
+ ]
+}

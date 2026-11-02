@@ -1,0 +1,41 @@
+# FOVS / SFOV / AFOV / DFOV on a Cassegrain given three Rx fields (two ChfRayDir/ChfRayPos pairs
+# appended to the source block -- one short `!` line each: the shell line is cut at 130 characters,
+# PLAN_CONSOLIDATION 1.2), then SETC and SAOPT on the collimated source (cmdref: System Optimization /
+# Source & Wavelength).  SFOV 2 sets the chief ray to the second Rx field; AFOV adds a fourth; DFOV
+# removes it; SETC clamps a request of 5 fields to the 3 available; SAOPT DIr is refused for a
+# collimated source and POs accepted.  Measured 2026-10-16 (PLAN_CONSOLIDATION 1.2): FOVS prints every
+# field weight as 0 after a load -- the LOAD path's uniform 1.0 is undone by dopt_init_vars.
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in
+! perl -i -pe '$_ .= " ChfRayDir= 0 1e-3 1\n" if /^ *ChfRayPos=/' $DECK
+! perl -i -pe '$_ .= " ChfRayPos= 0 0 -5.\n" if /ChfRayDir= 0 1e-3 1/' $DECK
+! perl -i -pe '$_ .= " ChfRayDir= 1e-3 0 1\n" if /ChfRayPos= 0 0 -5\.$/' $DECK
+! perl -i -pe '$_ .= " ChfRayPos= 0 0 -5.0\n" if /ChfRayDir= 1e-3 0 1/' $DECK
+old $DECK
+fovs
+sfov
+2
+afov
+0,2e-3,1
+0,0,-5
+fovs
+dfov
+4
+fovs
+setc
+WFE
+10
+1e-12
+5
+1,1,1
+no
+saopt
+dir
+saopt
+pos
+# EXPECT: Number of field of view used for design optimization =\s+3[\s\S]*?Set ChfRayDir =\s+-?0\.0+(E\+000)?\s+(1\.0+E-003|9\.99\d*E-004)\s+(1\.0+|0\.99\d*)[\s\S]*?Number of field of view used for design optimization =\s+4[\s\S]*?Number of field of view used for design optimization =\s+3
+# EXPECT: Set number of field of view to\s+3
+# EXPECT: Can not change source direction for collimated source
+# EXPECT: - Source position changes when ajusting source
+# EXPECT-NOT: Invalid ID for FOV selection
+# EXPECT-NOT: Invalid FOV ID
+# EXPECT-NOT: forrtl

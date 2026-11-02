@@ -1,0 +1,25 @@
+# BEAM GAUSSIAN carries the UNIFORM beam's flux, truncated (PLAN_CONSOLIDATION 1.2 (y), Dave 2026-10-19): on
+# CassWithExitPupil.in (4 m aperture, 0.5 m central obscuration and a spider, 64-point grid) the intensity at the
+# entrance pupil sums to 0.906 with the uniform beam (the obscuration and spider losses), 0.578 with a Gaussian of
+# waist 1.0 (the annulus 0.5 < r < 2 holds exp(-0.5) - exp(-8) = 0.606 of the beam, x the spider) and 0.718 with a
+# waist of 2.0 (exp(-0.125) - exp(-2) = 0.747 x the spider) -- the light outside the aperture and inside the
+# obscuration is LOST, not renormalized in.  Pre-fix the Gaussian amplitude was sqrt(Flux) at every ray: the sums
+# read 218 and 1083 -- red.
+# COPY: $ROOT/docs/macos-manual/examples/CassWithExitPupil.in
+old $DECK
+mod ngridpts=64
+q
+none
+int 1
+beam
+gau
+1.0
+1.0
+int 1
+beam
+gau
+2.0
+2.0
+int 1
+# EXPECT: Sum of intensity= 9\.0636\d*D-01[\s\S]*?Enter x beam waist radius: \[1\.00000\]: 1\.0[\s\S]*?Sum of intensity= 5\.7778\d*D-01[\s\S]*?Enter x beam waist radius: \[1\.00000\]: 2\.0[\s\S]*?Sum of intensity= 7\.1750\d*D-01
+# EXPECT-NOT: forrtl

@@ -1,0 +1,43 @@
+% COPHI reading, the equations on deck_cophi slide 4 (TeX source; the slide graphic is
+% figs/cophi_equations.png from make_cophi_equations_fig.py).  Conventions: the record
+% interferometer's sign, I = I0 (1 + g cos(phi - alpha)); Feng's atan2(I4-I2, I1-I3) is
+% the same algorithm for cos(phi + 2 pi f t).
+
+% (1) the camera's irradiance during the beat (test field E_t, LO field E_LO, beat phase alpha(t) = 2 pi f_b t)
+I(t) = \left| E_t + E_{LO}\, e^{i\alpha(t)} \right|^2
+     = I_0 \left[ 1 + \gamma \cos\!\big(\varphi - \alpha(t)\big) \right],
+\qquad
+\varphi = \arg\!\big(E_t \bar E_{LO}\big),\quad
+\gamma = \frac{2\,|E_t|\,|E_{LO}|}{|E_t|^2 + |E_{LO}|^2}
+
+% (2) the k-th frame integrates a bucket of width D = 2 pi / N of the beat (the "integrating bucket")
+I_k = \frac{1}{D}\int_{\alpha_k}^{\alpha_k + D} I\,d\alpha
+    = I_0 \left[ 1 + \gamma\,\mathrm{sinc}\!\left(\tfrac{D}{2}\right)\cos\!\big(\varphi - \bar\alpha_k\big) \right],
+\qquad
+\bar\alpha_k = \alpha_k + \tfrac{D}{2},\quad
+\mathrm{sinc}\!\left(\tfrac{\pi}{4}\right) = 0.900 \ (N = 4)
+
+% (3) the phase, by least squares over the N buckets (N = 4: the four-step)
+I_k = a + b\cos\bar\alpha_k + c\sin\bar\alpha_k
+\;\Rightarrow\;
+\hat\varphi = \mathrm{atan2}(c, b)
+\;=\;
+\mathrm{atan2}\!\big(I_2 - I_4,\; I_1 - I_3\big) + \bar\alpha_1 \quad (N = 4)
+
+% (4) the surface, double pass, about a frozen null on the flat DM
+h = \frac{\lambda}{4\pi}\,\big(\hat\varphi - \varphi_{\mathrm{null}}\big)
+
+% (5) a per-step error epsilon (each step D(1+epsilon)) on the four-bucket phase
+\delta\hat\varphi \simeq \frac{\epsilon}{2}\,\sin 2\varphi
+\qquad \text{(measured: the plain 8-bucket LSQ with the same per-step error is } 1.43\times \text{ worse; the LSQ with the true } \bar\alpha_k \text{ is exact)}
+
+% (6) photon noise per pixel: I0 electrons per frame, r e- read noise, g' = gamma sinc(D/2)
+\sigma_\varphi^2 = \frac{2\,(I_0 + r^2)}{N\, I_0^2\, g'^2},
+\qquad
+\sigma_h = \frac{\lambda}{4\pi}\,\sigma_\varphi
+
+% (7) two colors on one camera: the synthetic wavelength and its range
+\Lambda = \frac{\lambda_1 \lambda_2}{|\lambda_1 - \lambda_2|},
+\qquad
+\text{range } \pm\frac{\Lambda}{4} \text{ of surface},\quad
+\sigma_{h,\mathrm{coarse}} = \frac{\Lambda}{\lambda}\,\sigma_h

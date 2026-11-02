@@ -1,0 +1,155 @@
+% tst_atmos_fold.in -- ATMOS placement fixture (PLAN_CONSOLIDATION 1.2 (p), 2026-10-18): a collimated
+% 1 m beam along +z (source grid frame xGrid -x, yGrid -y), a periscope -- a 45-degree flat fold to +x,
+% a flat Reference between the folds (the beam along +x: xGrid lies ALONG the beam there), a second fold
+% back to +z -- then an f = 10 m paraboloid and the focal plane.
+
+        ChfRayDir=  0.0E+00  0.0E+00  1.0E+00
+        ChfRayPos=  0.0E+00  0.0E+00  -2.0E+00
+          zSource=1.0E+21
+
+        BaseUnits=
+        WaveUnits=  none
+
+           IndRef=1.0E+00
+           Extinc=0.0E+00
+          Wavelen=1.0E-06
+             Flux=1.0E+00
+
+         Aperture=1.0E+00
+         Obscratn=0.0E+00
+
+         GridType=  Circular
+         nGridpts=  51
+            xGrid=  -1.0E+00  0.0E+00  0.0E+00
+            yGrid=  0.0E+00  -1.0E+00  0.0E+00
+
+             nElt=  6
+
+             iElt=  1
+          EltName=  Entrance
+          Element=  Reference
+          Surface=  Flat
+            KrElt=-1.0E+22
+            KcElt=0.0E+00
+           psiElt=  0.0E+00  0.0E+00  -1.0E+00
+           VptElt=  0.0E+00  0.0E+00  -1.0E+00
+           RptElt=  0.0E+00  0.0E+00  -1.0E+00
+           IndRef=1.0E+00
+           Extinc=1.0E+22
+            nCoat=  0
+             xObs=  1.0E+00  0.0E+00  0.0E+00
+             nObs=  0
+           ApType=  Circular
+            ApVec=  6.0E-01  0.0E+00  0.0E+00
+         PropType=  Geometric
+             zElt=1.0E+00
+          nECoord= -6
+
+             iElt=  2
+          EltName=  Fold1
+          Element=  Reflector
+          Surface=  Flat
+            KrElt=-1.0E+22
+            KcElt=0.0E+00
+           psiElt=  7.0710678118654752E-01  0.0E+00  -7.0710678118654752E-01
+           VptElt=  0.0E+00  0.0E+00  0.0E+00
+           RptElt=  0.0E+00  0.0E+00  0.0E+00
+           IndRef=1.0E+00
+           Extinc=1.0E+22
+            nCoat=  0
+             xObs=  0.0E+00  1.0E+00  0.0E+00
+             nObs=  0
+           ApType=  Circular
+            ApVec=  8.0E-01  0.0E+00  0.0E+00
+         PropType=  Geometric
+             zElt=1.0E+00
+          nECoord= -6
+
+             iElt=  3
+          EltName=  Between
+          Element=  Reference
+          Surface=  Flat
+            KrElt=-1.0E+22
+            KcElt=0.0E+00
+           psiElt=  -1.0E+00  0.0E+00  0.0E+00
+           VptElt=  5.0E-01  0.0E+00  0.0E+00
+           RptElt=  5.0E-01  0.0E+00  0.0E+00
+           IndRef=1.0E+00
+           Extinc=1.0E+22
+            nCoat=  0
+             xObs=  0.0E+00  1.0E+00  0.0E+00
+             nObs=  0
+           ApType=  Circular
+            ApVec=  6.0E-01  0.0E+00  0.0E+00
+         PropType=  Geometric
+             zElt=1.0E+00
+          nECoord= -6
+
+             iElt=  4
+          EltName=  Fold2
+          Element=  Reflector
+          Surface=  Flat
+            KrElt=-1.0E+22
+            KcElt=0.0E+00
+           psiElt=  -7.0710678118654752E-01  0.0E+00  7.0710678118654752E-01
+           VptElt=  1.0E+00  0.0E+00  0.0E+00
+           RptElt=  1.0E+00  0.0E+00  0.0E+00
+           IndRef=1.0E+00
+           Extinc=1.0E+22
+            nCoat=  0
+             xObs=  0.0E+00  1.0E+00  0.0E+00
+             nObs=  0
+           ApType=  Circular
+            ApVec=  8.0E-01  0.0E+00  0.0E+00
+         PropType=  Geometric
+             zElt=1.0E+00
+          nECoord= -6
+
+             iElt=  5
+          EltName=  Paraboloid
+          Element=  Reflector
+          Surface=  Conic
+            KrElt=-2.0E+01
+            KcElt=-1.0E+00
+           psiElt=  0.0E+00  0.0E+00  -1.0E+00
+           VptElt=  1.0E+00  0.0E+00  1.0E+00
+           RptElt=  1.0E+00  0.0E+00  1.0E+00
+           IndRef=1.0E+00
+           Extinc=1.0E+22
+            nCoat=  0
+             xObs=  1.0E+00  0.0E+00  0.0E+00
+             nObs=  0
+           ApType=  Circular
+            ApVec=  6.0E-01  0.0E+00  0.0E+00
+         PropType=  Geometric
+             zElt=1.0E+01
+          nECoord= -6
+
+             iElt=  6
+          EltName=  Detector
+          Element=  FocalPlane
+          Surface=  Flat
+            KrElt=-1.0E+22
+            KcElt=0.0E+00
+           psiElt=  0.0E+00  0.0E+00  1.0E+00
+           VptElt=  1.0E+00  0.0E+00  -9.0E+00
+           RptElt=  1.0E+00  0.0E+00  -9.0E+00
+           IndRef=1.0E+00
+           Extinc=1.0E+22
+            nCoat=  0
+             xObs=  1.0E+00  0.0E+00  0.0E+00
+             nObs=  0
+           ApType=  None
+         PropType=  Geometric
+             zElt=0.0E+00
+          nECoord= -6
+% ---------------------------------------------------------------------------------------
+% Output Coordinate System Definition
+% ---------------------------------------------------------------------------------------
+
+         nOutCord=  5
+             Tout=  1.000000000000000D+00  0.000000000000000D+00  0.000000000000000D+00  0.000000000000000D+00  0.000000000000000D+00  0.000000000000000D+00  0.000000000000000D+00
+                    0.000000000000000D+00  1.000000000000000D+00  0.000000000000000D+00  0.000000000000000D+00  0.000000000000000D+00  0.000000000000000D+00  0.000000000000000D+00
+                    0.000000000000000D+00  0.000000000000000D+00  0.000000000000000D+00  1.000000000000000D+00  0.000000000000000D+00  0.000000000000000D+00  0.000000000000000D+00
+                    0.000000000000000D+00  0.000000000000000D+00  0.000000000000000D+00  0.000000000000000D+00  1.000000000000000D+00  0.000000000000000D+00  0.000000000000000D+00
+                    0.000000000000000D+00  0.000000000000000D+00  0.000000000000000D+00  0.000000000000000D+00  0.000000000000000D+00  0.000000000000000D+00  1.000000000000000D+00

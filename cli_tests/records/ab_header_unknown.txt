@@ -1,0 +1,23 @@
+# Corpus A/B for PLAN_CONSOLIDATION 3.2 pair 3 (unknown HEADER keys reported), 2026-10-11.
+# pre = macos 23215cd (gated); post = this commit; ifx + gfortran; 406 decks; every record column
+# + the first SAVE byte for byte (cmp.py, as ab_calib_loop_stopaim.txt).
+== ifx: 406 decks compared; 404 SAVE pairs (231 declare a stop); column movers 0; SAVE diffs 0
+== gf: 406 decks compared; 403 SAVE pairs (231 declare a stop); column movers 0; SAVE diffs 0
+# RESULT: 0 movers (the change only prints).
+#
+# ENGINE-TRUTH count (the post binaries, every deck loaded, the new line grepped): 8 decks warn,
+# identical on both compilers --
+#   OpdReRayfLen  4  MACOS_sandbox ns_griddata_variants/iris_dp_conic, iris_dp_GD, optiix_dp_conic,
+#                    old_Rx/iris_dp_ZGD -- a misspelling of OPDRefRayLen=: these decks have traced
+#                    WITHOUT their OPD reference length (8535.79).  Not ours to edit (CCMac's).
+#   SegYgrid      3  MACOS_sandbox old_Rx/6MST_segV3, 6MST_wfs_segV3, eac2_7seg -- NOT a parsed key,
+#                    and a DEAD line: the engine builds the segment frame from SegXgrid alone
+#                    (ssrcray.inc: orthogonalised against ChfRayDir, then its angle to xGrid/yGrid);
+#                    on all three SegXgrid=(1,0,0) is already normal to the chief ray and the
+#                    declared SegYgrid=(0,1,0) is that frame's y up to the chief ray's tilt.
+#   stration      1  docs/macos-manual/examples/SegDemo.in line 2 -- the wrapped tail of the line-1
+#                    comment ('... a MACOS demon-' / 'stration'), no '%': a stray text line the
+#                    header chain skipped in silence.  Harmless; the deck's own text defect.
+# A first pass also warned on six FFSegDemo decks: a UTF-8 BOM ALONE on line 1 (no key lost) --
+# a false positive, removed (a 'key' not starting with a letter is skipped) before this record.
+# The text census (all 406 headers against the 102 parsed header keys) found the first 7 only.

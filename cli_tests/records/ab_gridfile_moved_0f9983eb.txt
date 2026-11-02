@@ -1,0 +1,27 @@
+# GridFile= looked for beside the deck (macos 0f9983eb, PLAN_CONSOLIDATION 1.2 (f), Dave's ruling 2026-10-22): the core A/B
+# eff48867 -> 0f9983eb (load gate, opd nElt, model 256, 160 decks), both compilers, moves these 15 decks and no other.
+# Mechanism: the gate runs the CLI from cli_tests' caller, not the deck's folder, so before the fix each of these declined its
+# own relative grid ('File <name> does not exist -sub GridInit') and traced without it; now the grid beside the deck is read.
+# Attribution, measured: the PRE-fix binary (4a140f9a) run from a copy of the deck's own folder (grid found in the cwd) gives
+# the tip's status / nPass / lost / RMS / P-V / avg exactly, for all 15 on ifx and on gfortran -- the move is the grid being
+# found; the legacy-coat (b9cdb843) and PropType (a239d5e6) changes in the same range move nothing.
+# SegDemo3.in / SegDemo3data.in now lose 32 / 34 rays and read RMS 6.66 mm / 0.143 mm: that is the deck with its grids
+# (same numbers on the pre-fix binary in its own folder), not a new defect of this change.
+# The CORPUS A/B 4a140f9a -> 0f9983eb (1468 decks, both compilers) moves the same 15 plus the mmacos template copy of
+# FFSegDemoAll.in (last line), by the same mechanism: pre-fix binary in a copy of its folder = tip, both compilers.
+../MACOS_resources/pymacos/tests/Rx/Rx_NSRefGridNS.in
+../MACOS_resources/pymacos/tests/Rx/Rx_NSRefGridSeq.in
+ZGD_test_files/FFSegDemoAll.in
+ZGD_test_files/FFSegDemoData.in
+ZGD_test_files/FFSegDemo.in
+ZGD_test_files/SegDemo3data.in
+ZGD_test_files/SegDemo3.in
+ZGD_test_files/SegDemo.in
+ZGD_test_files/tst_eol_grid_crlf.in
+ZGD_test_files/tst_eol_grid_lf.in
+ZGD_test_files/tst_nsref_ns.in
+ZGD_test_files/tst_nsref_seq.in
+ZGD_test_files/tst_short_zerncoef.in
+ZGD_test_files/tst_ZGD2.in
+ZGD_test_files/tst_ZGDdata2.in
+../MACOS_resources/mmacos/templates/20_segmentation/grid_surface/FFSegDemoAll.in

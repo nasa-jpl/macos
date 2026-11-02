@@ -93,13 +93,19 @@ c       warning AND the meaningful one, telling them where to look.
           LOGICAL FUNCTION SaneBounds(x1, x2, y1, y2)
             REAL, INTENT(IN) :: x1, x2, y1, y2
             REAL, PARAMETER  :: maxRange = 1.0E30
-            ! Reject NaN (x /= x), reversed/degenerate (x1 >= x2),
-            ! and over-large ranges (likely overflow from upstream).
+            ! Reject NaN (x /= x), degenerate (x1 == x2), and
+            ! over-large ranges (likely overflow from upstream).
+!-->  REVERSED bounds (x1 > x2) are a plot with a negative plane
+!     spacing -- a far-field dx2 < 0 is the orientation the propagator
+!     reports and 3.2 drew it; PGENV takes a reversed axis.  They were
+!     refused as degenerate ('** Error: inconsistent propagation
+!     parameters' on Telescope.in INT 9; macos-fd 2026-10-19).
             IF (x1 /= x1 .OR. x2 /= x2 .OR.
      &          y1 /= y1 .OR. y2 /= y2) THEN
               SaneBounds = .FALSE.
-            ELSE IF (x1 .GE. x2 .OR. y1 .GE. y2) THEN
+            ELSE IF (x1 .EQ. x2 .OR. y1 .EQ. y2) THEN
               SaneBounds = .FALSE.
+!<--
             ELSE IF (ABS(x2-x1) .GT. maxRange .OR.
      &               ABS(y2-y1) .GT. maxRange) THEN
               SaneBounds = .FALSE.

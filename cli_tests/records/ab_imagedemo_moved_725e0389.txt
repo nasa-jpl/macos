@@ -1,0 +1,6 @@
+# ImageDemo.in repaired (macos 725e0389, PLAN_CONSOLIDATION 1.2 (cc)): the ONE core A/B deck expected to move, pre = ef15ab23
+# (engine identical; the deck changed), post = 725e0389, load gate (opd nElt, model 256, 160 decks), both compilers.
+# Mechanism: a PDF line wrap in the extracted listing had split '-3.536721061D-05' into '-3.536721061D-' and '05', and the
+# reader took the orphaned 05 as a 5 mm Zernike coefficient on the primary -- 726 of 741 rays were lost before the exit
+# pupil.  Rejoined: 578 of 741 pass (the 163 lost are the spider and secondary obscurations), image RMS 3.6e-4 mm.
+docs/macos-manual/examples/ImageDemo.in

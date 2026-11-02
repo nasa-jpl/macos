@@ -1,0 +1,41 @@
+# COMPOSE / ADD / DADD / SEED / NOISE / STRETCH / BLUR / GBLUR / CADD on the manual's Cassegrain, far field at the
+# detector (cmdref: Diffraction / Window & Post-Processing).  NONE first, so no graphics device is asked for.
+# COMPOSE arms a 64 x 64 grid of 2e-6 pixels at element 5; ADD propagates and accumulates (peak 8.877e6 at
+# 129,129); DADD re-displays; SEED/NOISE photon; STRETCH log10; BLUR and GBLUR convolve the composed image;
+# CADD runs its dialog (a stub in this version, see the cmdref); PROPAGATE is listed in HELP but not a command.
+old $ROOT/docs/macos-manual/examples/Cassegrain.in
+none
+compose
+5
+64
+2e-6
+add
+no
+dadd
+seed
+12345
+noise
+photon
+stretch
+log10
+blur
+1
+gblur
+4e-6,4e-6
+no
+cadd
+5
+no
+propagate
+# EXPECT: Enter element where image is to be composed: \[0\]: 5\s+Enter number of pixels per side: \[256\]: 64\s+Enter size of pixel: \[1\.000000E-03\]: 2e-6
+# EXPECT: Peak intensity= 8\.8773143D\+06; Peak occurs at i=\s+129, j=\s+129\s+Sum of intensity= 3\.3131188D\+08\s+Image added\. Plot composed image\? \[YES\]: no
+# EXPECT: Enter noise seed \(any integer 1 to 32,700\): \[12345\]: 12345
+# EXPECT: Enter noise type \(PHOton, BACkground, REAd, GAUssian\): \[PHOTON\]: photon
+# EXPECT: Enter image stretch type \(LINEAR, LOG10, SQRT\): \[LINEAR\]: log10
+# EXPECT: Enter blur kernel peak \(1e0\): \[1\.00000\]: 1
+# EXPECT: Enter Gaussian blur kernel width in base units \(0,0\): \[0\.00000,0\.00000\]: 4e-6
+# EXPECT: Complex amplitude added\. Plot composed image\? \[YES\]: no
+# EXPECT: Unknown command = propagate
+# EXPECT-NOT: Must COMpose
+# EXPECT-NOT: No data to display
+# EXPECT-NOT: forrtl

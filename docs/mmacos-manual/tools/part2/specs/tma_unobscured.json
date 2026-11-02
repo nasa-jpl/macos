@@ -1,0 +1,38 @@
+{
+ "section": "10_telescopes",
+ "entry": "run(fullfile(pwd,'tma_unobscured_search.m')); run(fullfile(pwd,'tma_unobscured.m'));",
+ "knobs": {
+  "file": "tma_unobscured_search.m",
+  "from": "^% =+  USER DESIGN CHOICES",
+  "to": "^% =+$"
+ },
+ "figure": "tma_unobscured_fpmap.png",
+ "run": {
+  "from": "\\n\\[1\\]",
+  "to": "\\n\\[6\\] design report:"
+ },
+ "pins": [
+  {
+   "name": "ffm1",
+   "pattern": "\\[2d\\] \\+ freeform M1:\\s+raw\\s+(\\S+)",
+   "rule": "printed",
+   "format": "%.3f"
+  },
+  {
+   "name": "ring1",
+   "pattern": "1\\.00'\\s+\\S+\\s+(\\S+)\\s+<-",
+   "rule": "printed",
+   "format": "%.3f"
+  }
+ ],
+ "zeros": [
+  {
+   "name": "fp_foot",
+   "pattern": "FocalPlane\\s+\\S+\\s+(\\S+)",
+   "bound": 0.0001
+  }
+ ],
+ "caption": "Field curvature on the fitted focal plane (`tma_unobscured_fpmap.png`): the sag of the best focus from the tilted, refocused plane, over \u00b10.25'.",
+ "number": "The correction ladder reaches %pin:p2_tma_unobscured_ffm1% waves rms at the field center at 500 nm with the freeform primary, and the field ladder stays diffraction-limited out to the 1' ring (%pin:p2_tma_unobscured_ring1% waves, tilt removed). The template's closing design report (step [6], not printed) reads NaN on every field ring on this run, the open questions list has it.",
+ "prompt": "Using templates/10_telescopes/tma_unobscured, run the finder and the demo for a 4 m unobscured visible TMA with an f/3 primary, keeping every mirror's AOI spread under 15 degrees, and report the field ladder to 1'."
+}

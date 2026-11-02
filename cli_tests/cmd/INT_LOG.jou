@@ -1,0 +1,16 @@
+# INTensity then LOG at the focal plane of the far-field Cassegrain (cmdref: Diffraction / Outputs)
+# INT propagates the wavefront to the element (the far-field leg of this deck) and prints
+# the peak; LOG redisplays the SAME intensity as log10 (no new propagation) -- it is the
+# log10-intensity DISPLAY, not transcript logging (that is JOUrnal).  The /null lines
+# answer the plot-device prompt the first plot of a session asks.
+# MODEL: 256
+# DEADLINE: 120
+old $RES/pymacos/tests/Rx/Rx_Cass_FarField.in
+int 6
+/null
+log 6
+# EXPECT: Tracing rays past\s+6 elements
+# EXPECT: Peak intensity= 3\.2881\d+D\+05; Peak occurs at i=\s*129, j=\s*129
+# EXPECT: (Peak intensity=[\s\S]*){2}
+# EXPECT-NOT: No data to display
+# EXPECT-NOT: Too few rays

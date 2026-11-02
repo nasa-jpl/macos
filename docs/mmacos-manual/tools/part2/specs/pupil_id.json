@@ -1,0 +1,36 @@
+{
+ "section": "10_telescopes",
+ "entry": "run_pupil_id('tma_onaxis');",
+ "siblings": [
+  "tma_onaxis"
+ ],
+ "figure": "results/tma_onaxis/pupil_id_zernikes.png",
+ "run": {
+  "from": "\\[2\\] EP at element",
+  "to": "pupil_quality \\(% rel\\)\\.\\)"
+ },
+ "pins": [
+  {
+   "name": "df",
+   "pattern": "defocus (\\S+) vs \\S+ \\(",
+   "rule": "printed",
+   "format": "%.3e"
+  },
+  {
+   "name": "dfe",
+   "pattern": "defocus \\S+ vs (\\S+) \\(",
+   "rule": "printed",
+   "format": "%.3e"
+  },
+  {
+   "name": "dep",
+   "pattern": "departure-from-sphere RMS=(\\S+) m",
+   "rule": "printed",
+   "format": "%.3e"
+  }
+ ],
+ "caption": "The exit pupil's own aberration (`results/tma_onaxis/pupil_id_zernikes.png`): the cone-convergence pupil map against the engine's two-ray XPS command, term by term. The axis multiplier (\u00d710\u207b\u2074 m) sits under the title, cut off by it.",
+ "number": "The pupil, found as a surface from the convergence of ray cones rather than from one chief ray, departs from a sphere by %pin:p2_pupil_id_dep% m rms, and its aberration agrees with the engine's own pupil-quality command: defocus %pin:p2_pupil_id_df% against %pin:p2_pupil_id_dfe%, 0.02 percent, astigmatism to the printed digit. The revised prescription carries the exit pupil the method finds.",
+ "prompt": "Using templates/10_telescopes/pupil_id, run pupil_id on the sz_tma deck with a 4 arcmin field, and tell me the exit pupil's departure from a sphere and whether it agrees with the engine's pupil_quality.",
+ "run_note": "The runner's one-case form on the bundled `tma_onaxis` deck; the manual copies the template with its `tma_onaxis` sibling, which the runner reads."
+}

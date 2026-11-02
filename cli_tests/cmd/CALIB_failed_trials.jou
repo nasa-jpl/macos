@@ -1,0 +1,13 @@
+# PLAN 3.4 follow-on: the ill-posed rigid x SPOT cell with TIP AND TILT free (macos 70ea2c7).  A SPOT
+# merit is first-order null to tilt about the unspoiled axis; LM's trials lose the chief ray (pre-338416c
+# this STOPped the process: rc 139 in the mex).  Now a failed trial is REJECTED (lambda x10); with zero
+# accepted steps and failures among them the solve is 'failed' BY NAME, the optics restored, the host alive.
+# The TILT DOF is freed by editing the copied deck's VarElt line (SETP has no DOF prompt).
+# COPY: $ROOT/ZGD_test_files/tst_calib_rigid.in
+! perl -i -pe 's/VarElt=  1 0 0 0 0 0 0 0/VarElt=  1 1 0 0 0 0 0 0/' $DECK
+old $DECK
+calib
+show 1
+# EXPECT: no trial step was accepted -- \d+ of \d+ trials lost the chief ray
+# EXPECT: psiElt=\s+-?0\.0E\+00\s+(1\.0E-03|9\.99\d*E-04|1\.000\d*E-03)
+# EXPECT-NOT: Stopped: stalled

@@ -1,0 +1,37 @@
+{
+ "section": "36_cameras",
+ "entry": "out = small_camera();",
+ "knobs": {
+  "file": "small_camera.m",
+  "from": "^% =+  USER DESIGN CHOICES",
+  "to": "^% =+$"
+ },
+ "figure": "out/small_camera_field.png",
+ "run": {
+  "from": "=+\\n Small dedicated imager",
+  "to": ""
+ },
+ "pins": [
+  {
+   "name": "rms700",
+   "pattern": "RMS  700 nm(?:\\s+\\S+){4}\\s+(\\S+)",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "merit",
+   "pattern": "re-solve (\\S+) waves -- KEPT",
+   "rule": "printed",
+   "format": "%.4f"
+  },
+  {
+   "name": "q700",
+   "pattern": "nm: \\[\\S+ (\\S+) \\S+\\]; Nyquist",
+   "rule": "printed",
+   "format": "%.3f"
+  }
+ ],
+ "caption": "RMS wavefront error (log scale) and distortion against field for the small dedicated imager: the deck small_camera.in in its matched catalog glasses at 500, 700 and 900 nm; the camera re-designed from its spec; and the bare Ritchey-Chretien without its corrector (`small_camera_field.png`).",
+ "number": "As shipped, the deck's worst RMS at 700 nm is %pin:p2_small_camera_rms700% waves, at the edge of its 0.44 deg field.  Re-designed from its spec (D 350 mm, f 3500 mm, 500-900 nm), the camera's worst RMS over the band and the field is %pin:p2_small_camera_merit% waves, and at 700 nm the pixel samples the image at Q = lambda N / p = %pin:p2_small_camera_q700%, under Nyquist by design.",
+ "prompt": "Using templates/36_cameras/small_camera, design the camera for a 250 mm aperture at f = 2500 mm with 10 um pixels over 450-850 nm, and tell me the field curve at each wavelength, the distortion at the edge, which CALIB rounds were kept and how undersampled the detector is."
+}

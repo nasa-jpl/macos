@@ -1,0 +1,26 @@
+# SRAY (one ray over an element range; the source flags it "buggy" and it prints a stray `iElt,iCurRayElt`
+# line) and SRT (a single ray launched from a normalized source-aperture position, traced to a chosen element)
+# on the manual's Cassegrain (cmdref: Misc).  SRT at (0.5, 0) is obscured by element 1 and still traced to the
+# detector (total length 14.6222918); a position outside the aperture is refused by name.  Until 2026-10-17 SRT
+# died with SIGSEGV on every ray: the ray-state arrays it fills (`thisRay`, the "FIX (ToDo)" in traceutil_mod)
+# were never allocated (PLAN_CONSOLIDATION 1.2 (l); red on 8d04261).
+old $ROOT/docs/macos-manual/examples/Cassegrain.in
+sray
+1
+2
+5
+srt
+5
+0.5,0
+srt
+5
+0.6,0
+# EXPECT: Enter starting element: \[0\]: 2\s+Enter end element: \[0\]: 5
+# EXPECT: Ray\s+1 segment from Element\s+2 \(Primary\s*\) to Element\s+3 \(Secondary\s*\):
+# EXPECT: Ray\s+1 segment from Element\s+4 \(Ref_surf\s*\) to Element\s+5 \(Detector\s*\):[\s\S]*?Total Length=\s+1\.46222918040000D\+01
+# EXPECT: Enter ray position in normalized source aperture: \[0\.00000,0\.00000\]: 0\.5,0\s+Ray\s+2 has aperture coordinates
+# EXPECT: Ray\s+2 is obscured by element\s+1\s+Ray\s+2 segment from Element\s+1 \(SecMirObs\s*\) to Element\s+2 \(Primary\s*\)
+# EXPECT: Ray\s+2 segment from Element\s+4 \(Ref_surf\s*\) to Element\s+5 \(Detector\s*\):[\s\S]*?Total Length=\s+1\.4622291803\d+D\+01
+# EXPECT: \*\*Ray position is outside source aperture
+# EXPECT-NOT: forrtl
+# EXPECT-NOT: SIGSEGV

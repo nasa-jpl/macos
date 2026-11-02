@@ -1,0 +1,25 @@
+# EXPORT the traced ray data as text after an OPD (cmdref: Prescription I/O): mode TEXt, ALLRays, the
+# RAYPos 3-vectors then the RAYL (cumulative optical length) scalars, Q to end.  The file is written beside
+# the deck as <deck>.txt, so the deck is a COPY in $TMP.  With the default CHFRay only, the obscured chief
+# ray of this telescope exports 0 rays (OBS POSITIVE is honored) -- hence ALLRays here.
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in
+cd $TMP
+old $DECK
+opd 5
+/null
+export
+tex
+allrays
+raypos
+rayl
+q
+! head -2 $TMP/Cassegrain.in.txt
+! wc -l $TMP/Cassegrain.in.txt
+# EXPECT: Exporting data to \S+/Cassegrain\.in\.txt
+# EXPECT: % RayPos 3-vectors for\s+1756 rays at Element\s+5
+# EXPECT: % CumRayL scalars for\s+1756 rays at Element\s+5
+# EXPECT: ^\s+1\s+-?0\.\d+D-(09|1\d|[2-9]\d)\s+-?0\.\d+D-(09|1\d|[2-9]\d)\s+0\.15000\d*D\+01
+# EXPECT: ^\s*3514 \S+/Cassegrain\.in\.txt
+# (BSD wc -l prints the count right-aligned with leading blanks; CCMac's Mac gate 4, 2026-10-19)
+# EXPECT-NOT: No data has been generated
+# EXPECT-NOT: forrtl

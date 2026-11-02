@@ -1,6 +1,5 @@
-% SegmentDemo.in -- prescription file for SegmentDemo.jou, a MACOS demon-
-stration
-%   macro.
+% SegmentDemo.in -- prescription file for SegmentDemo.jou, a MACOS
+%   demonstration macro.
 
 ChfRayDir=    0d0 0d0 -1d0
 ChfRayPos=    0d0 0d0 1.5d+00
@@ -244,5 +243,3 @@ nOutCord=    5
             0d0   0d0   0d0    1d0   0d0   0d0    0d0
             0d0   0d0   0d0    0d0   1d0   0d0    0d0
             0d0   0d0   0d0    0d0   0d0   0d0    1d0
-
-        A.6 Near-Field Propagation Example

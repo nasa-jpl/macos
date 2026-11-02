@@ -14,6 +14,24 @@ typedef struct _giza_remapped_tokens_entry {
     giza_remapped_token_entry const replacement;
 } giza_remapped_tokens_entry;
 
+/* The replacement glyphs for the \times, \x, \. and \A escapes.  With a
+ * cairo that has FreeType/fontconfig the fonts carry the Unicode signs;
+ * macos's vendored cairo is built WITHOUT them (CAIRO_HAS_FT_FONT undefined,
+ * giza/src/subprojects/cairo), so every glyph comes from cairo's built-in
+ * "twin" stroke font, which is ASCII only: U+00D7 drew as the .notdef box
+ * on every /png and /xw axis label ("1<box>10^-10"; macos PLAN_CONSOLIDATION
+ * 1.2 (t), fixed 2026-10-19).  ASCII stand-ins there. */
+#include <cairo-features.h>
+#ifdef CAIRO_HAS_FT_FONT
+#  define GIZA_TIMES_TEXT    "\u00d7"
+#  define GIZA_CDOT_TEXT     "\u22c5"
+#  define GIZA_ANGSTROM_TEXT "\u212b"
+#else
+#  define GIZA_TIMES_TEXT    "x"
+#  define GIZA_CDOT_TEXT     "."
+#  define GIZA_ANGSTROM_TEXT "A"
+#endif
+
 static giza_remapped_tokens_entry giza_remappable_tokens[] = {
     /* solar system */
     {"Sun",      {GIZA_TOKEN_HERSHEY, "2281"   }},
@@ -28,13 +46,13 @@ static giza_remapped_tokens_entry giza_remappable_tokens[] = {
     {"Pluto",    {GIZA_TOKEN_HERSHEY, "2290"   }},
     {"Moon",    {GIZA_TOKEN_HERSHEY, "2291"   }},
     /* mathematical symbols */
-    {"." ,       {GIZA_TOKEN_TEXT   , "\u22c5" }},
-    {"x",        {GIZA_TOKEN_TEXT   , "\u00d7" }},
-    {"times",    {GIZA_TOKEN_TEXT   , "\u00d7" }},
+    {"." ,       {GIZA_TOKEN_TEXT   , GIZA_CDOT_TEXT  }},
+    {"x",        {GIZA_TOKEN_TEXT   , GIZA_TIMES_TEXT }},
+    {"times",    {GIZA_TOKEN_TEXT   , GIZA_TIMES_TEXT }},
     {"int",      {GIZA_TOKEN_HERSHEY, "2268"   }},
     {"nabla",    {GIZA_TOKEN_HERSHEY, "2266"   }},
     /* misc */
-    {"A",        {GIZA_TOKEN_TEXT   , "\u212b" }}, /* Angstrom */
+    {"A",        {GIZA_TOKEN_TEXT   , GIZA_ANGSTROM_TEXT }}, /* Angstrom */
     /* fonts */
     {"rm" ,      {GIZA_TOKEN_FONT   , "r"      }},
     {"it" ,      {GIZA_TOKEN_FONT   , "i"      }},

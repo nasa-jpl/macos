@@ -1,0 +1,16 @@
+# SPOT in TEXT mode at the exit pupil of the far-field Cassegrain, Tout frame (cmdref: Outputs)
+# the obscured chief ray must not abort the spot (CLAUDE.md "SPOT BEAM reference frame: obscured chief ray");
+# the spot file is written beside the deck, so the deck is a COPY in the scratch directory
+# COPY: $RES/pymacos/tests/Rx/Rx_Cass_FarField.in
+old $DECK
+text
+spot 6 tout
+/null
+spot 6 beam
+/null
+# EXPECT: Plot type set to TEXT
+# EXPECT: Chief ray location: x=
+# EXPECT: Centroid of spot diagram
+# EXPECT: Spot Diagram, Elt=6
+# EXPECT-NOT: chief ray becomes undefined
+# EXPECT-NOT: forrtl

@@ -1,0 +1,17 @@
+# A replayed journal that does not answer CALIB's two yes/no prompts (PLAN 3.3 "quit after CALIB:
+# EXE journals can't terminate clean").  `calib` / `quit` in a .jou: `quit` was consumed as the
+# answer to 'Display optimization summary' and the Save prompt then waited on the TERMINAL -- the
+# replay hung.  Post-fix a token that is not Y*/N* at either prompt takes the default, says so, and
+# goes back to the command stream, so the next command runs and the prompt returns.  The journal
+# below uses `status` as the non-answer (a `quit` would end the CLI, which the pty runner reads as
+# a crash); the mechanism is the same token push-back.
+# DEADLINE: 60
+# COPY: $ROOT/ZGD_test_files/tst_calib_spot4.in
+old $DECK
+! printf 'calib\nstatus\n' > $TMP/calq.jou
+exe
+$TMP/calq
+# EXPECT: Reading from journal file
+# EXPECT: Final LM merit
+# EXPECT: is not yes/no
+# EXPECT: Save optimized optical state[^\n]*\n[\s\S]*MACOS>

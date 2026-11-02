@@ -1,0 +1,16 @@
+# An OptAsph= ABOVE its element's VarElt= is reported, not dropped silently (PLAN_CONSOLIDATION
+# 1.1b, 2026-10-12).  The parse reads OptAsph= only once VarElt= has marked the element variable
+# (OptZern= marks it itself; OptAsph= never did), so on tst_optasph_order.in -- tst_calib_asph.in
+# with the two lines swapped -- the h^4 DOF is absent from the solve: CALIB stalls and the spoil
+# stays 5e-3 (the positive control, CALIB_SPOT_asph.jou, drives it below 3.3e-9).  Warn, never
+# refuse (rule 5).  Pre-fix: the same stall with NO message -- red.
+# DEADLINE: 120
+# COPY: $ROOT/ZGD_test_files/tst_optasph_order.in
+old $DECK
+calib
+no
+yes
+show 1
+# EXPECT: \*\* OptAsph= at element\s+1 IGNORED: OptAsph= must follow VarElt=
+# EXPECT: Stopped: stalled
+# EXPECT: AsphCoef=\s+5\.0+\d*E-03

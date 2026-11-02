@@ -1030,7 +1030,20 @@ C  Return if ray missed surface
 !	    print*,'crnt_traced_ray =',crnt_traced_ray,
 !    &        ', gradInd_kmax(crnt_traced_ray,1) =',gradInd_kmax(crnt_traced_ray,1)
           Else
-            ! other lens models -- to implement
+!-->        Any other model is NOT implemented: the code below would
+!           build pr / rhat from uninitialised pcrnt / Tcrnt (NaN).
+!           The ray is lost by name instead (surfsub LGrinUnsup).
+            LROK = .FALSE.
+            LGrinUnsup = .TRUE.
+            nGrinUnsup = nGrinUnsup + 1
+            IF (.NOT.LGrinUnsupNoted) THEN
+              WRITE(*,'(A,I4,A)') ' ** GradInd= model',
+     &          thisGrinRef%modelType, ' is not implemented (only 5'//
+     &          ' is): its rays are LOST (once per run)'
+              LGrinUnsupNoted = .TRUE.
+            END IF
+            RETURN
+!<--
           End If
           !
           ! Now the last point on integrated ray path becomes 'pr', and the ray
@@ -1319,7 +1332,7 @@ C    Compute refracted ray cosine
 	  Eout(1)=DCMPLX(prhat(1),0d0)*Epr+DCMPLX(shat(1),0d0)*Esr
 	  Eout(2)=DCMPLX(prhat(2),0d0)*Epr+DCMPLX(shat(2),0d0)*Esr
 	  Eout(3)=DCMPLX(prhat(3),0d0)*Epr+DCMPLX(shat(3),0d0)*Esr
-cdebug -- ToDo: significance of this portion???
+cdebug -- eopha is computed and never read (notes/polarization.md)
 	  DO i=1,1
 	    eopha(i)=datan2(DIMAG(Eout(i)),DBLE(Eout(i)))/dtr
 	  END DO
@@ -1465,6 +1478,7 @@ C***********************************************************************
      &	 LROK,LRT,Kc,Kr,AsphCoef,MonCoef,AnaCoef,UDSrfCoef,UDSrfType,
      &	 UDSrfParam,
      &   nGridMat,mGridMat,GridMat,GridSrfdx,
+     &   pData,xData,yData,zData,
      &   psi,pv,prot,pin,ihat,Evec,
      &	 lMon,pmon,xhat,yhat,zhat,
      &	 na,nb,kxa,kxb,lambda,
@@ -1494,11 +1508,13 @@ C  for a general lens surface
 
 	INTEGER nGridMat,mGridMat
         REAL*8 GridMat(mGridMat,mGridMat),GridSrfdx
-!     NSRefractor (non-sequential) lacks the element grid frame; its
-!     GridData(9) path keeps the prior null frame (the sequential
-!     FindSrf/Reflector/Refractor routines get the real pData -- see the
-!     GridSrf fix).  Threading it here is a deferred follow-on.
-        REAL*8 :: pData(3)=0d0,xData(3)=0d0,yData(3)=0d0,zData(3)=0d0
+!-->  The element's REAL grid frame (PLAN_CONSOLIDATION 1.2, 2026-10-11):
+!     a local null frame here sent every ray to the grid's CENTRE pixel,
+!     so a GridData figure on a refractive NS surface imaged as a piston
+!     (tst_nsref_ns.in: the bump read exactly 0).  The callers pass the
+!     frame of the element actually hit (imin).
+        REAL*8, INTENT(IN) :: pData(3),xData(3),yData(3),zData(3)
+!<--
 
 	REAL*8 pv(3),prot(3),pin(3),ihat(3),psi(3),na,nb,
      &   MonCoef(mMonCoef),pr(3),rhat(3),L,Nhat(3),lambda,pout(3),rout(3),
@@ -1512,7 +1528,7 @@ C  for a general lens surface
      &  drda(3,3),dgda(3,3),dgdi(3,3),dgdd(3,3),dldd(3),
      &  dprot(3),dddth(3,3),dgdth(3,3),dldth(3),Kc,Kr,kxa,kxb,
      &  NoidNdi(3,3),drdii(3,3),dNda(3,3),dlda(3),dldi(3),
-     &	CoatIndx(20),CoatThk(20)
+     &	CoatIndx(*),CoatThk(*)
 
 	REAL*8 mu,mu2,Nx(3,3),NxNx(3,3),cvec(3),Nxix(3,3),
      &	Perpr(3,3),D1(9),D2(9),D3(3,3),S1,S2,Ndi,
@@ -1824,7 +1840,7 @@ C***********************************************************************
         USE Constants, ONLY: TWOPI
 	IMPLICIT NONE
 	INTEGER nCoat
-	REAL*8 cfa,sfa,cfb,n1,n3,mu,Wavelen,CoatIndx(20),CoatThk(20),
+	REAL*8 cfa,sfa,cfb,n1,n3,mu,Wavelen,CoatIndx(*),CoatThk(*),
      &	d,k,ky,k1x,k2x,k3x,ky2,k2x2,n2,sfac,RP,IP,A2,SA2,CA2,
      &	y1,sfbc
 	COMPLEX*16 TP,TS,C1
@@ -2353,19 +2369,7 @@ C	Compute intersection point and normal vector
 	  END IF
 	  kp=ksqrt/a
 	  km=c/ksqrt
-	  IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-	    IF (kp.GT.0D0) THEN
-	      L=kp
-	    ELSE
-	      L=km
-	    END IF
-	  ELSE
-	    IF (km.GT.0D0) THEN
-	      L=km
-	    ELSE
-	      L=kp
-	    END IF
-	  END IF
+	  L=FwdRoot(kp,km,mpr,Kr,Kc,psitprel,itpsi) ! sheet
 	END IF
 
         !print*,' ** ReturnSrf: L =',L
@@ -2707,25 +2711,12 @@ C	Compute intersection point and normal vector
 	  kp=ksqrt/a
 	  km=c/ksqrt
 	  IF(ifLNsrf) THEN
-	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-	      L=kp
-	    ELSE
-	      L=km
-	    END IF
+!-->        LNsrfRoot (surfsub): the root whose hit is nearest RptElt, not
+!           |L^2 - mpr| (PLAN_CONSOLIDATION item 4, 2026-10-09)
+	    L=LNsrfRoot(kp,km,ihat,pin,prot)
+!<--
 	  ELSE
-	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-	      IF (kp.GT.0D0) THEN
-	        L=kp
-	      ELSE
-	        L=km
-	      END IF
-	    ELSE
-	      IF (km.GT.0D0) THEN
-	        L=km
-	      ELSE
-	        L=kp
-	      END IF
-	    END IF
+	    L=FwdRoot(kp,km,mpr,Kr,Kc,psitprel,itpsi) ! sheet
 	    IF (L.LT.0d0) GO TO 98
 	  END IF
 	END IF
@@ -3012,25 +3003,12 @@ C	Surface intersection -- identical to RefSrf
 	  kp=ksqrt/a
 	  km=c/ksqrt
 	  IF(ifLNsrf) THEN
-	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-	      L=kp
-	    ELSE
-	      L=km
-	    END IF
+!-->        LNsrfRoot (surfsub): the root whose hit is nearest RptElt, not
+!           |L^2 - mpr| (PLAN_CONSOLIDATION item 4, 2026-10-09)
+	    L=LNsrfRoot(kp,km,ihat,pin,prot)
+!<--
 	  ELSE
-	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-	      IF (kp.GT.0D0) THEN
-	        L=kp
-	      ELSE
-	        L=km
-	      END IF
-	    ELSE
-	      IF (km.GT.0D0) THEN
-	        L=km
-	      ELSE
-	        L=kp
-	      END IF
-	    END IF
+	    L=FwdRoot(kp,km,mpr,Kr,Kc,psitprel,itpsi) ! sheet
 	    IF (L.LT.0d0) GO TO 98
 	  END IF
 	END IF
@@ -3278,25 +3256,12 @@ C	Compute intersection point and normal vector
 	  kp=ksqrt/a
 	  km=c/ksqrt
 	  IF(ifLNsrf) THEN
-	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-	      L=kp
-	    ELSE
-	      L=km
-	    END IF
+!-->        LNsrfRoot (surfsub): the root whose hit is nearest RptElt, not
+!           |L^2 - mpr| (PLAN_CONSOLIDATION item 4, 2026-10-09)
+	    L=LNsrfRoot(kp,km,ihat,pin,prot)
+!<--
 	  ELSE
-	    IF (ABS((kp*kp)-mpr).LE.ABS((km*km)-mpr)) THEN
-	      IF (kp.GT.0D0) THEN
-	        L=kp
-	      ELSE
-	        L=km
-	      END IF
-	    ELSE
-	      IF (km.GT.0D0) THEN
-	        L=km
-	      ELSE
-	        L=kp
-	      END IF
-	    END IF
+	    L=FwdRoot(kp,km,mpr,Kr,Kc,psitprel,itpsi) ! sheet
 	    IF (L.LT.0d0) GO TO 98
 	  END IF
 	END IF
@@ -3649,7 +3614,7 @@ C  ApVec=  xc yc R1 R2 N  % R1=innerRadius,R2=outerRadius,N=numberOfBlades
             End Do
             firstEntry_sunBlades=.false.
           End If
-! ToDo: Exit Statement in code below ?????
+! the EXITs below leave the blade loop at the first hit (checked 2026-10-22)
 	  inSB=.false.
           Do ib=1,nBlades
             r2=px2**2+py2**2
@@ -3662,7 +3627,7 @@ C  ApVec=  xc yc R1 R2 N  % R1=innerRadius,R2=outerRadius,N=numberOfBlades
           End Do
 	  if (.not.inSB) GO TO 99
 
-! ToDo: check if Statement below is still true
+! still true (2026-10-22): no parser sets ApType -4
 
 	ELSE IF (ApType.EQ.-4) THEN
 	  ! This section is disabled for now. 07/04, -jzlou
@@ -4188,13 +4153,14 @@ C    Grating partials
 	  CALL DMPROD(dinda,dindp,dpda,3,3,3)
 
 	  CALL DMPROD(dindd,dindp,dpdd,3,3,3)
-c-FIXME!!!
+c-HOE rotation partial (flagged by its author; checked 2026-10-22: ray-direction
+c partials vs finite difference agree to 4 digits, HOEExample.in)
 	  CALL DSUB(D1,hi,prot,3)
 	  CALL DXMAT(D2,D1)
 	  CALL DMPROD(D1,dindp,D2,3,3,3)
 	  CALL DMPROD(D2,dindd,dddth,3,3,3)
 	  CALL DADD(dindth,D1,D2,9)
-c-end FIXME
+c-end HOE rotation partial
 	  CALL DPROJECT(D1,shat)
 	  S1=1d0/smag
 	  CALL DSMPROD(dshatdsvec,D1,S1,9)
@@ -4436,7 +4402,7 @@ C  Set output values for ray position, direction
         ! -------------------------------------------------------------------------------
         ! [ ] Grating Equation
         ! -------------------------------------------------------------------------------
-        ! ToDo: Polarisation Ray-Trace, Metal (Extinction coeff)
+        ! not implemented: polarization ray trace, metal (extinction) -- notes/polarization.md
 
         ! -------------------------------------------------------------------------------
         ! Determine refracted/reflected ray dir (rhat) & change in OPL (dL) for a Grating
@@ -4485,17 +4451,28 @@ C  Set output values for ray position, direction
           !   uhat: Dir. along the Rule Line (Groove Dir.)
           !   shat: Dir. grating Direction in tangent plane & perp. to Grooves
 
-        ! ToDo: check if psi is not parallel to RuleDir and if it is, then it
+        ! unguarded (notes/surfaces.md): if psi is parallel to RuleDir, then it
         !       does not behave like a Grating -- Snell's Law with Order = 0
 
-          CALL DPERPUVEC(RuleDir,RuleDir,psi)  ! prj. RuleDir onto tangent plane (psi)
-          CALL DXPROD(uhat,Nhat,RuleDir)       !
-          uhat = uhat / norm2(uhat)            ! CALL DUNITIZE(uhat)
-          CALL DXPROD(shat,uhat,Nhat)
-          shat = shat / norm2(shat)          ! CALL DUNITIZE(shat)
+          CALL DPERPUVEC(RuleDir,RuleDir,psi)  ! s0: unit rule dir in the VERTEX tangent plane (psi)
+!-->  Straight-ruled grating on a curved surface (2026-09-30, dyson5 finding
+!     #2, TO): the grooves are the intersections of EQUIDISTANT PARALLEL
+!     PLANES (spacing RuleWidth, normal s0) with the surface -- the classical
+!     ruled concave grating and the CODE V / Zemax convention: period
+!     constant along the CHORD.  The local grating vector is therefore the
+!     UN-normalised projection of s0/d onto the local tangent plane,
+!     |G| = (m lambda/d) sqrt(1 - (s0.N)^2), which falls as the surface
+!     tilts.  The old code unitised the projection (uhat, then shat), i.e. a
+!     period constant ALONG THE SURFACE -- on a concave Dyson/Offner grating a
+!     spectral blur ~ lambda, 3 px rms at 2500 nm, that no concentric design
+!     can correct.  Flat gratings: N = psi, so the projection IS s0 and the
+!     result is unchanged.  (N x s0) x N = s0 - (s0.N) N.
+          shat = RuleDir - dot_product(RuleDir,Nhat)*Nhat   ! chord-ruled local grating direction, |shat| = sqrt(1-(s0.N)^2)
+          CALL DXPROD(uhat,Nhat,RuleDir)       ! groove direction (not unit; unused downstream)
+!<--
           ! -------------------------------
 
-          Gr_vec = Order*lambda/RuleWidth * shat  ! Grating Vector
+          Gr_vec = Order*lambda/RuleWidth * shat  ! Grating Vector (chord-ruled)
           u_vec = (na * ihat + Gr_vec) / nb       ! Inc. Dir (Vector Refraction Equ.)
 
           ! Chk: TIR or Evanescent Wave
@@ -4509,9 +4486,26 @@ C  Set output values for ray position, direction
           if (.not.in_reflection)
      &        rhat = rhat - 2d0 * dot_product(Nhat, rhat) * Nhat
 
-          ! OPL change
-          rho_prj = rho - dot_product(Nhat, rho) * Nhat
-          dL = -dot_product((ihat*na-rhat*nb), rho_prj)
+          ! OPL change = the order-m grating PHASE FUNCTION at the hit point.
+!-->  Chord-ruled groove count (2026-10-01, dyson5 finding #3, TO): for
+!     equidistant groove PLANES (normal s0 in the vertex plane, spacing d)
+!     the phase at the hit point rho (w.r.t. the VERTEX) is the groove
+!     count, (m lambda/d)(s0.rho) -- the chord coordinate along the FIXED
+!     ruling direction.  The old form, -(na i - nb r).rho_prj with rho_prj
+!     the hit vector projected into the LOCAL tangent plane, equals
+!     (m lambda/d)(s0.rho_prj) = (m lambda/d)[s0.rho - (s0.N)(rho.N)]: it
+!     drops the sag term, cubic in the footprint (~rho^3/2R^2), zero on a
+!     FLAT grating -- 12 waves on a 45 mm footprint at R = 250 mm, while
+!     the rays themselves converged to 0.05 um (tGratingOpl).  Dave's
+!     rule, 2026-10-01: ACROSS A GRATING THE OPD IS DEFINED MODULO LAMBDA
+!     -- the physical wavefront is the groove staircase; this smooth
+!     phase function equals it mod lambda (it is the order-m Fourier
+!     term), so OPD comparisons across a grating are made in PHASE
+!     (wrapped), never as unwrapped lengths.  RuleDir here is s0 (unit,
+!     in the vertex plane, from DPERPUVEC above).
+          dL = Order*lambda/RuleWidth * dot_product(RuleDir, rho)
+          rho_prj = rho - dot_product(Nhat, rho) * Nhat   ! kept for reference (no longer used)
+!<--
 
         END SUBROUTINE Snells_Law_Grating
 
@@ -4632,7 +4626,7 @@ cdebug
           ! --------------------------------
           case default
             LROK = .False.
-            WRITE(*,*)'SMACOS:Grating >> Unknown surface type. Aborting trace.'   ! (ToDo: create error message)
+            WRITE(*,*)'SMACOS:Grating >> Unknown surface type. Aborting trace.'
 
         end select
 
@@ -4686,13 +4680,22 @@ cdebug
 
         ! ----------------------------------------------------------------
         ! Check if ray is obscured
+!-->  2026-10-06: the aperture / obscuration verdict was OVERWRITTEN by the
+!     interpolated-surface check on the next line, so a Grating never
+!     vignetted a ray (a 3k Dyson deck passed 21 % of its rays outside the
+!     grating's declared aperture).  Keep it and AND the two.  The same
+!     overwrite is fixed in TrGrating, FzpTrGrating_ and DoeTrGrating.
         IF (ifObs) THEN
           LRT=ChkRayTrans(ifBuild,ifPol,ifLNsrf,
      &           psi,rho,ApType,ApVec,nObs,ObsType,ObsVec,
      &           xGrid,yGrid,zGrid,taperFactor(crnt_traced_ray))
           IF (.NOT.LRT) Eout(1:3)=0d0
+        ELSE
+          LRT=.TRUE.
         END IF
-        LRT = (.not.((SrfType.EQ.SrfType_Interpolated).AND.(IERROR.NE.0)))
+        LRT = LRT .AND.
+     &    (.not.((SrfType.EQ.SrfType_Interpolated).AND.(IERROR.NE.0)))
+!<--
         ! IF ((SrfType.EQ.5).AND.(IERROR.NE.0)) THEN
         !   LRT=.FALSE.
         ! ELSE
@@ -4827,7 +4830,7 @@ C  Compute incidence point of ray
           ! --------------------------------
           case default
             LROK = .False.
-            WRITE(*,*)'SMACOS:TrGrating >> Unknown surface type. Aborting trace.'   ! (ToDo: create error message)
+            WRITE(*,*)'SMACOS:TrGrating >> Unknown surface type. Aborting trace.'
 
         end select
 
@@ -4880,6 +4883,7 @@ C  Compute incidence point of ray
 
         ! ----------------------------------------------------------------
         ! Check if ray is obscured
+!-->  2026-10-06: same overwrite as in Grating -- keep the aperture verdict
         IF (ifObs) THEN
           LRT=ChkRayTrans(ifBuild,ifPol,ifLNsrf,
      &           psi,rho,ApType,ApVec,nObs,ObsType,ObsVec,
@@ -4887,8 +4891,12 @@ C  Compute incidence point of ray
           IF (.NOT.LRT) THEN
             Eout(1:3)=0d0
           END IF
+        ELSE
+          LRT=.TRUE.
         END IF
-        LRT = (.not.((SrfType.EQ.SrfType_Interpolated).AND.(IERROR.NE.0)))
+        LRT = LRT .AND.
+     &    (.not.((SrfType.EQ.SrfType_Interpolated).AND.(IERROR.NE.0)))
+!<--
         ! IF ((SrfType.EQ.5).AND.(IERROR.NE.0)) THEN
         !   LRT=.FALSE.
         ! ELSE
@@ -5170,6 +5178,7 @@ C    Zero partial matrices
         END IF
 
 C  Check if ray is obscured
+!-->  2026-10-06: same overwrite as in Grating -- keep the aperture verdict
         IF (ifObs) THEN
           LRT=ChkRayTrans(ifBuild,ifPol,ifLNsrf,
      &           psi,rho,ApType,ApVec,nObs,ObsType,ObsVec,
@@ -5177,12 +5186,11 @@ C  Check if ray is obscured
           IF (.NOT.LRT) THEN
             Eout(1:3)=0d0
           END IF
-        END IF
-        IF ((SrfType.EQ.5).AND.(IERROR.NE.0)) THEN
-          LRT=.FALSE.
         ELSE
           LRT=.TRUE.
         END IF
+        IF ((SrfType.EQ.5).AND.(IERROR.NE.0)) LRT=.FALSE.
+!<--
 
 C  Set output values for ray position, direction
         rout(1:3)=rhat(1:3)
@@ -5449,6 +5457,7 @@ C  Compute partials
         END IF
 
 C  Check if ray is obscured
+!-->  2026-10-06: same overwrite as in Grating -- keep the aperture verdict
         IF (ifObs) THEN
           LRT=ChkRayTrans(ifBuild,ifPol,ifLNsrf,
      &           psi,rho,ApType,ApVec,nObs,ObsType,ObsVec,
@@ -5456,12 +5465,11 @@ C  Check if ray is obscured
           IF (.NOT.LRT) THEN
             Eout(1:3)=0d0
           END IF
-        END IF
-        IF ((SrfType.EQ.5).AND.(IERROR.NE.0)) THEN
-          LRT=.FALSE.
         ELSE
           LRT=.TRUE.
         END IF
+        IF ((SrfType.EQ.5).AND.(IERROR.NE.0)) LRT=.FALSE.
+!<--
 
 C  Set output values for ray position, direction
         rout(1:3)=rhat(1:3)

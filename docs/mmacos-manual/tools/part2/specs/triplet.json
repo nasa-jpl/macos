@@ -1,0 +1,43 @@
+{
+ "section": "35_lenses",
+ "entry": "out = triplet();",
+ "knobs": {
+  "file": "triplet.m",
+  "from": "^% =+  USER DESIGN CHOICES",
+  "to": "^% =+$"
+ },
+ "figure": "out/triplet_field.png",
+ "run": {
+  "from": "=+\\n Cooke triplet",
+  "to": ""
+ },
+ "pins": [
+  {
+   "name": "m0",
+   "pattern": "CALIB fields\\) (\\S+) ->",
+   "rule": "printed",
+   "format": "%.1f"
+  },
+  {
+   "name": "m1",
+   "pattern": "CALIB fields\\) \\S+ -> (\\S+) waves",
+   "rule": "printed",
+   "format": "%.3f"
+  },
+  {
+   "name": "rmsedge",
+   "pattern": "edge of the field: RMS (\\S+) waves",
+   "rule": "printed",
+   "format": "%.3f"
+  },
+  {
+   "name": "distedge",
+   "pattern": "distortion (\\S+) %, reported",
+   "rule": "printed",
+   "format": "%+.2f"
+  }
+ ],
+ "caption": "RMS wavefront error (log scale) and distortion against field for the SK16 / F4 / SK16 Cooke triplet at f = 100 mm, f/5: the thick seed from the textbook thin-lens solve, and the lens after the alternating CALIB rounds (`triplet_field.png`).",
+ "number": "From the textbook thin-lens seed, the alternating CALIB rounds take the merit (the RMS over 0, 14 and 20 degrees) from %pin:p2_triplet_m0% to %pin:p2_triplet_m1% waves; at the 20-degree edge the RMS is %pin:p2_triplet_rmsedge% waves and the distortion, reported and never fitted, is %pin:p2_triplet_distedge% %.",
+ "prompt": "Using templates/35_lenses/triplet, design a Cooke triplet for f = 50 mm at f/4 over +/-25 degrees in N-SK4 / SF2, and tell me the field curve, the distortion at the edge and which CALIB rounds were accepted."
+}

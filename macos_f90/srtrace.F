@@ -42,7 +42,12 @@ C *********************************************************************
 	! Local variables
 	Logical :: ifRayElt(0:mElt),ifIntSrfOK(mElt),
      &             ifLNegOK,ifLNsrf,ifRayToSeg,
-     &             ifReturn,L1(1),LRayTrans
+!-->  L1 was a ONE-element local handed to CTRACE, whose dummy is L1(mRay)
+!     and which writes L1(iRay) for the traced ray -- an overrun waiting
+!     for a ray other than 1.  Sized to mRay ("never declare A(1)",
+!     2026-10-17; the SRT crash itself was thisRay, tracesub.F SRTrace).
+     &             ifReturn,L1(mRay),LRayTrans
+!<--
 
 	Integer :: i,iElt,iRay,
      &    PrevNonSeg,NextNonSeg,iFirstNonSeq,iLastNonSeq,
@@ -154,6 +159,10 @@ C Set Zerns
             ELSEIF (ZernTypeL(iElt).EQ.ZernType_NormNoll .OR.
      &              ZernTypeL(iElt).EQ.ZernType_Noll) THEN
               CALL ZerntoMon6(ZernCoef(1,iElt),MonCoef(1,iElt), iElt)
+            ! Extended Fringe ordering (2026-10-12: the converter existed,
+            ! no dispatch called it -- the surface traced as its bare conic)
+	    ELSEIF (ZernTypeL(iElt).EQ.ZernType_ExtFringe) THEN
+              CALL ZerntoMon_ZFE(ZernCoef(1,iElt),MonCoef(1,iElt),iElt)
             ELSEIF (ZernTypeL(iElt).EQ.ZernType_NormAnnularNoll) THEN
               CALL ZerntoMon7(ZernCoef(1,iElt),MonCoef(1,iElt),
      &                        ZernAnnuRatio(iElt))
@@ -162,8 +171,8 @@ C Set Zerns
      &           ' SrfType=8 (Zernike) but ZernTypeL=',ZernTypeL(iElt),
      &           ' has no ZerntoMon implementation;',
      &           ' Zernike coefficients are being silently ignored.',
-     &           ' Likely causes: ZernType= ExtFringe (no converter),',
-     &           ' or Rx did not specify ZernType for this element.'
+     &           ' Likely cause: the Rx did not specify ZernType',
+     &           ' for this element.'
             END IF
           END IF
 
@@ -184,6 +193,10 @@ C Set FF Zernike coefficients for FreeForm surface
             ELSEIF (FFZernTypeL(iElt).EQ.ZernType_NormNoll .OR.
      &              FFZernTypeL(iElt).EQ.ZernType_Noll) THEN
               CALL ZerntoMon6(FFZernCoef(1,iElt),FFCoef(1,iElt),iElt)
+            ! Extended Fringe ordering (2026-10-12: the converter existed,
+            ! no dispatch called it -- the surface traced as its bare conic)
+	    ELSEIF (FFZernTypeL(iElt).EQ.ZernType_ExtFringe) THEN
+              CALL ZerntoMon_ZFE(FFZernCoef(1,iElt),FFCoef(1,iElt),iElt)
             ELSEIF (FFZernTypeL(iElt).EQ.ZernType_NormAnnularNoll) THEN
               CALL ZerntoMon7(FFZernCoef(1,iElt),FFCoef(1,iElt),
      &                        ZernAnnuRatio(iElt))
@@ -211,6 +224,10 @@ C Set Mon Zernike coefficients for FreeForm surface
             ELSEIF (MonZernTypeL(iElt).EQ.ZernType_NormNoll .OR.
      &              MonZernTypeL(iElt).EQ.ZernType_Noll) THEN
               CALL ZerntoMon6(MonZernCoef(1,iElt),MonCoef(1,iElt),iElt)
+            ! Extended Fringe ordering (2026-10-12: the converter existed,
+            ! no dispatch called it -- the surface traced as its bare conic)
+	    ELSEIF (MonZernTypeL(iElt).EQ.ZernType_ExtFringe) THEN
+              CALL ZerntoMon_ZFE(MonZernCoef(1,iElt),MonCoef(1,iElt),iElt)
             ELSEIF (MonZernTypeL(iElt).EQ.ZernType_NormAnnularNoll) THEN
               CALL ZerntoMon7(MonZernCoef(1,iElt),MonCoef(1,iElt),
      &                        ZernAnnuRatio(iElt))
@@ -224,12 +241,13 @@ C Set Mon Zernike coefficients for FreeForm surface
 
 	  iEltToiWF(iElt)=0
           LEltOK(iElt)=.TRUE.
+          SrfTypeTr(iElt)=SrfType(iElt)
           IF (SrfType(iElt).EQ.5) THEN
             IF (ifIntSrfSet(iElt)) THEN
               iIntSrf=iEltToIntSrf(iElt)
               ifIntSrfOK(iElt)=.TRUE.
             ELSE
-              SrfType(iElt)=2
+              SrfTypeTr(iElt)=2  ! base Conic; SrfType kept, 2026-10-12
               iIntSrf=1
               ifIntSrfOK(iElt)=.FALSE.
             END IF
@@ -241,10 +259,8 @@ C Set Mon Zernike coefficients for FreeForm surface
      &        (ApType(iElt).GT.0)) THEN
             LEltObs(iElt)=.TRUE.
 
-            CALL DEQUATE(zObs(1,iElt),psiElt(1,iElt),3)
-            CALL DXPROD(yObs(1,iElt),zObs(1,iElt),xObs(1,iElt))
-            CALL DUNITIZE(yObs(1,iElt))
-            CALL DXPROD(xObs(1,iElt),yObs(1,iElt),zObs(1,iElt))
+            CALL OrthoObsFrame(psiElt(1,iElt),xObs(1,iElt),
+     &      yObs(1,iElt),zObs(1,iElt))  ! 2026-10-12: no Rx rewrite
           ELSE
             LEltObs(iElt)=.FALSE.
           END IF
@@ -324,7 +340,7 @@ C                                               ! Reflector
      &          ApType(iElt),ApVec(1,iElt),nObs(iElt),ObsType(1,iElt),
      &          ObsVec(1,1,iElt),xObs(1,iElt),yObs(1,iElt),zObs(1,iElt),
      &          RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),RayE(1,iRay),
-     &          dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfType(iElt),
+     &          dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfTypeTr(iElt),
      &          XYZSRF(1,1,iIntSrf),DZSRF(1,1,iIntSrf),IERROR,
      &          IWORK(1,iIntSrf),DWORK(1,iIntSrf),NDP(iIntSrf),mDP,
      &	        EltCoat(iElt),EltCoatThk(:,iElt),
@@ -424,7 +440,7 @@ c               NextElt(iElt)=NextNonSeg
      &            ObsVec(1,1,iElt),
      &            xObs(1,iElt),yObs(1,iElt),zObs(1,iElt),
      &            RayPos(1,iRay),RayDir(1,iRay),RayL(iRay),RayE(1,iRay),
-     &            dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfType(iElt),
+     &            dxidxim1(1,1,iElt),dxidui(1,1,iElt),SrfTypeTr(iElt),
      &            XYZSRF(1,1,iIntSrf),DZSRF(1,1,iIntSrf),IERROR,
      &            IWORK(1,iIntSrf),DWORK(1,iIntSrf),
      &            NDP(iIntSrf),mDP,

@@ -15,6 +15,12 @@ C***********************************************************************
 	Save
 
 	Integer :: nSpotRays
+!-->  A command inside an optimization evaluation failed (PLAN 3.4,
+!     2026-10-11).  These were STOPs, which killed the HOST when the
+!     engine is a mex / .so; nls_optim_dvr reads this and aborts the solve
+!     by name, restoring the last accepted state.
+	Logical :: lOpsFail = .FALSE.
+!<--
 
 	Contains
 
@@ -46,6 +52,9 @@ C***********************************************************************
 	INTEGER, dimension(:), optional :: zernIDArr,asphIDArr
         REAL*8, dimension(:), optional :: zernCoefArr,asphCoefArr
 	LOGICAL :: LCMP
+!-->  the session SPCENTER, restored after the beam-row SPOT below
+	INTEGER :: spcOptionSave
+!<--
 
 C  FORMAT statements
 #include "macos_formats.inc"
@@ -132,6 +141,11 @@ C  FORMAT statements
             ifOPDCalc=.FALSE.
             iLocal=iElt
             !spcOption=1  ! so that spot diagram centered around element
+!-->  2026-10-16: save the SESSION option (SPCENTER, spc_option_get) and
+!     restore it after this spot -- CALIB's beam rows left it on the chief
+!     ray for every later SPOT (CLI and bindings).
+            spcOptionSave=spcOption
+!<--
             spcOption=2  ! so that spot diagram centered around chief ray
 
             CALL LocalCoord(npts,ifPol,ifGrid,ifPropagate,ifDraw,
@@ -161,7 +175,9 @@ C  FORMAT statements
               CALL DCOMPACT(DTcompact,Tspot,5,7,7,7)
             ELSE
               WRITE(*,*)'** macos_ops: SPOT command error!'
-              STOP
+              lOpsFail = .TRUE.   ! was STOP (PLAN 3.4)
+              spcOption=spcOptionSave
+              RETURN
             END IF
             RefSpot(1)=DDOTC(xLocal,VptElt(1,iEndElt))
             RefSpot(2)=DDOTC(yLocal,VptElt(1,iEndElt))
@@ -234,9 +250,13 @@ C  FORMAT statements
             ELSE
               WRITE(*,*)' All rays were obscured or lost'
             END IF
+!-->  the session option back (see spcOptionSave above)
+            spcOption=spcOptionSave
+!<--
           ELSE
             WRITE(*,*) '** Error (MACOS_OPS): load Rx first!'
-            STOP
+            lOpsFail = .TRUE.     ! was STOP (PLAN 3.4)
+            RETURN
           END IF
 
 	Else If (LCMP(cmd,'OPD',3)) Then
@@ -363,7 +383,7 @@ C  FORMAT statements
             ifPixArray=.FALSE.
 #endif
             ifDMBuild=.FALSE.
-            ifCentroid=.TRUE.
+            ifCentroid=.FALSE. ! chief-ray default (Dave 2026-08-27)
             ifFilterData=.FALSE.
             ifLNegOK=.TRUE.
             ifUDSinit=.FALSE.

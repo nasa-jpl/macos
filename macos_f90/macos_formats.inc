@@ -72,7 +72,10 @@ C  2. FORMAT statements
      &  '                     Current WF plot type=',A/
      &  '                           Composed image=',L2/
      &  '   Pixel location set by chief ray option=',L2/
-     &  '                             Polarization=',L2)
+     &  '                             Polarization=',L2/
+     &  '                       Vector diffraction=',L2/
+     &  '            FEX/SXP axis is beam centroid=',L2/
+     &  '           Negative ray lengths OK (LNEG)=',L2)
  217    FORMAT(' Map of rays at input aperture:')
  218    FORMAT(2x,26i3)
  219    FORMAT(' Map of segments at input aperture:')

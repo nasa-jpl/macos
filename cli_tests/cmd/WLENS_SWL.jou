@@ -1,0 +1,20 @@
+# WLENS (the prescription's optimization wavelength list) and SWL (select one by index) on a COPY of the
+# manual's Cassegrain given a second wavelength with `OptWaveLen= 5.5e-7` after its `Wavelen=` (cmdref: Source
+# & Wavelength).  SWL 2 sets 5.5e-7 (the OPD of an all-mirror train is unchanged in length units); SWL 3 is
+# refused by name.
+# COPY: $ROOT/docs/macos-manual/examples/Cassegrain.in
+! perl -i -pe '$_ .= " OptWaveLen= 5.5e-7\n" if /^ *Wavelen=/' $DECK
+old $DECK
+wlens
+swl
+2
+opd 5
+/null
+swl
+3
+# EXPECT: Number of wavelengths used for design optimization =\s+2\s+Wavelength\s+1 =\s+0\.100000000D-05\s+Wavelength\s+2 =\s+0\.550000000D-06
+# EXPECT: Enter ID of wavelength to use \[1\]: 2\s+Wavelength set to\s+5\.5\d*E-007
+# EXPECT: RMS OPD error is\s+\d\.\d+D-1[2-9]
+# (a collimated-beam residual, arm64 1.293491396: a bound, rule 1)
+# EXPECT: Invalid wavelength ID\s+3
+# EXPECT-NOT: forrtl
