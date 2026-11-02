@@ -3917,3 +3917,16 @@ promote-on-land pass.**
 
 - TO (lens templates, Opus 5.5, `BRIEF_to_lens_templates.md`) found `GlassElt=` resolving by PREFIX and the table lacking N-SF5 / N-F2.  Dave: "1. Add the glasses. 2. Fix it now."  macos 4ed926b4 (LGLASSEQ at the parser / NEW / MOD sites; an unknown name is said at load; the two Schott rows; builtin regenerated) + c14069bc (the journal pinned from its transcript).  Gates from the clean worktree `~/dev/macos_cli_base`: load 160/160 both compilers, must-fail decks fail, A/B a3b6a00b -> 4ed926b4 0 movers both; cmd 122/122 pass + 3 must-fail fail both, `GLASSELT_exact` among them.  Shared trees + mex rebuilt at 4ed926b4 in TO's idle window (the shared trees had been at 10-30; a3b6a00b's order-3 kernels are in the shared mex only since this rebuild).  Record: `notes/rx_io.md` last section, PLAN 1.2 ticked.
 - Policy from Dave today: the public branches stay open THROUGH TODAY to capture TO's lens steps, then go quiet (local work, snapshots to the private backups `ajax147/*-local`, a private content repo `ajax147/MACOS_private`); the team is told tomorrow.  IODC parked (res f4c4134).  Push set: macos 4ed926b4, c14069bc, this record; resources e400a38, 8a1743c, 148cd92 (+ the parked set a341a8c..f4c4134) -- macos FIRST, step 3's catalog resolves the new rows by name.
+
+## 2026-11-02 (CCL) -- the e2e stage records re-measured at GridSrfOrder= 3; the Mac release brief
+
+- Stages 9-11 re-run at order 3 (cap 20, goal 1e-10; scratchpad `o3run/`, 09:05 -> 03:36, 18.5 h; the bilinear
+  products in `~/dev/MACOS_sandbox/e2e_bilinear_2026-11-01/`).  Statics unchanged; stage 9's EFC 6.88e-8 (x8, gate
+  x10 still red); stage 11 ALL gates pass: perfect 7/115 to 7.3e-11, probed 9/149 to 6.2e-11, the estimate under
+  0.8 % at every Jacobian about the state.  Record: resources (15 `.fp.json` truths, `s9_coupled_dm.in`,
+  README, `e2e_params` comments, `tE2eSensing` C0 pin re-emits order 1, deck_ctb 15-18 + four figures + pptx);
+  macos (ch08e re-pinned, Section 8 cycle prose, 228_e2e page, `notes/surfaces.md`, PLAN 3a).  PDF + edit copies
+  refreshed 03:43.
+- Pushed on Dave's word: macos a791b271..33b5f0e7, resources 5be3a4c..c8d7ca3.  TO's camera rework (resources
+  b0f0f9b, macos b8ff6433) and the order-3 record await his next push word.  `BRIEF_ccmac_release_gate.md`
+  written (two runs of the Mac gate: now, and after Andy's rewrite = the Mac release sign-off).

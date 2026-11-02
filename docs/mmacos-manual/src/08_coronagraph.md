@@ -258,10 +258,12 @@ about the loop's own state, run the loop until it stalls, measure again from whe
 repeat until the dark zone reaches a goal, here %pin:ch08_tel_goal% (`e2e_cycles`, resumable from
 a state file; each matrix about %pin:ch08_tel_jac_min% minutes here). With perfect sensing the goal
 takes %pin:ch08_tel_perf_nc% cycles and %pin:ch08_tel_perf_it% iterations, ending at
-%pin:ch08_tel_perf_end%; the last cycle alone gains %pin:ch08_tel_perf_last% times. On probe
-estimates it takes %pin:ch08_tel_sens_nc% cycles and %pin:ch08_tel_sens_it% iterations, ending at
-%pin:ch08_tel_sens_end%: one cycle more and fewer iterations than perfect sensing, since a cycle on
-estimates stalls sooner. Strokes stay under %pin:ch08_tel_stroke% rms on both mirrors.
+%pin:ch08_tel_perf_end%; the gains are uneven, one cycle alone covering more than a decade (the
+transcript below), the last %pin:ch08_tel_perf_last% times. On probe estimates it takes
+%pin:ch08_tel_sens_nc% cycles and %pin:ch08_tel_sens_it% iterations, ending at
+%pin:ch08_tel_sens_end%: two cycles more than perfect sensing, the stage's allowance. Below 10⁻⁹
+every cycle of either chain runs to its twenty-iteration cap gaining about twice, so the last decade
+costs cycles, not sensing. Strokes stay under %pin:ch08_tel_stroke% rms on both mirrors.
 
 <!-- transcript: ch08_tel_cycles -->
 
@@ -271,18 +273,22 @@ estimates stalls sooner. Strokes stay under %pin:ch08_tel_stroke% rms on both mi
 (squares; dotted, its own estimate) and for perfect sensing (circles); each dotted vertical is a
 control matrix re-measured about the state; the goal dashed.
 
-The estimate at each fresh matrix is within %pin:ch08_tel_est_max3% of the field through the first
-four cycles and %pin:ch08_tel_est_last% at the fifth, from %pin:ch08_tel_sens_c3%. The stage's
-report marks that check as failed and says why: at that depth no probe amplitude tried estimates the
-field within the bound. The loop dug to the goal on that estimate anyway. The cause was then run down
-to the engine, not the estimator: the deformable mirrors are grid surfaces, and between its nodes a
-grid was interpolated bilinearly, so a ray whose footprint on the second mirror crosses a cell edge
-under a sub-nanometre change of the first takes the two cells' slope difference as a kink and steps
-its path by tens of nanometres. The engine now offers a continuous-slope interpolation
-(`GridSrfOrder= 3` in the mirror's block; the emitter's `'order', 3`); at the same state with a
-control matrix measured on it the estimate reads 0.3% of the field, and the loop from that state
-reaches 1.1×10⁻⁹ in twenty iterations. The stage records above were measured on the bilinear
-surface; re-measuring them on the continuous one is the open item.
+The estimate at each fresh matrix is within %pin:ch08_tel_est_max3% of the field, that at the
+first cycle on the matrix measured at the flat mirrors, and under one per cent at every matrix
+measured about the loop's own state, %pin:ch08_tel_est_last% at the last from
+%pin:ch08_tel_sens_c3% (the transcript's last column): the estimate improves as the field dims,
+as the probe's second-order term predicts.
+
+These records are measured with the mirrors' grids interpolated with continuous slope
+(`GridSrfOrder= 3` in each mirror's block; the emitter's `'order', 3`, the thread's
+`P.grid_order`). The stage's first run, on the engine's bilinear default, reached a 10⁻⁸ goal in five
+cycles but its estimate at the fifth matrix was 17% off the field, and the cause was run down to the
+engine, not the estimator: the deformable mirrors are grid surfaces, and between its nodes a bilinear
+grid has a continuous height but not a continuous slope, so a ray whose footprint on the second
+mirror crosses a cell edge under a sub-nanometre change of the first takes the two cells' slope
+difference as a kink and steps its path by tens of nanometres. The continuous-slope interpolation
+removes it (at that same state the estimate went from 17% to 0.3%), the stage records were
+re-measured on it, and the bilinear surface stays the engine's default for every other deck.
 
 ### Checking the assistant's work
 
