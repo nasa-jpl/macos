@@ -1,11 +1,12 @@
 % ch08e_telescope.m -- Chapter 8, the coronagraph on the telescope: the e2e thread's stages 9, 10 and
 % 11 (templates/80_end_to_end/e2e: s9_diffraction.m the coupled telescope + CTB diffraction model,
 % s10_sensing.m pairwise probing on it, s11_cycles.m recompute-and-restart EFC cycles on it).
-% Unlike the other drivers this one runs no template: the three stages cost about eight hours (six
-% control matrices of 3520 chain runs each at model 512), so the chapter reads their committed
+% Unlike the other drivers this one runs no stage: the three stages cost about eighteen hours
+% (thirteen control matrices of 3520 chain runs each at model 512), so the chapter reads their committed
 % products (s9_run.mat, s10_run.mat, s11_run.mat and the stages' own figures, PLAN_CONSOLIDATION 3a,
 % CCL 2026-10-30) from the library's e2e directory and errors if they are not there -- the page is
-% then not regenerated (the regenerator writes nothing).  To refresh it, run the three stages in order
+% then not regenerated (the regenerator writes nothing).  It does run ctb_e2e_figures (bench_ctb),
+% two minutes, for the instrument's views and the station walk (2026-11-02).  To refresh it, run the three stages in order
 % (s9 -> s10 -> s11, from the e2e README) and regenerate this driver.  The numbers quoted in the prose
 % are pinned from the .mat files; the listings are built from them (no dates, no paths).
 % The library is read, never written.
@@ -82,7 +83,14 @@ for cy = R.sens.cycles
 end
 mm_transcript('ch08_tel_cycles', strjoin(C, newline));
 
-% ---- figures: the stages' own ------------------------------------------------------------------------
+% ---- figures: the stages' own, and the two ctb_e2e_figures draws from their products --------------------
+% (the folded instrument's views from the stage-8 deck, the field at eight planes of the stage-9 model;
+%  about two minutes: one view_rx per panel and one masked chain pass at model 512)
+addpath(fullfile(root, 'templates', '30_instruments', 'bench_ctb'));
+figdir = tempname;  mkdir(figdir);
+FX = ctb_e2e_figures('outdir', figdir);
+mm_figure('ch08_tel_views',  FX.fig_views);
+mm_figure('ch08_tel_walk',   FX.fig_walk);
 mm_figure('ch08_tel_fields', fullfile(e2e, 's9_fields.png'));
 mm_figure('ch08_tel_probe',  fullfile(e2e, 's10_probe.png'));
 mm_figure('ch08_tel_cycles', fullfile(e2e, 's11_cycles.png'));

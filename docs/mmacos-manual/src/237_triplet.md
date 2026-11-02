@@ -35,7 +35,7 @@ out = triplet();
 
 ![](media/p2_triplet_fig.png)
 
-**FIGURE 63** RMS wavefront error (log scale) and distortion against field for the SK16 / F4 / SK16 Cooke triplet at f = 100 mm, f/5: the thick seed from the textbook thin-lens solve, and the lens after the alternating CALIB rounds (`triplet_field.png`).
+**FIGURE 65** RMS wavefront error (log scale) and distortion against field for the SK16 / F4 / SK16 Cooke triplet at f = 100 mm, f/5: the thick seed from the textbook thin-lens solve, and the lens after the alternating CALIB rounds (`triplet_field.png`).
 
 **The number it reproduces.** From the textbook thin-lens seed, the alternating CALIB rounds take the merit (the RMS over 0, 14 and 20 degrees) from %pin:p2_triplet_m0% to %pin:p2_triplet_m1% waves; at the 20-degree edge the RMS is %pin:p2_triplet_rmsedge% waves and the distortion, reported and never fitted, is %pin:p2_triplet_distedge% %.
 
