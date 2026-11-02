@@ -63,6 +63,7 @@
 /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_Coro_FPM_Zern_vortex_oversized_noLyot.in
 /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_Coro.in
 /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_Coro_noLyot.in
+/home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_e5hex1.in
 /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_Eol_crlf.in
 /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_Eol_lf.in
 /home/dcr/dev/MACOS_resources/pymacos/tests/Rx/Rx_FarFieldPinhole.in
@@ -97,6 +98,7 @@
 /home/dcr/dev/macos/ZGD_test_files/FFSegDemo.in
 /home/dcr/dev/macos/ZGD_test_files/FFSegDemoZern.in
 /home/dcr/dev/macos/ZGD_test_files/FreeFormPieAperture.in
+/home/dcr/dev/macos/ZGD_test_files/lens_array.in
 /home/dcr/dev/macos/ZGD_test_files/opt_example_asph.in
 /home/dcr/dev/macos/ZGD_test_files/opt_example_constrained.in
 /home/dcr/dev/macos/ZGD_test_files/opt_example.in
@@ -106,6 +108,7 @@
 /home/dcr/dev/macos/ZGD_test_files/SegDemo3.in
 /home/dcr/dev/macos/ZGD_test_files/SegDemo3zern.in
 /home/dcr/dev/macos/ZGD_test_files/SegDemo.in
+/home/dcr/dev/macos/ZGD_test_files/Telescope.in
 /home/dcr/dev/macos/ZGD_test_files/tst_atmos_fold.in
 /home/dcr/dev/macos/ZGD_test_files/tst_block_comment.in
 /home/dcr/dev/macos/ZGD_test_files/tst_calib_asph.in
@@ -120,6 +123,7 @@
 /home/dcr/dev/macos/ZGD_test_files/tst_calib_zern.in
 /home/dcr/dev/macos/ZGD_test_files/tst_cmds_basic.in
 /home/dcr/dev/macos/ZGD_test_files/tst_cmds_refr.in
+/home/dcr/dev/macos/ZGD_test_files/tst_coat_legacy.in
 /home/dcr/dev/macos/ZGD_test_files/tst_eol_crlf.in
 /home/dcr/dev/macos/ZGD_test_files/tst_eol_grid_crlf.in
 /home/dcr/dev/macos/ZGD_test_files/tst_eol_grid_lf.in
@@ -154,6 +158,7 @@
 /home/dcr/dev/macos/ZGD_test_files/tst_zerndef_extfringe.in
 /home/dcr/dev/macos/ZGD_test_files/tst_zerndef_fringe.in
 /home/dcr/dev/macos/ZGD_test_files/tst_zerndef_none.in
+/home/dcr/dev/macos/ZGD_test_files/tst_zern_normhex.in
 /home/dcr/dev/macos/ZGD_test_files/tst_ZGD2.in
 /home/dcr/dev/macos/ZGD_test_files/tst_ZGDdata2.in
 /home/dcr/dev/macos/ZGD_test_files/tst_zrngr_overflow.in
