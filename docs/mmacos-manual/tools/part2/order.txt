@@ -36,3 +36,4 @@ tg_psi_dm_v2
 singlet
 doublet
 triplet
+small_camera
