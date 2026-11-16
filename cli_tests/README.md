@@ -79,6 +79,10 @@ a pty (readline needs a tty; the model-size prompt comes first) and writes RECOR
   failure against the previous record of the same kind, or on a round trip that
   was `same` and is not; pre-existing failures are named, counted, not fatal.
   Lists the decks whose OPD / nPass / lost moved against the previous record.
+- `prev_record.py` — names that previous record: the most recently made one of the
+  same kind and compiler, aged by the commit that added it (a record not yet committed
+  by its file time).  File times alone cannot order committed records — a fresh clone
+  stamps them all with one moment.
 - `make_corpus.sh` — `corpus_core.txt` (ZGD_test_files, the manual's examples,
   mmacos and pymacos `tests/Rx`, GMI `test_ff`, segmirmaker), `corpus_committed.txt`
   (every tracked `.in` that declares `nElt=` or `Element=`, both repos),

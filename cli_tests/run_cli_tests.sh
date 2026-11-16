@@ -108,7 +108,7 @@ for comp in ifx gfortran; do
   echo "== $comp: $(wc -l < "$list") decks -> $rec"
   python3 "$here/cli_load_gate.py" "$bin" "$here/must_fail/list.txt" "$mf" --deadline 30 > /dev/null
   python3 "$here/cli_load_gate.py" "$bin" "$list" "$rec" > "${rec%.csv}.log"
-  prev=$(ls -t "$here/records/${kind}_${comp}_"*.csv 2>/dev/null | grep -v "$rec" | head -1)
+  prev=$(python3 "$here/prev_record.py" "$here/records" "$kind" "$comp" "$rec")   # by commit date, not file time
   python3 "$here/judge_load.py" "$rec" "$mf" "${prev:-}" | tee "$here/records/${kind}_${comp}_latest.txt"
   [ "${PIPESTATUS[0]}" -eq 0 ] || fail=1
 done
