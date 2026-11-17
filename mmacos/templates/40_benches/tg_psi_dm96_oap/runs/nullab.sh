@@ -15,7 +15,6 @@
 set -u
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$here"
-export MACOS_HOME="${MACOS_HOME:-$HOME/dev/macos/macos_f90}"
 REC="'bench.SRC_AT_FOCUS',false,'bench.SRC_TRIM',0,'bench.L1_Kr',236.866,'bench.L1_Kc',-0.5829,'bench.L2_Kc',-0.5826,'bench.MASK_TRIM',0"
 NOSUB="'bench.PLATE_SUB',[],'bench.MASK_SUB',[],'bench.EDGE_MARGIN',2.0,'bench.BS_T',1.5"
 OAP="'bench.optics','oap','bench.POL_IN','source','bench.D_RC_L2',125,'oap.OAP1_AOI',20,'oap.OAP2_AOI',25,'oap.OAP1_SIDE',1,'oap.OAP2_SIDE',-1"

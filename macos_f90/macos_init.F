@@ -108,7 +108,11 @@ C
       Subroutine macos_io_failure(err_msg)
         character(len=*) err_msg
         print*, err_msg
-        stop
+!-->   Exit status 1, not 0: a run that stops here (no parameter
+!      file, say) must not look like a pass to the shell or to a
+!      test runner.
+        stop 1
+!<--
       End Subroutine macos_io_failure
 
 

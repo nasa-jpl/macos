@@ -28,7 +28,6 @@ exdir = fileparts(mfilename('fullpath'));  if isempty(exdir), exdir = pwd; end
 if isempty(which('macos.init'))
     run(fullfile(exdir, '..', '..', '..', 'mmacos_setup.m'));
 end
-assert(~isempty(getenv('MACOS_HOME')), 'MACOS_HOME must be set.');
 addpath(fullfile(exdir, '..', '..', '90_polarization', 'tg_psi_dm'));  % dm_influence_map (dir moved to 40_benches 2026-09-04)
 cd(exdir);
 rep = fopen('tg96_report.txt','w');

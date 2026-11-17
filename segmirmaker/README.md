@@ -52,9 +52,9 @@ source ./makesegmirmaker.sh gfortran   # -> build_release_gfortran/SegMirMaker
 Prereqs mirror the rest of the Mac port ([`../../macos/MAC_PORT.md`]):
 a gfortran-built engine tree at `~/dev/macos/build_release_gfortran/`,
 Homebrew `readline` (the CMakeLists picks it up via `brew --prefix
-readline` — the bundled `macos_f90/readline-8.2` isn't built on Mac),
-and `export MACOS_HOME=~/dev/macos/macos_f90` at runtime (a missing
-`macos_param.txt` aborts `init`).
+readline` — the bundled `macos_f90/readline-8.2` isn't built on Mac).
+`MACOS_HOME` is not needed: the engine finds `macos_param.txt` in the tree
+it was built from.
 
 **Fixed for the Mac port (2026-07-23):** `CACCEPT`/`PROMPT` declared
 their character dummy as fixed-length `CHARACTER*32` while the caller

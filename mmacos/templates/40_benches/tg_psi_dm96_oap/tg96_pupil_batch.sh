@@ -7,7 +7,6 @@ set -u
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 rig="${1:?usage: tg96_pupil_batch.sh <lens|oap|both> [args]}"; shift || true
 args="$*"
-export MACOS_HOME="${MACOS_HOME:-$HOME/dev/macos/macos_f90}"
 mkdir -p "$here/runs"
 call="tg96_pupil_batch('rig','$rig'${args:+, $args})"
 cd "$here"

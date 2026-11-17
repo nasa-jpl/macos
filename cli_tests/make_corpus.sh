@@ -9,7 +9,7 @@
 set -euo pipefail
 here=$(cd "$(dirname "$0")" && pwd)
 macos=$(cd "$here/.." && pwd)
-res=${MACOS_RESOURCES:-$(cd "$macos/../MACOS_resources" && pwd)}
+res=${MACOS_RESOURCES:-$macos}   # one repo since the MACOS_resources merge
 sandbox=${MACOS_SANDBOX:-$HOME/dev/MACOS_sandbox}
 # a prescription declares elements; autoconf templates (giza/*.in) and the like do not
 # (the function returns 0 whatever the LAST file was: under `set -o pipefail` its status is
@@ -24,7 +24,7 @@ is_rx() { while IFS= read -r f; do grep -q -m1 -E '^[[:space:]]*(nElt|Element)[[
   | sort -u | is_rx > "$here/corpus_committed.txt"   # the by-design refusal fixtures are must-fail decks, not corpus decks
 {
   cat "$here/corpus_committed.txt"
-  [ -d "$sandbox" ] && find "$sandbox" -name '*.in' -type f 2>/dev/null | is_rx
+  if [ -d "$sandbox" ]; then find "$sandbox" -name '*.in' -type f 2>/dev/null | is_rx; fi   # no sandbox is not an error
 } | sort -u > "$here/corpus_extended.txt"
 # the per-commit core: the fixture sets and the manual, not the challenges' ladders
 # (segmirmaker/test_in holds that tool's PARENT fragments -- inputs to segmirmaker,

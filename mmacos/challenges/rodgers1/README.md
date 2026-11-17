@@ -74,8 +74,8 @@ rodgers1('EPD_mm',2000,'map_n',9)   % change aperture / field-map density
 rodgers1('save',false,'plots',false)% numbers only, no files
 out = rodgers1();                    % struct: per-stage stats, conics, rigid, ladders
 ```
-Batch: `matlab -batch "run('.../rodgers1.m'); exit(0)"` (needs `MACOS_HOME` set;
-on Apple Silicon `unset FC` first — see the mmacos build notes).
+Batch: `matlab -batch "run('.../rodgers1.m'); exit(0)"` (on Apple Silicon
+`unset FC` first — see the mmacos build notes).
 
 ## The four stages
 

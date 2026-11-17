@@ -9,7 +9,6 @@
 set -u
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$here"
-export MACOS_HOME="${MACOS_HOME:-$HOME/dev/macos/macos_f90}"
 wait_matlab () { local n=0; while pgrep -x MATLAB >/dev/null 2>&1; do sleep 20; n=$((n+1)); if [ $n -gt 540 ]; then echo "[s2snm] TIMED OUT"; exit 1; fi; done; }
 wait_matlab
 # THE TAIL MUST TRAVEL WITH THE VARIANT.  tg96_run looks up <tag>_tail.mat and

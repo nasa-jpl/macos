@@ -3,7 +3,7 @@ C  Resolution order (via find_macos_file in param_mod):
 C    1) CWD
 C    2) directory of the running macos executable
 C    3) $MACOS_HOME
-C    4) compile-time build directory (BUILD_LOC)
+C    4) the build's own data directory (build_loc.inc)
 C  If none of those have it, fall back to the hardcoded
 C  Air / BK7 / LAK9 set below.
 

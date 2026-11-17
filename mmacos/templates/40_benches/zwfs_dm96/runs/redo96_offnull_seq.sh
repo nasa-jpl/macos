@@ -8,7 +8,6 @@
 # (the 30 nm points are redo96_sensnoise and redo96_oapsens).  Serial on the gauge lock.
 set -u
 cd "$(dirname "$0")/.."
-export MACOS_HOME=$HOME/dev/macos/macos_f90
 LOG=runs/redo96_offnull_seq.log
 OAPZ="'bench.optics','oap','bench.OAP1_AOI',20,'bench.OAP2_AOI',25,'bench.OAP1_SIDE',1,'bench.OAP2_SIDE',-1,'bench.MASK_TRIM',0.632,'mask.v_arm','engine','battery.calib_surface','base'"
 run() { echo "[$(date '+%F %T')] start $1" >> $LOG; ./zwfs_batch.sh "$1" "$2"; echo "[$(date '+%F %T')] end $1 rc=$?" >> $LOG; }

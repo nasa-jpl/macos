@@ -15,9 +15,7 @@ classdef tVeneerDefaults < matlab.unittest.TestCase
     end
     methods (Static, Access = private)
         function p = example(name)
-            home = getenv('MACOS_HOME');
-            if isempty(home), home = fullfile(getenv('HOME'), 'dev', 'macos', 'macos_f90'); end
-            p = fullfile(fileparts(home), 'docs', 'macos-manual', 'examples', name);
+            p = fullfile(repo_root_(), 'docs', 'macos-manual', 'examples', name);
         end
     end
     methods (Test)

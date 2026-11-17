@@ -68,7 +68,6 @@ function out = ctb_vortex_matched(opts)
     if isempty(opts.outdir), opts.outdir = here; end
     addpath(fullfile(here,'..','..','..','src'));
     addpath(here);
-    assert(~isempty(getenv('MACOS_HOME')),'MACOS_HOME must be set.');
     e = opts.elt;
 
     % shared geometry + bare reference (once)

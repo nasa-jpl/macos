@@ -49,8 +49,8 @@ rodgers2('save',false)       % numbers only, no artifacts
 R = rodgers2();              % struct: first-order gate, ladders, pupil table
 calib_afocal_probe           % the S1d CALIB probe
 ```
-Batch: `matlab -batch "run('.../rodgers2.m'); exit(0)"` with
-`MACOS_HOME` set.  Model size 256; one MATLAB process per model size.
+Batch: `matlab -batch "run('.../rodgers2.m'); exit(0)"`.
+Model size 256; one MATLAB process per model size.
 
 ## The four variants
 

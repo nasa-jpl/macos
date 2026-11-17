@@ -22,14 +22,13 @@
 %                  recomb-plane coherent-add injection is then the
 %                  physically exact wave path.
 %
-%  Run:  matlab -batch "run('.../example_bench_ifo_dm.m')"  (MACOS_HOME set;
-%  PROPER via the pymacos venv python)
+%  Run:  matlab -batch "run('.../example_bench_ifo_dm.m')"  (PROPER via the
+%  pymacos venv python)
 % ===================================================================
 
 addpath('~/dev/MACOS_resources/mmacos/src');
 exdir = fileparts(mfilename('fullpath'));
 if isempty(exdir), exdir = pwd; end
-assert(~isempty(getenv('MACOS_HOME')), 'MACOS_HOME must be set.');
 cd(exdir);                       % GridFile= resolves relative to the cwd
 
 MODEL = 256;

@@ -75,7 +75,6 @@ LAM = 6.328e-4;                                    % mm (rig wavelength)
 if isempty(which('macos.init'))
     addpath(fullfile(getenv('HOME'), 'dev/MACOS_resources/mmacos/src'));
 end
-assert(~isempty(getenv('MACOS_HOME')), 'MACOS_HOME must be set.');
 here = fileparts(mfilename('fullpath'));
 if isempty(opts.workdir), opts.workdir = here; end
 oldwd = cd(opts.workdir);                          % GridFile= resolves from cwd

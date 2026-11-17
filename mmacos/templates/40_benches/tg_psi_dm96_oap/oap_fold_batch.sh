@@ -10,7 +10,6 @@ set -u
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 tag="${1:?usage: oap_fold_batch.sh <tag> [args]}"; shift || true
 args="$*"
-export MACOS_HOME="${MACOS_HOME:-$HOME/dev/macos/macos_f90}"
 mkdir -p "$here/runs"
 entry="${OAP_ENTRY:-oap_fold_solve_batch}"
 call="${entry}('tag','$tag'${args:+, $args})"

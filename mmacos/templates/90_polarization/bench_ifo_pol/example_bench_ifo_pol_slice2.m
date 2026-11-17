@@ -44,7 +44,6 @@
 addpath('~/dev/MACOS_resources/mmacos/src');
 exdir = fileparts(mfilename('fullpath'));
 if isempty(exdir), exdir = pwd; end
-assert(~isempty(getenv('MACOS_HOME')), 'MACOS_HOME must be set.');
 cd(exdir);
 
 MODEL = 256;

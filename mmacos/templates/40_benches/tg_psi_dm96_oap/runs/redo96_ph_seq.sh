@@ -8,7 +8,6 @@
 # RECORD's tail (runbook, "One thing to settle before package C").
 set -u
 cd "$(dirname "$0")/.."
-export MACOS_HOME=$HOME/dev/macos/macos_f90
 LOG=runs/redo96_ph_seq.log
 OAP="'bench.optics','oap','bench.POL_IN','source','bench.D_RC_L2',125,'oap.OAP1_AOI',20,'oap.OAP2_AOI',25,'oap.OAP1_SIDE',1,'oap.OAP2_SIDE',-1"
 OAPZ="'bench.optics','oap','bench.OAP1_AOI',20,'bench.OAP2_AOI',25,'bench.OAP1_SIDE',1,'bench.OAP2_SIDE',-1,'bench.MASK_TRIM',0.632,'mask.v_arm','engine','battery.calib_surface','base'"

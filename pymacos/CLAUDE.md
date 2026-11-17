@@ -109,7 +109,8 @@ plus **PyPROPER3** (Krist's JPL port; no modern wheel → manual copy, see
 `README.md` macOS quick path + `tests/proper_compare/README.md`). Run
 pytest directly (the `run_*_tests.sh` scripts hardcode Intel oneAPI +
 `./.venv`, neither of which applies on Mac): from `tests/`, with
-`MACOS_HOME=~/dev/macos/macos_f90` and `MPLBACKEND=Agg` exported. Validated
+`MPLBACKEND=Agg` exported (`MACOS_HOME` is not needed: the engine finds the
+data files of the tree it was built from). Validated
 2026-07-24: CodeV `test_api_rx_grating.py test_masks.py` → 6601/6601;
 `proper_compare/` phase list → 26/26.
 

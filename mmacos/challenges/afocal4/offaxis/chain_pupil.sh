@@ -9,7 +9,7 @@ done
 echo "[chain] all three decenter arms exited $(date +%H:%M:%S) -- starting pupil ladder"
 for N in 4 5 7; do
     OW_N=$N OW_H=0,0.55 OW_EVALS=400 OW_ROUNDS=2 OW_PUPIL=1 OW_TAG=OAP$N \
-      MACOS_HOME=/home/dcr/dev/macos/macos_f90 timeout 36000 \
+      timeout 36000 \
       matlab -batch "run('run_offaxis_wfe.m')" > oap_N$N.log 2>&1 &
 done
 wait

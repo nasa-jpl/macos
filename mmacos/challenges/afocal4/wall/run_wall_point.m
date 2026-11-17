@@ -14,8 +14,7 @@
 %   WALL_DOFS      comma list, e.g. "conic,front" -- overrides the DOF set
 %   WALL_PUPILW    multiply the blur/breathing/wander merit weights by this
 %
-%   Batch:  MACOS_HOME=~/dev/macos/macos_f90 \
-%           WALL_TILT=-9 WALL_UMIN=15 matlab -batch "run('run_wall_point.m')"
+%   Batch:  WALL_TILT=-9 WALL_UMIN=15 matlab -batch "run('run_wall_point.m')"
 
 run('/home/dcr/dev/MACOS_res_dev/mmacos/mmacos_setup.m');
 addpath(fileparts(mfilename('fullpath')));

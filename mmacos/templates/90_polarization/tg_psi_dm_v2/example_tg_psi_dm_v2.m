@@ -32,7 +32,6 @@ if isempty(which('macos.init'))
     run(fullfile(exdir, '..', '..', '..', 'mmacos_setup.m'));
 end
 addpath(fullfile(exdir, '..', 'tg_psi_dm'));   % dm_influence_map (v1, read-only)
-assert(~isempty(getenv('MACOS_HOME')), 'MACOS_HOME must be set.');
 cd(exdir);                         % GridFile= resolves relative to the cwd
 
 MODEL = 256;                       % >= N_G, so the GridData map is not resampled

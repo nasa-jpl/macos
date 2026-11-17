@@ -3,7 +3,6 @@
 # redo bench since the lit-margin fix (the mirror rig's twin = capt96_oap, 2026-09-30).
 set -u
 cd "$(dirname "$0")/.."
-export MACOS_HOME=$HOME/dev/macos/macos_f90
 n=0; until [ -f runs/redo96_ph.done ]; do sleep 60; n=$((n+1)); [ $n -gt 1440 ] && { echo "capt96_lens_after: gave up after 24 h" >> runs/redo96_ph_seq.log; exit 1; }; done
 echo "[$(date '+%F %T')] start capt96_lens" >> runs/redo96_ph_seq.log
 export TG96_MEMMAX=20G

@@ -22,7 +22,7 @@ classdef tOiDemoStep < matlab.unittest.TestCase
 %   demo-knob solves is ~36 min of machine time, so it is the long pole of
 %   that suite.  Run it alone:
 %
-%     MACOS_HOME=/home/dcr/dev/macos/macos_f90 matlab -batch \
+%     matlab -batch \
 %       "run('<mmacos>/mmacos_setup.m'); \
 %        r = runtests('<mmacos>/tests/tOiDemoStep.m'); disp(table(r)); exit(0)"
 %

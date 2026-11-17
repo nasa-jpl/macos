@@ -13,9 +13,9 @@ import os
 import numpy as np
 import pytest
 from context import pymacos as m
+from repo_paths import REPO_ROOT
 
-DECK = (Path(os.environ.get('MACOS_HOME', str(Path.home() / 'dev' / 'macos' / 'macos_f90')))
-        .parent / 'docs' / 'macos-manual' / 'examples' / 'Cassegrain.in')
+DECK = REPO_ROOT / 'docs' / 'macos-manual' / 'examples' / 'Cassegrain.in'
 R_PRIMARY = 10.8
 # CLI `srt 5` at (0.3, 0.2): the crossings at elements 2, 3, 5 and the direction leaving 2, 3
 CLI_POS = {2: (-6.0e-01, -4.0e-01, -2.40740740740737e-02),

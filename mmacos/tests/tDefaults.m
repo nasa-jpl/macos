@@ -19,9 +19,7 @@ classdef tDefaults < matlab.unittest.TestCase
     end
     methods (Static, Access = private)
         function p = mean_deck()
-            home = getenv('MACOS_HOME');
-            if isempty(home), home = fullfile(getenv('HOME'), 'dev', 'macos', 'macos_f90'); end
-            p = fullfile(fileparts(home), 'ZGD_test_files', 'tst_opdref_mean.in');
+            p = fullfile(repo_root_(), 'ZGD_test_files', 'tst_opdref_mean.in');
             assert(isfile(p), 'tst_opdref_mean.in not found at %s', p);
         end
         function ne = e5()

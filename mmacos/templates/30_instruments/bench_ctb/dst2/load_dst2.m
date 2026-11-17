@@ -31,13 +31,12 @@
 %       neutralize them (ApType=None): the beam is well inside the optics,
 %       so the clear apertures are not the functional stop (dm1 is).
 %
-%  Run:   >> run('.../dst2/load_dst2.m')     (Requires MACOS_HOME.)
+%  Run:   >> run('.../dst2/load_dst2.m')
 % ===================================================================
 
 addpath('~/dev/MACOS_resources/mmacos/src');
 exdir = fileparts(mfilename('fullpath'));
 if isempty(exdir), exdir = pwd; end
-assert(~isempty(getenv('MACOS_HOME')), 'MACOS_HOME must be set.');
 macos.init(256);
 
 fields = 1:5;

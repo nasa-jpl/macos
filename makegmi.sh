@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# makegmi.sh  — Build GMI.mexa64 via MACOS_resources/GMI/Makefile
+# makegmi.sh  — Build GMI.mexa64 via GMI/Makefile
 #
 # Usage:
 #   source ./makegmi.sh [debug|release] [ifx|gfortran]
@@ -18,7 +18,7 @@
 # gfortran).  MATLAB is auto-detected under /usr/local/MATLAB/.
 #
 # Output location:
-#   GMI.mexa64 : ~/dev/MACOS_resources/GMI/GMI.mexa64
+#   GMI.mexa64 : ./GMI/GMI.mexa64
 #
 # Note: PGPLOT support was removed on release-candidate; Giza is now
 # the only PGPLOT-API provider.
@@ -61,13 +61,11 @@ if [ "${FC}" = "ifx" ]; then
   fi
 fi
 
-# --- Locate MACOS_resources/GMI ---
-GMI_DIR="$(realpath "${SCRIPT_DIR}/../MACOS_resources/GMI" 2>/dev/null || \
-           (cd "${SCRIPT_DIR}/../MACOS_resources/GMI" && pwd))"
+# --- Locate GMI/ ---
+GMI_DIR="${SCRIPT_DIR}/GMI"   # one repo since the MACOS_resources merge
 
 if [ ! -f "${GMI_DIR}/Makefile" ]; then
   echo "makegmi: ERROR — GMI Makefile not found at ${GMI_DIR}"
-  echo "  Clone MACOS_resources alongside macos/: git clone git@github.com:nasa-jpl/MACOS_resources.git"
   return 1 2>/dev/null || exit 1
 fi
 

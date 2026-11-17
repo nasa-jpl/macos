@@ -4,12 +4,11 @@
 #   ./zwfs_batch.sh ng385 "'NGRID',385, 'stages',{'battery','figs'}"
 # Log: runs/<tag>.log (the report itself lands in runs/<tag>/).  MODEL 1024
 # runs need ~10 GB; run them ONE AT A TIME (two model-1024 MATLABs have
-# taken this box down).  MACOS_HOME must point at the engine tree.
+# taken this box down).
 set -u
 here="$(cd "$(dirname "$0")" && pwd)"
 tag="${1:?usage: zwfs_batch.sh <tag> [args]}";  shift
 args="${*:-}"
-export MACOS_HOME="${MACOS_HOME:-$HOME/dev/macos/macos_f90}"
 mkdir -p "$here/runs"
 log="$here/runs/$tag.log"
 : > "$log"

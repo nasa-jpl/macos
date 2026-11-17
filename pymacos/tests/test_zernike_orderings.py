@@ -23,8 +23,9 @@ import numpy as np
 import pytest
 
 from context import pymacos as m
+from repo_paths import REPO_ROOT
 
-MACOS_ROOT = Path(os.environ.get('MACOS_HOME', Path.home() / 'dev/macos/macos_f90')).resolve().parent
+MACOS_ROOT = REPO_ROOT
 TABLE = MACOS_ROOT / 'docs/macos-manual/src/transcripts/zernike_orderings.md'
 sys.path.insert(0, str(MACOS_ROOT / 'cli_tests' / 'tools'))
 import hzdef_check as hexz  # noqa: E402  the textbook hexagon construction

@@ -36,7 +36,7 @@ you do **not** need to learn CMake.
 > **On macOS (Apple Silicon)?** This page is Linux-oriented (`apt`, `ifx`
 > default). The Mac build is gfortran-only and has a few Darwin-specific
 > steps (Homebrew toolchain, `-DCMAKE_Fortran_COMPILER=gfortran-NN`,
-> `MACOS_HOME`, readline via Homebrew). It is validated and documented
+> readline via Homebrew). It is validated and documented
 > — see **[MAC_PORT.md](MAC_PORT.md)** ("VALIDATED ON HARDWARE" section
 > has copy-paste build commands for the engine, the `macos` CLI, and both
 > bindings).

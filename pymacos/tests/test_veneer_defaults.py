@@ -17,11 +17,11 @@ import numpy as np
 import pytest
 from context import pymacos as m
 from context import rx_path
+from repo_paths import REPO_ROOT
 
 
 def _example(name):
-    home = Path(os.environ.get('MACOS_HOME', str(Path.home() / 'dev' / 'macos' / 'macos_f90')))
-    return str(home.parent / 'docs' / 'macos-manual' / 'examples' / name)
+    return str(REPO_ROOT / 'docs' / 'macos-manual' / 'examples' / name)
 
 
 @pytest.fixture

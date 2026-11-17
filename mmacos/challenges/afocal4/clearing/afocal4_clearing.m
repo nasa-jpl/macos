@@ -48,8 +48,8 @@ function R = afocal4_clearing(opts)
 %                 shortens it.
 %     'save'      write decks, figures and the .mat (true)
 %
-%   Model size 256, one MATLAB process per model size,
-%   MACOS_HOME=~/dev/macos/macos_f90.  Batch:  run('run_clear.m').
+%   Model size 256, one MATLAB process per model size.
+%   Batch:  run('run_clear.m').
 %
 %   See also CLEAR_LAW, CLEAR_SCAN, CLEAR_FOLD, CLEAR_TILT, CLEAR_PRICE,
 %   CLEAR_SOLVE, AFOCAL4_UNION.

@@ -47,14 +47,11 @@
 %
 %  Run interactively:  >> run('.../example_bench_layout.m')
 %  (Batch check: matlab -batch "run('.../example_bench_layout.m')")
-%  Requires MACOS_HOME (else the MEX aborts on init).
 % ===================================================================
 
 addpath('~/dev/MACOS_resources/mmacos/src');     % +macos on path
 exdir = fileparts(mfilename('fullpath'));
 if isempty(exdir), exdir = pwd; end
-assert(~isempty(getenv('MACOS_HOME')), ...
-    'MACOS_HOME must be set (engine needs macos_param.txt).');
 
 MODEL = 256;
 macos.init(MODEL);

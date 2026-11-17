@@ -32,7 +32,7 @@ function [n, S] = glass(name, lambda_nm, opts)
 %   last are the ones traced).
 %
 %   The file is found at opts.file, else $MACOS_HOME/macos_glass_list.txt, else
-%   the macos_f90 directory beside this MACOS_resources checkout.  It is read
+%   this checkout's own macos_f90 directory.  It is read
 %   once per MATLAB session (cached per path).
 %
 %   See also macos.design.Lens, macos.design.Bench.
@@ -87,7 +87,7 @@ persistent cache
 if isempty(file), file = default_file_(); end
 if isempty(cache), cache = containers.Map('KeyType', 'char', 'ValueType', 'any'); end
 if isKey(cache, file), T = cache(file); return; end
-assert(isfile(file), 'macos.design.glass: glass table %s not found (set MACOS_HOME to the macos_f90 directory)', file);
+assert(isfile(file), 'macos.design.glass: glass table %s not found (set MACOS_HOME to the directory that holds macos_glass_list.txt)', file);
 fid = fopen(file, 'r');  c = onCleanup(@() fclose(fid));
 C = textscan(fid, '%s %f %f %f %f %f %f %*[^\n]');
 names = C{1};
@@ -103,8 +103,8 @@ if ~isempty(h) && isfile(fullfile(h, 'macos_glass_list.txt'))
     f = fullfile(h, 'macos_glass_list.txt');
     return
 end
-% +design -> +macos -> src -> mmacos -> MACOS_resources -> its parent
+% +design -> +macos -> src -> mmacos -> the repository root
 here = fileparts(mfilename('fullpath'));
-res  = fileparts(fileparts(fileparts(fileparts(here))));
-f = fullfile(fileparts(res), 'macos', 'macos_f90', 'macos_glass_list.txt');
+root = fileparts(fileparts(fileparts(fileparts(here))));
+f = fullfile(root, 'macos_f90', 'macos_glass_list.txt');
 end

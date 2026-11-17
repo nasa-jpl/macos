@@ -501,8 +501,7 @@ K = afocal4_union('x.in', 'fields',P.Fsolve);    % the gate, on any deck
 L = clear_law('x.in','fields',P.Fsolve,'leg',2,'elt',4,'M',30);
 ```
 
-Model size 256, one MATLAB process per model size,
-`MACOS_HOME=~/dev/macos/macos_f90`.
+Model size 256, one MATLAB process per model size.
 
 ---
 

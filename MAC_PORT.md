@@ -62,7 +62,6 @@ cd <clone>/macos && source ./makems.sh release gfortran
 cd <clone>/MACOS_resources/mmacos
 rm -f src/mmacos.mexmaca64
 MACOS_BUILD_DIR=<clone>/macos/build_release_gfortran FC=gfortran make
-MACOS_HOME=<clone>/macos/macos_f90 \
 MACOS_BUILD_DIR=<clone>/macos/build_release_gfortran ./run_mmacos_tests.sh fast
 
 # 3. pymacos (f2py; venv python 3.13)
@@ -73,22 +72,23 @@ PATH="$HOME/.venv/pymacos/bin:$PATH" cmake -B build_mac -S . \
   -DPython_EXECUTABLE=$HOME/.venv/pymacos/bin/python
 PATH="$HOME/.venv/pymacos/bin:$PATH" cmake --build build_mac
 cd <clone>/MACOS_resources/pymacos/tests
-MACOS_HOME=<clone>/macos/macos_f90 \
 PYTHONPATH=<clone>/MACOS_resources/pymacos/src \
 ~/.venv/pymacos/bin/python -m pytest --ignore=proper_compare -q
 ```
 
 ### The load-bearing gotchas (still bite)
-- **`macos_param.txt` + MEX = SIGSEGV.** `init` loads `macos_param.txt` from
-  cwd, exe dir, `$MACOS_HOME`, then a dead compile-time `BUILD_LOC`. `matlab
-  -batch` runs where there is no param file, and inside the MEX a *missing*
-  param file turns the engine's clean abort into a hard SIGSEGV on the MCR
-  thread (empty fault stack — looks like codegen, is not). **Fix: set
-  `MACOS_HOME` at the clone's `macos_f90/`.** A standalone Fortran driver shows
-  a clean "could not be found, bye!" for the same condition.
-- **`run_mmacos_tests.sh` defaults `MACOS_HOME` to `$HOME/dev/macos/macos_f90`**
-  (and `MACOS_BUILD_DIR` to `build_release_gfortran`). A clone elsewhere must
-  set these, or the MEX SIGSEGVs per the gotcha above.
+- **`macos_param.txt` + MEX = SIGSEGV — closed for a build run in its own
+  tree.** `init` loads `macos_param.txt` from cwd, exe dir, `$MACOS_HOME`, then
+  the data directory the build recorded at configure time (`BUILD.md`, "Where
+  the engine finds its data files"), so `MACOS_HOME` need not be set.  The
+  fourth place used to be a dead `BUILD_LOC`; then `matlab -batch`, which runs
+  where there is no param file, hit the engine's abort, and inside the MEX
+  that abort is a hard SIGSEGV on the MCR thread (empty fault stack — looks
+  like codegen, is not).  It can still happen to a MEX copied away from its
+  build tree: set `MACOS_HOME` to a directory that holds the file.
+- **`run_mmacos_tests.sh` defaults `MACOS_BUILD_DIR` to
+  `build_release_gfortran`** under `$HOME/dev/macos`. A clone elsewhere must
+  set it.  (It no longer sets `MACOS_HOME`.)
 - **CLI corpus lists carry absolute paths.** `cli_tests/corpus_core.txt` /
   `corpus_committed.txt` are committed with the author's absolute paths; on any
   other machine **run `cli_tests/make_corpus.sh` first** (it rebuilds the lists

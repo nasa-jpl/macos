@@ -106,8 +106,7 @@ cd ~/dev/macos_sandbox/ctb
 matlab -batch "run('example_ctb.m')"
 ```
 
-Requires `MACOS_HOME` set (the MEX aborts on engine init without
-`macos_param.txt`) and the mmacos MEX built for this platform. Uses the local
+Requires the mmacos MEX built for this platform. Uses the local
 (unpushed) `add_oap` fix in `MACOS_resources`.
 
 ## Results (current seed, AOI 5°, 500 nm)
@@ -376,7 +375,7 @@ seen macos — can consume this model's per-plane fields and surfaces in their
 own [PROPER](https://sourceforge.net/projects/proper-library/) run and check
 their model against ours **plane by plane** (an interface check).
 
-**Generate** (one MATLAB process, ~1 min, needs `MACOS_HOME` + the mmacos MEX):
+**Generate** (one MATLAB process, ~1 min, needs the mmacos MEX):
 
 ```matlab
 cd mmacos/templates/30_instruments/bench_ctb
