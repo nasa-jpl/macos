@@ -43,7 +43,7 @@ that carries an optimization block sets `OptFEX` explicitly, and all four say
 | `macos/ZGD_test_files/opt_example.in` | `No` | no — `'N'` branch unchanged | no — explicit |
 | `macos/ZGD_test_files/opt_example_asph.in` | `No` | no | no |
 | `macos/ZGD_test_files/opt_example_constrained.in` | `No` | no | no |
-| `MACOS_resources/pymacos/tests/Rx/opt_example.in` | `No` | no | no |
+| `pymacos/tests/Rx/opt_example.in` | `No` | no | no |
 
 Documentation-only hits: `macos_f90/Lou-UpdateNotes.txt` (line 652 documents
 `OptFEX= YES  % whether do FEX during optimization` — the affirmative behaviour

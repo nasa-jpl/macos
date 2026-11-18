@@ -10,8 +10,8 @@ report built by `make polval`). Specified in `macos/PLAN_POLARIZATION.md`,
 ```
 
 `polvalDir` defaults to `<macos repo>/docs/macos-manual/polval`, resolved
-from this script's own location (`macos` and `MACOS_resources` are siblings
-under `~/dev`). Equivalent entry point from the docs side:
+from this script's own location (three directories up is the repository
+root). Equivalent entry point from the docs side:
 
 ```
 cd ~/dev/macos/docs/macos-manual

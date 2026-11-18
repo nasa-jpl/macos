@@ -40,7 +40,7 @@ POLVALSRC  := $(sort $(wildcard polval/[0-9]*.md))
 POLVALIN   := $(sort $(wildcard polval/[0-9]*.md.in))
 POLVAL_OPTS := --resource-path=polval --toc --toc-depth=2 \
                --metadata title="MACOS Polarization Validation Report"
-POLVAL_TOOL := $(HOME)/dev/MACOS_resources/mmacos/tools/pol_validation_report
+POLVAL_TOOL := $(abspath ../../mmacos/tools/pol_validation_report)
 
 # The executive summary is section 05 of the report AND a stand-alone
 # hand-out: the primary reviewer will not read 60 pages.  Same generated
@@ -87,8 +87,8 @@ transcripts:
 	python3 tools/regen_transcripts.py $(MACOS_BIN)
 
 # Appendix E's Zernike orderings, MEASURED through pymacos (tools/gen_zernike_table.py; the gate is
-# MACOS_resources/pymacos/tests/test_zernike_orderings.py).  PYMACOS= picks the pymacos tree.
-PYMACOS ?= $(HOME)/dev/MACOS_resources/pymacos
+# pymacos/tests/test_zernike_orderings.py).  PYMACOS= picks the pymacos tree.
+PYMACOS ?= $(abspath ../../pymacos)
 zernike-table:
 	bash -c 'source /opt/intel/oneapi/setvars.sh intel64 >/dev/null 2>&1; \
 	  PYMACOS_SRC=$(PYMACOS)/src MACOS_HOME=$(abspath ../../macos_f90) MPLBACKEND=Agg \
@@ -101,7 +101,7 @@ cmdref-pdf: $(BUILD)/macosCmdRef.pdf
 # regenerate the auto-skeleton catalogs from engine + binding sources
 cmdref-regen:
 	python3 tools/gen_cmdref.py
-	python3 ../../../MACOS_resources/mmacos/src/gen_mex_wrappers.py --targets defaults
+	python3 ../../mmacos/src/gen_mex_wrappers.py --targets defaults
 
 $(BUILD)/macosCmdRef.docx: $(CMDSRC) $(REFDOC) | $(BUILD)
 	$(PANDOC) $(CMDREF_OPTS) --reference-doc=$(REFDOC) -o $@ $(CMDSRC)

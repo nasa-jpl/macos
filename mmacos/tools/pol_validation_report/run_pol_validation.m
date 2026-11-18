@@ -40,8 +40,8 @@ function run_pol_validation(polvalDir, model)
     if nargin < 1 || isempty(polvalDir)
         here = fileparts(mfilename('fullpath'));                % .../tools/pol_validation_report
         mmacosRoot = fileparts(fileparts(here));                % .../mmacos
-        devRoot = fileparts(fileparts(mmacosRoot));             % .../dev
-        polvalDir = fullfile(devRoot, 'macos', 'docs', 'macos-manual', 'polval');
+        repoRoot = fileparts(mmacosRoot);                       % the repository root
+        polvalDir = fullfile(repoRoot, 'docs', 'macos-manual', 'polval');
     end
     if nargin < 2 || isempty(model), model = 128; end
     mediaDir = fullfile(polvalDir, 'media');

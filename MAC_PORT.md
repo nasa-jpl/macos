@@ -59,20 +59,20 @@ cd <clone>/macos && source ./makems.sh release gfortran
 #    outputs: build_release_gfortran/{lib/libsmacos.a, bin/macos}
 
 # 2. mmacos mex (shell FC may be gfortran-16; pass FC=gfortran explicitly)
-cd <clone>/MACOS_resources/mmacos
+cd <clone>/macos/mmacos
 rm -f src/mmacos.mexmaca64
 MACOS_BUILD_DIR=<clone>/macos/build_release_gfortran FC=gfortran make
 MACOS_BUILD_DIR=<clone>/macos/build_release_gfortran ./run_mmacos_tests.sh fast
 
 # 3. pymacos (f2py; venv python 3.13)
-cd <clone>/MACOS_resources/pymacos/src/cmake
+cd <clone>/macos/pymacos/src/cmake
 PATH="$HOME/.venv/pymacos/bin:$PATH" cmake -B build_mac -S . \
   -DCMAKE_Fortran_COMPILER=gfortran-16 \
   -DMACOS_BUILD_DIR=<clone>/macos/build_release_gfortran \
   -DPython_EXECUTABLE=$HOME/.venv/pymacos/bin/python
 PATH="$HOME/.venv/pymacos/bin:$PATH" cmake --build build_mac
-cd <clone>/MACOS_resources/pymacos/tests
-PYTHONPATH=<clone>/MACOS_resources/pymacos/src \
+cd <clone>/macos/pymacos/tests
+PYTHONPATH=<clone>/macos/pymacos/src \
 ~/.venv/pymacos/bin/python -m pytest --ignore=proper_compare -q
 ```
 
@@ -92,8 +92,8 @@ PYTHONPATH=<clone>/MACOS_resources/pymacos/src \
 - **CLI corpus lists carry absolute paths.** `cli_tests/corpus_core.txt` /
   `corpus_committed.txt` are committed with the author's absolute paths; on any
   other machine **run `cli_tests/make_corpus.sh` first** (it rebuilds the lists
-  from the local tree and resolves `MACOS_RESOURCES` as the sibling clone, so
-  clone both repos side by side).
+  from the local tree; since the 2026-11 merge the decks of the interfaces are
+  in the same clone).
   - It runs to its last line and prints `core: 165` on macOS since `3df6b4c9`
     (2026-11-02). Before that its `is_rx()` helper returned the status of whatever
     file sorted last under `set -o pipefail`, and on a Mac the script aborted

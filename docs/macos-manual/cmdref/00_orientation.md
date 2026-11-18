@@ -71,20 +71,20 @@ underlying routine, which is the ground truth for argument meanings.
 |---|---|---|
 | engine + CLI (`macos`) | `nasa-jpl/macos` repo, `macos_f90/` | `source ./makeall.sh` (cmake; gfortran or Intel ifx) |
 | SMACOS library | same repo | built by `makeall.sh`/`makems.sh` (`libsmacos.a`) |
-| mmacos | `MACOS_resources/mmacos/` | see its README (MEX build against libsmacos) |
-| pymacos | `MACOS_resources/pymacos/` | see its README (f2py build) |
+| mmacos | `mmacos/` | see its README (MEX build against libsmacos) |
+| pymacos | `pymacos/` | see its README (f2py build) |
 
 ## Related tools
 
 Two companions ship alongside the four surfaces:
 
-- **SegMirMaker** (`MACOS_resources/segmirmaker/`) — standalone
+- **SegMirMaker** (`segmirmaker/`) — standalone
   utility for converting a monolithic primary mirror into a
   many-segment one: it generates the segmented-mirror prescription
   (`.presc`) and segment-influence (`Hx.m`) files from a parent-mirror
   description, including FreeForm parents.  Use it before hand-editing
   segment entries into a prescription.  See manual §4.4.11.
-- **GMI** (`MACOS_resources/GMI/`) — a MATLAB MEX front end built
+- **GMI** (`GMI/`) — a MATLAB MEX front end built
   directly on SMACOS: a complete forward simulator (multi-channel
   sensitivities, detector images) in one gateway.  Beyond being a
   tool in its own right, `GMI.F` is the reference example of a real
@@ -100,10 +100,10 @@ each surface:
   Appendix A prescriptions, each `<name>.in` paired with a
   `<name>.jou` journal that drives a complete analysis
   (`EXEcute <name>` after loading).
-- **mmacos** — `MACOS_resources/mmacos/examples/`; further runnable
+- **mmacos** — `mmacos/examples/`; further runnable
   demos sit in `mmacos/design/` (telescope design layer) and
   `mmacos/sensitivities/` (Jacobian / dw_* drivers).
-- **pymacos** — `MACOS_resources/pymacos/tests/`: the test suite
+- **pymacos** — `pymacos/tests/`: the test suite
   doubles as usage examples.
 
 ## Prerequisite tags used throughout

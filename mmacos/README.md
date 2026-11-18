@@ -26,7 +26,7 @@ exact pass-through to the Fortran API.
 ### 2. `+macos/` function package (primary user surface)
 
 ```matlab
-addpath('/home/dcr/dev/MACOS_resources/mmacos/src')   % package + mex live in src/
+addpath('~/dev/macos/mmacos/src')   % package + mex live in src/
 
 macos.init(128)
 n = macos.load_rx('/path/Rx_Cass.in')       % accepts .in extension
@@ -86,7 +86,7 @@ Requires:
   identical mex artefacts
 
 ```bash
-cd /home/dcr/dev/MACOS_resources/mmacos
+cd ~/dev/macos/mmacos
 make                                                  # gfortran default
 make FC=ifx MACOS_BUILD_DIR=~/dev/macos/build_release # ifx alternative
 make MATLAB_DIR=/usr/local/MATLAB/R2025b              # specific MATLAB
@@ -101,7 +101,7 @@ make unittest                                         # full matlab.unittest sui
 
 Fully supported — `make` (gfortran) and `run_mmacos_tests.sh` build a
 `mmacos.mexmaca64` bundle and run green; the Mac release gate runs the
-same groups from a clean clone (record: `../../macos/MAC_PORT.md` Part 2).
+same groups from a clean clone (record: `../MAC_PORT.md` Part 2).
 Darwin specifics are handled automatically (MATLAB at `/Applications/
 MATLAB_R*.app`, `maca64` arch, `-bundle`+dynamic_lookup link, `-mcpu=native`).
 Two things to know:
@@ -117,7 +117,7 @@ Two things to know:
   clean error) — it can only happen to a MEX that was copied away from the
   tree it was built in; set `MACOS_HOME` to a directory that holds the file.
 
-Full setup + copy-paste commands: **`../../macos/MAC_PORT.md`**.
+Full setup + copy-paste commands: **`../MAC_PORT.md`**.
 
 ### gfortran vs ifx
 

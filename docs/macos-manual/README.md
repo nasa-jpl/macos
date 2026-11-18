@@ -189,7 +189,7 @@ actually re-running the validation cases:
 - `polval/*.md`, `polval/media/*.png` and `polval/generated/numbers.json`
   are **generated — never hand-edit them**;
 - `make polval-regen` runs the driver in
-  `MACOS_resources/mmacos/tools/pol_validation_report/` (MATLAB + a
+  `mmacos/tools/pol_validation_report/` (MATLAB + a
   built mmacos mex), which re-measures every case, rewrites the figures
   and the numbers, and re-renders the prose;
 - `make polval` refuses to build if a template was edited without
@@ -201,7 +201,7 @@ stamps the engine and binding commits, model size and host the numbers
 came from, and labels every number the driver *cannot* produce (pymacos
 / ifx, GMI, historical pre-fix engine A/Bs) as externally sourced with
 its capture date.  See
-[`MACOS_resources/mmacos/tools/pol_validation_report/README.md`](../../../MACOS_resources/mmacos/tools/pol_validation_report/README.md)
+[`mmacos/tools/pol_validation_report/README.md`](../../mmacos/tools/pol_validation_report/README.md)
 for the driver, and add an evidence section there as each polarization
 phase lands.
 

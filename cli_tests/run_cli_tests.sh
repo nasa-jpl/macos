@@ -40,7 +40,7 @@ tree=$(cd "$tree" && pwd)
 kind=${1:-load}
 mkdir -p "$here/records"
 sha=$(cd "$tree" && git rev-parse --short HEAD)
-(cd "$tree" && git diff --quiet -- macos_f90 CMakeLists.txt) || sha="${sha}+dirty"
+(cd "$tree" && git diff --quiet -- macos_f90 external cmake CMakeLists.txt) || sha="${sha}+dirty"
 echo "binaries from $tree at $sha"
 
 case "$kind" in

@@ -15,12 +15,12 @@ when *not* to split a design into a telescope and an instrument.
 
 ### The assistant reads
 
-- `MACOS_resources/mmacos/templates/80_end_to_end/e2e/README.md`, the `s2_instrument.m` row -- the
+- `mmacos/templates/80_end_to_end/e2e/README.md`, the `s2_instrument.m` row -- the
   stage's inputs (the stage-1 `.mat`), the relay types it offers, and the dead ends already walked
   (kept in `s2_instrument.m` so nobody re-walks them).
-- `MACOS_resources/mmacos/templates/00_INDEX.md`, tier T3 -- the imager rung *is* this stage until a
+- `mmacos/templates/00_INDEX.md`, tier T3 -- the imager rung *is* this stage until a
   standalone template is extracted.
-- `MACOS_resources/optical_design/OPTICAL_DESIGN_AGENT_GUIDE.md` -- the sphere-plus-Zernike solve
+- `optical_design/OPTICAL_DESIGN_AGENT_GUIDE.md` -- the sphere-plus-Zernike solve
   rules again, now for a joint telescope-and-relay solve.
 
 ### It runs
@@ -82,7 +82,7 @@ The question is whether it takes the telescope's beam as it stands.
   across) and the dark zone's inner edge, 8 λ/D.
 - `macos.design.append_rx`, its help text -- splicing a bench onto a telescope's prescription at its
   focus.
-- `MACOS_resources/optical_design/CORONAGRAPH_DESIGN_RULES.md` -- the coronagraph rules for
+- `optical_design/CORONAGRAPH_DESIGN_RULES.md` -- the coronagraph rules for
   prescriptions.
 
 It runs on the thread's stage-2 prescription, with the CTB's knobs read from the template, which is
@@ -177,7 +177,7 @@ mask, and a detector at the image of the DM pupil.
 > Lay out a folded test-arm bench in the X-Y plane with real angles of incidence: collimate onto the
 > DM, focus at a field mask, and put the detector at the DM's pupil image. Then optimize it.
 
-- `MACOS_resources/mmacos/CLAUDE.md`, the `Bench` entries -- among them, ask `Bench.station` where
+- `mmacos/CLAUDE.md`, the `Bench` entries -- among them, ask `Bench.station` where
   an element sits on the bench; an off-axis section's vertex is its parent's.
 - `templates/40_benches/bench_layout/example_bench_layout.m` -- its header: why the solve is
   staged, one conjugate condition per plane, so that a single wavefront solve at the detector

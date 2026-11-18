@@ -130,7 +130,7 @@ there.  Assembling with `pihat` instead is NOT an admissible alternative
 fix: `pihat` is perpendicular to the INCIDENT ray, so it emits a
 longitudinal component along the outgoing ray.  Full analysis, suite
 impact and the decision: `macos/REVIEW_POL_SP_SIGN_2026-07-27.md`.
-Reproducer: `MACOS_resources/mmacos/tools/pol_sp_sign_probe/`.
+Reproducer: `mmacos/tools/pol_sp_sign_probe/`.
 
 **Reflected-p̂ / r_p sign fix (2026-07-27).**  `Reflector` assembles
 `Eout` on `prhat = shat x rhat` (p̂ follows the OUTGOING ray) but the

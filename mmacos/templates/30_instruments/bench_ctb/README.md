@@ -49,7 +49,7 @@ source of these seeds; the layout is a generic CTB, not the proprietary DST2R
 coordinate set.
 
 > **add_oap fix (local, unpushed).** Building this surfaced a bug in
-> `MACOS_resources/mmacos/src/+macos/+design/Bench.m`: `add_oap` seeded the
+> `mmacos/src/+macos/+design/Bench.m`: `add_oap` seeded the
 > parent focal length with `(1+cosθ)` instead of `(1−cosθ)` — correct only at
 > θ=90° (the sole regime its tests exercised), wrong for every other fold.
 > Fixed to `(1−cosθ)` (90° results bit-identical, so `tBench`/`bench_layout`

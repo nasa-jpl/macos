@@ -13,9 +13,7 @@ you do **not** need to learn CMake.
 > ```bash
 > sudo apt install build-essential cmake gfortran git libx11-dev ninja-build
 > mkdir -p ~/dev && cd ~/dev                              # parent dir
-> git clone git@github.com:nasa-jpl/macos.git             # pull both repos
-> git clone git@github.com:nasa-jpl/MACOS_resources.git   # (side by side)
-> git -C macos checkout opt-dev && git -C MACOS_resources checkout opt-dev
+> git clone git@github.com:nasa-jpl/macos.git             # the one repository
 > cd macos && source ./makeall.sh                         # configures with Ninja
 > ./build_release/bin/macos                               # run it
 > ```
@@ -25,8 +23,6 @@ you do **not** need to learn CMake.
 > sudo apt install build-essential cmake gfortran git libx11-dev
 > mkdir -p ~/dev && cd ~/dev
 > git clone git@github.com:nasa-jpl/macos.git
-> git clone git@github.com:nasa-jpl/MACOS_resources.git
-> git -C macos checkout opt-dev && git -C MACOS_resources checkout opt-dev
 > cd macos && source ./makeall.sh                         # falls back to Unix Makefiles
 > ./build_release/bin/macos
 > ```
@@ -52,7 +48,7 @@ order, before it builds MACOS itself:
 | Built on first run | What it is | How |
 |--------------------|-----------|-----|
 | **readline** | arrow-key history at the `MACOS>` prompt | autoconf `./configure && make` — the script runs it for you, **once** |
-| **zlib + libpng + pixman + Cairo** | the 2-D graphics back end (all **bundled** under `macos_f90/giza/src/subprojects/`) | compiled by CMake |
+| **zlib + libpng + pixman + Cairo** | the 2-D graphics back end (all **bundled** under `external/giza/src/subprojects/`) | compiled by CMake |
 | **Giza** | the PGPLOT-API graphics layer (drop-in PGPLOT replacement) | compiled by CMake |
 | **SLSQP** | the constrained-optimization solver (vendored, BSD) | compiled by CMake |
 | **libsmacos.a → macos / smacos_dvr / GMI** | the engine, library, driver, MATLAB mex | compiled by CMake (GMI via its Makefile) |
@@ -76,7 +72,7 @@ list below is so short.
 | `macos` | the interactive ray-tracer | `build_release/bin/macos` |
 | `libsmacos.a` | the static library (backs pymacos / mmacos / GMI) | `build_release/lib/libsmacos.a` |
 | `smacos_dvr` | the batch/scripting test driver | `build_release/bin/smacos_dvr` |
-| `GMI.mexa64` | the MATLAB interface (skipped if no MATLAB) | `~/dev/MACOS_resources/GMI/GMI.mexa64` |
+| `GMI.mexa64` | the MATLAB interface (skipped if no MATLAB) | `~/dev/macos/GMI/GMI.mexa64` |
 
 ---
 
@@ -115,16 +111,22 @@ Intel environment by hand — the build scripts do all of that.
 
 ---
 
-## Step 1 — Pull the code (two repos, side by side)
+## Step 1 — Pull the code (one repository)
 
-MACOS is **two repositories** that must sit **side by side under one parent
-directory**, both checked out to the **same branch name**:
+MACOS is **one repository**. It holds the engine, the build scripts and the
+interfaces built on the engine:
 
 ```
 ~/dev/
-├── macos/            ← engine + build scripts (this repo)
-└── MACOS_resources/  ← GMI / mmacos / pymacos / SegMirMaker
+└── macos/            ← this repository
+    ├── macos_f90/    ← engine source
+    ├── external/     ← bundled third-party code (giza, readline, slsqp, FITS)
+    └── GMI/  mmacos/  pymacos/  segmirmaker/   ← the interfaces and tools
 ```
+
+(Until 2026-11 the interfaces lived in a second repository,
+`MACOS_resources`. If you have that layout, delete both old clones and clone
+again; do not pull into them.)
 
 ### First time (fresh clone)
 
@@ -132,35 +134,25 @@ directory**, both checked out to the **same branch name**:
 mkdir -p ~/dev && cd ~/dev
 
 git clone git@github.com:nasa-jpl/macos.git
-git clone git@github.com:nasa-jpl/MACOS_resources.git
-
-# Check BOTH out to the SAME branch.  opt-dev = current release target.
-git -C macos            checkout opt-dev
-git -C MACOS_resources  checkout opt-dev
 ```
 
-> **Which branch?** `opt-dev` is the **stable release target** — use it unless
-> you have a reason not to. `sls-dev` is the integration branch (newest fixes
-> and features, less settled). Whichever you pick, **both repos must be on the
-> same one**.
+Do not clone with `--recursive`.
+
+> **Which branch?** A fresh clone is on `main`, the **released version** — use
+> it unless you have a reason not to. `dev` is the integration branch (newest
+> fixes and features, less settled): `git -C macos checkout dev`.
 
 ### Already cloned (just get the latest)
 
 ```bash
-git -C ~/dev/macos            pull
-git -C ~/dev/MACOS_resources  pull
+git -C ~/dev/macos pull
 ```
 
-> **The two repos must be on the same branch** (`opt-dev` with `opt-dev`,
-> `sls-dev` with `sls-dev`). The bindings compile against the engine's Fortran
-> module files; a mismatched pair points at the wrong modules and the API
-> looks "missing" (e.g. unresolved `macos_api_mod_mp_*` symbols at link, or
-> `init` absent from the module layer). If a build fails right after a `git
-> pull`, check both branches match first:
-> ```bash
-> git -C ~/dev/macos branch --show-current
-> git -C ~/dev/MACOS_resources branch --show-current
-> ```
+> **Rebuild the interfaces after a pull.** The bindings compile against the
+> engine's Fortran module files, so an interface built before the pull can
+> point at modules that have changed and the API looks "missing" (e.g.
+> unresolved `macos_api_mod_mp_*` symbols at link, or `init` absent from the
+> module layer). Rebuild the engine first, then the interface.
 
 ---
 
@@ -222,7 +214,7 @@ For the MATLAB interface, add GMI to your MATLAB path (in `startup.m` or via
 **Set Path**):
 
 ```matlab
-addpath('~/dev/MACOS_resources/GMI')
+addpath('~/dev/macos/GMI')
 ```
 
 ---
@@ -292,9 +284,9 @@ source ~/dev/macos/makeall.sh
 2. **Ran it as `./makeall.sh`** — the environment didn't stick. Re-run with
    `source ./makeall.sh`.
 3. **`macos_api_mod` symbols missing / unresolved `macos_api_mod_mp_*` at
-   link** — the two repos are on **different branches**, or `MACOS_resources`
-   isn't a sibling of `macos`. Put them side by side under `~/dev/` and check
-   `git branch --show-current` matches in both.
+   link** — the interface was built against an older engine build. Rebuild
+   the engine (`makems.sh` or `makeall.sh`), then the interface, with the
+   same compiler.
 4. **GMI / smacos_dvr says "module directory not found"** — build the engine
    first (`makeall.sh` or `makems.sh`), with the **same** compiler, so the
    `mod_smacos/` modules exist in the build directory it looks in.

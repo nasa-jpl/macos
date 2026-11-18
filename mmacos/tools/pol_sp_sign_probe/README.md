@@ -4,7 +4,7 @@ One script, no arguments, ~15 s.  It exists to make an open engine defect
 reproducible in one command rather than described in prose.
 
 ```sh
-cd ~/dev/MACOS_resources/mmacos
+cd ~/dev/macos/mmacos
 matlab -batch "run('mmacos_setup.m'); addpath('tools/pol_sp_sign_probe'); probe_sp_sign; exit(0)"
 ```
 

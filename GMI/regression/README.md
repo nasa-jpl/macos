@@ -10,10 +10,10 @@ classes.  Each test loads a known Rx, calls the mex via the standard
 > numeric results, both exit MATLAB cleanly, and `run_regression.sh`
 > trusts the exit code directly.
 >
-> - **gfortran (default):** `source ~/dev/macos/makegmi.sh`.  Mex at
->   `~/dev/MACOS_resources/GMI/GMI.mexa64`.  Requires
->   `build_release_gfortran/` from `makegfortran.sh release` first.
-> - **ifx:** `source ~/dev/macos/makegmi.sh ifx`.  Requires
+> - **gfortran (default):** `source ./makegmi.sh` from the repository
+>   root.  Mex at `GMI/GMI.mexa64`.  Requires
+>   `build_release_gfortran/` from `makems.sh release gfortran` first.
+> - **ifx:** `source ./makegmi.sh ifx`.  Requires
 >   `build_release/` from `makems.sh release` first.  GMI/Makefile
 >   links the single-threaded Intel runtime (`-reentrancy=none`,
 >   pulls in `libifcore.so.5` instead of `libifcoremt.so.5`); the
@@ -48,6 +48,17 @@ Tolerance: hard absolute `|a - b| <= 1e-12` (in mm OPD units).  Loose
 enough to survive harmless re-link-order drift, tight enough that any
 real numeric change shows.
 
+**References re-made 2026-11-17** (gfortran mex; the ifx mex reproduces
+them bit for bit).  The previous set dated from before 2026-10-10, when
+the engine's default OPD reference changed from the aperture mean to the
+chief ray; GMI takes the engine default, so every map had moved by one
+constant, its "Average OPD" (e5hex1: -8.2589e-06 mm; e2e_pie: -2.184e-10 m),
+and tests 02, 03, 05 and 06 failed.  With the old reference forced back
+(`UseChfRay4OPD= N` in the deck) the e2e_pie maps matched the old files to
+3e-14; the e5hex1 maps matched to 8.7e-11 mm, six units in the last place
+of the 66,573 mm path, which is round-off from engine changes since and
+is above this tolerance.  The current references are chief-referenced.
+
 ## Files
 
 ```
@@ -81,7 +92,7 @@ regression/
 
 The summary table tells you which test + the max |diff| vs reference.
 
-- **All tests fail with mex error**: rebuild GMI.  `source ~/dev/macos/makegmi.sh` (ifx) or `source ~/dev/macos/makegfortran.sh` (gfortran).
+- **All tests fail with mex error**: rebuild GMI.  `source ./makegmi.sh` (gfortran) or `source ./makegmi.sh ifx`, from the repository root.
 - **Just `nominal_repro_*` fails (round-trip non-zero)**: state-drift bug; check `ObtainNominalSettings` / `SetToNominalSettings` in `GMI.F` for fields not being snapshotted (e.g., the FreeForm `pFF/xFF/yFF/zFF` class of fix).
 - **All tests fail with `vs reference`**: an intentional change has shifted the numbers.  Inspect the diff, regenerate via `./run_regression.sh --bootstrap`, commit the new `reference/*.mat`.
 - **`zern_response_*` fails with "perturbation produced zero response"**: GMI is forcing `SrfType=8` on the perturbed element but the trace dispatch in `propsub.F` is silently no-op'ing.  Two known root causes (both fixed on release-candidate, watch for regression):

@@ -15,14 +15,14 @@ running, and watch the wavefront for 500 seconds.
 
 ### The assistant reads
 
-- `MACOS_resources/mmacos/templates/80_end_to_end/e2e/README.md`, the `s6_compare.m` and
+- `mmacos/templates/80_end_to_end/e2e/README.md`, the `s6_compare.m` and
   `s7_simulate.m` rows -- what each pokes or plays, the two scenarios, and the two-pass rule: the
   engine runs the uncorrected and the corrected histories as two passes, because plus and minus the
   control do not commute through the engine's incremental perturbation path.
-- `MACOS_resources/mmacos/design/runners/run_compare.m` and `run_simulator.m` -- the runners: the
+- `mmacos/design/runners/run_compare.m` and `run_simulator.m` -- the runners: the
   engine truth for each measurement, the estimator (a weighted least-squares pose estimate with a
   prior) and the controller.
-- `MACOS_resources/mmacos/src/+macos/opd_ref.m`, its help text -- the OPD map's reference, the
+- `mmacos/src/+macos/opd_ref.m`, its help text -- the OPD map's reference, the
   chief ray (the default) or the aperture mean. The harvest records which one it used, and the
   comparison follows it (below).
 

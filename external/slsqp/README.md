@@ -59,7 +59,7 @@ target type (WFE / WFE_ZMODE / BEAM).
 Source: Kraft's original Fortran translated by Schittkowski (DLR), as
 distributed with SciPy under `scipy/optimize/slsqp/`.  Public domain.
 
-Files to vendor under `macos_f90/slsqp/`:
+Files to vendor under `external/slsqp/`:
 * `slsqp_optmz.f`   (~1900 lines, main + lsq + ldp + nnls helpers)
 * `slsqp.h.in` or equivalent constants
 

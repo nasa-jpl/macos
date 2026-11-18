@@ -42,7 +42,7 @@ either reuse the existing ACCEPT routines or push their prompt
 through `set_sub_prompt` directly.
 
 Non-readline builds (Windows always; any clone whose
-`readline-8.2/libreadline.a` isn't built) do NOT render readline
+`external/readline-8.2/libreadline.a` isn't built) do NOT render readline
 prompts: PARSE_LOH's `#else` branch is a bare `READ(*)`, so the
 cached sub-prompt must be printed explicitly — `print_sub_prompt_`
 (mhist.c, outside the guard) called before that READ (e81b235).

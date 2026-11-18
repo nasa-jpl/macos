@@ -102,7 +102,7 @@ test_ff/
 
 Run from MATLAB:
 ```matlab
-cd ~/dev/MACOS_resources/GMI/test_ff
+cd ~/dev/macos/GMI/test_ff
 test_gmi_ff
 ```
 

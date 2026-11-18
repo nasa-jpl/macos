@@ -101,7 +101,7 @@ Read them in this order; the canonical write-up is `RESULTS.md` § CLEARING.
 ## Run
 
 ```matlab
-run('~/dev/MACOS_resources/mmacos/mmacos_setup.m')
+run('~/dev/macos/mmacos/mmacos_setup.m')
 
 % --- S3, the form study ---
 afocal4_forms                          % everything, ~15 min, model size 256

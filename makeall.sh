@@ -55,7 +55,7 @@ else
 fi
 
 # --- Readline bootstrap (one-time, on first clone) ---
-READLINE_DIR="${SCRIPT_DIR}/macos_f90/readline-8.2"
+READLINE_DIR="${SCRIPT_DIR}/external/readline-8.2"
 if [ ! -f "${READLINE_DIR}/libreadline.a" ]; then
   echo "makeall: bootstrapping bundled readline (one-time setup) ..."
   ( cd "${READLINE_DIR}" && ./configure -q && make -j"$(nproc)" ) \

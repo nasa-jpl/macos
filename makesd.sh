@@ -52,7 +52,7 @@ if [ "${FC}" = "ifx" ] && [ -f "${ONEAPI_SETVARS}" ]; then
 fi
 
 # --- LD_LIBRARY_PATH ---
-READLINE_LIB="${SCRIPT_DIR}/macos_f90/readline-8.2/shlib"
+READLINE_LIB="${SCRIPT_DIR}/external/readline-8.2/shlib"
 INTEL_LIB="/opt/intel/oneapi/compiler/latest/lib"
 export LD_LIBRARY_PATH="${READLINE_LIB}:${INTEL_LIB}:${LD_LIBRARY_PATH}"
 

@@ -121,7 +121,7 @@ C ----------------------------------------------------------------------
         ! etc.) combined with the 1e-9 finite-difference step produce
         ! gradients of order 1e5 against bounds of order 1e-4, and
         ! SLSQP's internal QP solver returns a zero step.  See
-        ! slsqp/README.md Phase 4b.
+        ! external/slsqp/README.md Phase 4b.
         Real*8 :: scale_sls(MAXVAR),
      &            bl_scl(MAXVAR), bu_scl(MAXVAR),
      &            aparams_scl(MAXVAR), grad_scl(MAXVAR+1)

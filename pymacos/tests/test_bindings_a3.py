@@ -13,7 +13,7 @@ from context import pymacos as m
 import pymacos.api_gen as api_gen
 
 MODEL = 128
-RES = Path(__file__).resolve().parents[2]          # MACOS_resources
+RES = Path(__file__).resolve().parents[2]          # the repository root
 
 
 def rx(name):

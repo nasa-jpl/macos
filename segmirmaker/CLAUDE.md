@@ -1,4 +1,4 @@
-# MACOS_resources/segmirmaker
+# segmirmaker
 
 `SegMirMaker.f` — Segmented Mirror Prescription Generator.
 Modernized from `SMPGe.for` (dcr, 5/7/1992, VAX Fortran).

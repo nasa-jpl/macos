@@ -5,7 +5,7 @@ Language-agnostic ground truth for the **MACOS design layer**
 fixtures here are the shared golden specs that the bindings are validated
 against; the Python tools are the oracles that generate and check them.
 
-Kept at the `MACOS_resources` root so both bindings — and their users —
+Kept at the repository root so both bindings — and their users —
 can find it.
 
 ## Contents

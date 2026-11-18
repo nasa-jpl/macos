@@ -35,11 +35,11 @@ Fixed-form source: .F files use the C preprocessor, .f files do not.
 
 | Working in… | Read | Covers |
 |---|---|---|
-| `macos_f90/giza/`, `pgplotsub.F`, any plot/display path | `macos_f90/giza/CLAUDE.md` | raster inversion + PGCTAB CI-0/1 clobber, non-raster black-on-white, labels/titles/wedge, annotation lines, supersampling/idle-window, GRAY CR/CG/CB 0-based bounds, GRAINI caching, PANEL_ENV viewport, smacos_dvr graphics init, draw_rays data-only |
-| `macos_f90/slsqp/`, `design_slsqp_optim.F`, constrained optim | `macos_f90/slsqp/CLAUDE.md` | SLSQP-default / NPSOL-opt-in dispatch, variable pre-scaling underflow fix (do **not** bump `dtt`), A/B reference, deferred setbeam port |
+| `external/giza/`, `pgplotsub.F`, any plot/display path | `external/giza/CLAUDE.md` | raster inversion + PGCTAB CI-0/1 clobber, non-raster black-on-white, labels/titles/wedge, annotation lines, supersampling/idle-window, GRAY CR/CG/CB 0-based bounds, GRAINI caching, PANEL_ENV viewport, smacos_dvr graphics init, draw_rays data-only |
+| `external/slsqp/`, `design_slsqp_optim.F`, constrained optim | `external/slsqp/CLAUDE.md` | SLSQP-default / NPSOL-opt-in dispatch, variable pre-scaling underflow fix (do **not** bump `dtt`), A/B reference, deferred setbeam port |
 | engine core: `macos_api_mod.F90`, IO/parse (`msmacosio.inc`/`iosub.inc`/`macosio.F`), `elt_mod.F`, `macos_cmd_loop.inc`, `funcsub.F`, `surfsub.F`, `mathsub.F` | `macos_f90/CLAUDE.md` (a 54-line INDEX + the every-session rules) → then the topic file it names in `macos_f90/notes/` (`hygiene`, `surfaces`, `pupil_fex_stop`, `opd_reference`, `rx_io`, `calib`, `cli`, `api_bindings`, `polarization`) | the engine record, split 2026-10-15: each notes file holds its cluster verbatim; **nothing in `notes/` is auto-injected — read the one you touch** |
-| pymacos wrappers / regression | `../MACOS_resources/pymacos/CLAUDE.md` | (existing) intensity/complex_field/dx_at/apodize, PROPER-compare; **cross-ref**, do not duplicate here |
-| coronagraph test prescriptions | `../MACOS_resources/optical_design/CORONAGRAPH_DESIGN_RULES.md` + the `Element= Obscuring` mask rule | **cross-ref** |
+| pymacos wrappers / regression | `pymacos/CLAUDE.md` | (existing) intensity/complex_field/dx_at/apodize, PROPER-compare; **cross-ref**, do not duplicate here |
+| coronagraph test prescriptions | `optical_design/CORONAGRAPH_DESIGN_RULES.md` + the `Element= Obscuring` mask rule | **cross-ref** |
 
 > **CC:** If a gotcha spans two subtrees (e.g. a wrapper that touches both
 > `macos_api_mod` and pymacos), put the engine-side detail in the nested
@@ -67,11 +67,13 @@ RPATH, the gfortran-portability list (the ifx-only constructs gfortran rejects),
 build choice and the debug-build notes are in `BUILD.md`.
 
 ## Branches (summary — the model and the public-release strategy are `BRANCHES.md`)
-`dev-candidate` is where this program's work lands (both repos); `dev` is the public
-integration branch, `opt-dev` the bug-fix release target, `main` the public release surface;
-`sls-dev` and `bench-builder` are RETIRED (do not recreate).  **Engine first, resources
-second**: never merge a resources branch whose emitters need engine keywords that are not on
-the matching engine branch — the failure is at prescription-load time, not build time.
+**One repository since 2026-11**: `MACOS_resources` is merged into `macos` (`mmacos/`,
+`pymacos/`, `GMI/`, `segmirmaker/`, `rx_converter/`, `optical_design/` beside `macos_f90/`).
+`dev` is the public integration branch and `main` the public release surface; `mr_merge`
+carries the merge and the reorganization (issues #75 to #83), one temporary branch and one
+pull request per issue.  `dev-candidate`, `opt-dev`, `sls-dev` and `bench-builder` are gone
+(do not recreate).  **An emitter and the engine keyword it needs land in the same commit** —
+an emitter ahead of its engine fails at prescription-load time, not build time.
 Always `git ls-remote --heads` before assuming the live set.  Push only on Dave's word.
 **After the 2026-10 release** (group meeting 2026-10-26, `BRANCHES.md`): a temporary branch per fix or feature,
 human-readable commit messages, PRs merged and deleted within a week.

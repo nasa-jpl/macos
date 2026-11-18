@@ -1,7 +1,7 @@
 ## SECTION 1: A Telescope
 
 Part I follows one telescope from a sketch to an error budget: the e2e flow of the template library
-(`MACOS_resources/mmacos/templates/80_end_to_end/e2e`), a 4 m, f/18 folded Korsch three-mirror
+(`mmacos/templates/80_end_to_end/e2e`), a 4 m, f/18 folded Korsch three-mirror
 anastigmat (TMA) at 500 nm, built in seven stages that each consume the one before. This section is
 the first stage, the telescope. Section 2 adds its instruments, Section 3 segments its primary,
 Section 4 harvests its sensitivities, Section 5 adds laser metrology, Section 6 closes the loop, and
@@ -9,7 +9,7 @@ Section 7 hands the error budget to systems engineering.
 
 Each section speaks in three voices. *You ask* is the request, as a user would type it to the
 assistant. *The assistant reads* lists the files the assistant reads before it acts; they are paths
-in the two repositories, so you can hand the same list to any assistant. *It runs* is what the
+in the `macos` repository, so you can hand the same list to any assistant. *It runs* is what the
 assistant runs, with what it printed and drew. Every listing, figure and number below was produced
 by that run (the front matter, *How this manual is made*).
 
@@ -22,14 +22,14 @@ by that run (the front matter, *How this manual is made*).
 
 ### The assistant reads
 
-- `MACOS_resources/mmacos/CLAUDE.md` -- the *mmacos* layers, the design layer
+- `mmacos/CLAUDE.md` -- the *mmacos* layers, the design layer
   (`+macos/+design/`, the `Telescope` builder) and the gotchas that bite in MATLAB.
-- `MACOS_resources/optical_design/OPTICAL_DESIGN_AGENT_GUIDE.md` -- how to use the design
+- `optical_design/OPTICAL_DESIGN_AGENT_GUIDE.md` -- how to use the design
   reference and its fixtures; the sign and parameterization conventions are fixed, not guessed.
-- `MACOS_resources/optical_design/TELESCOPE_DESIGN_REFERENCE.md` -- the closed-form first-order
+- `optical_design/TELESCOPE_DESIGN_REFERENCE.md` -- the closed-form first-order
   layout and the third-order conditions of the Korsch TMA.
-- `MACOS_resources/mmacos/templates/00_INDEX.md` and
-  `MACOS_resources/mmacos/templates/80_end_to_end/e2e/README.md` -- which template answers the
+- `mmacos/templates/00_INDEX.md` and
+  `mmacos/templates/80_end_to_end/e2e/README.md` -- which template answers the
   request, and the stage contract (one parameter file; each stage writes its `.in`, `.mat`,
   figures and report beside itself).
 - `macos/macos_f90/notes/pupil_fex_stop.md` -- how the engine finds the exit pupil (FEX) and the

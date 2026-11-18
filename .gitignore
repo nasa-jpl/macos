@@ -284,3 +284,18 @@ mmacos/templates/80_end_to_end/e2e.zip
 
 # copyrighted reference papers stay local (public repo)
 mmacos/challenges/dyson5/*.pdf
+
+# The bundled readline is configured and built in its own source directory
+# (make*.sh, CMakeLists.txt); these are the files that leaves behind.  Each is
+# named in full so that no tracked readline source is hidden.
+/external/readline-8.2/Makefile
+/external/readline-8.2/config.h
+/external/readline-8.2/config.status
+/external/readline-8.2/stamp-h
+/external/readline-8.2/history.pc
+/external/readline-8.2/readline.pc
+/external/readline-8.2/doc/Makefile
+/external/readline-8.2/examples/Makefile
+/external/readline-8.2/shlib/Makefile
+/external/readline-8.2/shlib/libhistory.so.8.2
+/external/readline-8.2/shlib/libreadline.so.8.2

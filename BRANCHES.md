@@ -3,6 +3,23 @@
 > Moved verbatim out of the root `CLAUDE.md` on 2026-10-15 (the root is the every-session
 > rules + the index; this file is read when you merge, push, promote or prepare a release).  Add new branch rules here.
 
+## One repository (2026-11-17) — read this first
+- **`MACOS_resources` is merged into `macos`.**  The merge is on branch `mr_merge`
+  (`0a526602`); the interfaces and tools sit at the top level beside `macos_f90/`.  The
+  sections below were written for two repositories and are kept as the record; where they
+  say "both repos", "resources" or "the pair", read "this repository".
+- **Live branches on `nasa-jpl/macos` (`git ls-remote --heads`, 2026-11-17):** `main`, `dev`,
+  `mr_merge`, and one temporary branch per open issue.  `opt-dev`, `dev-candidate`,
+  `release-candidate` and `pol-core` are no longer on the remote.
+- **The reorganization** (group meeting 2026-11-17) is GitHub issues #75 to #83: one branch and
+  one pull request per issue, each branch starting from the one before, each tested on Linux and
+  on the Mac before its pull request, all merging into `mr_merge`.
+- **"Engine first, resources second" becomes "in the same commit".**  The failure it guards
+  against is unchanged -- an emitter ahead of its engine keyword fails at prescription-load time,
+  not at build time -- but with one repository the engine change and the emitter land together.
+- **Old clones:** delete the old `macos` and `MACOS_resources` clones and clone once.  Do not
+  pull into, or push from, a clone made before the 2026-11 history rewrite.
+
 ## Branch model (UPDATED 2026-07-28 — `sls-dev` retired, `dev` is integration)
 - **`dev`** — **integration + public developer branch for new work**
   (the role `sls-dev` used to hold).  Multi-person WIP lands here; all
