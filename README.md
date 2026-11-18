@@ -50,8 +50,8 @@ interfaces built on it (the interfaces lived in the separate
   linear model generation and wide-ranging test facilities.
 - **mmacos** (`app/mmacos/`): uses MATLAB as a front end, and provides
   linear model generation and optical design layers. More versatile than GMI.
-- **SegMirMaker** (`segmirmaker/`): generates segmented-mirror prescriptions.
-- **Prescription converters** (`rx_converter/`): convert CODE V and Zemax
+- **SegMirMaker** (`tools/segmirmaker/`): generates segmented-mirror prescriptions.
+- **Prescription converters** (`tools/rx_converter/`): convert CODE V and Zemax
   prescriptions.
 - **Manuals** (`docs/`): `macosMan.pdf`, `macosCmdRef.pdf`, `mmacosMan.pdf`
   and their sources.
@@ -81,8 +81,9 @@ macos/                          (this repository -- CMakeLists.txt and make*.sh 
         GMI/                    (GMI MATLAB mex interface)
         mmacos/                 (mmacos MATLAB mex interface -- CMakeLists.txt here)
         pymacos/                (pymacos Python interface)
-    segmirmaker/                (segmented-mirror prescription generator)
-    rx_converter/               (prescription converters)
+    tools/                      (stand-alone programs, and three maintenance scripts)
+        segmirmaker/            (segmented-mirror prescription generator)
+        rx_converter/           (CODE V and Zemax prescription converters)
     optical_design/             (design rules and reference fixtures)
     docs/                       (manuals and their sources)
     cli_tests/                  (command-line regression gates)

@@ -2,7 +2,7 @@ function out = segmirmaker_run(parent_in, opts)
 %SEGMIRMAKER_RUN  Drive the SegMirMaker generator non-interactively.
 %
 %   out = macos.design.segmirmaker_run(parent_in, Name=Value) runs the
-%   standalone SegMirMaker binary (segmirmaker/) on a parent MACOS
+%   standalone SegMirMaker binary (tools/segmirmaker/) on a parent MACOS
 %   prescription by scripting its interactive dialog over stdin, in a
 %   fresh scratch directory.  Returns the paths of the generated
 %   segment prescription blocks (.presc) and edge-sensor measurement
@@ -12,7 +12,7 @@ function out = segmirmaker_run(parent_in, opts)
 %   this driver IS the batch mode: it assembles the ordered answer list
 %   for the dialog (blank line = accept the bracketed default) and
 %   pipes it to the binary.  The authoritative prompt order is pinned
-%   by the committed fixtures segmirmaker/test_in/e5pie.stdin /
+%   by the committed fixtures tools/segmirmaker/test_in/e5pie.stdin /
 %   e5hex2.stdin and the tSegMirMaker byte-identity regression.
 %
 %   Options (dialog answers; [] = accept the dialog default):
@@ -35,12 +35,12 @@ function out = segmirmaker_run(parent_in, opts)
 %     ap_diam     ([])    mirror aperture diameter (size option 2);
 %                         mutually exclusive with seg_size
 %     binary      ('')    SegMirMaker executable (default: sibling
-%                         segmirmaker/build_release_ifx/SegMirMaker,
+%                         tools/segmirmaker/build_release_ifx/SegMirMaker,
 %                         override via env SEGMIRMAKER_BIN)
 %     workdir     ('')    scratch dir (default: fresh tempname dir; it
 %                         is left in place — outputs live there)
 %     param_file  ('')    macos_param.txt to use (default: parent's dir,
-%                         falling back to segmirmaker/test_in)
+%                         falling back to tools/segmirmaker/test_in)
 %
 %   out fields: .presc .hx .log .workdir .answers
 %
@@ -49,7 +49,7 @@ function out = segmirmaker_run(parent_in, opts)
 %   loads the parent through the real engine loader, which resolves
 %   GridFile from the cwd).
 %
-%   See also: tSegMirMaker, segmirmaker/README.md ("Batch / scripted use").
+%   See also: tSegMirMaker, tools/segmirmaker/README.md ("Batch / scripted use").
 
 arguments
     parent_in (1,1) string
@@ -93,7 +93,7 @@ end
 if strlength(bin) == 0
     here = fileparts(mfilename('fullpath'));          % .../src/+macos/+design
     res_root = fileparts(fileparts(fileparts(fileparts(fileparts(here)))));  % the repository root (+design, +macos, src, mmacos, app)
-    smmdir = fullfile(res_root, 'segmirmaker');
+    smmdir = fullfile(res_root, 'tools', 'segmirmaker');
     % Pick whichever build tree exists (ifx on Linux, gfortran on macOS /
     % gfortran builds).  First match wins; ifx is preferred when both exist.
     for tag = ["build_release_ifx", "build_release_gfortran", ...
@@ -108,7 +108,7 @@ end
 if ~isfile(bin)
     error('macos:design:segmirmaker_run:binary', ...
         ['SegMirMaker binary not found: %s\n' ...
-         'Build it: cd segmirmaker && source ./makesegmirmaker.sh ' ...
+         'Build it: cd tools/segmirmaker && source ./makesegmirmaker.sh ' ...
          '(or set SEGMIRMAKER_BIN / the ''binary'' option).'], bin);
 end
 
@@ -128,12 +128,12 @@ if strlength(pf) == 0
     if ~isfile(pf)
         here = fileparts(mfilename('fullpath'));
         res_root = fileparts(fileparts(fileparts(fileparts(fileparts(here)))));
-        pf = fullfile(res_root, 'segmirmaker', 'test_in', 'macos_param.txt');
+        pf = fullfile(res_root, 'tools', 'segmirmaker', 'test_in', 'macos_param.txt');
     end
 end
 if ~isfile(pf)
     error('macos:design:segmirmaker_run:param', ...
-        'macos_param.txt not found (looked beside the parent and in segmirmaker/test_in)');
+        'macos_param.txt not found (looked beside the parent and in tools/segmirmaker/test_in)');
 end
 copyfile(pf, fullfile(wd, 'macos_param.txt'));
 

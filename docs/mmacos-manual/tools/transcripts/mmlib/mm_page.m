@@ -3,10 +3,10 @@ function mm_page(name)
 %   The template's folder is copied into the scratch directory (MMMAN_WORK) under its own relative
 %   layout (templates/<section>/<name>), with any sibling templates it reads (spec.siblings), and the
 %   library's top level (src, design, sensitivities, mmacos_setup.m) LINKED beside it so the
-%   template's '..'-relative paths resolve.  A template that climbs past mmacos to MACOS_resources
-%   (spec.res_links, e.g. ["segmirmaker"]) is copied under <work>/mmacos instead, with those
-%   resources linked at <work>/<name>; its printed paths still read <work>/templates/...  The entry (spec.entry, a MATLAB statement) runs in the
-%   copy, unchanged.  The library is checked before and after: if `git status` of MACOS_resources
+%   template's '..'-relative paths resolve.  A template that climbs past app/mmacos to the repository
+%   root (spec.res_links, e.g. ["tools/segmirmaker"]) is copied under <work>/app/mmacos instead, with
+%   those directories linked at <work>/<path>; its printed paths still read <work>/templates/...  The entry (spec.entry, a MATLAB statement) runs in the
+%   copy, unchanged.  The library is checked before and after: if `git status` of the repository
 %   (untracked files included) changed, the page is refused -- a template that writes outside its
 %   own folder would have written into the library.
 %
@@ -17,15 +17,16 @@ function mm_page(name)
 spec = jsondecode(fileread(fullfile(fileparts(mfilename('fullpath')), '..', '..', 'part2', 'specs', ...
                                     [name '.json'])));
 root = getenv('MMACOS_ROOT');  work = getenv('MMMAN_WORK');
-res  = fileparts(root);                                         % MACOS_resources
+res  = fileparts(fileparts(root));                              % the repository root (above app/mmacos)
 gs   = @() evalc(sprintf('!git -C %s status --porcelain --untracked-files=all', res));
 before = gs();
 
 lib = work;                                                     % the copy's mmacos root
 lnk = {};  if isfield(spec, 'res_links'), lnk = cellstr(spec.res_links); end
-if ~isempty(lnk)          % a template that finds MACOS_resources by '..': copy under <work>/mmacos,
-    lib = fullfile(work, 'mmacos');  mkdir(lib);      % link the resources it reads at <work>/<name>
+if ~isempty(lnk)          % a template that finds the repository root by '..': copy under <work>/app/mmacos,
+    lib = fullfile(work, 'app', 'mmacos');  mkdir(lib);   % link what it reads at <work>/<path>
     for k = 1:numel(lnk)
+        [~, ~] = mkdir(fileparts(fullfile(work, lnk{k})));      % e.g. <work>/tools for tools/segmirmaker
         system(sprintf('ln -s %s %s', fullfile(res, lnk{k}), fullfile(work, lnk{k})));
     end
 end

@@ -12,8 +12,8 @@ function info = add_exit_pupil(rx_in, rx_out, opts)
 %                           the sphere's centre of curvature;
 %   and the original FocalPlane preserved at nElt+2.  This is the pair
 %   `Telescope.add_pupil` emits for a designed telescope, written for a deck
-%   that arrived as text: a Zemax conversion (rx_converter/zemax/zmx2macos.py),
-%   a CODE V conversion (rx_converter/codev), any hand-written .in.  Zemax and
+%   that arrived as text: a Zemax conversion (tools/rx_converter/zemax/zmx2macos.py),
+%   a CODE V conversion (tools/rx_converter/codev), any hand-written .in.  Zemax and
 %   CODE V have no such element, and every wavefront READ in the design
 %   layer -- macos.dw_dx and the other dw_d* supervisors, the stage runners
 %   run_sensitivities / run_met, PSFs -- takes the OPD at element nElt-1 and
@@ -57,7 +57,7 @@ function info = add_exit_pupil(rx_in, rx_out, opts)
 %         .ep_psi (3x1) .ep_radius .nrays_in .nrays_out .rms_ep (the OPD at
 %         the pupil, WaveUnits) .stop (how the stop was set) .units.
 %
-%   Example (the Zemax Cassegrain of rx_converter/zemax/examples):
+%   Example (the Zemax Cassegrain of tools/rx_converter/zemax/examples):
 %       python3 zmx2macos.py cassegrain_example.zmx -o cassegrain.in
 %       info = macos.design.add_exit_pupil('cassegrain.in', 'cassegrain_xp.in');
 %       out  = macos.dw_dx(macos.Session(128), info.rx_out);   % now reads at the EP

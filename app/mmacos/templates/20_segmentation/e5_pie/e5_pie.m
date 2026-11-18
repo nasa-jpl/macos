@@ -47,8 +47,8 @@ R_FID = 590;    % fiducial ring radius, mm (~25 inside M2's 615 rim)
 R_EXTRA = 100;  % aft/M3 launcher ring radius, mm (that truss's size)
 
 here = fileparts(mfilename('fullpath'));
-res_root = fullfile(getenv('HOME'), 'dev', 'MACOS_resources');
-tin = fullfile(res_root, 'segmirmaker', 'test_in');
+res_root = fileparts(fileparts(fileparts(fileparts(fileparts(here)))));  % the repository root (above app/)
+tin = fullfile(res_root, 'tools', 'segmirmaker', 'test_in');
 log_ = fopen(fullfile(here, 'findings.txt'), 'w');
 say = @(varargin) fprintf(1, varargin{:}) + fprintf(log_, varargin{:});
 

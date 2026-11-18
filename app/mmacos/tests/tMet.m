@@ -20,7 +20,7 @@ classdef tMet < matlab.unittest.TestCase
         function make(tc)
             here = fileparts(mfilename('fullpath'));
             res_root = repo_root_();   % the repository root
-            tin = fullfile(res_root, 'segmirmaker', 'test_in');
+            tin = fullfile(res_root, 'tools', 'segmirmaker', 'test_in');
             tc.wd = tempname; mkdir(tc.wd);
             copyfile(fullfile(tin, 'flat.txt'), fullfile(tc.wd, 'flat.txt'));
             % met points: element Vpts (+ offsets), global frame, mm
@@ -125,7 +125,7 @@ classdef tMet < matlab.unittest.TestCase
         function test_no_met_rx_returns_empty(tc)
             here = fileparts(mfilename('fullpath'));
             res_root = repo_root_();   % the repository root
-            tin = fullfile(res_root, 'segmirmaker', 'test_in');
+            tin = fullfile(res_root, 'tools', 'segmirmaker', 'test_in');
             old = cd(tin); restore = onCleanup(@() cd(old));
             macos.load_rx(fullfile(tin, 'e5mono.in'));
             m = macos.met();
@@ -146,7 +146,7 @@ classdef tMet < matlab.unittest.TestCase
             % read order, launcher-major).
             here = fileparts(mfilename('fullpath'));
             res_root = repo_root_();   % the repository root
-            tin = fullfile(res_root, 'segmirmaker', 'test_in');
+            tin = fullfile(res_root, 'tools', 'segmirmaker', 'test_in');
             bin = segmirmaker_bin();      % any built tree, not ifx only
             tc.assumeTrue(isfile(bin), 'SegMirMaker not built');
             seg = macos.design.segment_rx(fullfile(tin, 'e5mono.in'), ...

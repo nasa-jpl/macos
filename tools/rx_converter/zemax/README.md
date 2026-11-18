@@ -145,7 +145,7 @@ Warned and written:
 
 Run with the pymacos environment (numpy, pytest, the engine):
 
-    ../../pymacos/.venv/bin/python -m pytest tests -q
+    ../../../app/pymacos/.venv/bin/python -m pytest tests -q
 
 The program decks (DST, AFTA) are program files and are not committed: they become test fixtures only if Dave says they may.  Until then they are read from `$ZMX2MACOS_DECKS` (default
 `~/dev/MACOS_sandbox/zemax2macos`), and their tests skip with a message when absent.

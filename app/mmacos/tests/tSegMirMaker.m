@@ -4,7 +4,7 @@ classdef tSegMirMaker < matlab.unittest.TestCase
     % The macos.design.segmirmaker_run driver scripts the SegMirMaker
     % interactive dialog over stdin.  These tests pin (a) the answer
     % ordering the driver assembles and (b) the generator's output
-    % against the committed references in segmirmaker/test_in:
+    % against the committed references in tools/segmirmaker/test_in:
     % a batch run must reproduce e5pie / e5hex2 -- the same text, and
     % every number to 1e-12 of the scale of its line (TEXT_NUMBERS_MATCH).  The comparison was
     % byte for byte until 2026-11-17; the references are x86_64 output
@@ -16,7 +16,7 @@ classdef tSegMirMaker < matlab.unittest.TestCase
     % if the SegMirMaker binary has not been built on this machine.
 
     properties
-        tin     % segmirmaker/test_in
+        tin     % tools/segmirmaker/test_in
         bin     % SegMirMaker executable
     end
 
@@ -24,10 +24,10 @@ classdef tSegMirMaker < matlab.unittest.TestCase
         function locate(tc)
             here = fileparts(mfilename('fullpath'));            % mmacos/tests
             res_root = repo_root_();   % the repository root
-            tc.tin = fullfile(res_root, 'segmirmaker', 'test_in');
+            tc.tin = fullfile(res_root, 'tools', 'segmirmaker', 'test_in');
             % Locate whichever build tree exists (ifx on Linux, gfortran on
             % macOS / gfortran builds); ifx preferred when both are present.
-            smmdir = fullfile(res_root, 'segmirmaker');
+            smmdir = fullfile(res_root, 'tools', 'segmirmaker');
             tc.bin = '';
             for tag = ["build_release_ifx", "build_release_gfortran", ...
                        "build_debug_ifx", "build_debug_gfortran"]
@@ -35,7 +35,7 @@ classdef tSegMirMaker < matlab.unittest.TestCase
                 if isfile(cand), tc.bin = cand; break; end
             end
             tc.assumeTrue(isfolder(tc.tin), ...
-                'segmirmaker/test_in not found');
+                'tools/segmirmaker/test_in not found');
             tc.assumeTrue(~isempty(tc.bin) && isfile(tc.bin), ...
                 'SegMirMaker binary not built (source ./makesegmirmaker.sh)');
         end

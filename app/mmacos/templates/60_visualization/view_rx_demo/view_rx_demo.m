@@ -26,7 +26,7 @@ NRAYS  = 25;           % bundle ray budget ('rim'/'fans' modes)
 here = fileparts(mfilename('fullpath'));
 res_root = fileparts(fileparts(fileparts(fileparts(fileparts(here)))));  % repo root (above app/)
 man = fullfile(res_root, 'docs', 'macos-manual', 'examples');
-tin = fullfile(res_root, 'segmirmaker', 'test_in');
+tin = fullfile(res_root, 'tools', 'segmirmaker', 'test_in');
 
 macos.init(MODEL);
 

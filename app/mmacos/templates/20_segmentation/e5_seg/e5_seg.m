@@ -16,7 +16,7 @@
 % analytic trace.
 %
 % Modify the knobs below and re-run.  Requires the SegMirMaker binary
-% (segmirmaker/README.md) and a built mmacos mex.  Run from anywhere;
+% (tools/segmirmaker/README.md) and a built mmacos mex.  Run from anywhere;
 % outputs land beside this script.
 
 %% ------------------------- knobs ----------------------------------
@@ -40,8 +40,8 @@ NMC     = 200;        % Monte-Carlo draws for the cross-check
 MODEL   = 512;
 
 here = fileparts(mfilename('fullpath'));
-res_root = fileparts(fileparts(fileparts(fileparts(here))));  % MACOS_resources
-tin = fullfile(res_root, 'segmirmaker', 'test_in');
+res_root = fileparts(fileparts(fileparts(fileparts(fileparts(here)))));  % the repository root (above app/)
+tin = fullfile(res_root, 'tools', 'segmirmaker', 'test_in');
 
 %% ---------------- 1. segment the mono parent ----------------------
 fprintf('[1] segmenting e5mono (rings=%d, %s, gap=%g)\n', RINGS, GRID, GAP);

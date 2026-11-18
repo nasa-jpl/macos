@@ -44,7 +44,7 @@ This manual is the *learning* document; its companion, the **MACOS Command Refer
 
 Three companion tools are worth knowing from the outset:
 
--   **SegMirMaker** (`segmirmaker/`) converts a monolithic primary mirror into a many-segment one, generating the segmented-mirror prescription and segment-influence files from a parent-mirror description (see §4.4.11).
+-   **SegMirMaker** (`tools/segmirmaker/`) converts a monolithic primary mirror into a many-segment one, generating the segmented-mirror prescription and segment-influence files from a parent-mirror description (see §4.4.11).
 
 -   **GMI** (`app/GMI/`) is a MATLAB MEX front end built directly on the SMACOS subroutine interface — both a complete forward simulator and the reference example of a real SMACOS application (see Section 9).
 
@@ -70,7 +70,7 @@ A summary of changes since MACOS 3.2:
 
 -   SEGRAYTRACE command. Trace a single ray through the geometric center of a chosen segment element; print ray state at every downstream surface. Useful for verifying segmented-mirror prescriptions. See §5.2.
 
--   SegMirMaker external tool. Standalone utility, in segmirmaker/, that generates segmented-mirror .presc and Hx.m files. Replaces SMPGe (1992) and adds support for FreeForm parents. See §4.4.11.
+-   SegMirMaker external tool. Standalone utility, in tools/segmirmaker/, that generates segmented-mirror .presc and Hx.m files. Replaces SMPGe (1992) and adds support for FreeForm parents. See §4.4.11.
 
 -   GMI MATLAB interface upgrades. New 14th MEX argument pmonzern for FreeForm MonZernCoef perturbations (parallel to pzern). New param.monzernSrf element list. Nominal-state save/restore extended to cover FreeForm coordinate frames so per-element rigid-body perturbations no longer leak across GMI calls. See §9.
 

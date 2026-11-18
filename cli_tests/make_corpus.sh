@@ -19,7 +19,7 @@ is_rx() { while IFS= read -r f; do grep -q -m1 -E '^[[:space:]]*(nElt|Element)[[
 {
   (cd "$macos" && git ls-files -- '*.in' | sed "s|^|$macos/|")
   (cd "$res"   && git ls-files -- '*.in' | sed "s|^|$res/|")
-} | grep -v '/build\|/segmirmaker/test_in/\|/SegDemo3broken.in\|/cli_tests/must_fail/' \
+} | grep -v '/build\|/tools/segmirmaker/test_in/\|/SegDemo3broken.in\|/cli_tests/must_fail/' \
   | grep -v -i 'bad_scalar\|badscalar\|rx_stop\|rxstop\|short_vec\|shortvec' \
   | sort -u | is_rx > "$here/corpus_committed.txt"   # the by-design refusal fixtures are must-fail decks, not corpus decks
 {
@@ -27,7 +27,7 @@ is_rx() { while IFS= read -r f; do grep -q -m1 -E '^[[:space:]]*(nElt|Element)[[
   if [ -d "$sandbox" ]; then find "$sandbox" -name '*.in' -type f 2>/dev/null | is_rx; fi   # no sandbox is not an error
 } | sort -u > "$here/corpus_extended.txt"
 # the per-commit core: the fixture sets and the manual, not the challenges' ladders
-# (segmirmaker/test_in holds that tool's PARENT fragments -- inputs to segmirmaker,
+# (tools/segmirmaker/test_in holds that tool's PARENT fragments -- inputs to segmirmaker,
 #  not loadable prescriptions -- so they are left out of both lists)
 # refusal fixtures: decks whose LOAD must fail by design live in must_fail/ (sec. 2.4);
 # the one committed outside it is excluded here (its gate is cmd/ZrnGr_refusal.jou)

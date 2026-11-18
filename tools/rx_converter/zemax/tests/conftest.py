@@ -13,7 +13,7 @@ import pytest
 
 HERE = Path(__file__).resolve().parent
 ZDIR = HERE.parent
-RES = ZDIR.parent.parent                        # the repository root
+RES = ZDIR.parent.parent.parent                 # the repository root (above tools/rx_converter)
 sys.path.insert(0, str(ZDIR))
 import zmx2macos as zm                          # noqa: E402
 

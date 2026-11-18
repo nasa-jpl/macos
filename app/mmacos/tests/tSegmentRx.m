@@ -3,7 +3,7 @@ classdef tSegmentRx < matlab.unittest.TestCase
     % parent element; the merged .in must be structurally right AND
     % load/trace clean in the engine.
     %
-    % Parent fixture: segmirmaker/test_in/e5mono.in (elt 1 = the 8-m
+    % Parent fixture: tools/segmirmaker/test_in/e5mono.in (elt 1 = the 8-m
     % FreeForm primary).  The 2-ring hex / gap 50 / 6-DOF / config-2
     % case mirrors the committed hand-assembled reference e5hex2.in,
     % whose engine behavior pins the expectations here (25 elements by
@@ -22,7 +22,7 @@ classdef tSegmentRx < matlab.unittest.TestCase
         function make(tc)
             here = fileparts(mfilename('fullpath'));            % mmacos/tests
             res_root = repo_root_();   % the repository root
-            tc.tin = fullfile(res_root, 'segmirmaker', 'test_in');
+            tc.tin = fullfile(res_root, 'tools', 'segmirmaker', 'test_in');
             tc.bin = segmirmaker_bin();   % any built tree, not ifx only
             tc.assumeTrue(isfile(tc.bin), ...
                 'SegMirMaker binary not built (source ./makesegmirmaker.sh)');

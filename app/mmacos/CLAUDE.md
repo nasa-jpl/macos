@@ -552,7 +552,7 @@ because their rigs have no off-axis section: `pdi_layout_fig`,
 The de-novo `macos.design.Telescope` builder (closed-form Cass / RC /
 Gregorian / DK layout + conics) is backed by a self-checked reference
 set in **`optical_design/`** — a shared root dir (beside
-`rx_converter`/`segmirmaker`), NOT under mmacos, because it is
+`app/` and `tools/`), NOT under mmacos, because it is
 language-agnostic and the JSON fixtures are the cross-language parity
 golden specs (`devnotes/PLAN_DESIGN_LAYER.md` §3).  From mmacos tests,
 resolve it with a `tests/private/` path helper (mirror
