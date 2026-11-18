@@ -76,7 +76,7 @@ endif()
 
 # ---- External pre-built libraries ----
 # pgplot: expected at ${CMAKE_CURRENT_SOURCE_DIR}/pgplot/libpgplot.a (or .so)
-# fitsio: expected at ${CMAKE_CURRENT_SOURCE_DIR}/fits_build/libfits.a
+# fitsio: expected at ${CMAKE_CURRENT_SOURCE_DIR}/../external/fits_build/libfits.a
 # These are built by their own build systems before running CMake.
 # If not found, the build will fail at link time with a clear message.
 
@@ -88,10 +88,10 @@ if(NOT PGPLOT_LIB)
 endif()
 
 find_library(FITS_LIB fits
-    PATHS ${CMAKE_CURRENT_SOURCE_DIR}/fits_build
+    PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../external/fits_build
     NO_DEFAULT_PATH)
 if(NOT FITS_LIB)
-    message(WARNING "libfits not found in fits_build/ — build fitsio first (cd fits_build && bash cmp && bash amp)")
+    message(WARNING "libfits not found in external/fits_build/ — build fitsio first (cd external/fits_build && bash cmp && bash amp)")
 endif()
 
 find_library(X11_LIB X11 PATHS /usr/lib64 /usr/lib/x86_64-linux-gnu /usr/lib)

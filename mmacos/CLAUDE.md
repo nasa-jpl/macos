@@ -1,10 +1,10 @@
-# MACOS_resources/mmacos
+# mmacos
 
 > **Post-compaction / post-upgrade — re-read the docs first.** After a
 > context compaction or a tooling upgrade, before resuming build/engine
 > work, re-read the doc set across ALL working dirs (the conversation
 > summary drops mechanical how-to): `macos/CLAUDE.md`; this file +
-> `MACOS_resources/{pymacos,GMI}/CLAUDE.md` + `README.md`s; and, IF PRESENT,
+> `{pymacos,GMI}/CLAUDE.md` + `README.md`s; and, IF PRESENT,
 > `macos/PLAN.md` and the agent `MEMORY.md` (esp. the build/test workflow
 > entries) -- the plans and the memory live on the `dev` branch only; a
 > release checkout has the `CLAUDE.md` set and the READMEs and no plans,
@@ -192,8 +192,8 @@ Fixes (use any):
 
 ## +macos/ package conventions
 
-User-facing surface lives in `MACOS_resources/mmacos/src/+macos/` (one
-`.m` per public function) plus `MACOS_resources/mmacos/src/+macos/Session.m`
+User-facing surface lives in `mmacos/src/+macos/` (one
+`.m` per public function) plus `mmacos/src/+macos/Session.m`
 (the classdef).  When extending it:
 
 - **Naming.**  Split getters and setters into `get_<name>` /
@@ -250,7 +250,7 @@ signature → mex helper is mechanical:
 
 **Path A — codegen handles it (most cases).**  Just add the routine to
 `macos_api_mod.F90`, then re-run `python3 gen_mex_wrappers.py` from
-`MACOS_resources/mmacos/src/`.  The script regenerates `mmacos_gen.F`
+`mmacos/src/`.  The script regenerates `mmacos_gen.F`
 with a new `do_<name>` helper and a new `CASE` in `gen_dispatch`.
 The main `mexFunction`'s `CASE DEFAULT` falls through to
 `gen_dispatch`, so the command becomes callable from MATLAB with no
@@ -551,7 +551,7 @@ because their rigs have no off-axis section: `pdi_layout_fig`,
 ### Optical-design reference & fixtures (Sprint 2A-ii builder)
 The de-novo `macos.design.Telescope` builder (closed-form Cass / RC /
 Gregorian / DK layout + conics) is backed by a self-checked reference
-set in **`MACOS_resources/optical_design/`** — a shared root dir (beside
+set in **`optical_design/`** — a shared root dir (beside
 `rx_converter`/`segmirmaker`), NOT under mmacos, because it is
 language-agnostic and the JSON fixtures are the cross-language parity
 golden specs (`macos/PLAN_DESIGN_LAYER.md` §3).  From mmacos tests,
@@ -591,7 +591,7 @@ resolve it with a `tests/private/` path helper (mirror
 ## Veneer parity with pymacos (audit 2026-06-12)
 
 > **Superseded in part by the full 3-layer audit 2026-07-02:**
-> `MACOS_resources/doc/mmacos_pymacos_parity.md` — mmacos is now a
+> `doc/mmacos_pymacos_parity.md` — mmacos is now a
 > strict SUPERSET at the raw layer (5 api_mod routines have no pymacos
 > wrapper: draw_rays_cmd/get, xps_cmd, ray_status_get, elt_z); both
 > directions of user-surface gaps enumerated there with a re-run recipe.

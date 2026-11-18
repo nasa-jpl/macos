@@ -161,12 +161,15 @@ if(USE_NPSOL)
     message(FATAL_ERROR "USE_NPSOL=ON requires macos_f90/npsol/ tree.")
   endif()
 endif()
-set(fits_src_dir "${smacos_src_dir}/fits_build")
+# Third-party code bundled with MACOS: giza (the PGPLOT-API graphics library),
+# readline-8.2, the SLSQP optimizer and the FITS writer.
+set(external_dir "${CMAKE_CURRENT_SOURCE_DIR}/external")
+set(fits_src_dir "${external_dir}/fits_build")
 
 # ==============================================================================
 # 4. Giza — always built (sole PGPLOT-API provider)
 # ==============================================================================
-add_subdirectory(macos_f90/giza/src)
+add_subdirectory(external/giza/src)
 
 # ==============================================================================
 # 5. FITS Library
@@ -341,7 +344,7 @@ endif()
 # SLSQP -- Kraft's Sequential Least Squares Programming (ACM Alg 733,
 # BSD license). Replacing NPSOL as MACOS's constrained-optim back end.
 # Always built; no opt-in needed since the source is BSD.
-set(SLSQP_SOURCES ${smacos_src_dir}/slsqp/slsqp_optmz.f)
+set(SLSQP_SOURCES ${external_dir}/slsqp/slsqp_optmz.f)
 add_library(slsqplib STATIC ${SLSQP_SOURCES})
 if(CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
   target_compile_options(slsqplib PRIVATE "SHELL:-warn nointerfaces"
@@ -377,8 +380,8 @@ if(BUILD_SMACOS)
       ${CMAKE_BINARY_DIR}/mod_smacos
       ${CMAKE_BINARY_DIR}/mod
       ${CMAKE_BINARY_DIR}/mod_giza
-      ${CMAKE_CURRENT_SOURCE_DIR}/macos_f90/giza/src
-      ${CMAKE_BINARY_DIR}/macos_f90/giza/src
+      ${external_dir}/giza/src
+      ${CMAKE_BINARY_DIR}/external/giza/src
   )
   target_link_libraries(smacos PRIVATE
       fitslib
@@ -408,7 +411,7 @@ if(APPLE)
     set(READLINE_LIB "")
   endif()
 elseif(NOT WIN32)
-  set(READLINE_ROOT "${smacos_src_dir}/readline-8.2")
+  set(READLINE_ROOT "${external_dir}/readline-8.2")
   set(READLINE_LIB  "${READLINE_ROOT}/libreadline.a")
   if(NOT EXISTS "${READLINE_LIB}")
     # Fresh clones carry the readline-8.2 SOURCES but not the built .a —
@@ -427,7 +430,7 @@ elseif(NOT WIN32)
       message(WARNING "readline-8.2 auto-build FAILED — macos builds WITHOUT "
         "readline: arrow-key history is disabled and interactive sub-prompts "
         "fall back to plain printed prompts.  To restore readline: "
-        "cd macos_f90/readline-8.2 && ./configure --disable-shared && make, "
+        "cd external/readline-8.2 && ./configure --disable-shared && make, "
         "then re-run cmake.")
       set(READLINE_LIB "")
     endif()
@@ -454,8 +457,8 @@ if(BUILD_MACOS)
       ${fits_src_dir}
       ${CMAKE_BINARY_DIR}/mod_macos
       ${CMAKE_BINARY_DIR}/mod_giza
-      ${CMAKE_CURRENT_SOURCE_DIR}/macos_f90/giza/src
-      ${CMAKE_BINARY_DIR}/macos_f90/giza/src
+      ${external_dir}/giza/src
+      ${CMAKE_BINARY_DIR}/external/giza/src
   )
   if(READLINE_LIB)
     target_include_directories(macos PRIVATE ${READLINE_ROOT})
@@ -516,8 +519,8 @@ if(BUILD_SMACOS_DVR)
       ${CMAKE_BINARY_DIR}/mod_smacos
       ${CMAKE_BINARY_DIR}/mod
       ${CMAKE_BINARY_DIR}/mod_giza
-      ${CMAKE_CURRENT_SOURCE_DIR}/macos_f90/giza/src
-      ${CMAKE_BINARY_DIR}/macos_f90/giza/src
+      ${external_dir}/giza/src
+      ${CMAKE_BINARY_DIR}/external/giza/src
   )
   add_dependencies(smacos_dvr macos smacos)
   target_link_libraries(smacos_dvr PRIVATE

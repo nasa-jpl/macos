@@ -200,8 +200,8 @@ sized clear apertures as `CIR`.)
 ## How to run it yourself
 
 ```matlab
-addpath('~/dev/MACOS_resources/mmacos/src');
-run('~/dev/MACOS_resources/mmacos/challenges/iodc2010/iodc2010_run.m')   % scores the bundled lenses
+addpath('~/dev/macos/mmacos/src');
+run('~/dev/macos/mmacos/challenges/iodc2010/iodc2010_run.m')   % scores the bundled lenses
 R = iodc2010_run('stage', 'gate');                                        % the evaluator gate
 R = iodc2010_run('stage', 'search');                                      % the first CALIB ladder (search/)
 R = iodc2010_run('stage', 'outer');                                       % the outer design loop (search/outer/)

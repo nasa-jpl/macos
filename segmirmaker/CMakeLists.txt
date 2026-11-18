@@ -27,7 +27,7 @@ find_library(PNG_LIB       png16     PATHS ${MACOS_BUILD_DIR}/lib NO_DEFAULT_PAT
 find_library(Z_LIB         z         PATHS ${MACOS_BUILD_DIR}/lib NO_DEFAULT_PATH REQUIRED)
 
 # readline lives outside the CMake tree (built by makealldcr.sh into the
-# macos_f90/readline-8.2 source directory).  On macOS the engine build uses
+# external/readline-8.2 source directory).  On macOS the engine build uses
 # Homebrew's readline instead of the bundled one, so pick that up here too.
 if(APPLE)
   execute_process(COMMAND brew --prefix readline
@@ -36,7 +36,7 @@ if(APPLE)
   set(READLINE_LIB "${_brew_readline}/lib/libreadline.a"
       CACHE FILEPATH "Static readline library")
 else()
-  set(READLINE_LIB "$ENV{HOME}/dev/macos/macos_f90/readline-8.2/libreadline.a"
+  set(READLINE_LIB "${CMAKE_CURRENT_SOURCE_DIR}/../external/readline-8.2/libreadline.a"
       CACHE FILEPATH "Static readline library")
 endif()
 if(NOT EXISTS "${READLINE_LIB}")

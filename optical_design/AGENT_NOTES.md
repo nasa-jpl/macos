@@ -3,7 +3,7 @@
 Language-agnostic ground truth for the **design layer** built on MACOS —
 shared by the MATLAB binding (`mmacos/+macos/+design/`, the live
 consumer) and the eventual Python port (`pymacos`).  Kept at the
-`MACOS_resources` root, beside `rx_converter` / `segmirmaker`, so both
+repository root, beside `rx_converter` / `segmirmaker`, so both
 bindings (and their users) can find it and so the JSON fixtures serve as
 the **shared golden specs** for the cross-language byte-identical-`.in`
 parity criterion (`macos/PLAN_DESIGN_LAYER.md` §3).

@@ -1,4 +1,4 @@
-**Open: `MACOS_resources/mmacos/templates/50_sensitivities/e5hex1_budget/e5hex1_wfe_budget.xlsx`** — the live-formula WFE calculator (Excel or LibreOffice; regenerate with `run_budget_e5hex1`).
+**Open: `mmacos/templates/50_sensitivities/e5hex1_budget/e5hex1_wfe_budget.xlsx`** — the live-formula WFE calculator (Excel or LibreOffice; regenerate with `run_budget_e5hex1`).
 
 # e5hex1 error budget — worked example
 

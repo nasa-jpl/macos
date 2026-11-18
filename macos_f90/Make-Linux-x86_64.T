@@ -18,7 +18,7 @@ LOCAL_FFLAGS = -g
 USE_READLINE = 0
 ifeq ($(USE_READLINE),1)
 	RL_LIBRARY_VERSION = 8.2
-	RL_ROOT = $(SRC_DIR)/readline-8.2
+	RL_ROOT = $(SRC_DIR)/../external/readline-8.2
 	RL_INC = $(RL_ROOT)
 	DEFS = -DHAVE_CONFIG_H
 	LOCAL_FFLAGS += -DREADLINE_LIBRARY
@@ -43,7 +43,7 @@ MLIBS = $(intel64_lib)/libimf.a \
 	$(intel64_lib)/libifcore.a \
 	-L/usr/lib64 -lX11 \
 	-L$(SRC_DIR)/pgplot -lpgplot \
-	-L$(SRC_DIR)/fits_build -lfits \
+	-L$(SRC_DIR)/../external/fits_build -lfits \
 	$(RL_LIBS)
 
 #NPSOL_ROOT=$(macossrc_dir)/npsol

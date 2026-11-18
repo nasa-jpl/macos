@@ -43,15 +43,14 @@ U.S. Government sponsorship of parts of MACOS under NASA Contract NAS7-918 is ac
 
 #### Installation
 
-MACOS is distributed as two git repositories on GitHub: the engine and this manual in `macos`, and the MATLAB and Python bindings, the templates and the design tools in `MACOS_resources`. Clone them side by side (the build scripts expect `MACOS_resources` next to `macos`):
+MACOS is distributed as one git repository on GitHub, `macos`: the engine and this manual, with the MATLAB and Python bindings, the templates and the design tools in the same repository (until 2026-11 they were in a second repository, `MACOS_resources`):
 
     git clone git@github.com:nasa-jpl/macos.git
-    git clone git@github.com:nasa-jpl/MACOS_resources.git
     cd macos
     source ./makems.sh release            # the engine and the macos command-line program (ifx)
     source ./makems.sh release gfortran   # the same with gfortran (the build the MATLAB interface links)
 
-`makems.sh` builds the engine library and the interactive program into `build_release[_gfortran]/bin/macos`; `makeall.sh` adds the SMACOS driver and the GMI MATLAB interface. The requirements (CMake, a Fortran compiler -- Intel ifx or gfortran -- and gcc), the Linux, macOS and Windows notes and the debug builds are in `BUILD.md` at the top of the `macos` repository; the branch model is in `BRANCHES.md`. The MATLAB interface (`MACOS_resources/mmacos`, built by its `run_mmacos_tests.sh`) and the Python package (`MACOS_resources/pymacos`) each carry their own README. Access to the repositories is by invitation; write to the contact above.
+`makems.sh` builds the engine library and the interactive program into `build_release[_gfortran]/bin/macos`; `makeall.sh` adds the SMACOS driver and the GMI MATLAB interface. The requirements (CMake, a Fortran compiler -- Intel ifx or gfortran -- and gcc), the Linux, macOS and Windows notes and the debug builds are in `BUILD.md` at the top of the `macos` repository; the branch model is in `BRANCHES.md`. The MATLAB interface (`mmacos`, built by its `run_mmacos_tests.sh`) and the Python package (`pymacos`) each carry their own README. Access to the repositories is by invitation; write to the contact above.
 
 \newpage
 

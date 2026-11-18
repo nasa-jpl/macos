@@ -1,10 +1,10 @@
-# MACOS_resources/pymacos
+# pymacos
 
 > **Post-compaction / post-upgrade — re-read the docs first.** After a
 > context compaction or a tooling upgrade, before resuming build/engine
 > work, re-read the doc set across ALL working dirs (the conversation
 > summary drops mechanical how-to): `macos/CLAUDE.md`; this file +
-> `MACOS_resources/{mmacos,GMI}/CLAUDE.md` + `README.md`s; and, IF PRESENT,
+> `{mmacos,GMI}/CLAUDE.md` + `README.md`s; and, IF PRESENT,
 > `macos/PLAN.md` and the agent `MEMORY.md` (esp. the build/test workflow
 > entries) -- the plans and the memory live on the `dev` branch only; a
 > release checkout has the `CLAUDE.md` set and the READMEs and no plans,
@@ -38,7 +38,7 @@ not derivable from the code.
 After editing `pymacos_f2py.f90` or `macos.py`:
 
 ```bash
-cd /home/dcr/dev/MACOS_resources/pymacos/src/cmake/build
+cd ~/dev/macos/pymacos/src/cmake/build
 bash -c 'source /opt/intel/oneapi/setvars.sh intel64 >/dev/null 2>&1; make'
 ```
 
@@ -48,7 +48,7 @@ After editing `macos_api_mod.F90` (which now lives in the macos repo at
 
 ```bash
 cd ~/dev/macos && source ./makems.sh release
-cd /home/dcr/dev/MACOS_resources/pymacos/src/cmake/build && make
+cd ~/dev/macos/pymacos/src/cmake/build && make
 ```
 
 By default the pymacos cmake reads `MACOS_BUILD_DIR=$HOME/dev/macos/build_release`.
@@ -62,7 +62,7 @@ exercises the venv + oneAPI runtime setup without touching macos.
 
 ### The f2py layer and `api_gen.py` are GENERATED (2026-10-16, BRIEF_to_bindings A.2)
 `src/cmake/source/pymacos_f2py.f90` and `src/pymacos/api_gen.py` are written by
-`MACOS_resources/mmacos/src/gen_mex_wrappers.py` from `macos_api_mod.F90` (the same
+`mmacos/src/gen_mex_wrappers.py` from `macos_api_mod.F90` (the same
 parse that writes the mex's `mmacos_gen.F`).  **Never hand-edit them**: add the routine
 to `macos_api_mod.F90`, rebuild macos, run `python3 gen_mex_wrappers.py` in
 `mmacos/src` (all three targets), `make` here.  Per-routine `!f2py` hints and the few
@@ -80,7 +80,7 @@ The suite imports from `$PYMACOS_SRC` when set (`tests/context.py`), else this t
 `src/`.  A side tree is a copy of `src/` with its own build dir; the shared `.so` is
 never touched:
 ```bash
-S=<scratch>/side; P=~/dev/MACOS_resources/pymacos
+S=<scratch>/side; P=~/dev/macos/pymacos
 mkdir -p $S/src/cmake/source $S/src/cmake/build $S/src/pymacos
 cp $P/src/cmake/CMakeLists.txt $S/src/cmake/
 cp $P/src/cmake/source/pymacos_f2py.f90 $S/src/cmake/source/   # or the doctored / generated one

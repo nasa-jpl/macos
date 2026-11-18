@@ -1,6 +1,6 @@
 # Giza / PGPLOT-API graphics — subsystem cheatsheet
 
-> **Post-compaction / resume:** if you are resuming any plot/display work (`macos_f90/giza/`, `pgplotsub.F`, GRAY/CONTOUR/SLICE/WIRE/SPOTDIAG, IMGMODE, wedge/annotation, DRAW data-only), re-read
+> **Post-compaction / resume:** if you are resuming any plot/display work (`external/giza/`, `pgplotsub.F`, GRAY/CONTOUR/SLICE/WIRE/SPOTDIAG, IMGMODE, wedge/annotation, DRAW data-only), re-read
 > THIS file — nested CLAUDE.md files are NOT auto-injected after
 > compaction; they reload only when CC next reads a file in this
 > directory. Root rules, conventions, and the subsystem index live in
@@ -58,7 +58,7 @@ PLAN_DESIGN_LAYER §8 Sprint-4 layout realizability).
 Giza's `giza_render_gray` (backing `PGGRAY`) internally calls
 `giza_set_colour_table_gray()` and forcibly resets its own ramp,
 **ignoring any `PGSCR` setup the caller does** (see
-`macos_f90/giza/src/giza-render.c:368`). You cannot use `PGGRAY` for
+`external/giza/src/giza-render.c:368`). You cannot use `PGGRAY` for
 polarity control. The fix in `pgplotsub.F:GRAY`:
 - Render the image via `PGIMAG` + a 2-point `PGCTAB` we build ourselves
   (both the color and gray paths).
@@ -124,7 +124,7 @@ call. `GRAY` and `SPOTDIAG` emit via `PGMTXT` after `PGLABEL`, then
 - PIX → `Peak pixel=<maxval(PixArray)>`.
 - Phase/Amplitude/etc. intentionally left unannotated.
 
-## Giza plot improvements (macos_f90/giza/)
+## Giza plot improvements (external/giza/)
 - Supersampling: off-screen image surface is 2× (GIZA_XW_SUPERSAMPLE) in giza-driver-xw.c;
   `cairo_surface_set_device_scale(surface, 2, 2)` keeps MACOS logical coordinates at 1×
   while rendering at 2× physical pixels.  Downsample to 1× pixmap on flush, then XCopyArea
@@ -205,7 +205,7 @@ in CoroExample.jou-style scripts.
 
 
 ## Text glyphs: the vendored cairo has NO FreeType / fontconfig (2026-10-19, PLAN_CONSOLIDATION 1.2 (t))
-`giza/src/subprojects/cairo` is configured with `CAIRO_HAS_FT_FONT` / `CAIRO_HAS_FC_FONT` undefined
+`external/giza/src/subprojects/cairo` is configured with `CAIRO_HAS_FT_FONT` / `CAIRO_HAS_FC_FONT` undefined
 (portability: no system font libraries), so `giza_set_font("Arial")` and friends resolve to cairo's
 built-in "twin" stroke font -- ASCII only.  Any non-ASCII replacement in `giza-token-remapper.h`
 (the `\times` / `\x` of every power-of-ten axis label, `\.`, `\A`) drew as the .notdef box on EVERY

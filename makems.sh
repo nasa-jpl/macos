@@ -66,7 +66,7 @@ fi
 # macOS: the top-level CMakeLists links Homebrew's readline (brew install
 # readline); the bundled readline-8.2 tree is neither pre-built nor needed
 # there, so skip this Linux-only bootstrap on Darwin.
-READLINE_DIR="${SCRIPT_DIR}/macos_f90/readline-8.2"
+READLINE_DIR="${SCRIPT_DIR}/external/readline-8.2"
 if [ "$(uname -s)" != "Darwin" ] && [ ! -f "${READLINE_DIR}/libreadline.a" ]; then
   echo "makems: bootstrapping bundled readline (one-time setup) ..."
   ( cd "${READLINE_DIR}" && ./configure -q && make -j"${NJOBS}" ) \

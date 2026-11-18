@@ -37,8 +37,8 @@ REVIEW_POL_OVERCOAT_CHROMATIC_2026-07-28.md
 REVIEW_POL_RADIOMETRIC_2026-07-28.md
 REVIEW_POL_SP_SIGN_2026-07-27.md
 macos_f90/CLAUDE.md
-macos_f90/giza/CLAUDE.md
-macos_f90/slsqp/CLAUDE.md
+external/giza/CLAUDE.md
+external/slsqp/CLAUDE.md
 macos_f90/SAVE_KEYWORD_AUDIT.md
 docs/macos-manual/CLAUDE.md
 docs/macos-manual/FIGURE_RESCUE_LOG.md

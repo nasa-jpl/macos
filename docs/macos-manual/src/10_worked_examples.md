@@ -1,7 +1,7 @@
 ## SECTION 10: Worked Examples
 
-Four complete workflows, each a runner that exists in the companion
-repository `MACOS_resources` and prints its own table.  They are run from
+Four complete workflows, each a runner that exists in this repository
+(under `mmacos/`) and prints its own table.  They are run from
 MATLAB with the mmacos bindings (Section 9 describes the engine they call);
 every one reads a single parameter file, writes `<tag>_<stage>.txt` beside
 itself, and keeps that text as its record, so the test of this section is to

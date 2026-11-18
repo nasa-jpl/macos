@@ -16,13 +16,13 @@ sensors see the motions that matter to the wavefront, and moves the launchers to
 
 ### The assistant reads
 
-- `MACOS_resources/mmacos/templates/80_end_to_end/e2e/README.md`, the `s5_met.m` row -- the truss,
+- `mmacos/templates/80_end_to_end/e2e/README.md`, the `s5_met.m` row -- the truss,
   the edge-sensor model (two locations per shared edge, three axes each: piston, gap, shear), why
   the headline metrics are dimensionless, and the 50 mm separation rule a layout must keep.
-- `MACOS_resources/mmacos/templates/80_end_to_end/e2e/s5_met.m`, its header -- the geometry note:
+- `mmacos/templates/80_end_to_end/e2e/s5_met.m`, its header -- the geometry note:
   the aft ring sits on the fold, at the secondary's radius, because a ring at M3 would have no line
   of sight through the hole.
-- `MACOS_resources/mmacos/design/runners/run_met.m` -- the stage runner: the as-built truss, the
+- `mmacos/design/runners/run_met.m` -- the stage runner: the as-built truss, the
   `dldx` engine check, the scoring, the shape-class layout optimizer, the Monte-Carlo acceptance.
 
 ### It runs

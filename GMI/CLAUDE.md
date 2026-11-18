@@ -1,4 +1,4 @@
-# MACOS_resources/GMI
+# GMI
 
 GMI = Generic MACOS Interface. A MATLAB mex (`GMI.mexa64`) that wraps
 the SMACOS Fortran model so MATLAB scripts can run a MACOS prescription,
@@ -22,7 +22,7 @@ Build entry points (in `~/dev/macos/`):
 `make` doesn't see `.inc` includes, so when only `GMI.inc` changes, the
 .o files don't rebuild. Force-rebuild via:
 ```
-rm -f /home/dcr/dev/MACOS_resources/GMI/{GMI,GMIG}.o
+rm -f ~/dev/macos/GMI/{GMI,GMIG}.o
 source ~/dev/macos/makegmi.sh
 ```
 
@@ -150,7 +150,7 @@ mex-side cap).
 
 ## Conventions / gotchas
 - `call_GMI.m` is duplicated across user test dirs (e.g. `~/dev/tst_GMI/`).
-  Updates to the canonical copy in `MACOS_resources/GMI/call_GMI.m` must
+  Updates to the canonical copy in `GMI/call_GMI.m` must
   be propagated by hand to active test directories. The mex error
   `'GMI requires 14 input arguments'` from a 13-arg call site means a
   stale .m copy.

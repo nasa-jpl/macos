@@ -36,7 +36,33 @@ Build directory naming: `build_{release|debug}[_gfortran][_npsol]`
 - smacos_dvr re-compiles macos_mod.F with -DCMACOS (smacos_lib's copy lacks CMACOS-only symbols like ifPGColor).
 - **smacos_dvr MUST have its own `Fortran_MODULE_DIRECTORY` (`mod_smacos_dvr`).** It and the macos exe both compile macos_mod.F (+macos_vars_mod/macosio/pgplotsub) with -DCMACOS; emitting both into the same `mod_macos/` makes two **Ninja** rules generate `mod_macos/macos_mod.mod` → the Fortran dyndep step aborts ("multiple rules generate …"). Unix Makefiles tolerates the duplicate — why it stayed latent (`makems.sh` leaves BUILD_SMACOS_DVR OFF; a build dir that fell back to Makefiles never hits it). Fixed for issue #56 (sls-dev `84f0b9c`, opt-dev `cf01617`). The 4 legacy `makefile_*.sh` (pgplot/npsol/intel-14, dead) are deleted — **cmake is the one build path; ninja is OPTIONAL** (cmake falls back to plain `make`).
 - GMI Makefile is **FC-aware** (`.fc_stamp`, gitignored): GMI.o/GMIG.o live in a flat dir shared by makegmi (gfortran default) + makeall (ifx); switching compilers used to reuse stale .o → `undefined reference to _gfortran_*`. The stamp forces an object rebuild when FC changes (sls-dev `5c729f0`/opt-dev `c2f3c19`).
-- GMI.mexa64 has two build paths: (1) the standalone `MACOS_resources/GMI/Makefile` — more robust across MATLAB versions — which `makeall.sh`/`makegmi.sh` invoke with `MACOS_BUILD_DIR` pointing at the cmake build tree; and (2) a cross-platform cmake path (`add_subdirectory(MACOS_resources/GMI/CMakeLists.txt)`, Luis 2026-06) gated on `-DBUILD_GMI=ON`, used by `makegfortran.sh`, Windows, and opt-in Linux. **`makeall.sh` (both branches) keeps `-DBUILD_GMI=OFF`** so the Makefile is its sole GMI builder (no double build) — opt-dev's makeall kept `-DBUILD_GMI=ON` until `796dc51`, a double build whose cmake leg failed on a box lacking the hard-coded MATLAB (Scott's `GMIG.F fintrf.h` error). New `-DBUILD_MMACOS=ON` builds the mmacos mex the same way (`MMACOS_FC` selects its compiler). **Path gotcha:** the cmake `GMI_SRC_DIR`/`MMACOS_SRC_DIR` defaults must be `${CMAKE_CURRENT_SOURCE_DIR}/../MACOS_resources/{GMI,mmacos}`, NOT `../../../{GMI,mmacos}` — the latter is correct only for pymacos's `src/macos/CMakeLists.txt`; in the top-level macos `CMakeLists.txt` it resolves to `/home/GMI` and FATAL-breaks `makeall`/`makegfortran` configure on Linux. **MATLAB hard-code gotcha (2026-07-01):** the top-level `CMakeLists.txt` hard-coded `MATLAB_ROOT=/usr/local/MATLAB/R2025b`, so any cmake GMI/mmacos build (`-DBUILD_GMI=ON`; makegfortran/Windows) failed `GMIG.F`'s `#include <fintrf.h>` on a box without that exact release; now it auto-detects the latest installed MATLAB (mirrors the Makefile's `sort -V | tail -1`; override `-DMATLAB_ROOT=`), sls-dev `2f4948e`/opt-dev `796dc51`.
+- GMI.mexa64 has two build paths: (1) the standalone `GMI/Makefile` — more robust across MATLAB versions — which `makeall.sh`/`makegmi.sh` invoke with `MACOS_BUILD_DIR` pointing at the cmake build tree; and (2) a cross-platform cmake path (`add_subdirectory(GMI/CMakeLists.txt)`, Luis 2026-06) gated on `-DBUILD_GMI=ON`, used by `makegfortran.sh`, Windows, and opt-in Linux. **`makeall.sh` (both branches) keeps `-DBUILD_GMI=OFF`** so the Makefile is its sole GMI builder (no double build) — opt-dev's makeall kept `-DBUILD_GMI=ON` until `796dc51`, a double build whose cmake leg failed on a box lacking the hard-coded MATLAB (Scott's `GMIG.F fintrf.h` error). New `-DBUILD_MMACOS=ON` builds the mmacos mex the same way (`MMACOS_FC` selects its compiler). **Path gotcha:** the cmake `GMI_SRC_DIR`/`MMACOS_SRC_DIR` defaults must be `${CMAKE_CURRENT_SOURCE_DIR}/../{GMI,mmacos}`, NOT `../../../{GMI,mmacos}` — the latter is correct only for pymacos's `src/macos/CMakeLists.txt`; in the top-level macos `CMakeLists.txt` it resolves to `/home/GMI` and FATAL-breaks `makeall`/`makegfortran` configure on Linux. **MATLAB hard-code gotcha (2026-07-01):** the top-level `CMakeLists.txt` hard-coded `MATLAB_ROOT=/usr/local/MATLAB/R2025b`, so any cmake GMI/mmacos build (`-DBUILD_GMI=ON`; makegfortran/Windows) failed `GMIG.F`'s `#include <fintrf.h>` on a box without that exact release; now it auto-detects the latest installed MATLAB (mirrors the Makefile's `sort -V | tail -1`; override `-DMATLAB_ROOT=`), sls-dev `2f4948e`/opt-dev `796dc51`.
+
+## Where the engine finds its data files
+The engine reads `macos_param.txt` and `macos_glass_list.txt` at start-up.  It
+looks in four places, in this order, and takes the first that has the file
+(`find_macos_file` in `macos_f90/param_mod.F`):
+
+1. the current working directory;
+2. the directory of the running executable (no use under MATLAB or Python,
+   where the executable is MATLAB or Python);
+3. `$MACOS_HOME`, if it is set;
+4. the data directory the build recorded when it was configured.
+
+The fourth is what makes a build work with no set-up: CMake writes the path of
+`macos_f90/` into `build_*/generated/build_loc.inc` and the engine compiles it
+in, so `macos`, `libsmacos.a` and everything linked against it (mmacos, pymacos,
+GMI, SegMirMaker, `smacos_dvr`) find the files of the tree they were built from.
+**`MACOS_HOME` is optional.**  Set it only to make a build read another
+directory's files, or to run a binary that has been copied to a machine where
+the build tree does not exist.  A `MACOS_HOME` that does not hold the file
+prints a warning and the search moves on to the build's own directory.
+
+`-DMACOS_DATA_DIR=<dir>` at configure time changes the recorded directory.  If
+no place has `macos_param.txt` the engine stops with exit status 1.
+
+On Windows the engine skips places 2 and 3 (the `MSWIN` build), so it reads the
+working directory and then the recorded directory.
 
 ## Where the engine finds its data files
 The engine reads `macos_param.txt` and `macos_glass_list.txt` at start-up.  It
@@ -101,13 +127,13 @@ working directory and then the recorded directory.
     `src_mod_init_vars` (ds1/ds2 are allocated lazily by sourcsub).
 - Build choice for GMI (`makegmi.sh` defaults to gfortran):
   - **gfortran (default):** `source ./makegmi.sh` (or `makegmi.sh release`).
-    Mex lands at `~/dev/MACOS_resources/GMI/GMI.mexa64`. Requires
+    Mex lands at `~/dev/macos/GMI/GMI.mexa64`. Requires
     `build_release_gfortran/` populated by `makegfortran.sh release` first.
   - **ifx (opt-in):** `source ./makegmi.sh ifx`. Requires `build_release/`
     populated by `makems.sh release` first.
 - Both compilers run the GMI regression suite green (6/6) with bit-identical
   numeric results AND exit MATLAB cleanly (exit 0). They use the SAME source
-  tree; the standalone `MACOS_resources/GMI/Makefile` and the top-level
+  tree; the standalone `GMI/Makefile` and the top-level
   `CMakeLists.txt` have per-compiler conditionals for the compile/link flags
   (ifx: `-fpp -132 -gen-interfaces -fp-model strict -xHOST -shared-intel
   -reentrancy=none`;
@@ -157,7 +183,7 @@ working directory and then the recorded directory.
 - Use `source ./makems.sh` for macos_f90-only changes (faster than makeall.sh).
   cmake recompiles only changed files; delete the build directory for a clean rebuild.
 - macos.F line 59: `use propsub_mod128` was a stale name; fixed to `use propsub_mod`.
-- GMI (Matlab mex): built via standalone MACOS_resources/GMI/Makefile (invoked by
+- GMI (Matlab mex): built via standalone GMI/Makefile (invoked by
   makeall.sh — its sole GMI builder — and makegmi.sh), OR via the cross-platform
   cmake add_subdirectory path (`-DBUILD_GMI=ON`; makegfortran.sh / Windows). MATLAB
   auto-detected under /usr/local/MATLAB/R*. ifx 2025.3 quirk: -C flag implies

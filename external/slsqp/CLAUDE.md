@@ -12,7 +12,7 @@ CLAUDE.md. Move text, don't paraphrase — engine gotchas are exact.*
 
 ## Constrained optimization (SLSQP default, NPSOL opt-in)
 - Default back end: `design_slsqp_optim.F` + vendored Kraft SLSQP under
-  `macos_f90/slsqp/` (BSD; see `slsqp/LICENSE.txt`).  Same external
+  `external/slsqp/` (BSD; see `external/slsqp/LICENSE.txt`).  Same external
   signature as `np_optim_dvr` so call sites in `macos_cmd_loop.inc`
   (start_optim ~3661, restore ~3964) don't change.
 - Dispatch (in `macos_cmd_loop.inc`): `#ifdef USE_NPSOL` calls
@@ -38,6 +38,6 @@ CLAUDE.md. Move text, don't paraphrase — engine gotchas are exact.*
 - Open work: setbeam.inc still uses `npoptn` + `npsol` directly
   (Phase 3.1 — port deferred); `m.calib_set_algorithm(...)` setter
   in pymacos/mmacos bindings (Phase 5).
-- See `macos_f90/slsqp/README.md` for the full NPSOL→SLSQP mapping,
+- See `external/slsqp/README.md` for the full NPSOL→SLSQP mapping,
   reverse-comm protocol, and convergence story.
 

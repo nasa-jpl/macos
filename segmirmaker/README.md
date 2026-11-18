@@ -19,7 +19,7 @@ from `~/dev/macos/build_release/` (`libsmacos.a` + `libslsqplib` +
 references.)
 
 ```
-cd ~/dev/MACOS_resources/segmirmaker
+cd ~/dev/macos/segmirmaker
 ./makesegmirmaker.sh            # release build, ifx  -> build_release_ifx/
 ./makesegmirmaker.sh gfortran   # release build, gfortran -> build_release_gfortran/
 ```
@@ -45,14 +45,14 @@ Fully supported — gfortran only (`ifx` has no arm64 build; the script
 forces gfortran on Darwin automatically):
 
 ```
-cd ~/dev/MACOS_resources/segmirmaker
+cd ~/dev/macos/segmirmaker
 source ./makesegmirmaker.sh gfortran   # -> build_release_gfortran/SegMirMaker
 ```
 
-Prereqs mirror the rest of the Mac port ([`../../macos/MAC_PORT.md`]):
+Prereqs mirror the rest of the Mac port ([`../MAC_PORT.md`]):
 a gfortran-built engine tree at `~/dev/macos/build_release_gfortran/`,
 Homebrew `readline` (the CMakeLists picks it up via `brew --prefix
-readline` — the bundled `macos_f90/readline-8.2` isn't built on Mac).
+readline` — the bundled `external/readline-8.2` isn't built on Mac).
 `MACOS_HOME` is not needed: the engine finds `macos_param.txt` in the tree
 it was built from.
 
@@ -69,7 +69,7 @@ gfortran/arm64 exposed it. The dummies are now assumed-length
 ## Quick start
 
 ```
-cd ~/dev/MACOS_resources/segmirmaker/test_in
+cd ~/dev/macos/segmirmaker/test_in
 ../build_release_ifx/SegMirMaker          # or ../build_release_gfortran/SegMirMaker
 ```
 

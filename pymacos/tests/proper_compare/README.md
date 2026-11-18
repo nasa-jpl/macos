@@ -15,7 +15,7 @@ that works as of 2026-05:
 cd /tmp
 wget https://files.pythonhosted.org/packages/65/63/3d569f23800bd829e47f0c3be0d7774291bf3f8d8653f8ca3ad176f76cf8/PyPROPER3-3.2.1.tar.gz
 tar xzf PyPROPER3-3.2.1.tar.gz
-source ~/dev/MACOS_resources/pymacos/.venv/bin/activate
+source ~/dev/macos/pymacos/.venv/bin/activate
 SITE=$(python -c "import site; print(site.getsitepackages()[0])")
 cp -r PyPROPER3-3.2.1/proper "$SITE/"
 uv pip install astropy

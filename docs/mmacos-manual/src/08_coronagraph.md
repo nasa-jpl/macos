@@ -31,7 +31,7 @@ CTB folded behind it, the thread's stages 9 to 11.
 - `ctb_efc_physics.m`, its help text -- how the coatings' polarization enters as pupil screens.
 - `ctb_probe_estimate.m`, its help text -- the pairwise-probe estimator, and `ctb_efc`'s
   `'sensing'` option that closes the loop on it.
-- `MACOS_resources/optical_design/CORONAGRAPH_DESIGN_RULES.md` -- the coronagraph rules.
+- `optical_design/CORONAGRAPH_DESIGN_RULES.md` -- the coronagraph rules.
 - `templates/80_end_to_end/e2e/README.md`, the rows for stages 9 to 11 -- the coupled model, probing
   on it, and the recompute-and-restart cycles.
 

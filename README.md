@@ -11,7 +11,7 @@ replacement for PGPLOT.
 > is gone.
 >
 > **SLSQP is the default constrained-optimization back end** (Kraft 1988,
-> BSD-licensed, vendored under `macos_f90/slsqp/`). It builds and runs out
+> BSD-licensed, vendored under `external/slsqp/`). It builds and runs out
 > of the box — no extra source tree, no license. The legacy NPSOL path is
 > still available behind `-DUSE_NPSOL=ON` for sites that have the Stanford
 > SOL source; default builds do not require it.
@@ -19,8 +19,9 @@ replacement for PGPLOT.
 ---
 
 ## Table of Contents
+- [What Is in This Repository](#what-is-in-this-repository)
 - [Directory Layout](#directory-layout)
-- [Clone the Repositories](#clone-the-repositories)
+- [Clone the Repository](#clone-the-repository)
 - [Linux](#linux)
 - [Windows](#windows)
 - [Build Options Reference](#build-options-reference)
@@ -31,33 +32,80 @@ replacement for PGPLOT.
 
 ---
 
+## What Is in This Repository
+
+MACOS is "Modeling and Analysis for Controlled Optical Systems", created at
+the Jet Propulsion Laboratory. One repository holds the engine and the
+interfaces built on it (the interfaces lived in the separate
+`MACOS_resources` repository until 2026-11).
+
+- **MACOS / SMACOS engine** (`macos_f90/`): the interactive `macos` program
+  and the `libsmacos.a` library that every interface links.
+- **Bundled third-party code** (`external/`): the giza graphics library,
+  readline, the SLSQP optimizer and the FITS writer. CMake builds them with
+  the engine.
+- **Generic MACOS Interface, GMI** (`GMI/`): uses MATLAB as a front end
+  for specific analyses.
+- **pymacos** (`pymacos/`): uses Python as a front end, and provides
+  linear model generation and wide-ranging test facilities.
+- **mmacos** (`mmacos/`): uses MATLAB as a front end, and provides
+  linear model generation and optical design layers. More versatile than GMI.
+- **SegMirMaker** (`segmirmaker/`): generates segmented-mirror prescriptions.
+- **Prescription converters** (`rx_converter/`): convert CODE V and Zemax
+  prescriptions.
+- **Manuals** (`docs/`): `macosMan.pdf`, `macosCmdRef.pdf`, `mmacosMan.pdf`
+  and their sources.
+
+The interfaces build against the engine in the same checkout, so an
+interface and its engine always match. Build the engine first.
+
+The directories are being reorganized in steps (GitHub issues #75 to #83);
+the layout below is the current one and changes with each step.
+`HOW_TO_COMPILE.md` is the copy-paste walkthrough; this file is the full
+option matrix.
+
+---
+
 ## Directory Layout
 
-Both repositories must be siblings under the same parent directory.
 Replace `<username>` with your login name throughout.
 
 ```
-MACOS_resources/                   (top-level resources repo)
-    GMI/                           (GMI MATLAB mex interface)
-    mmacos/                        (mmacos MATLAB mex interface -- CMakeLists.txt here)
-    pymacos/
-        src/
-            macos/                 (main MACOS/SMACOS source tree -- CMakeLists.txt here)
-                macos_f90/         (Fortran source files)
-                build/             (CMake build output -- generated)
+macos/                          (this repository -- CMakeLists.txt and make*.sh here)
+    macos_f90/                  (engine Fortran and C source; macos_param.txt and the
+                                 glass table)
+    external/                   (bundled third-party code: giza, readline-8.2, slsqp,
+                                 fits_build)
+    GMI/                        (GMI MATLAB mex interface)
+    mmacos/                     (mmacos MATLAB mex interface -- CMakeLists.txt here)
+    pymacos/                    (pymacos Python interface)
+    segmirmaker/                (segmented-mirror prescription generator)
+    rx_converter/               (prescription converters)
+    optical_design/             (design rules and reference fixtures)
+    docs/                       (manuals and their sources)
+    cli_tests/                  (command-line regression gates)
+    ZGD_test_files/             (test prescriptions)
+    cmake/                      (CMake helpers)
+    tools/                      (source generators and release scripts)
+    build_release/              (CMake build output -- generated)
 ```
 
 ---
 
-## Clone the Repositories
+## Clone the Repository
 
 ```bash
 mkdir -p ~/dev && cd ~/dev
 
 git clone git@github.com:nasa-jpl/macos.git
-
-git clone git@github.com:nasa-jpl/MACOS_resources.git
 ```
+
+Do not clone with `--recursive`. Nothing else needs to be set: a build finds
+`macos_param.txt` and the glass table in the checkout it was built from, so
+`MACOS_HOME` is optional (`BUILD.md`, "Where the engine finds its data files").
+If you used the two-repository layout before, delete the old `macos` and
+`MACOS_resources` clones and remove `MACOS_HOME` and `MACOS_RESOURCES` from
+your shell start-up file.
 
 ---
 
@@ -92,7 +140,7 @@ For a gfortran build use `makegfortran.sh` instead — Intel oneAPI is not requi
 
 3. Build the bundled readline library (enables arrow-key history in macos):
    ```bash
-   cd macos_f90/readline-8.2
+   cd external/readline-8.2
    ./configure && make
    cd ../..
    ```
@@ -246,7 +294,7 @@ For MATLAB, add the GMI directory to the MATLAB path in `startup.m` or via
 the MATLAB **Set Path** dialog:
 
 ```matlab
-addpath('~/dev/MACOS_resources/GMI')
+addpath('~/dev/macos/GMI')
 ```
 
 ### Linux Build Output Locations
@@ -256,7 +304,7 @@ addpath('~/dev/MACOS_resources/GMI')
 | `macos` executable | `build_release/bin/macos` |
 | `smacos_dvr` executable | `build_release/bin/smacos_dvr` |
 | `libsmacos.a` static library | `build_release/lib/libsmacos.a` |
-| `GMI.mexa64` MATLAB mex | `~/dev/MACOS_resources/GMI/GMI.mexa64` |
+| `GMI.mexa64` MATLAB mex | `GMI/GMI.mexa64` |
 | `mmacos.mexa64` MATLAB mex | `build_release/bin/mmacos.mexa64` |
 
 ### Linux Build Directory Names
@@ -525,7 +573,7 @@ pymacos is the Python interface to SMACOS. It must be built **after** SMACOS.
 
 #### Build
 ```bash
-cd ~/dev/MACOS_resources/pymacos/src/cmake
+cd ~/dev/macos/pymacos/src/cmake
 rm -rf build && mkdir build && cd build
 cmake -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DCMAKE_Fortran_COMPILER=ifx -S ..
 make
@@ -535,7 +583,7 @@ Output: `pymacos/src/pymacos/pymacosf90.cpXXX-linux.so`
 
 Run tests from `pymacos/src`:
 ```bash
-cd ~/dev/MACOS_resources/pymacos/src
+cd ~/dev/macos/pymacos/src
 python -m pytest ../tests/ -v
 ```
 
@@ -576,7 +624,7 @@ pymacos — both wrap the same `macos_api_mod` module compiled into
 Python and MATLAB simultaneously.
 
 mmacos is built from its own `CMakeLists.txt` located in
-`MACOS_resources/mmacos/`. It can be built two ways:
+`mmacos/`. It can be built two ways:
 
 - **Integrated**: called automatically from the main `CMakeLists.txt` via
   `BUILD_MMACOS=ON` — SMACOS and mmacos are built in one step
@@ -622,10 +670,10 @@ cmake --build build_release -j$(nproc)
 
 Use this when you want to rebuild mmacos without rebuilding SMACOS.
 `-DMMACOS_SRC_DIR` is only needed if mmacos is not at the standard
-relative path (`../../../mmacos` from `pymacos/src/macos/`):
+path (`mmacos` under the repository root):
 
 ```bash
-cd ~/dev/MACOS_resources/mmacos
+cd ~/dev/macos/mmacos
 rm -rf build
 cmake -B build -G Ninja \
   -DCMAKE_BUILD_TYPE=Release \
@@ -668,7 +716,7 @@ cmake --build build_release -j$(nproc)
 Run from the **Intel oneAPI Command Prompt**:
 
 ```cmd
-cd C:\path\to\macos\pymacos\src\macos
+cd C:\path\to\macos
 rmdir /s /q build
 cmake -B build -G Ninja ^
   -DCMAKE_BUILD_TYPE=Release ^
@@ -696,11 +744,11 @@ cmake --build build
 #### Build mmacos standalone (after SMACOS is already built)
 
 ```cmd
-cd C:\path\to\MACOS_resources\mmacos
+cd C:\path\to\macos\mmacos
 rmdir /s /q build
 cmake -B build -G Ninja ^
   -DCMAKE_BUILD_TYPE=Release ^
-  -DMACOS_BUILD_DIR=C:\path\to\macos\pymacos\src\macos\build
+  -DMACOS_BUILD_DIR=C:\path\to\macos\build
 cmake --build build
 ```
 
@@ -710,19 +758,14 @@ cmake --build build
 
 ### Using mmacos in MATLAB
 
-After building, add the output directory to the MATLAB path and set the
-working directory to a folder containing `macos_param.txt`:
+After building, add the output directory to the MATLAB path. The engine
+finds `macos_param.txt` in the checkout it was built from, so the working
+directory can be anywhere:
 
 ```matlab
 % Add mmacos to MATLAB path
 addpath('C:\path\to\build\bin')   % Windows
 addpath('~/dev/macos/build_release/bin')  % Linux
-
-% Set working directory to folder containing macos_param.txt
-% macos_param.txt defines MACOS model dimensions and is required
-% by mmacos('init', ...) before any ray tracing can be performed
-cd('C:\path\to\MACOS_resources\mmacos')   % Windows
-cd('~/dev/MACOS_resources/mmacos')        % Linux
 
 % Initialize MACOS with a model size (number of elements)
 mmacos('init', 128)
@@ -740,16 +783,19 @@ opd = mmacos('opd', 11)    % OPD at element 11
 cf = mmacos('complex_field', 9)   % Complex wavefront at element 9
 ```
 
-> **Important:** `macos_param.txt` must be present in the MATLAB current
-> working directory before calling `mmacos('init', ...)`. This file defines
-> MACOS model parameters (array sizes, element limits, etc.). Without it,
-> MATLAB will exit without an error message.
+> **Important:** `mmacos('init', ...)` reads `macos_param.txt`, which defines
+> the model parameters (array sizes, element limits, etc.). The engine looks
+> in the current working directory, then in `$MACOS_HOME`, then in the
+> `macos_f90/` directory of the checkout it was built from (`BUILD.md`,
+> "Where the engine finds its data files"). If it finds the file nowhere,
+> which can happen to a MEX file copied to another machine, MATLAB exits
+> without an error message.
 
 ### Running the mmacos smoke test
 
 ```matlab
 % Quick smoke test using a Cassegrain prescription
-cd('C:\path\to\MACOS_resources\mmacos')
+cd('C:\path\to\macos\mmacos')
 addpath('C:\path\to\build\bin')
 test_mmacos('path/to/Rx_Cass_FarField.in')
 exit(0)   % explicit exit needed to prevent MATLAB hang in -batch mode
@@ -831,7 +877,7 @@ Source the Intel oneAPI environment first:
 **`libreadline.a` not found warning (Linux)**
 Arrow-key history in the macos prompt will be disabled. To fix:
 ```bash
-cd macos_f90/readline-8.2 && ./configure && make
+cd external/readline-8.2 && ./configure && make
 ```
 
 **MATLAB root not found (GMI or mmacos build)**
@@ -853,12 +899,13 @@ Ensure you are using the latest `CMakeLists.txt` which includes
 stubs for Linux-only functions.
 
 **mmacos: MATLAB exits without error after `mmacos('init', ...)`**
-`macos_param.txt` is missing from the MATLAB current working directory.
-This file is required by `param_mod_init` during SMACOS initialization.
-Copy it from `MACOS_resources/mmacos/macos_param.txt` to your working
-directory, or `cd` to the mmacos directory before calling `init`:
+The engine could not find `macos_param.txt`, which `param_mod_init` reads
+during SMACOS initialization. A MEX file run in the checkout it was built
+from finds the file by itself; one that was copied elsewhere does not. Set
+`MACOS_HOME` to a directory that holds the file, or copy
+`macos_f90/macos_param.txt` to the working directory:
 ```matlab
-cd('path/to/MACOS_resources/mmacos')
+setenv('MACOS_HOME', 'path/to/macos/macos_f90')
 mmacos('init', 128)
 ```
 
@@ -895,7 +942,7 @@ one at a time.
 **`mmacos_mex.F not found` during configure**
 Set `-DMMACOS_SRC_DIR` to the full path of the `mmacos/` directory:
 ```cmd
-cmake -B build -DMMACOS_SRC_DIR=C:\path\to\MACOS_resources\mmacos
+cmake -B build -DMMACOS_SRC_DIR=C:\path\to\macos\mmacos
 ```
 Newer `mmacos` checkouts moved Fortran sources into `mmacos/src/` (mirroring
 pymacos's `src/pymacos` layout) instead of keeping them directly in `mmacos/`.
@@ -951,8 +998,8 @@ of the `+macos` folder must be on the MATLAB path — typically
 folder. You need **both** on the path: `build/bin` (for the compiled
 `mmacos.mexw64`) and `mmacos/src` (for the `+macos` package `.m` files):
 ```matlab
-addpath('path/to/pymacos/src/macos/build/bin')
-addpath('path/to/MACOS_resources/mmacos/src')
+addpath('path/to/macos/build/bin')
+addpath('path/to/macos/mmacos/src')
 rehash
 m = macos.Session(256);
 ```

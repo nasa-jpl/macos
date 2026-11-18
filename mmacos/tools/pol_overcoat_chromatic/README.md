@@ -4,7 +4,7 @@ Companion evidence run for
 `macos/REVIEW_POL_OVERCOAT_CHROMATIC_2026-07-28.md` and polval §8.3.
 
 ```
-cd MACOS_resources/mmacos
+cd mmacos
 matlab -batch "mmacos_setup; addpath('tools/pol_overcoat_chromatic'); oc_ladder; exit(0)"
 ```
 

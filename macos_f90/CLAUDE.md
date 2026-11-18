@@ -20,8 +20,8 @@
 | `macosio.F` prompts, `mhist.c`, `macos_cmd_loop.inc` | `notes/cli.md` | readline sub-prompt cache (`set_sub_prompt`; `LEN_TRIM` not `ICLEN`), non-readline builds, IACCEPT_S reprompt sweep (abort to label 1, never re-enter), LOG cleanup |
 | `macos_api_mod.F90`, pymacos/mmacos, coronagraph fixtures | `notes/api_bindings.md` | the wrapper layer (`ray_status_get`, buffer-wrapper template), pymacos CodeV/PROPER regression phases, masks must be `Element= Obscuring` |
 | `ifPol`, `RayE`, coating branches, `PolElt`, `ifVecDif3`, `CPROPAGATE` legs | `notes/polarization.md` | conventions table (exp(+iωt), N = n − iκ, coating thickness in waves), Model A vs B coatings, the coated-branch fixes, the r_p sign fix and its gate-blindness lesson, radiometry (ONE factor, never per interface), the external anchor, overcoat quarter-wave reversal, Jones basis, TrPolarizer/WavePlate (project the MATERIAL axis), **two dispatch chains**, Tranche-1 vector propagation and the seed phase convention |
-| plots / display | `giza/CLAUDE.md` | (unchanged) |
-| constrained optimisation | `slsqp/CLAUDE.md` | (unchanged) |
+| plots / display | `../external/giza/CLAUDE.md` | (unchanged) |
+| constrained optimisation | `../external/slsqp/CLAUDE.md` | (unchanged) |
 
 ## Every-session rules (each is argued in its notes file)
 

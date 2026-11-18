@@ -14,7 +14,7 @@ Each worked example is told in three voices, always in the same order.
   (aperture, f-number, field, wavelength, a contrast floor) and nothing about how to get there.
   Treat it as a template for your own request: change the numbers, keep the shape.
 - ***The assistant reads*** is the list of files the assistant opens before it acts. They are paths
-  in the two repositories (`macos`, `MACOS_resources`), so the list is portable: hand it to any
+  in the `macos` repository, so the list is portable: hand it to any
   assistant and it starts from the same ground. The list is also the manual's answer to "where is
   that written down?"
 - ***It runs*** is what the assistant ran, unchanged, and what it printed and drew. The gray
@@ -79,20 +79,20 @@ requests will start from one of its other templates (Part II, in the order of
 If you have not worked with an AI assistant before, this is the mechanical part. It takes an
 afternoon the first time and a minute after that.
 
-1. **Get the code.** Clone the two repositories side by side, so that `macos/` and
-   `MACOS_resources/` share a parent directory; the build scripts and the library find each other
-   by that relative path. Your administrator has the repository addresses and the branch to use.
+1. **Get the code.** Clone the `macos` repository; it holds the engine and the interface, and the
+   build scripts and the library find each other inside it. Your administrator has the repository
+   address and the branch to use.
 2. **Build the engine, then the interface.** Follow *Installation* in the front matter: build the
-   gfortran engine in `macos/`, then `make` in `MACOS_resources/mmacos/`, then run the fast test
+   gfortran engine in `macos/`, then `make` in `mmacos/`, then run the fast test
    suite once. A green suite is your proof that the installation works before the assistant
    touches anything.
 3. **Start MATLAB and run the setup script** (`mmacos_setup.m`, once per session). Type
    `macos.init(128)` and then `help macos.trace`; if both answer, MATLAB sees the engine.
-4. **Open a terminal in the parent directory** of the two repositories and start your assistant
-   there. With Claude Code, that is the command `claude`; in VS Code, open the parent directory as
+4. **Open a terminal in the `macos` directory** and start your assistant
+   there. With Claude Code, that is the command `claude`; in VS Code, open that directory as
    the workspace and open the assistant's panel; other assistants have their own command. The
    directory you start in matters: the assistant reads the `CLAUDE.md` files it finds there
-   (`macos/CLAUDE.md`, `macos/macos_f90/CLAUDE.md`, `MACOS_resources/mmacos/CLAUDE.md`), and those
+   (`CLAUDE.md`, `macos_f90/CLAUDE.md`, `mmacos/CLAUDE.md`), and those
    files carry the working rules that this manual's examples relied on.
 5. **Point the assistant at this manual.** Its sources are
    `macos/docs/mmacos-manual/src/*.md`, one file per section, and the built copy is

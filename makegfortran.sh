@@ -47,7 +47,7 @@ echo "makegfortran: BUILD_TYPE=${BUILD_TYPE}  USE_NPSOL=${USE_NPSOL}"
 echo "makegfortran: BUILD_DIR=${BUILD_DIR}"
 
 # --- Readline bootstrap (one-time, on first clone) ---
-READLINE_DIR="${SCRIPT_DIR}/macos_f90/readline-8.2"
+READLINE_DIR="${SCRIPT_DIR}/external/readline-8.2"
 if [ ! -f "${READLINE_DIR}/libreadline.a" ]; then
   echo "makegfortran: bootstrapping bundled readline (one-time setup) ..."
   ( cd "${READLINE_DIR}" && ./configure -q && make -j"$(nproc)" ) \
