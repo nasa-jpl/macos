@@ -38,7 +38,7 @@ script with that block, and only that block, removed. The presets were checked b
 and after the run: this manual's run does not touch them.
 
 ```matlab
-run('<path-to>/mmacos/templates/80_end_to_end/e2e/s5_met.m')   % less its preset promotion
+run('<path-to>/macos/app/mmacos/templates/80_end_to_end/e2e/s5_met.m')   % less its preset promotion
 ```
 
 The report (numbers that are numerical zeros are printed as their bounds):

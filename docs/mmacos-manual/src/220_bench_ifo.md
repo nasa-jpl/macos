@@ -5,7 +5,7 @@ A generic Twyman-Green IFO built with the macos.design.Bench add-optic utilities
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/40_benches/bench_ifo');
+cd('<path-to>/macos/app/mmacos/templates/40_benches/bench_ifo');
 run(fullfile(pwd,'example_bench_ifo.m'));
 ```
 

@@ -14,7 +14,7 @@
 %      sensitivities/           plot_opd_canvas / plot_dw_channels / save_dw_multi
 %
 %  Cold start (mmacos root not yet on the path):
-%      >> run('<path-to>/mmacos/mmacos_setup.m')
+%      >> run('<path-to>/macos/app/mmacos/mmacos_setup.m')
 %  Once the root is reachable (or after the line above):
 %      >> mmacos_setup
 %

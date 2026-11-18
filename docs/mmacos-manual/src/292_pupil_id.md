@@ -24,7 +24,7 @@ veneer code.**
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/10_telescopes/pupil_id');
+cd('<path-to>/macos/app/mmacos/templates/10_telescopes/pupil_id');
 run_pupil_id('tma_onaxis');
 ```
 

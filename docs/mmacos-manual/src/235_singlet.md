@@ -7,7 +7,7 @@ The lens is a `macos.design.Lens`; its deck comes from `macos.design.lens_emit`,
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/35_lenses/singlet');
+cd('<path-to>/macos/app/mmacos/templates/35_lenses/singlet');
 out = singlet();
 ```
 

@@ -136,8 +136,8 @@ tilted-fold topology is the designer of record here, ratified 2026-08-24.
 ## Run
 
 ```matlab
-run('<path-to>/mmacos/mmacos_setup.m');
-addpath('<path-to>/mmacos/templates/80_end_to_end/e2e6m');
+run('<path-to>/macos/app/mmacos/mmacos_setup.m');
+addpath('<path-to>/macos/app/mmacos/templates/80_end_to_end/e2e6m');
 s1_layout_search();      % the layout pick (a sweep; minutes)
 s1_telescope();          % the telescope
 s2_segmentation();       % the segmented primary

@@ -24,7 +24,7 @@ F/1.8, a ±4.7° strip onto a 54 mm slit.
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/10_telescopes/tma_longslit');
+cd('<path-to>/macos/app/mmacos/templates/10_telescopes/tma_longslit');
 OUT = tma_longslit_run({'first_order','section'});
 ```
 

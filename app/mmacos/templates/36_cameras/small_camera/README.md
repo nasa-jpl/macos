@@ -24,7 +24,7 @@ The first re-solves shift m and undo part of the balance.  The rounds settle as 
 
 ## Running it
 
-From this directory, after `run('<path-to>/mmacos/mmacos_setup.m')`:
+From this directory, after `run('<path-to>/macos/app/mmacos/mmacos_setup.m')`:
 
     small_camera                                          % the defaults: small_camera.in's camera
     out = small_camera('D_MM', 200, 'EFL_MM', 2400, 'PIXEL_UM', 9)

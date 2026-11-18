@@ -50,7 +50,7 @@ The knobs are one file, `e2e_params.m`. Its telescope block, as the run read it:
 Then the stage script, unchanged:
 
 ```matlab
-run('<path-to>/mmacos/templates/80_end_to_end/e2e/s1_telescope.m')
+run('<path-to>/macos/app/mmacos/templates/80_end_to_end/e2e/s1_telescope.m')
 ```
 
 `s1_telescope.m` works in eight steps, each printed as it runs: (1) the first-order Korsch layout

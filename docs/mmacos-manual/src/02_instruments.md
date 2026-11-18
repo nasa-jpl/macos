@@ -37,7 +37,7 @@ symmetry; the usable field is a ring, and the biased science field is an arc of 
 Section 1 left its products:
 
 ```matlab
-run('<path-to>/mmacos/templates/80_end_to_end/e2e/s2_instrument.m')
+run('<path-to>/macos/app/mmacos/templates/80_end_to_end/e2e/s2_instrument.m')
 ```
 
 The stage reloads the stage-1 design, appends the relay, and solves the telescope and the relay

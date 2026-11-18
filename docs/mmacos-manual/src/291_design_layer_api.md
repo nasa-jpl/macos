@@ -34,7 +34,7 @@ the rest of `../`.
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/10_telescopes/design_layer_api');
+cd('<path-to>/macos/app/mmacos/templates/10_telescopes/design_layer_api');
 run(fullfile(pwd,'example_telescope_design.m'));
 ```
 

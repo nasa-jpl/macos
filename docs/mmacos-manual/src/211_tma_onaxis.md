@@ -15,7 +15,7 @@ j18mono features:
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/10_telescopes/tma_onaxis');
+cd('<path-to>/macos/app/mmacos/templates/10_telescopes/tma_onaxis');
 run(fullfile(pwd,'tma_onaxis.m'));
 ```
 

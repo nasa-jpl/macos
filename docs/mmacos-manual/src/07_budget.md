@@ -44,7 +44,7 @@ them the committed workbook, so the manual runs a copy of the template's folder:
 files were checked by checksum before and after and are untouched.
 
 ```matlab
-run('<path-to>/mmacos/templates/50_sensitivities/e5hex1_budget/run_budget_e5hex1.m')
+run('<path-to>/macos/app/mmacos/templates/50_sensitivities/e5hex1_budget/run_budget_e5hex1.m')
 ```
 
 The report:

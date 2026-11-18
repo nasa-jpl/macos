@@ -10,7 +10,7 @@ is the validation.
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/10_telescopes/offset_imager');
+cd('<path-to>/macos/app/mmacos/templates/10_telescopes/offset_imager');
 OUT = offset_imager();
 ```
 

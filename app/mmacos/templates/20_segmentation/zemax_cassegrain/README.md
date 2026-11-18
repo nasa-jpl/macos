@@ -85,8 +85,8 @@ feasible (`tests/tRunMet.m`, the infeasible-gate test).
 ## Run
 
 ```matlab
-run('<path-to>/mmacos/mmacos_setup.m');
-run('<path-to>/mmacos/templates/20_segmentation/zemax_cassegrain/zemax_cassegrain.m');
+run('<path-to>/macos/app/mmacos/mmacos_setup.m');
+run('<path-to>/macos/app/mmacos/templates/20_segmentation/zemax_cassegrain/zemax_cassegrain.m');
 ```
 
 About three minutes at model 256 with the layout search off (measured 2026-11-04: pupil 10 s, segmentation 10 s, sensitivities 2.5 min, MET 10 s); the search adds about an hour.  Needs the

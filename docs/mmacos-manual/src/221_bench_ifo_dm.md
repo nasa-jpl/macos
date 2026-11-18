@@ -5,7 +5,7 @@ Follow-on to templates/40_benches/bench_ifo (read that first): the same compensa
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/40_benches/bench_ifo_dm');
+cd('<path-to>/macos/app/mmacos/templates/40_benches/bench_ifo_dm');
 run(fullfile(pwd,'example_bench_ifo_dm.m'));
 ```
 

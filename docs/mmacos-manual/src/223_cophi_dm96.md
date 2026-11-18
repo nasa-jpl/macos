@@ -8,7 +8,7 @@ Feng Zhao's proposal is `~/dev/MACOS_sandbox/DM_gauge/COPHI_for_DM_gauge.pptx`
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/40_benches/cophi_dm96');
+cd('<path-to>/macos/app/mmacos/templates/40_benches/cophi_dm96');
 out = cophi_run('stages',{'bench','figs'});
 ```
 

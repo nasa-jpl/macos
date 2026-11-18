@@ -5,7 +5,7 @@ Multi-mirror telescopes exist to widen the corrected field of view. This example
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/10_telescopes/tma_widefield');
+cd('<path-to>/macos/app/mmacos/templates/10_telescopes/tma_widefield');
 run(fullfile(pwd,'example_tma_widefield.m'));
 ```
 

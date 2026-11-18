@@ -4,7 +4,7 @@ Three conic mirrors (j18mono-geometry Korsch, 6.6 m f/20, unobscured eccentric-p
 
 ## Running it
 
-From this directory, after `run('<path-to>/mmacos/mmacos_setup.m')`:
+From this directory, after `run('<path-to>/macos/app/mmacos/mmacos_setup.m')`:
 
     tma_3plus1
 
