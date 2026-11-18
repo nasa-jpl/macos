@@ -6,7 +6,7 @@ classdef tSegMirMaker < matlab.unittest.TestCase
     % ordering the driver assembles and (b) the generator's output
     % against the committed references in segmirmaker/test_in:
     % a batch run must reproduce e5pie / e5hex2 -- the same text, and
-    % every number to 1e-12 (TEXT_NUMBERS_MATCH).  The comparison was
+    % every number to 1e-12 of the scale of its line (TEXT_NUMBERS_MATCH).  The comparison was
     % byte for byte until 2026-11-17; the references are x86_64 output
     % and the arm64 build prints a sixteenth digit that differs by one
     % (CCMac's Mac run of issue #76), so it compares numbers now, and
@@ -87,6 +87,15 @@ classdef tSegMirMaker < matlab.unittest.TestCase
             tc.verifyFalse(text_numbers_match(strrep(ref, 'Segment', 'Segmint'), ref), 'the text must be equal');
             tc.verifyTrue(text_numbers_match(' -0.0E+00  1.7E-16', '  0.0E+00 -3.1E-17'), 'numerical zeros are equal, sign and digits aside');
             tc.verifyFalse(text_numbers_match('5.01E+01', '5.0E+01'), 'a short print gets no last-digit allowance');
+            % a small entry beside large ones is judged against the scale of its line: the pair the
+            % arm64 build actually printed (e5hex2Hx.m row 62, CCMac 2026-11-17) is round-off ...
+            row = ' Hx(62,1:6)=[ -0.460734883D+01 -0.619165476D+01  0.399952076D+03 %s -0.999880191D+00 -0.154791369D-01];';
+            x86 = sprintf(row, '-0.364217987D-08');
+            tc.verifyTrue(text_numbers_match(sprintf(row, '-0.364217951D-08'), x86), 'round-off of the terms the entry came from');
+            % ... and a real change of the same entry is not, nor is the same pair alone on a line
+            tc.verifyFalse(text_numbers_match(sprintf(row, '-0.364217987D-06'), x86), 'the entry a hundred times larger must be refused');
+            tc.verifyFalse(text_numbers_match('-0.364217951D-08', '-0.364217987D-08'), 'alone on its line the entry is its own scale');
+            tc.verifyFalse(text_numbers_match(sprintf('1.0\n2.0\n'), sprintf('1.0\n')), 'the lines must correspond');
         end
 
         function test_size_args_mutually_exclusive(tc)
