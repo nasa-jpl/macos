@@ -159,8 +159,8 @@ recipe). cmake **≥ 3.31**, Python **≥ 3.13**, NumPy **≥ 2.2**.
 > then `cmake -B build_mac -DCMAKE_Fortran_COMPILER=gfortran-NN
 > -DMACOS_BUILD_DIR=<...>/build_release_gfortran
 > -DPython_EXECUTABLE=<venv>/bin/python && cmake --build build_mac`.
-> Set `MACOS_HOME=<macos>/macos_f90` at runtime so `init` finds
-> `macos_param.txt` (missing → fatal abort).
+> `init` finds `macos_param.txt` in the engine tree the library was built
+> from; `MACOS_HOME` is only needed to read another directory's copy.
 
 > **macOS venv test dependencies.** The build itself needs only
 > `numpy>=2.2`, but the *test suites* need more, and a fresh venv won't
@@ -177,8 +177,8 @@ recipe). cmake **≥ 3.31**, Python **≥ 3.13**, NumPy **≥ 2.2**.
 > SITE=$(python -c "import site; print(site.getsitepackages()[0])")
 > cp -r /tmp/PyPROPER3-3.2.1/proper "$SITE/"
 > ```
-> Then run with `MACOS_HOME` set and `MPLBACKEND=Agg` (headless):
-> `MACOS_HOME=<macos>/macos_f90 MPLBACKEND=Agg python -m pytest ...`
+> Then run with `MPLBACKEND=Agg` (headless):
+> `MPLBACKEND=Agg python -m pytest ...`
 > from `tests/`. Validated 2026-07-24 on Apple Silicon: CodeV suite
 > 6601/6601, PROPER-compare suite 26/26. (`run_proper_tests.sh` itself is
 > Linux/oneAPI-only — on Mac invoke pytest directly with the phase list.)

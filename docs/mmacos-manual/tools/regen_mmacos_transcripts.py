@@ -39,7 +39,7 @@ Usage (from docs/mmacos-manual):
   python3 tools/regen_mmacos_transcripts.py [--repin] [driver names...]
 Environment: MMMAN_KEEP (a directory: a passing run's scratch directory is moved there as <dir>/<driver>,
 not deleted), MATLAB (default `matlab`), MMACOS_ROOT (default ~/dev/MACOS_resources/mmacos, the
-mmacos the drivers add to the path), MACOS_HOME (default ~/dev/macos/macos_f90).
+mmacos the drivers add to the path).
 """
 import os, re, shutil, subprocess, sys, tempfile
 from pathlib import Path
@@ -134,7 +134,6 @@ def run_driver(name, repin):
     work = tempfile.mkdtemp(prefix=f"mmman_{name}_")
     env = dict(os.environ)
     env.setdefault("MMACOS_ROOT", str(Path.home() / "dev" / "MACOS_resources" / "mmacos"))
-    env.setdefault("MACOS_HOME", str(Path.home() / "dev" / "macos" / "macos_f90"))
     env["MMMAN_WORK"] = work
     # the e2e thread: each stage consumes the one before, so its drivers share one persistent
     # directory (build/thread); the first stage's driver (ch01) copies the template there afresh

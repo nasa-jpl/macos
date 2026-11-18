@@ -16,6 +16,7 @@ from pathlib import Path
 
 import pytest
 from context import pymacosf90
+from repo_paths import ENGINE_DIR
 
 import pymacos.api_gen as api_gen
 
@@ -24,11 +25,9 @@ HELPERS = {'translatesurfaceid', 'translateeltid'}
 
 
 def api_source():
-    home = os.environ.get('MACOS_HOME',
-                          str(Path.home() / 'dev' / 'macos' / 'macos_f90'))
-    p = Path(home) / 'macos_api_mod.F90'
+    p = ENGINE_DIR / 'macos_api_mod.F90'
     # fail closed: no source, no gate (a skip here would read as green)
-    assert p.is_file(), f'macos_api_mod.F90 not found at {p} (set MACOS_HOME)'
+    assert p.is_file(), f'macos_api_mod.F90 not found at {p}'
     return p
 
 

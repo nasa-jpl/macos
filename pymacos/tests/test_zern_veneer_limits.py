@@ -14,10 +14,11 @@ import numpy as np
 import pytest
 
 from context import pymacos as m
+from repo_paths import ENGINE_DIR
 from pymacos import api_gen
 from test_zernike_orderings import DECK
 
-ELT_MOD = Path(os.environ.get('MACOS_HOME', Path.home() / 'dev/macos/macos_f90')) / 'elt_mod.F'
+ELT_MOD = ENGINE_DIR / 'elt_mod.F'
 
 
 def engine_param(name):

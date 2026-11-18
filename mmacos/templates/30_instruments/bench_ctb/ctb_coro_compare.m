@@ -47,7 +47,7 @@ function out = ctb_coro_compare(opts)
 %   To add a NEW mask kind, add a builder to build_masks_ below and a call
 %   in run_model_ at the plane you want it applied.
 %
-%   Run:  >> out = ctb_coro_compare;            (requires MACOS_HOME)
+%   Run:  >> out = ctb_coro_compare;
 %   See also: macos.apodize, ctb_prop_layout, Coro_propagation_summary.md.
     arguments
         opts.models          struct = default_models_()
@@ -65,7 +65,6 @@ function out = ctb_coro_compare(opts)
     end
     here = fileparts(mfilename('fullpath'));
     addpath(fullfile(here, '..', '..', '..', 'src'));           % mmacos/src
-    assert(~isempty(getenv('MACOS_HOME')), 'MACOS_HOME must be set.');
     if ~exist(opts.outdir,'dir'); mkdir(opts.outdir); end
 
     % masks OFF entirely if coro=false (a bare-optics comparison)

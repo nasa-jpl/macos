@@ -101,7 +101,6 @@ function ch = cf_chain(opts)
     here = fileparts(mfilename('fullpath'));
     addpath(fullfile(here, '..', '..', '..', 'src'));
     addpath(fullfile(here, '..', '..', '30_instruments', 'bench_ctb'));
-    assert(~isempty(getenv('MACOS_HOME')), 'MACOS_HOME must be set.');
     if isempty(opts.rx)
         opts.rx = fullfile(here, 'r1_seg_prop.in');
     end

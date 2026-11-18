@@ -10,7 +10,6 @@
 set -u
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$here"
-export MACOS_HOME="${MACOS_HOME:-$HOME/dev/macos/macos_f90}"
 
 wait_matlab () {
   local n=0

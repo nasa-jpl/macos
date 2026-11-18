@@ -94,13 +94,13 @@ fi
 PROPER_DIR="${PROPER_DIR:-$HOME/dev/proper_matlab}"
 
 # The engine loads macos_param.txt from (in order) cwd, exe dir, $MACOS_HOME,
-# then a compile-time build dir.  matlab -batch runs from the mmacos root, which
-# has no macos_param.txt, and a MISSING param file makes the engine's init abort
-# fatally — inside the MEX host that abort is a SIGSEGV, not a clean error.  Point
-# MACOS_HOME at the engine's canonical param file so init always resolves it.
-# (Tests that need a bespoke param file — e.g. tSegmentRx — copy their own into a
-# scratch cwd, which still wins over MACOS_HOME.)
-export MACOS_HOME="${MACOS_HOME:-$HOME/dev/macos/macos_f90}"
+# then the data directory the build recorded when it was configured.  That last
+# one is what the suite relies on: MACOS_HOME is not set here, and a value the
+# caller has set is passed through untouched.  (Tests that need a bespoke param
+# file — e.g. tSegmentRx — copy their own into a scratch cwd, which wins.)
+if [ -n "${MACOS_HOME:-}" ]; then
+    echo "note: MACOS_HOME=$MACOS_HOME is set; the engine reads its data files from there."
+fi
 
 if [ -z "$MATLAB_DIR" ] || [ ! -d "$MATLAB_DIR" ]; then
     echo "error: MATLAB not found.  Set MATLAB_DIR, install under /usr/local/MATLAB/ (Linux), or /Applications/MATLAB_R*.app (macOS)." >&2
@@ -287,7 +287,7 @@ SUITE_FAST=$(join_suites \
     "tApertureFrame" "tAppendRx" "tAddExitPupil" "tPerFieldIndx" "tPropLayout" \
     "tPolarization" "tJonesPupil" "tVecChain" \
     "tPolElement" "tPolRadiometric" "tPolExternal" "tBench" "tOpdRef" \
-    "tTgPol" "tTgPol2" "tTgPsiAxes" "tStopReload" "tDmgLoop" "tTmaLongslit" "tSpectrometerSens" "tPupilBlurDemo" "tRxShortCoef" "tRxRefuse" "tRxLineEndings" "tTraceKeepsRx" "tSaveFixedPoint" "tZrnGrRoundTrip" "tGridDropped" "tCalibTargets" \
+    "tTgPol" "tTgPol2" "tTgPsiAxes" "tStopReload" "tDmgLoop" "tTmaLongslit" "tSpectrometerSens" "tPupilBlurDemo" "tRxShortCoef" "tRxRefuse" "tDataDir" "tRxLineEndings" "tTraceKeepsRx" "tSaveFixedPoint" "tZrnGrRoundTrip" "tGridDropped" "tCalibTargets" \
     "tLinkSave" "tZernikeGridBasis" "tRxBlockComment" \
     "tGratingImmersed" "tGratingAperture" "tRayFailElt" "tGlassDispersion" "tPropMedium" "tRxShortAsph" \
     "tSpectrometerRx" "tGratingOpl" "tAsphCalib" "tTelescopeRx" "tRetraceIdempotent" "tBeamRows" "tTraceRestart" "tFFCut" "tAsphHook" "tBeamDirHook" "tFwdRoot" "tCalibBlindFields" "tCalibStop" "tCalibMatrix" "tSessionModes" "tStopApStop" "tFreeformPole" "tCophi" "tBudgetKernel" "tRunBudget" "tResolutionSweep" "tApiCoverage" "tDefaults" "tSrt" "tSegRay" "tRefRays" "tSint" "tMessages" "tSaveNewFileQuiet" "tRxLoadRulings1018" "tVeneerDefaults" "tZwfsCoat" "tE2eRmsWaves" \

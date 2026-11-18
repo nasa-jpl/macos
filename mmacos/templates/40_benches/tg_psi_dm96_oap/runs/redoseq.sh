@@ -8,7 +8,6 @@
 set -u
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$here"
-export MACOS_HOME="${MACOS_HOME:-$HOME/dev/macos/macos_f90}"
 OAP="'bench.optics','oap','bench.POL_IN','source','bench.D_RC_L2',125,'oap.OAP1_AOI',20,'oap.OAP2_AOI',25,'oap.OAP1_SIDE',1,'oap.OAP2_SIDE',-1"
 
 wait_matlab () {                      # bounded: 3 h, then give up loudly

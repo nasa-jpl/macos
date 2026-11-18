@@ -13,7 +13,6 @@ here="$(cd "$(dirname "$0")" && pwd)"
 lockdir="$here/../zwfs_dm96/runs"
 tag="${1:?usage: pdi_batch.sh <tag> [args]}";  shift
 args="${*:-}"
-export MACOS_HOME="${MACOS_HOME:-$HOME/dev/macos/macos_f90}"
 mkdir -p "$here/runs" "$lockdir"
 log="$here/runs/$tag.log"
 : > "$log"

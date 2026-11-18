@@ -37,9 +37,18 @@ C
         Complex*16, parameter :: czero_ = (0d0,0d0)
 !	Character(len=MacosCharLen) :: macos_env_var
 
-!       Set parameter strings based on preprocessor values for
-!       the build location of MACOS and current subversion revision.
-        CHARACTER(*), PARAMETER :: build_loc = 'BUILD_LOC'
+!-->   build_loc is the build's own data directory, lookup 4 of
+!      find_macos_file.  CMake writes it into build_loc.inc
+!      (cmake/macos_build_loc.cmake) and defines MACOS_BUILD_LOC_INC;
+!      a build that does not has no built-in directory.  It used to
+!      be 'BUILD_LOC', a macro name inside quotes, which the
+!      preprocessor never replaces, so lookup 4 never found a file.
+#ifdef MACOS_BUILD_LOC_INC
+        INCLUDE 'build_loc.inc'
+#else
+        CHARACTER(*), PARAMETER :: build_loc = ''
+#endif
+!<--
         CHARACTER(*), PARAMETER :: svn_rev   = 'SVN_REV'
 
 	Contains
@@ -278,18 +287,22 @@ C
         END IF
 #endif
 
-! 4) Look in the build directory (compile-time fallback)
-        full_file_name =
+! 4) Look in the build's own data directory (set at configure time)
+!-->
+        IF (LEN(build_loc) .GT. 0) THEN
+          full_file_name =
      &      build_loc // '/' // file_name(1:ICLEN(file_name))
 #ifdef DEBUG
-        print *, '  Looking for "',
+          print *, '  Looking for "',
      &            full_file_name(1:ICLEN(full_file_name)), '"'
 #endif
-        INQUIRE (FILE=full_file_name, EXIST=doesExist)
-        IF (doesExist) THEN
-          file_name = full_file_name
-          RETURN
+          INQUIRE (FILE=full_file_name, EXIST=doesExist)
+          IF (doesExist) THEN
+            file_name = full_file_name
+            RETURN
+          END IF
         END IF
+!<--
 
         ! Not found in any location — warn and return empty string.
         print *,
@@ -297,8 +310,8 @@ C
         print *,
      &  '  Searched: current directory, executable directory,'
         print *,
-     &  '  $MACOS_HOME, and build directory.'
-        print *, '  Build directory: ', build_loc
+     &  '  $MACOS_HOME, and the build''s data directory.'
+        print *, '  Build''s data directory: ', build_loc
         file_name = ''
         RETURN
         END SUBROUTINE find_macos_file

@@ -60,7 +60,6 @@ function out = ctb_phase_masks(opts)
     if isempty(opts.outdir), opts.outdir = here; end
     addpath(fullfile(here,'..','..','..','src'));
     addpath(here);
-    assert(~isempty(getenv('MACOS_HOME')),'MACOS_HOME must be set.');
     e = opts.elt;
 
     g = geom_scales_(opts, e);

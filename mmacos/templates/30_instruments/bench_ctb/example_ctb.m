@@ -45,14 +45,12 @@
 %  solve at the FPA can hide mis-collimation as defocus).  RMS WFE and
 %  polarization are reported as final figures of merit.
 %
-%  Run:   >> run('.../example_ctb.m')     (Requires MACOS_HOME.)
+%  Run:   >> run('.../example_ctb.m')
 % ===================================================================
 
 addpath('~/dev/MACOS_resources/mmacos/src');
 exdir = fileparts(mfilename('fullpath'));
 if isempty(exdir), exdir = pwd; end
-assert(~isempty(getenv('MACOS_HOME')), ...
-    'MACOS_HOME must be set (engine needs macos_param.txt).');
 macos.init(256);
 
 % ===================================================================

@@ -9,7 +9,6 @@
 %   Usage (from a shell, backgrounded):
 %
 %     OI_DEMO_WIDTH=12 \
-%     MACOS_HOME=/home/dcr/dev/macos/macos_f90 \
 %     matlab -batch "run('<...>/offset_imager/run_oi_demo.m')" \
 %       > /tmp/oi_demo.log 2>&1 &
 %

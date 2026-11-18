@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -u
 B=~/dev/MACOS_resources/mmacos/templates/40_benches
-export MACOS_HOME=$HOME/dev/macos/macos_f90
 say(){ echo "[$(date '+%F %T')] $*"; }
 cd "$B/zwfs_dm96"
 say "3/4 node figures + vector layout (retry: dm_gauge_lib on the path)"

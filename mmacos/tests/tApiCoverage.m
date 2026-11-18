@@ -1,8 +1,8 @@
 classdef tApiCoverage < matlab.unittest.TestCase
 %TAPICOVERAGE  Every macos_api_mod routine has an mmacos binding (BRIEF_to_bindings A.4;
 %   twin of pymacos tests/test_api_coverage.py).
-%   The routine list is read from the Fortran SOURCE (macos_api_mod.F90, $MACOS_HOME or
-%   ~/dev/macos/macos_f90) with its own regex -- not from gen_mex_wrappers.py -- so a
+%   The routine list is read from the Fortran SOURCE (macos_api_mod.F90 in this checkout's
+%   macos_f90) with its own regex -- not from gen_mex_wrappers.py -- so a
 %   routine added to the api without re-running the generator and relinking the mex
 %   turns this red.  Each routine maps to a mex command: its own name (the generated
 %   gen_dispatch), or a hand-written alias (HAND below; checked against mmacos_mex.F's
@@ -50,13 +50,9 @@ classdef tApiCoverage < matlab.unittest.TestCase
 
     methods (Static)
         function r = api_routines()
-            home = getenv('MACOS_HOME');
-            if isempty(home)
-                home = fullfile(getenv('HOME'), 'dev', 'macos', 'macos_f90');
-            end
-            p = fullfile(home, 'macos_api_mod.F90');
+            p = fullfile(repo_root_(), 'macos_f90', 'macos_api_mod.F90');
             % fail closed: no source, no gate
-            assert(isfile(p), 'macos_api_mod.F90 not found at %s (set MACOS_HOME)', p);
+            assert(isfile(p), 'macos_api_mod.F90 not found at %s', p);
             t = regexp(fileread(p), '(?m)^\s+subroutine\s+(\w+)\s*\(', 'tokens', ...
                 'ignorecase');
             % keep the source's case: a mex command name is case-sensitive

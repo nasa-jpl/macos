@@ -21,10 +21,8 @@ classdef tSrt < matlab.unittest.TestCase
     end
     methods (Static, Access = private)
         function ne = cass()
-            home = getenv('MACOS_HOME');
-            if isempty(home), home = fullfile(getenv('HOME'), 'dev', 'macos', 'macos_f90'); end
             macos.init(tSrt.Model);
-            macos.load_rx(fullfile(fileparts(home), 'docs', 'macos-manual', 'examples', 'Cassegrain.in'));
+            macos.load_rx(fullfile(repo_root_(), 'docs', 'macos-manual', 'examples', 'Cassegrain.in'));
             ne = macos.num_elt();
         end
     end

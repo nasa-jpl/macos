@@ -145,6 +145,16 @@ endif()
 # 3. Source Directory Configuration
 # ==============================================================================
 set(smacos_src_dir "${CMAKE_CURRENT_SOURCE_DIR}/macos_f90")
+
+# The engine's built-in data directory: where a build finds macos_param.txt
+# and macos_glass_list.txt with no MACOS_HOME set (find_macos_file in
+# param_mod.F; $MACOS_HOME still overrides it).  Written into build_loc.inc,
+# which param_mod.F includes.
+set(MACOS_DATA_DIR "${smacos_src_dir}" CACHE PATH
+    "Directory holding macos_param.txt and macos_glass_list.txt")
+set(MACOS_GENERATED_DIR "${CMAKE_BINARY_DIR}/generated")
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/macos_build_loc.cmake")
+macos_write_build_loc("${MACOS_DATA_DIR}" "${MACOS_GENERATED_DIR}/build_loc.inc")
 if(USE_NPSOL)
   set(npsol_src_dir "${smacos_src_dir}/npsol")
   if(NOT EXISTS "${npsol_src_dir}/CMakeLists.txt")
@@ -471,6 +481,14 @@ if(BUILD_MACOS)
   endif()
 endif()
 
+# Give the targets that compile param_mod.F the built-in data directory.
+foreach(_t smacos macos)
+  if(TARGET ${_t})
+    target_compile_definitions(${_t} PRIVATE MACOS_BUILD_LOC_INC)
+    target_include_directories(${_t} PRIVATE "${MACOS_GENERATED_DIR}")
+  endif()
+endforeach()
+
 # SMACOS Driver Executable
 if(BUILD_SMACOS_DVR)
   add_executable(smacos_dvr
@@ -534,10 +552,9 @@ endif()
 # Build logic lives in GMI/CMakeLists.txt — cross-platform, auto-detects MATLAB.
 # ==============================================================================
 if(BUILD_GMI)
-  # GMI/ is at the MACOS_resources repo root, a sibling of this macos repo:
-  #   <parent>/macos/CMakeLists.txt  ->  <parent>/MACOS_resources/GMI
-  # Same relative layout on Linux and Windows, so no platform split is needed.
-  set(_gmi_default "${CMAKE_CURRENT_SOURCE_DIR}/../MACOS_resources/GMI")
+  # GMI/ is at the root of this repository (one repository since the
+  # MACOS_resources merge).
+  set(_gmi_default "${CMAKE_CURRENT_SOURCE_DIR}/GMI")
   set(GMI_SRC_DIR "${_gmi_default}" CACHE PATH
       "Directory containing GMI.F, GMIG.F and CMakeLists.txt")
   if(NOT EXISTS "${GMI_SRC_DIR}/GMI.F")
@@ -553,10 +570,9 @@ endif()
 # MATLAB.  gfortran default; override with -DCMAKE_Fortran_COMPILER=ifx.
 # ==============================================================================
 if(BUILD_MMACOS)
-  # mmacos/ is at the MACOS_resources repo root, a sibling of this macos repo:
-  #   <parent>/macos/CMakeLists.txt  ->  <parent>/MACOS_resources/mmacos
-  # Same relative layout on Linux and Windows, so no platform split is needed.
-  set(_mmacos_default "${CMAKE_CURRENT_SOURCE_DIR}/../MACOS_resources/mmacos")
+  # mmacos/ is at the root of this repository (one repository since the
+  # MACOS_resources merge).
+  set(_mmacos_default "${CMAKE_CURRENT_SOURCE_DIR}/mmacos")
   set(MMACOS_SRC_DIR "${_mmacos_default}" CACHE PATH
       "Directory containing mmacos's CMakeLists.txt (mmacos_mex.F may be directly here or under src/)")
   # Newer mmacos checkouts (with their own mmacos/CMakeLists.txt) keep

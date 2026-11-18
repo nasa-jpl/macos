@@ -37,7 +37,6 @@ exdir = fileparts(mfilename('fullpath'));  if isempty(exdir), exdir = pwd; end
 if isempty(which('macos.init'))
     run(fullfile(exdir, '..', '..', '..', 'mmacos_setup.m'));
 end
-assert(~isempty(getenv('MACOS_HOME')), 'MACOS_HOME must be set.');
 addpath(exdir);                                    % tg96_place (found after the cd into runs/<tag>)
 addpath(fullfile(exdir, '..', '..', '90_polarization', 'tg_psi_dm'));  % dm_influence_map
 addpath(fullfile(exdir, '..', 'dm_gauge_lib'));   % dmg_frame/dmg_anchor/dmg_lit (matrix calib)

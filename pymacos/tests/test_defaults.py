@@ -14,12 +14,12 @@ import numpy as np
 import pytest
 from context import pymacos as m
 from context import rx_path
+from repo_paths import REPO_ROOT
 
 import pymacos.api_gen as api_gen
 
 MODEL = 128
-ZGD = Path(os.environ.get('MACOS_HOME', str(Path.home() / 'dev' / 'macos' / 'macos_f90'))
-           ).parent / 'ZGD_test_files'
+ZGD = REPO_ROOT / 'ZGD_test_files'
 
 # measured 2026-10-16 (e5hex1, model 128); tDefaults carries the same constants
 # spot shifts on a FRESH load + trace (a FEX first moves the exit-pupil surface and

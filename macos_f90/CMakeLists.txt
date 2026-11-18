@@ -335,7 +335,7 @@ endif()
 #  Target 4: GMI (Matlab mex shared library, optional)
 #########################################################################
 if(BUILD_GMI)
-    set(GMI_SRC_DIR "$ENV{HOME}/dev/MACOS_resources/GMI" CACHE PATH
+    set(GMI_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../GMI" CACHE PATH
         "Directory containing GMI.F and GMIG.F")
 
     if(NOT EXISTS "${GMI_SRC_DIR}/GMI.F")

@@ -110,10 +110,12 @@ Two things to know:
   the bare `gfortran` Homebrew symlink.  Build the engine first with
   `cmake -DCMAKE_Fortran_COMPILER=gfortran-NN -DBUILD_SMACOS=ON` into
   `build_release_gfortran/` (the Makefile's macOS default `MACOS_BUILD_DIR`).
-- `run_mmacos_tests.sh` exports **`MACOS_HOME`** so the engine finds
-  `macos_param.txt`.  A missing param file aborts `init` fatally, and inside
-  the MEX host that abort is a **SIGSEGV** (not a clean error) — set
-  `MACOS_HOME=<macos>/macos_f90` for any batch/`-batch` run from a paramless cwd.
+- The engine finds `macos_param.txt` by itself: the build records its own
+  `macos_f90/` directory, so **`MACOS_HOME` need not be set** (`BUILD.md`,
+  "Where the engine finds its data files").  A missing param file still aborts
+  `init` fatally, and inside the MEX host that abort is a **SIGSEGV** (not a
+  clean error) — it can only happen to a MEX that was copied away from the
+  tree it was built in; set `MACOS_HOME` to a directory that holds the file.
 
 Full setup + copy-paste commands: **`../../macos/MAC_PORT.md`**.
 

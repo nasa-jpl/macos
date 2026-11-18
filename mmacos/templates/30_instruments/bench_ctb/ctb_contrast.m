@@ -38,7 +38,6 @@ function out = ctb_contrast(opts)
     if isempty(opts.rx),     opts.rx     = fullfile(here,'ctb_dcr.in'); end
     if isempty(opts.outdir), opts.outdir = here; end
     addpath(fullfile(here,'..','..','..','src'));
-    assert(~isempty(getenv('MACOS_HOME')),'MACOS_HOME must be set.');
 
     % ---- bare + coro FPA via the shared driver (same normalisation) ----
     m = struct('name','model','rx',opts.rx,'elt',opts.elt);

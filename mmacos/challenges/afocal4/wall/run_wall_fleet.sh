@@ -18,12 +18,10 @@
 # Environment:
 #   WALL_EVALS   evaluations per restart round (300)
 #   WALL_ROUNDS  restart rounds (3)
-#   MACOS_HOME   defaults to ~/dev/macos/macos_f90
 
 set -u
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 JOBS="${1:-6}"
-export MACOS_HOME="${MACOS_HOME:-$HOME/dev/macos/macos_f90}"
 export WALL_EVALS="${WALL_EVALS:-300}"
 export WALL_ROUNDS="${WALL_ROUNDS:-3}"
 LOGDIR="$HERE/logs"

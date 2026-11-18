@@ -80,14 +80,13 @@
 %
 %  Run:  cd <this dir>
 %        matlab -batch "run('example_tg_psi_dm.m')"      % or interactively
-%  Needs MACOS_HOME set and the mmacos path (mmacos_setup.m).
+%  Needs the mmacos path (mmacos_setup.m).
 % =========================================================================
 
 exdir = fileparts(mfilename('fullpath'));  if isempty(exdir), exdir = pwd; end
 if isempty(which('macos.init'))
     run(fullfile(exdir, '..', '..', '..', 'mmacos_setup.m'));
 end
-assert(~isempty(getenv('MACOS_HOME')), 'MACOS_HOME must be set.');
 cd(exdir);                         % GridFile= resolves relative to the cwd
 
 MODEL = 256;                       % >= N_G, so the GridData map is not resampled

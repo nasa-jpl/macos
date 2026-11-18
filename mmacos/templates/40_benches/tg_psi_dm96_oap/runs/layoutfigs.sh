@@ -4,7 +4,6 @@
 # the shared output leg reads blue).  One MATLAB at a time.
 set -u
 B=~/dev/MACOS_resources/mmacos/templates/40_benches
-export MACOS_HOME=$HOME/dev/macos/macos_f90
 say(){ echo "[$(date '+%F %T')] $*"; }
 
 cd "$B/tg_psi_dm96_oap"

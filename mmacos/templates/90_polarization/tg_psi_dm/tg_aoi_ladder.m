@@ -54,7 +54,6 @@ exdir = fileparts(mfilename('fullpath'));  if isempty(exdir), exdir = pwd; end
 if isempty(which('macos.init'))
     run(fullfile(exdir, '..', '..', '..', 'mmacos_setup.m'));
 end
-assert(~isempty(getenv('MACOS_HOME')), 'MACOS_HOME must be set.');
 cd(exdir);
 
 MODEL = 256;  NGRID = 63;  N_G = 256;  DX_G = 0.35;

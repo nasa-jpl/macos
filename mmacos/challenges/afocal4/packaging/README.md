@@ -279,7 +279,7 @@ R = afocal4_packaging('sections', 0);          % just the gap (brief step 1)
 R = afocal4_packaging('sections', [0 2 3]);    % Path A + the null
 ```
 
-Model size 256, one MATLAB process per model size, `MACOS_HOME=~/dev/macos/macos_f90`.
+Model size 256, one MATLAB process per model size.
 
 ---
 

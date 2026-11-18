@@ -64,7 +64,6 @@ function ch = ctb_chain(opts)
     end
     here = fileparts(mfilename('fullpath'));
     addpath(fullfile(here, '..', '..', '..', 'src'));
-    assert(~isempty(getenv('MACOS_HOME')), 'MACOS_HOME must be set.');
     if isempty(opts.rx)
         opts.rx = fullfile(here, 'ctb_dm.in');
         if ~isfile(opts.rx), ctb_dm_rx(); end

@@ -52,7 +52,6 @@ function out = ctb_phase_export(opts)
     if isempty(opts.rx),     opts.rx     = fullfile(here,'ctb_s2s_dcr.in'); end
     if isempty(opts.outdir), opts.outdir = here; end
     addpath(fullfile(here,'..','..','..','src'));
-    assert(~isempty(getenv('MACOS_HOME')),'MACOS_HOME must be set.');
     N = opts.model_size;
 
     % ---- station map (real optics + masks + FPA) for the FULL deck -----

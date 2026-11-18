@@ -270,7 +270,7 @@ times.
 Run:
 
 ```bash
-MACOS_HOME=~/dev/macos/macos_f90 ./run_wall_fleet.sh 6      # hours
+./run_wall_fleet.sh 6      # hours
 ```
 ```matlab
 R = afocal4_wall();                     % assemble and report
@@ -279,5 +279,4 @@ R = afocal4_wall('sections',[0 3]);     % the wall's non-vacuity + the addendum
 W = afocal4_union_wall(P, 'x.in', 'throw',false, 'bare',true);
 ```
 
-Model size 256, one MATLAB process per model size,
-`MACOS_HOME=~/dev/macos/macos_f90`.
+Model size 256, one MATLAB process per model size.

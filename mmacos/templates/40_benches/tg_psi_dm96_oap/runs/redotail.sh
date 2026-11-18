@@ -5,7 +5,6 @@
 set -u
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$here"
-export MACOS_HOME="${MACOS_HOME:-$HOME/dev/macos/macos_f90}"
 n=0
 until grep -qE "chain complete|TIMED OUT|exit [1-9]" runs/redoseq.nohup 2>/dev/null; do
   sleep 60; n=$((n+1))

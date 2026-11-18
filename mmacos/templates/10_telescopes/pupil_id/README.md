@@ -169,7 +169,7 @@ the finite-field XP vertex coincides with FEX; `anchor.blur_ratio = 0.010`
 
 ## Requirements
 
-`MACOS_HOME` set and the mmacos MEX built. Writes `pupil_id_<rx>.mat` and
+The mmacos MEX built. Writes `pupil_id_<rx>.mat` and
 `pupil_id_{cloud,zernikes,walk}.png` to `outdir` (default the input Rx's dir),
 plus the revised `<rx>_xp.in`. One MATLAB process, model size 256 (do not
 transition sizes in a live process).

@@ -129,7 +129,7 @@ S = afocal4_score(P, 'x.in');          % score it
 ```
 
 Model size 256, one MATLAB process per model size.  Batch:
-`matlab -batch "run('.../afocal4_forms.m'); exit(0)"` with `MACOS_HOME` set — and note
+`matlab -batch "run('.../afocal4_forms.m'); exit(0)"` — and note
 the `exit(0)` belongs to the batch wrapper, never inside these scripts.
 
 ## The headline

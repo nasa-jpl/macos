@@ -66,13 +66,12 @@
 %    (h = r^2/(2R)), the tilt term the injected tilt, and the post-fit
 %    residual is the end-to-end processing error.
 %
-%  Run:  matlab -batch "run('.../example_bench_ifo.m')"   (needs MACOS_HOME)
+%  Run:  matlab -batch "run('.../example_bench_ifo.m')"
 % ===================================================================
 
 addpath('~/dev/MACOS_resources/mmacos/src');
 exdir = fileparts(mfilename('fullpath'));
 if isempty(exdir), exdir = pwd; end
-assert(~isempty(getenv('MACOS_HOME')), 'MACOS_HOME must be set.');
 
 MODEL = 256;
 macos.init(MODEL);

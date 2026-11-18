@@ -6,7 +6,6 @@ set -u
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 tag="${1:?usage: cophi_batch.sh <tag> [args]}"; shift || true
 args="$*"
-export MACOS_HOME="${MACOS_HOME:-$HOME/dev/macos/macos_f90}"
 mkdir -p "$here/runs"
 call="ressweep_zrun_batch($args)"
 cd "$here"

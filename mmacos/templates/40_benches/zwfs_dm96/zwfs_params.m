@@ -48,7 +48,7 @@ P.readings = {'L', 'F', 'I', 'I+', 'S', 'V'};
 
 % ---- engine + sampling ------------------------------------------------
 P.MODEL = 1024;              % engine model size (ONE per MATLAB process -- see README)
-P.param_file = '';           % '' = the engine's own macos_param.txt (MACOS_HOME); or a path to
+P.param_file = '';           % '' = the engine's own macos_param.txt; or a path to
                              % a custom size table, copied into the run dir as macos_param.txt
                              % where the engine looks FIRST -- e.g. 'macos_param_2048.txt'
                              % (this dir): MODEL 2048 trimmed to fit a 30 GB box

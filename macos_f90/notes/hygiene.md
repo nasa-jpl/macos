@@ -61,6 +61,22 @@
   precision kind, found in AddAtmos 2026-10-18): ifx accepted it silently,
   gfortran refused ("conflicts with symbol from module").  Build gfortran
   before trusting an ifx-only compile of new declarations.
+- **The built-in data directory (`build_loc`, 2026-11-17, issue #75).**
+  `find_macos_file` (param_mod.F) looks in cwd, the executable's
+  directory, `$MACOS_HOME`, then `build_loc`.  The fourth was dead for
+  years: `build_loc = 'BUILD_LOC'` is a macro name inside quotes, which
+  neither preprocessor replaces, so both libraries carried the literal
+  text.  Now CMake writes the directory into `build_*/generated/
+  build_loc.inc` (`cmake/macos_build_loc.cmake`, in 56-character pieces
+  because the file is fixed-form) and defines `MACOS_BUILD_LOC_INC`;
+  param_mod.F includes it.  A builder that does neither gets
+  `build_loc = ''` and lookup 4 is skipped.  `MACOS_HOME` is therefore
+  optional, and nothing in the tree sets or requires it.  **Do not put
+  a path into a `-D` macro for fixed-form source** — a long clone path
+  runs past the line limit.  `macos_io_failure` now stops with exit
+  status 1, so a run with no parameter file fails its caller (it was
+  status 0: a pymacos suite died at test 6,982 of 7,029 and read as
+  passed).
 
 ## Per-ray status tracking
 *(Documented: Manual §5 "Per-ray status reporting" (statuses, the clipping element, restarts, the bindings' getter).  Below: the engine record.)*
