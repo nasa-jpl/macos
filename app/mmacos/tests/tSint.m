@@ -4,7 +4,7 @@ classdef tSint < matlab.unittest.TestCase
 %   Deck: Rx_TraceRewrites.in (= macos ZGD tst_trace_rewrites.in), the f = 1 m paraboloid whose
 %   element 1 is Surface= Interpolated; with no data it traces as its base conic.  The data file is
 %   the deck's name + '.srf1.txt', with or without its '.in' (the CLI's spelling keeps it, the
-%   bindings' drops it; each tries its own first), on the 15 x 15 grid of cli_tests/cmd/SINT_short_file.jou
+%   bindings' drops it; each tries its own first), on the 15 x 15 grid of tests/cli/cmd/SINT_short_file.jou
 %   (a 1e-6 piston + 1e-4 r^2 deviation, 225 points).  CliRms is what that journal's `opd 2` printed
 %   (both compilers, 2026-10-23).  Legs: no file -> not set, both names in macos.messages; the file
 %   under either name -> set, the CLI's RMS; a header of 226 for the 225 rows -> the same RMS and the warning (the pre-fix

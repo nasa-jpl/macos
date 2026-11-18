@@ -63,8 +63,8 @@ function R = seg_audit(decks, varargin)
 %
 %   Example:
 %     addpath ~/dev/MACOS_res_dev/mmacos/src
-%     R = seg_audit({'~/dev/macos/ZGD_test_files/e5pie.in', ...
-%                    '~/dev/macos/ZGD_test_files/e2e_pie.in'});
+%     R = seg_audit({'~/dev/macos/tests/ZGD_test_files/e5pie.in', ...
+%                    '~/dev/macos/tests/ZGD_test_files/e2e_pie.in'});
 %
 %   Corpus-wide R1 warning list (static, no engine, fast):
 %     f = split(string(evalc(['!find ~/dev -name ''*.in'' -not -path ''*/build*'' ' ...

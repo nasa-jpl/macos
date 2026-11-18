@@ -111,7 +111,7 @@ must be at most five digits and one of the sizes; anything else is refused by na
 not affected (IACCEPT_S re-asks on a non-integer).  The api path never reaches this prompt:
 `macos_init_all` (param_mod) still `stop`s on a bad size, but pymacos `init` and mmacos
 `macos.init` refuse before the call (pymacos's list omits 8192).  Gate
-`cli_tests/cmd/STARTUP_size.jou` (the gate's `# MODEL:` takes `a | b | c`, answers in turn);
+`tests/cli/cmd/STARTUP_size.jou` (the gate's `# MODEL:` takes `a | b | c`, answers in turn);
 red on the pre-fix binary (dies before MACOS>).
 
 ## DOPD, LSPOT, RESET (PLAN_CONSOLIDATION 1.2 (k) (m) (i), 2026-10-22)

@@ -593,7 +593,7 @@ None of these are needed for HWO at the current delta scale.
 | `tests/sensitivities/dw_dz_zernike.py` | dw/dz driver (Zernike-coef perturbations); writes `.mat` in m2v.m convention. |
 | `tests/sensitivities/dw_dx.py` | dw/dx driver (rigid-body perturbations).  `RigidBodyChannel` + DOF-aware `FocalPlaneChannel` (track/sxp/srs/fex/none) + `GroupedRigidBodyChannel` (macos GPERTURB, global or local coords) + `SourceChannel` (macos `PERTURB` iElt=0); `--include-source`, `--include-non-optics`, `--group-coords`, `--update-ep` opt-ins. |
 | `tests/proper_compare/run_broadband_vortex.py` | Cycle 5 vortex coronagraph driver. |
-| `tests/Rx/e5hex1.in` | local copy of `~/dev/macos/ZGD_test_files/e5hex1.in` — sensitivity-matrix test Rx (7 hex segments + FreeForm lens).  Contains `ApStop= 0 0 0` (object-space stop) because the segmented primary is the natural stop but pymacos's `stop()` refuses Segment surfaces. |
+| `tests/Rx/e5hex1.in` | local copy of `~/dev/macos/tests/ZGD_test_files/e5hex1.in` — sensitivity-matrix test Rx (7 hex segments + FreeForm lens).  Contains `ApStop= 0 0 0` (object-space stop) because the segmented primary is the natural stop but pymacos's `stop()` refuses Segment surfaces. |
 
 ## .mat output convention (sensitivities)
 

@@ -1,5 +1,5 @@
 """The api surface of Dave's three loader / SAVE rulings of 2026-10-18 (the CLI gates are
-cli_tests/cmd/OUTCORD_missing.jou, PROPTYPE_numeric.jou, CALIB_save_roundtrip.jou; the mmacos
+tests/cli/cmd/OUTCORD_missing.jou, PROPTYPE_numeric.jou, CALIB_save_roundtrip.jou; the mmacos
 twin is tRxLoadRulings1018).  The reader is shared, so each ruling is gated here too.
 
 1. A deck with no nOutCord=/Tout= block loads (it failed silently before): the loader proposes

@@ -94,7 +94,7 @@ Worked example — the 2026-07-28 promotions, which followed the rule:
   PLAN*.md, `.claude/`, the BRIEF/REPORT/REVIEW/NOTES process files,
   `docs/Archive/dev_optimization_surfsub` -- the list is `devnotes/DEV_FILES.md` +
   `release-exclude.txt`) **stay on `dev` but are stripped from `main`**.
-  `ZGD_test_files/` is engine test fixtures and stays on BOTH.  **Both
+  `tests/ZGD_test_files/` is engine test fixtures and stays on BOTH.  **Both
   branches are public.**
 - **Users re-clone.**  Andy wants everyone to delete their local clones
   and re-clone (the history rewrite makes old clones diverge).  Do NOT

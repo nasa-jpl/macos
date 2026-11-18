@@ -89,18 +89,19 @@ PYTHONPATH=<clone>/macos/app/pymacos/src \
 - **`run_mmacos_tests.sh` defaults `MACOS_BUILD_DIR` to
   `build_release_gfortran`** under `$HOME/dev/macos`. A clone elsewhere must
   set it.  (It no longer sets `MACOS_HOME`.)
-- **CLI corpus lists carry absolute paths.** `cli_tests/corpus_core.txt` /
-  `corpus_committed.txt` are committed with the author's absolute paths; on any
-  other machine **run `cli_tests/make_corpus.sh` first** (it rebuilds the lists
-  from the local tree; since the 2026-11 merge the decks of the interfaces are
-  in the same clone).
+- **CLI deck lists are written on every run.** `tests/cli/corpus_core.txt` /
+  `corpus_committed.txt` hold absolute paths and are no longer tracked:
+  `tests/cli/run_cli_tests.sh` calls `make_corpus.sh` at the start of every
+  `load`, `corpus` and `extended` run, so there is nothing to regenerate by
+  hand (until 2026-11 the lists were committed and had to be rebuilt on every
+  other machine).
   - It runs to its last line and prints `core: 165` on macOS since `3df6b4c9`
     (2026-11-02). Before that its `is_rx()` helper returned the status of whatever
     file sorted last under `set -o pipefail`, and on a Mac the script aborted
     after `corpus_committed.txt` and before `corpus_core.txt` (gate 14's finding,
     the re-check's confirmation in Part 2). If an older checkout shows that abort,
     update it; do not hand-build the core list.
-- **BSD vs GNU in test journals.** A `cli_tests/cmd/*.jou` that shells out with
+- **BSD vs GNU in test journals.** A `tests/cli/cmd/*.jou` that shells out with
   `sed -i -e` (GNU form) fails on BSD/macOS sed (`sed -i '' -e` is the Mac
   form). One journal (`OBS_POLYGON.jou`) hits this.
 - **macOS `$TMPDIR` is long** (`/var/folders/…/T/…`); the cmd-gate pty is 80
@@ -117,7 +118,7 @@ PYTHONPATH=<clone>/macos/app/pymacos/src \
 ## Part 2 — Validation record
 
 ### 2026-11-02 (14) — release gate part A, clean clone (pair macos `0984cd34` + resources `ef2d7f9a`)
-Full record: `cli_tests/records/mac_gate_gfortran_0984cd34.md`. The full clean-clone gate on the pair the
+Full record: `tests/cli/records/mac_gate_gfortran_0984cd34.md`. The full clean-clone gate on the pair the
 release is cut from, before Andy's repo consolidation (part B — re-clone the rewritten repo, gate from
 `main`+`dev` — is the Mac's release sign-off). **Gate (14), not (12):** the queued pairs 12 (`08b92085`)
 and 13 (`c6c83d55`) were never gated on this Mac (no clone/log/record/commit for either); per Dave they
@@ -137,7 +138,7 @@ No engine-source defect.
 
 **2026-11-02 freeze re-check (pair macos `3c5018de` + resources `e66e2c8`, six docs/tooling commits above
 gate 14; no engine Fortran change).** A short re-check, not the full gate (that reruns as release part B on
-the rewritten repo). All three gate-14 findings confirmed fixed: (1) `cli_tests/make_corpus.sh` now runs to
+the rewritten repo). All three gate-14 findings confirmed fixed: (1) `tests/cli/make_corpus.sh` now runs to
 its final line and prints `core: 165`, the list fully resolved to the clone (0 stale paths) — resources/macos
 freeze fix `3df6b4c9`; (2) `./run_mmacos_tests.sh -j 2 tSessionModes` reads **"31 GB available, 10 cores"**
 (not 0) and runs **2 of 2 shards at once**, tSessionModes **6/0/0** — the near-zero `test_fex_follows_the_session_axis`
@@ -147,7 +148,7 @@ second shard's "NO RESULTS" exit-1 is the known runner quirk. (3) the camera/vie
 `0984cd34..3c5018de`); re-check done on a rebuilt engine+mex at the freeze SHAs.
 
 ### 2026-10-23 (11) — re-gate (pair macos `0c0c98c7` + resources `0b39b0a`) — the (ee) message buffer
-Full record: `cli_tests/records/mac_gate_gfortran_0c0c98c7.md`. Engine changed: TO's round 2, the api
+Full record: `tests/cli/records/mac_gate_gfortran_0c0c98c7.md`. Engine changed: TO's round 2, the api
 message buffer (`emsg_mod`, `messages_count/get/clear`) that resolves 1.2 (ee) — the root cause found at
 gate 4 (Fortran unit 6 does not cross the FFI on macOS). On Mac: load **165/165** (0 movers); cmd
 **118/118** + 2 must-fail (COAT_legacy bounded now, zero genuine fails); mmacos fast **659/0** (up from
@@ -160,7 +161,7 @@ buffer). **With (ff) closed at gate 9 and (ee) closed here, the Mac line has no 
 Darwin-guarded test left but the one by-design parity skip.** The root cause reported at gate 4 is fixed at source.
 
 ### 2026-10-22 (10) — re-gate (pair macos `b7556b81` + resources `d436b9c`) — TO's cleanup round 1
-Full record: `cli_tests/records/mac_gate_gfortran_b7556b81.md`. Engine changed (31 commits: TO's cleanup +
+Full record: `tests/cli/records/mac_gate_gfortran_b7556b81.md`. Engine changed (31 commits: TO's cleanup +
 Dave's 10-22 rulings); tests that the gate-9 "no engine defect" state holds. On Mac: load **165/165** with
 the **15 GridFile movers present and reading Linux's numbers** (the (f) ruling — grid looked up beside the
 deck; SegDemo3 49286/6.66 mm/lost 32, etc., all == Linux; the one near-zero SegDemo.in 6.179D-12 shares 6
@@ -172,9 +173,9 @@ arm64 reads `1.293491396D-12` (the recurring 1e-12 class) — widen to `1\.293\d
 PGD_reopen_units/WLENS_SWL/ZABERR. No (ff)-class miss remains; the Mac line stays engine-defect-free.
 
 ### 2026-10-21 (9) — re-gate (pair macos `ad4161fa` + resources `00697be`) — NO ENGINE MISS LEFT
-Full record: `cli_tests/records/mac_gate_gfortran_ad4161fa.md`. Engine changed by **one line** since
+Full record: `tests/cli/records/mac_gate_gfortran_ad4161fa.md`. Engine changed by **one line** since
 gate 8 — the (ff) `LocalCoord` fix (`0efc2dec`), from the source-level bisection in
-`cli_tests/records/mac_ff_localcoord.md`. On Mac: load **164/164** (0 movers); cmd **115/115**
+`tests/cli/records/mac_ff_localcoord.md`. On Mac: load **164/164** (0 movers); cmd **115/115**
 (113 journals + 2 must-fail red; **zero genuine failures**); mmacos fast **656/0**; pymacos **6961/0**
 (+2 skip); /png clean; self-contained. **COORD_ACOOR passes on Apple Silicon for the first time**
 (coaxial frame now `(0,0,1)` not the 76.5° rotation), and the new `COORD_offaxis_frame.jou` reads the
@@ -188,7 +189,7 @@ round-off kept within the shared-digit pin policy; every real optical signal agr
 figures and every engine-command frame — COORD included — now matches.
 
 ### 2026-10-20 (8) — re-gate (pair macos `3ead7473` + resources `00697be`)
-Full record: `cli_tests/records/mac_gate_gfortran_3ead7473.md`. **Engine changed**
+Full record: `tests/cli/records/mac_gate_gfortran_3ead7473.md`. **Engine changed**
 since gate 7 — the Zernike-repair line and the CLI startup model-size prompt
 (Dave's rulings 1.2 (tt)–(yy)). On Mac: load **164/164** (0 movers vs fcc648c5);
 cmd **111/112** (only COORD_ACOOR = (ff); 2 must-fail red; the four new journals
@@ -201,7 +202,7 @@ rc=1`, `eof rc=1`, no forrtl). The (tt)–(yy) engine changes land clean on Appl
 Silicon; no cross-architecture `ZerntoMon*`/hzdef difference. (ff) persists unchanged (TO).
 
 ### 2026-10-20 (7) — re-gate (pair macos `9a971d25` + resources `bcf351c`)
-Full record: `cli_tests/records/mac_gate_gfortran_9a971d25.md`. **Engine
+Full record: `tests/cli/records/mac_gate_gfortran_9a971d25.md`. **Engine
 byte-identical to gate 6** (`macos_f90/` + CMakeLists untouched since `814082d4`),
 so this gate confirms the manual/Zernike/binding-veneer additions land clean on
 Apple Silicon. On Mac: load **163/163** (0 movers vs fcc648c5); cmd **107/108**
@@ -213,7 +214,7 @@ self-contained. The four Zernike findings (tt)–(ww) in front of Dave show the 
 on arm64 as Linux (nothing to add from the Mac). (ff) persists unchanged (TO).
 
 ### 2026-10-20 (6) — re-gate (pair macos `814082d4` + resources `2ccaeff`)
-Full record: `cli_tests/records/mac_gate_gfortran_814082d4.md`. Engine unchanged
+Full record: `tests/cli/records/mac_gate_gfortran_814082d4.md`. Engine unchanged
 in LocalCoord from gate 5; carries the day's dialog fixes and the folded gate 3–5
 re-pins + **tOpdRef bound 1e-13**. On Mac: load **163/163** (0 movers vs
 fcc648c5); cmd **105/108** (2 must-fail red; 3 fail = COORD_ACOOR (ff), plus two
@@ -233,7 +234,7 @@ AbsTol 1e-6), tPolElement material-flip (isequaln 1-ulp), spot_centre leftover
 exact-pins (sign-unstable 2nd component). (ff) persists unchanged (TO).
 
 ### 2026-10-19 (5) — re-gate (pair macos `5aff70d` + resources `629a2d2`)
-Full record: `cli_tests/records/mac_gate_gfortran_5aff70d.md`. Adds the SAVE DM
+Full record: `tests/cli/records/mac_gate_gfortran_5aff70d.md`. Adds the SAVE DM
 fix (AOExample frame restored, UDSINIT re-pinned) + CC's two gate-4 journal
 widenings. On Mac: **EXPORT and UDSINIT now pass** (BSD-`wc` fix + the DM fix
 work on arm64); cmd 96→**97/103**; load clean 161/161; mmacos 650/7 and pymacos
@@ -246,7 +247,7 @@ all still rotated; correct only at −O0) → a deterministic gfortran-16 arm64 
 codegen miscompile in `LocalCoord`, TO's lane.
 
 ### 2026-10-19 (4) — re-gate (pair macos `36699d3` + resources `629a2d2`)
-Full record: `cli_tests/records/mac_gate_gfortran_36699d3.md`. The macos tip
+Full record: `tests/cli/records/mac_gate_gfortran_36699d3.md`. The macos tip
 advanced past pair 3 (SRS gg, ORS+RSTRACE ii, manual rebuild); resources
 `629a2d2` is unchanged, so the binding residual is identical to pair 3 by
 construction. Verified: the **gg/ii engine fixes work on arm64** — the new
@@ -258,7 +259,7 @@ mmacos 650/7, pymacos 6939/2 (+2 skipped). Residual = the round-3 re-pins/
 sub-asserts + the two engine items (−O2 LocalCoord, unit-6-across-FFI).
 
 ### 2026-10-19 (3) — re-gate (pair macos `d3f2777`/`725e0389` + resources `629a2d2`)
-Full record: `cli_tests/records/mac_gate_gfortran_d3f2777.md`. Deltas: cmd **87→96**
+Full record: `tests/cli/records/mac_gate_gfortran_d3f2777.md`. Deltas: cmd **87→96**
 pass, mmacos fail **10→7**, pymacos fail **4→2**; glyph still `1x10-10`; ImageDemo
 repaired (Mac 578/163 == Linux). The (ee) subprocess/capfd Darwin guards work
 (filtered/skipped with reason). Two investigations landed: **(ff) COORD** is an
@@ -273,7 +274,7 @@ re-pins/sub-asserts and one coreutils item (BSD `wc` leading space in EXPORT.jou
 ### 2026-10-19 (2) — re-gate after the fixes (pair macos `3ff1d55` + resources `cd006b2e`)
 Second clean-clone gate, on the pair carrying the glyph fix, harness fixes,
 cross-architecture re-pins and the lifted 128-char path limit. Full record:
-`cli_tests/records/mac_gate_gfortran_3ff1d55.md`. Headline deltas from pair 1:
+`tests/cli/records/mac_gate_gfortran_3ff1d55.md`. Headline deltas from pair 1:
 cmd **70→87** pass, mmacos fail **15→10**, pymacos fail **8→4**; finding 1.2(t)
 **fixed** (`spot 5` on /png reads `1x10-10`, was the box); psiElt dead band
 dropped the Mac load ulp-settle **8→1**. Residual, for round 2: 14 cmd journals

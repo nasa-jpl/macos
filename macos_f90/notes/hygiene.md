@@ -109,7 +109,7 @@
   loss at the restart's first element).  nZPFailMsg etc. still reset.
 - "Obscured" is NOT "geometrically OK": the LocalCoord / FFP-PFP chief-ray
   tolerances test `LRayOK(1) .AND. RayStatus(1)==Obscured`.
-  Gates `tRayFailElt`, `tGratingAperture`, `cli_tests/cmd/WARN_obscured_elt.jou`.
+  Gates `tRayFailElt`, `tGratingAperture`, `tests/cli/cmd/WARN_obscured_elt.jou`.
 - WARN subroutine enhanced with per-category breakdown (miss/obscured/bracket/other).
 - Message throttling: nZPFailMsg counter with mZPFailMsg=20 threshold in MODULE surfsub.
   First 20 bracket/iter messages print; rest suppressed. WARN prints suppression summary.

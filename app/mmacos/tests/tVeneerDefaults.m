@@ -4,7 +4,7 @@ classdef tVeneerDefaults < matlab.unittest.TestCase
 %   Each leg is red on the pre-audit veneer:
 %     srs        macos.srs(IS1, IS2) APPLIES the slave (link default true = the CLI's [YES] = pymacos);
 %                it was false -> SRS answered NO -> since 1.2 (gg) nothing moved.  CoroExample's
-%                near-field pair as in cli_tests/cmd/ORS_SRS.jou: element 7 at z = -7.0 slaved to 5
+%                near-field pair as in tests/cli/cmd/ORS_SRS.jou: element 7 at z = -7.0 slaved to 5
 %                comes back to z = -6.3293 (the journal's 'New z', 5 figures).
 %     src_size   macos.set_src_size(ap) keeps the obscuration (it set 0).
 %     beam cos   macos.beam('cos') without 'radius'/'power' is refused by name, as its help and

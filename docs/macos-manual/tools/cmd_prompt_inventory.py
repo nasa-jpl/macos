@@ -3,12 +3,12 @@
 (2026-10-17): for every engine command, the command lines the CLI suite's journals issued and
 the prompts (with their bracketed defaults) the CLI answered them with, read from one run's
 transcripts.  Usage (from docs/macos-manual):
-    python3 tools/cmd_prompt_inventory.py [../../cli_tests/records/cmd_ifx_<sha>_transcripts] > inventory.md
+    python3 tools/cmd_prompt_inventory.py [../../tests/cli/records/cmd_ifx_<sha>_transcripts] > inventory.md
 Rerun it after the engine changes a dialog, and compare the entry's lines."""
 import re, sys, glob, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import gen_cmdref as g
-T = sys.argv[1] if len(sys.argv) > 1 else sorted(glob.glob('../../cli_tests/records/cmd_ifx_*_transcripts'))[-1]
+T = sys.argv[1] if len(sys.argv) > 1 else sorted(glob.glob('../../tests/cli/records/cmd_ifx_*_transcripts'))[-1]
 cats = g.parse_help_inc()
 entries = []
 for cat, items in cats:

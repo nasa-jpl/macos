@@ -1,15 +1,15 @@
 # Section 3 (user interface): the start-up dialog, MRESET, OLD (prompted and stacked), SHOW and the
 # defaults, the first graphics command (the device prompt kept), file output, BUILD + EXPORT.
 # File output is BINARY, as in 3.2 (the RECL fix, macos e17587a1: 8 bytes x NA per record on both compilers).
-# The 3.2 dialogs ran on lens_array.in and tmo.in; Dave 2026-10-19 put both in ZGD_test_files/ (tmo.in
+# The 3.2 dialogs ran on lens_array.in and tmo.in; Dave 2026-10-19 put both in tests/ZGD_test_files/ (tmo.in
 # renamed Telescope.in, its pre-3.2 type names mapped).  OLD, the stacked OLD and SHOW run on lens_array.in
 # now, INT and file output on Telescope.in (Dave re-saved it 2026-10-19, the exit pupil's zElt +91.48: the
 # -91.48 of tmo.in gave a negative far-field dx the plot refused).  BUILD + EXPORT on lens_array.in as 3.2
 # (`build ;`): a refused BUILD now traces, so EXPORT RAYPOS reports the chief ray (macos e17587a1).
 # MODEL: 128
 # TRANSCRIPT-BANNER: s03_banner
-# COPY: $ROOT/ZGD_test_files/lens_array.in s03
-# COPY: $ROOT/ZGD_test_files/Telescope.in s03
+# COPY: $ROOT/tests/ZGD_test_files/lens_array.in s03
+# COPY: $ROOT/tests/ZGD_test_files/Telescope.in s03
 cd $TMP/s03
 # TRANSCRIPT: s03_mreset
 mreset

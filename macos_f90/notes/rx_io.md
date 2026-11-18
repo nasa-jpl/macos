@@ -10,7 +10,7 @@ CTRACE's Return (PLAN item 3) and Obscuring (1.1b 3b) branches wrote the RUNNING
 element's own `IndRef`.  Nothing reads either element's `IndRef` as a medium (ReturnSrf / ObsSrf use
 `na`; CPROPAGATE resets its medium only after a Refractor or LensArray), so the stamps only mutated the
 Rx: an obscuration inside glass reported / SAVEd the glass index after any trace (ZGD
-`tst_obs_in_glass.in`, gate `cli_tests/cmd/IndRef_stamp.jou`).  Both removed.  The REFRACTOR branch
+`tst_obs_in_glass.in`, gate `tests/cli/cmd/IndRef_stamp.jou`).  Both removed.  The REFRACTOR branch
 never had a stamp: its `nb` (the element's IndRef) is never assigned; a variable-index element
 delivers its per-ray index through `nc`/`ifnc` -> CTRACE's `NewIndRef`.  Measured: SAVE without a
 trace vs SAVE after `opd nElt` on 403 corpus decks -- `IndRef` 0 changed.  The same measurement found
@@ -21,7 +21,7 @@ unconditionally turned e2e_pie's round trip 'ulp') and the traces' `OrthoObsFram
 moves by more than round-off; and `Surface= Interpolated` SAVEd as `Conic` (4 legacy decks)
 -- an Interpolated surface with no data traces as its base conic through `SrfTypeTr` (elt_mod, set
 per trace, passed at the 22 dispatch call sites); `SrfType` is never written by a trace.  Re-run:
-`cli_tests/records/trace_rewrites.md` (0 and 0); gate `cli_tests/cmd/TRACE_keeps_rx.jou`.  **Rule:
+`tests/cli/records/trace_rewrites.md` (0 and 0); gate `tests/cli/cmd/TRACE_keeps_rx.jou`.  **Rule:
 a trace reads the Rx and writes TRACE state; if it needs a modified copy of an Rx value, keep the
 copy (a `*Tr` array, a local), never overwrite the Rx array.**
 
@@ -44,7 +44,7 @@ copy (a `*Tr` array, a local), never overwrite the Rx array.**
   prints the header message once per key per load (list reset at the top of msmacosio.inc)
   -- warns, never refuses; a "key" not starting with a letter is skipped (a UTF-8 BOM alone
   on line 1: six FFSegDemo decks).  Both messages are in Manual §4 "Editing .In-Files".
-  Gate `cli_tests/cmd/Rx_header_unknown.jou`.  **Prefix trap that
+  Gate `tests/cli/cmd/Rx_header_unknown.jou`.  **Prefix trap that
   the warning cannot see:** a short `LCMP` match CAPTURES look-alikes -- `OptFOVWt` is
   matched on 5 chars, so `OptFooKey= 1` is read as FOV weights.  When adding a header key,
   check that no shorter prefix above it already swallows it (and vice versa).
@@ -52,15 +52,15 @@ copy (a `*Tr` array, a local), never overwrite the Rx array.**
   rewrites `OptRayGrid=` through `yGrid=` and every `OptChfRayDir=` / `JZLouChfRayDir=` row through
   `ChfRayDir=`; anchor it `(?m)^(\s*KEY=\s*)[^\n]*`.  mmacos `tests/tRxHeaderRewrite.m` lints the tree.
   **Since 2026-10-12 every active header match is the FULL key name** (23 lengthened, the
-  table is `cli_tests/records/hdr_prefix_audit.md`; no deck in the 1353-deck extended corpus nor
+  table is `tests/cli/records/hdr_prefix_audit.md`; no deck in the 1353-deck extended corpus nor
   any binding writer used a shorter spelling), so `OptFooKey=` is reported, not read as
   `OptFOVWt`.  New header keys: match the full name.  Element-chain matches were not audited.
 - **`OptAsph=` above its element's `VarElt=`** is reported and ignored (Manual Table 13; the
-  parse keys on `isVarElt`, which only `VarElt=` sets; `OptZern=` sets it itself).  Gates `cli_tests/cmd/OptAsph_order.jou`,
+  parse keys on `isVarElt`, which only `VarElt=` sets; `OptZern=` sets it itself).  Gates `tests/cli/cmd/OptAsph_order.jou`,
   `Rx_header_unknown.jou` (+ `OptFooKey=`), pymacos `test_rx_parse_warnings.py` (capfd).
 
 ## Deferred PolyObsVec/Poly3DObsVec projection (msmacosio.inc + iosub.inc)
-> User-facing: Manual §4 "Obscuration types and the ObsVec= line" (the type table, the three polygon forms, the Neg rule; 2026-10-17).  Gate `cli_tests/cmd/OBS_POLYGON.jou`.
+> User-facing: Manual §4 "Obscuration types and the ObsVec= line" (the type table, the three polygon forms, the Neg rule; 2026-10-17).  Gate `tests/cli/cmd/OBS_POLYGON.jou`.
 
 - For polygon obscuration, the 3D-vertex forms (`PolyObsVec=`/`Poly3DObsVec=`)
   used to require xObs to be parsed BEFORE the polygon line, because
@@ -113,7 +113,7 @@ The three forms and their fates as the USER sees them are Manual §4 "Editing .I
   decision NOT preserved by SAVE (the fragile case behind the GridFile-tab bug).  The validator
   judges `Key= % note` as the EMPTY value the parser will see.
 - `!` is a comment char to the VALIDATOR only -- the parser has no `!` branch.  Pre-existing.
-- CLI, mmacos and pymacos share GET_EQ and the validator.  Gates: `ZGD_test_files/
+- CLI, mmacos and pymacos share GET_EQ and the validator.  Gates: `tests/ZGD_test_files/
   tst_block_comment.in` (CLI, both compilers, SAVE->load->SAVE byte-identical, gfortran==ifx),
   `mmacos/tests/tRxBlockComment` (live-keyword negative control).  eac5mono.in's only round-trip
   diff is the pre-existing 1-ulp psiElt print wobble.
@@ -167,7 +167,7 @@ IOSTAT-armoring of the msmacosio.inc parser internals; enum-value validation aga
 tables.  Line endings: CR / CRLF decks load from a temp LF copy made at OPEN (TO 2026-10-09,
 item 5).
 
-## Test prescriptions (ZGD_test_files/)
+## Test prescriptions (tests/ZGD_test_files/)
 - All FreeForm test prescriptions use nGridpts=11 (gives 89 rays for Circular grid).
   Reason: model 256 has bRay=500 (BUILD limit) and mDrawRay=101 (nDrawElt array size);
   nGridpts=11 gives 89 rays which is under both limits.
@@ -187,7 +187,7 @@ item 5).
   load by name since 2026-10-22 (Dave, 1.2 (dd): `** Rx load refused: PropType= Bogus (elt 8): ...`) -- and the
   SAVE writer guards the index (Geometric for anything outside 1..15).  Note the chain's 1-char
   numeral matches: `99` reads as 9 (GeomUpdate) -- a longstanding prefix quirk, not changed.
-  Fixture `ZGD_test_files/tst_proptype_numeric.in` (0..15 in element order); gate `PROPTYPE_numeric.jou`.
+  Fixture `tests/ZGD_test_files/tst_proptype_numeric.in` (0..15 in element order); gate `PROPTYPE_numeric.jou`.
 - **A deck with no output-coordinate block loads** (it failed with no message: the label-61 line read
   was `END=99`).  Now `END=69`: end of file (or an `EOF` line) inside the element chain closes the last
   element as `nOutCord=` would (`LOutCordAbsent`), the two `70` blocks (macosio.F / smacosio.F) skip
@@ -236,7 +236,7 @@ item 5).
 - A deck in the old key style (`EltType=`, `fElt`, `eElt`) printed 'Default used for pData..lData' per element:
   the EltType= branch of msmacosio.inc set the coefficient flags but not the grid-size / grid-frame
   'not applicable' flags; it now applies the Surface= branch's two rules.  ChkDf2 defaults a LensArray's frame
-  silently when it has no grid (as FreeForm).  `ZGD_test_files/lens_array.in` and `Telescope.in` (Dave's
+  silently when it has no grid (as FreeForm).  `tests/ZGD_test_files/lens_array.in` and `Telescope.in` (Dave's
   tmo.in, type names mapped, CR -> LF) are the Section 3 decks.
 
 ## Future items from the ToDo census (2026-10-22, BRIEF_to_cleanup_round1)
@@ -253,7 +253,7 @@ round-trip record.
   fit one 256-character line).  ChkDf2's CoatThk default set `CoatIndx_FLG` -- now `CoatThk_FLG`.
   The legacy layers feed only NSRefractor's AirGap (`CoatThk(1)`); NSRefractor / AirGap take the
   arrays assumed-size.  SAVE does not write these keys (only `Coating=`) -- not changed.  Gate
-  `COAT_legacy.jou` (fixture `ZGD_test_files/tst_coat_legacy.in`).
+  `COAT_legacy.jou` (fixture `tests/ZGD_test_files/tst_coat_legacy.in`).
 - **An unknown `PropType=` is refused at load** ((dd)), by name: `** Rx load refused: PropType=
   <value> (elt n): not a propagation type`.  Gate `PROPTYPE_numeric.jou` (the Bogus leg).
 - **`GridFile=` is looked for beside the deck** ((f)).  A relative name not found in the working

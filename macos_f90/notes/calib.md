@@ -105,10 +105,10 @@ Setup: the variable packing and the configuration checks that precede both
 `nls_optim_dvr` entries (the LOAD handler's `OptNomSens= Y` nominal-sensitivity run and
 the CALIB command) are ONE function, `calib_setup_vars` (design_optim_mod, 2026-10-11) --
 change it there, not in macos_cmd_loop.inc.
-Gates: `cli_tests/cmd/CALIB_history.jou` (the same T=4 count fresh and after a T=20 CALIB, a
+Gates: `tests/cli/cmd/CALIB_history.jou` (the same T=4 count fresh and after a T=20 CALIB, a
 regex BACKREFERENCE; red on prefix9 + the old-loop side builds: 4/15/3), `tCalibStop`
 (mmacos, SUITE_FAST) + `test_calib_stop.py`; the old-vs-new table is
-`cli_tests/records/calib_loop_old_vs_new.md`.
+`tests/cli/records/calib_loop_old_vs_new.md`.
 
 ## CALIB beam rows ride on ANY target; per-field targets; centroid (2026-10-03)
 *(Keywords, defaults and the rows/units convention: Manual Table 13.  Below: the mechanics.)*
@@ -231,7 +231,7 @@ whose `reinitialise_variables -> dopt_init_vars` zeroed it (the `LOptIfFEX` trap
 `design_optim` reads |w| < 1e-10 as 1e-10 -- every row of a deck without `OptFOVWt=` divided by
 1e5, chisq 1e-10 x the weight-1 value, the `OptTol` test on an rms 1e-5 x the target-unit rms.
 The default is now 1d0 in `dopt_init_vars` (the LOAD line kept: one default, both paths).  Gate
-`cli_tests/cmd/CALIB_fov_weight.jou` (tst_calib_rigid.in 7.98e-43 -> 7.98e-33; OptFOVWt= 0.5
+`tests/cli/cmd/CALIB_fov_weight.jou` (tst_calib_rigid.in 7.98e-43 -> 7.98e-33; OptFOVWt= 0.5
 halves it).  **LM is invariant to a uniform row scale in exact arithmetic** (alpha, beta, chisq
 all scale by 1/sig^2; gaussj's test is an exact zero pivot): measured over the CALIB classes,
 pymacos calib tests and the CLI CALIB journals, every solve kept its path with chisq x1e10
@@ -249,4 +249,4 @@ always carried `OptFOVWt=` and are unaffected.
 The 26 `Opt*` / `Var*` keys are written by SAVE when they differ from their load defaults
 (`PrtCalibHeader` / `PrtCalibElt`, iosub.inc) and announced at LOAD (`CalibInForceNote`); the
 mechanics and the reader-counting gotchas are in `notes/rx_io.md` (the 2026-10-18 entry).  Table 13's
-"none is written by SAVE" is history.  Gate `cli_tests/cmd/CALIB_save_roundtrip.jou`.
+"none is written by SAVE" is history.  Gate `tests/cli/cmd/CALIB_save_roundtrip.jou`.

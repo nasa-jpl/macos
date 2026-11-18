@@ -4,7 +4,7 @@
 CTRACE's Return branch wrote the RUNNING medium index into the Return's IndRef
 after every ray; after a LensArray in glass, load -> trace -> SAVE wrote the
 lenslet index (1.51242597) onto the next Return where load -> SAVE wrote the
-deck's 1.0 (Rx_SaveKeys.in = macos ZGD_test_files/tst_save_keys.in, elt 9).
+deck's 1.0 (Rx_SaveKeys.in = macos tests/ZGD_test_files/tst_save_keys.in, elt 9).
 SAVE after load -> trace(nElt) must equal SAVE after load, byte for byte.
 """
 import os

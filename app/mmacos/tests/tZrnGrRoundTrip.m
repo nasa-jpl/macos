@@ -8,7 +8,7 @@ classdef tZrnGrRoundTrip < matlab.unittest.TestCase
 %     B  past 2^31 IDFLOOR(xi) saturated, i0+1 WRAPPED to INT_MIN, the integer
 %        bounds test passed and GridMat was read ~2e9 out of bounds -- SIGSEGV,
 %        the host killed (the mex takes MATLAB down).
-%   Each defect has its own public fixture (= macos ZGD_test_files/tst_zrngr_*.in,
+%   Each defect has its own public fixture (= macos tests/ZGD_test_files/tst_zrngr_*.in,
 %   copied to the shared Rx corpus): a Cassegrain whose primary is a single-member
 %   NSReflector group with a flat 64x64 ZrnGrData grid and NSCount= 1.
 %     1 A: load -> trace -> save_rx: the saved deck carries NSCount= 1, and the

@@ -296,7 +296,7 @@ capfd read nothing there, so six binding tests were guarded on the Mac.  Now `em
 `macos_cmd_loop.inc`; LoadStack loads the bare command) and returns, per element, 1 = data set,
 -1 = an Interpolated surface not set (it traces as its base conic), 0 = not one.  Veneers
 `macos.sint` / pymacos `sint()`; gates tSint / test_sint.py (the CLI's numbers from
-`cli_tests/cmd/SINT_short_file.jou`).  Three findings in `SetIntSrf` (iosub.inc), all fixed:
+`tests/cli/cmd/SINT_short_file.jou`).  Three findings in `SetIntSrf` (iosub.inc), all fixed:
 
 - **A SMACOS prompt that loops back hangs the host.**  An empty SMACOS stack does not return
   blank: `READ_LOH` calls `PARSE_LOH`, which re-parses the one-line command STACK, so the

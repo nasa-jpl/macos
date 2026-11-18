@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# make_corpus.sh [extended] -- the deck lists for the CLI load gate (PLAN_CONSOLIDATION sec. 2.1).
+#   corpus_committed.txt  every .in tracked by git in this repository that declares elements
+#                         (tests/ZGD_test_files, the manual's examples, mmacos/pymacos
+#                         tests/Rx, templates, examples, challenges, GMI/test_ff)
+#   corpus_core.txt       the per-commit subset: the fixture sets and the manual
+#   corpus_extended.txt   only with the argument `extended`: the committed list plus every .in
+#                         under $MACOS_SANDBOX (default ~/dev/MACOS_sandbox), untracked legacy
+#                         decks: informational
+# Absolute paths, sorted, one per line.  The lists are NOT tracked: run_cli_tests.sh writes
+# them on every load / corpus / extended run, so they always name the decks of this clone.
+set -euo pipefail
+here=$(cd "$(dirname "$0")" && pwd)
+macos=$(cd "$here/../.." && pwd)
+res=${MACOS_RESOURCES:-$macos}   # one repo since the MACOS_resources merge
+sandbox=${MACOS_SANDBOX:-$HOME/dev/MACOS_sandbox}
+# a prescription declares elements; autoconf templates (giza/*.in) and the like do not
+# (the function returns 0 whatever the LAST file was: under `set -o pipefail` its status is
+#  the pipeline's, and a non-prescription sorted last aborted the script on macOS before
+#  corpus_core.txt was written -- CCMac's Mac gate 14, 2026-11-02)
+is_rx() { while IFS= read -r f; do grep -q -m1 -E '^[[:space:]]*(nElt|Element)[[:space:]]*=' "$f" 2>/dev/null && echo "$f"; done; return 0; }
+{
+  (cd "$macos" && git ls-files -- '*.in' | sed "s|^|$macos/|")
+  (cd "$res"   && git ls-files -- '*.in' | sed "s|^|$res/|")
+} | grep -v '/build\|/tools/segmirmaker/test_in/\|/SegDemo3broken.in\|/tests/cli/must_fail/' \
+  | grep -v -i 'bad_scalar\|badscalar\|rx_stop\|rxstop\|short_vec\|shortvec' \
+  | sort -u | is_rx > "$here/corpus_committed.txt"   # the by-design refusal fixtures are must-fail decks, not corpus decks
+if [ "${1:-}" = extended ]; then
+  {
+    cat "$here/corpus_committed.txt"
+    if [ -d "$sandbox" ]; then find "$sandbox" -name '*.in' -type f 2>/dev/null | is_rx; fi   # no sandbox is not an error
+  } | sort -u > "$here/corpus_extended.txt"
+fi
+# the per-commit core: the fixture sets and the manual, not the challenges' ladders
+# (tools/segmirmaker/test_in holds that tool's PARENT fragments -- inputs to segmirmaker,
+#  not loadable prescriptions -- so they are left out of both lists)
+# refusal fixtures: decks whose LOAD must fail by design live in must_fail/ (sec. 2.4);
+# the one committed outside it is excluded here (its gate is cmd/ZrnGr_refusal.jou)
+grep -E '/tests/ZGD_test_files/|/docs/macos-manual/|/tests/Rx/|/GMI/test_ff/' \
+  "$here/corpus_committed.txt" | grep -v '/tst_nzern_conic\.in$' > "$here/corpus_core.txt"
+msg="core: $(wc -l < "$here/corpus_core.txt")  committed: $(wc -l < "$here/corpus_committed.txt")"
+[ "${1:-}" = extended ] && msg="$msg  extended: $(wc -l < "$here/corpus_extended.txt")"
+echo "deck lists written -- $msg"

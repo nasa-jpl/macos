@@ -1,6 +1,6 @@
 """Line endings at LOAD (PLAN_CONSOLIDATION item 5, 2026-10-09; Dave's ruling
 4a).  The pymacos surface of the shared loader -- the mmacos gate is
-tRxLineEndings, the CLI decks macos/ZGD_test_files/tst_eol_{lf,crlf,cr}.in.
+tRxLineEndings, the CLI decks macos/tests/ZGD_test_files/tst_eol_{lf,crlf,cr}.in.
 
 A deck with any CR is loaded from an LF copy written to the system temp dir
 and deleted on every exit of the load.  pymacos links ifx, and ifx reads a

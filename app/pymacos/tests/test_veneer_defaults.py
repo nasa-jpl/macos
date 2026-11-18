@@ -2,7 +2,7 @@
 beyond the OPTIONS table of test_defaults); twin of mmacos tVeneerDefaults.
 
   * srs(slave, master) APPLIES the slave (link=True = the CLI's [YES]); link=False declines.  CoroExample's
-    near-field pair as in cli_tests/cmd/ORS_SRS.jou: element 7 at z = -7.0 slaved to 5 comes back to
+    near-field pair as in tests/cli/cmd/ORS_SRS.jou: element 7 at z = -7.0 slaved to 5 comes back to
     z = -6.3293 (the journal's 'New z').  pymacos already defaulted True: this leg pins it (mmacos's
     false default made its srs a no-op since 1.2 (gg)).
   * src_size(ape) keeps the obscuration (pymacos already did; mmacos set 0).

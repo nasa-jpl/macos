@@ -5,7 +5,7 @@ measurement; this gate does not trust it.  For every row and every ordering colu
 coefficient in the printed mode of a flat Zernike mirror, traces the grid, and evaluates the PRINTED
 polynomial text at each ray's (R, A): the engine's sag must equal it (times the textbook RMS factor
 sqrt((2 - delta_m0)(n + 1)) for the Norm* types).  NormHex (Table E.2, PLAN 1.2 (uu), opened 2026-10-20) must trace as the
-hexagon-orthonormal Noll set (cli_tests/tools/hzdef_check.py, Mahajan & Dai) with vertices on +-xMon, and
+hexagon-orthonormal Noll set (tests/cli/tools/hzdef_check.py, Mahajan & Dai) with vertices on +-xMon, and
 its printed polynomials must match the engine to their six figures.  The index columns are also checked against the
 textbook ordering rules (ANSI, Noll, Fringe / Extended Fringe) and against the 3.2 manual's Table 8, an
 independent record of the Born & Wolf ("Code V") and Fringe columns.  Must-fail legs: a row with sin
@@ -27,7 +27,7 @@ from repo_paths import REPO_ROOT
 
 MACOS_ROOT = REPO_ROOT
 TABLE = MACOS_ROOT / 'docs/macos-manual/src/transcripts/zernike_orderings.md'
-sys.path.insert(0, str(MACOS_ROOT / 'cli_tests' / 'tools'))
+sys.path.insert(0, str(MACOS_ROOT / 'tests' / 'cli' / 'tools'))
 import hzdef_check as hexz  # noqa: E402  the textbook hexagon construction
 COLUMNS = {'ANSI': 'ANSI', 'Born & Wolf': 'BornWolf', 'Noll': 'Noll', 'Fringe': 'Fringe',
            'Ext. Fringe': 'ExtFringe'}

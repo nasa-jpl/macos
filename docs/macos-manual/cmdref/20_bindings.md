@@ -1231,7 +1231,7 @@ answer both.  If it does not -- the next line is a command, e.g. `quit` -- each 
 "quit" is not yes/no -- taking the default [yes]; the token goes back to the command stream`, takes the
 default (so the optimized state IS saved into the session, as an interactive Enter would) and the
 command then runs.  Before 2026-10-11 the command was swallowed as an answer and the run hung on the
-terminal.  (PLAN_CONSOLIDATION 3.3; journal `cli_tests/cmd/CALIB_journal_prompts.jou`.)
+terminal.  (PLAN_CONSOLIDATION 3.3; journal `tests/cli/cmd/CALIB_journal_prompts.jou`.)
 
 **Aspheric DOFs in a prescription:** the canonical keyword is `OptAsph= n t1 .. tn` (n terms, then
 the 1-based term indices of `AsphCoef`), written in the element block AFTER that element's

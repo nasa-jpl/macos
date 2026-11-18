@@ -32,7 +32,7 @@ CLAUDE.md. Move text, don't paraphrase — engine gotchas are exact.*
   fix.  Comment block above the slsqp call has the derivation.
   Do not bump `dtt`: ray-trace linearity at large FD steps was the
   reason the alternate fix was rejected.
-- A/B verification reference: `ZGD_test_files/opt_example_constrained.in`
+- A/B verification reference: `tests/ZGD_test_files/opt_example_constrained.in`
   (Elt 7 TIP+TILT, ±0.5 mrad bounds, WFE target, OptMaxItrs=200).
   NPSOL and SLSQP agree to 11+ digits on final WFE.
 - Open work: setbeam.inc still uses `npoptn` + `npsol` directly

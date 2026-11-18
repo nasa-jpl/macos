@@ -34,7 +34,7 @@ nine decks below.
 the scripts write today.**  `e2e_pie.in`, `e2e_hex2.in`,
 `e2e_pie_met.in`, `e2e_pie_metopt.in`, `s1_telescope.in`,
 `s2_instrument.in`, `s4_grid.in` and the two `s2_variants/` decks are
-read by the engine's CLI corpus (`cli_tests/corpus_committed.txt` in
+read by the engine's CLI corpus (`tests/cli/corpus_committed.txt` in
 the macos repo), which compares two engine builds on the same deck, and
 `tests/tE2eRmsWaves` loads the s1 and s2 decks; they stay as committed so
 those gates keep their inputs.  Re-running the scripts on the
@@ -45,7 +45,7 @@ decks are not written by any stage): s1 solves to new conics (M1 KcElt
 field centre follows the new WFE map, 0.590′ → 0.262′ (`ChfRayDir` y
 1.717e-4 → 7.61e-5 rad); and every later deck inherits both
 (83–557 lines of each deck differ, all numeric).  Diagnosis per file:
-`cli_tests/records/run_artifacts_e2e_regen_2026-10-27.tsv` (macos repo).
+`tests/cli/records/run_artifacts_e2e_regen_2026-10-27.tsv` (macos repo).
 
 ## The telescope case
 

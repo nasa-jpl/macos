@@ -2,7 +2,7 @@
 api's segray_trace; BRIEF_to_bindings B.2, 2026-10-17); twin of mmacos tSegRay.
 
 Deck: e5hex1 (seven Segment elements 1-7, then m2 = element 8, a collimated source).  The CLI
-numbers are what `segraytrace` printed for segments 3 and 7 (cli_tests/cmd/SEGRAYTRACE.jou,
+numbers are what `segraytrace` printed for segments 3 and 7 (tests/cli/cmd/SEGRAYTRACE.jou,
 both compilers, 2026-10-17): the binding must reproduce its own CLI.  The analytic leg is the
 command's definition, written from the deck's own lines (ChfRayDir=, RptElt=), not from the
 engine: for a collimated source the ray is parallel to the chief ray and passes through the

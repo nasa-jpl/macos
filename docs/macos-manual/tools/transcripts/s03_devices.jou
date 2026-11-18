@@ -1,6 +1,6 @@
 # Section 3, PostScript and GIF graphics output: '?' at the first plot's device prompt lists the devices
 # (giza's list today; 3.2 printed PGPLOT 5.0.0's).
-# COPY: $ROOT/ZGD_test_files/Telescope.in s03d
+# COPY: $ROOT/tests/ZGD_test_files/Telescope.in s03d
 cd $TMP/s03d
 old Telescope
 # TRANSCRIPT: s03_devices +device

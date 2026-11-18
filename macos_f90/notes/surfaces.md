@@ -38,7 +38,7 @@ to implement` and built `pr` / `rhat` from UNINITIALISED `pcrnt` / `Tcrnt`: NaN 
 meant to trace").  Now: `LROK=.FALSE.` + surfsub `LGrinUnsup`, so CTRACE / CPROPAGATE (all
 four classification sites) record `RayStat_Undef` 'GRIN model not implemented', counted in
 `nGrinUnsup` (reset per trace, WARN line), ONE note per run.  The fixture is unchanged (its
-GRIN keys still round-trip through SAVE).  Gate `cli_tests/cmd/GRIN_unsupported.jou` (red
+GRIN keys still round-trip through SAVE).  Gate `tests/cli/cmd/GRIN_unsupported.jou` (red
 pre-fix: NaN).  Model 5 itself cannot be loaded or saved today -- PLAN_CONSOLIDATION §1.2
 (the impossible `<=2 .AND. >=5` GradCoef branch, the bare `return`, the SAVE writer, the
 absolute-position depth test).  The FwdRoot counter's `ABS(new-old) > 0` form stays: no NaN
@@ -99,7 +99,7 @@ deck remains in the corpus, but a NaN ray from any other path would otherwise co
   had kept a LOCAL null grid frame for its `GridSrf` call, so a GridData figure there imaged as a
   piston.  The element's frame (of `imin`, the element hit) is now an argument, threaded from both
   call sites; ZGD twins `tst_nsref_{seq,ns}.in` trace and propagate bit-identically (pre-fix the
-  NS twin read OPD exactly 0).  Gates `cli_tests/cmd/NSRefractor_grid.jou`,
+  NS twin read OPD exactly 0).  Gates `tests/cli/cmd/NSRefractor_grid.jou`,
   pymacos `test_nsrefractor_grid.py`.
 - **GridSrfdx semantics (user-facing):** grid span = `(nGridMat−1)·GridSrfdx`
   base units, centered on `pData`; rays outside the span get `fh=0` (no
@@ -167,7 +167,7 @@ deck remains in the corpus, but a NaN ray from any other path would otherwise co
   bracket solver — the IRIS `save_rx` crash).  It is authoring intent, NOT
   structurally derivable; `PrtSingleEltInfo` (iosub.inc) now emits it when
   declared (`NSCnt>0`).  Was DROPPED on SAVE pre-2026-10-10.  Gates:
-  `ZGD_test_files/tst_zrngr_roundtrip.in` (SAVE keeps NSCount) +
+  `tests/ZGD_test_files/tst_zrngr_roundtrip.in` (SAVE keeps NSCount) +
   `tst_zrngr_overflow.in` (tiny GridSrfdx → the overflow guard).
 
 ## ZernType parsing (ParseZernType in elt_mod.F)
@@ -213,7 +213,7 @@ deck remains in the corpus, but a NaN ray from any other path would otherwise co
   write past it), and `FFZernModes` / `MonZernModes` bounded by their arrays at load (the
   remap `Coef(Modes(:n),iElt) = ...` wrote past the array with no visible symptom in the
   release build -- the pre-fix binary loads `ZERN_mode_count.jou`'s mode-500 deck silently).  The api setters already refused past the count.
-- Gate `cli_tests/cmd/ZERN_refused.jou` (red on the pre-fix binary).  The three SAVE-keys
+- Gate `tests/cli/cmd/ZERN_refused.jou` (red on the pre-fix binary).  The three SAVE-keys
   fixtures (tst_save_keys, tst_block_comment, pymacos Rx_SaveKeys) moved from
   `NormAnnularNoll 0.3` to `NormNoll` -- identical trace by the measurement above.
 
@@ -221,7 +221,7 @@ deck remains in the corpus, but a NaN ray from any other path would otherwise co
 - `ZernType_MaxMode(NormHex)` was 0 ('implemented ???'): every `nZernCoef=` on a NormHex
   surface was refused at load ("outside 1 .. 0"), though `ZerntoMon4` (surfsub.F, table
   `hzdef.inc`) is called by all three dispatch chains for Zern / FF / Mon.  Now 45.
-- VALIDATED FIRST (`cli_tests/tools/hzdef_check.py`, textbook, never the engine): the 45
+- VALIDATED FIRST (`tests/cli/tools/hzdef_check.py`, textbook, never the engine): the 45
   `hzdef.inc` polynomials are the Noll circle Zernikes Gram-Schmidt-orthonormalized over the
   unit regular hexagon, area-mean inner product (Mahajan & Dai, JOSA A 24, 2994 (2007));
   worst mode 38, 8e-12 of its largest coefficient; Mahajan & Dai's closed forms of modes
@@ -244,7 +244,7 @@ deck remains in the corpus, but a NaN ray from any other path would otherwise co
   `ZernCoef(46,1)=1e-4` is taken with no message, and with mode 10 zeroed the SRT ray at
   (0.5,0) meets z = 0 exactly (macosio.F's `ToDo --> FIX` range check).  Mon/FF read from
   the code (msmacosio.inc `nMonZernCoef` <= mMonCoef), not measured.
-- Gates: `cli_tests/cmd/ZERN_normhex.jou` (SRT sag at (0.5,0) = Mahajan & Dai mode 10 to
+- Gates: `tests/cli/cmd/ZERN_normhex.jou` (SRT sag at (0.5,0) = Mahajan & Dai mode 10 to
   every printed digit; SAVE writes `ZernType= NormHex` and the reload traces the same;
   mode 46 refused sparse and dense; red on the pre-fix binary), pymacos
   `test_zernike_orderings.py` (all 45 modes vs the construction to 1e-9, the vertex-on-y
@@ -279,7 +279,7 @@ deck remains in the corpus, but a NaN ray from any other path would otherwise co
   `SrfType_Zernike`), so its `ZernCoef` NEVER reached the trace.  The
   `nZernCoef=`-without-a-type refusal now applies only to a surface that
   carries no Zernike terms (`tst_nzern_conic.in`); `tst_nzern_no_type.in`
-  (ZrnGrData) loads with the default.  Gate `cli_tests/cmd/
+  (ZrnGrData) loads with the default.  Gate `tests/cli/cmd/
   ZernType_default.jou` on `tst_zerndef_{none,ansi,fringe}.in` (a
   ZrnGrData NS primary, no grid, mode 9 = 2e-7): none == ansi to the printed
   digit, fringe differs; PRE-change the none twin traced as the bare conic
@@ -309,7 +309,7 @@ deck remains in the corpus, but a NaN ray from any other path would otherwise co
   |m| descending, cos before sin) -- 56 of 56 entries -- and equals Fringe's
   `ZerntoMon3` on modes 1-36; ExtFringe 37 is (6,6), Fringe 37 the (12,0) of CODE V.
   Inputs stop at 66 (`mZernModes`).  No corpus deck declares it.  Gates
-  `cli_tests/cmd/ZernType_extfringe.jou`, pymacos `test_zern_extfringe.py`.
+  `tests/cli/cmd/ZernType_extfringe.jou`, pymacos `test_zern_extfringe.py`.
 
 ## Conforming Reference: Surface=Zernike/Aspheric is PASSIVE (sls-dev c9fa767)
 *(Documented: Manual §4 Reference Surfaces (passive basis carrier; grid Reference the active exception; masks must be Obscuring) and Sparse Zernike input (wrapped modes line).  Below: the engine record.)*

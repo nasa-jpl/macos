@@ -151,7 +151,7 @@ when USE_NPSOL=OFF (default) and back to `np_optim_dvr` when ON
 
 A/B targets when SLSQP is verified on more prescriptions:
 * `opt_example.in` (BeamOnly + bound-constrained rigid body)
-* Any prescription in `ZGD_test_files/` that exercises constrained
+* Any prescription in `tests/ZGD_test_files/` that exercises constrained
   optimization
 * Pymacos tests/test_calib_constrained.py (new, exercises bounds via
   programmatic setters)

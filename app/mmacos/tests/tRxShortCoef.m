@@ -10,7 +10,7 @@ classdef tRxShortCoef < matlab.unittest.TestCase
 %   a continuation line with no number on it (the next keyword) is put back.  Sibling of
 %   tRxShortAsph (the AsphCoef= / AnaCoef= first cut).
 %
-%   Legs, on Rx_ShortCoef.in (= macos ZGD_test_files/tst_short_coef.in: element 1 a
+%   Legs, on Rx_ShortCoef.in (= macos tests/ZGD_test_files/tst_short_coef.in: element 1 a
 %   Surface= Zernike mirror, nZernCoef= 4, a ZernCoef= line of 3 values) and variants of it:
 %     1 THE MUST-FAIL LEG, in a matlab -batch SUBPROCESS: the short ZernCoef= deck loads,
 %       its 4th coefficient is 0, exactly one note is printed.  The pre-fix mex aborts at the

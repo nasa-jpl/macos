@@ -59,7 +59,7 @@ function R = seg_route(rx, varargin)
 %   Example:
 %     addpath ~/dev/MACOS_res_dev/mmacos/src
 %     addpath ~/dev/MACOS_res_dev/segmirmaker
-%     R = seg_route('~/dev/macos/ZGD_test_files/e5pie.in');
+%     R = seg_route('~/dev/macos/tests/ZGD_test_files/e5pie.in');
 %
 %   See also SEG_AUDIT, SEG_READ_RX.
 

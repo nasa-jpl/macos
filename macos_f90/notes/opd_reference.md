@@ -39,7 +39,7 @@ P-V is max-min, and `Average OPD is` prints `DAvgl` = mean(OPL - chief OPL),
 the same under either reference -- it IS the constant by which the
 chief-referenced map exceeds the mean-referenced one.  Only the per-ray map
 moves.  Corpus A/B (406 decks, both compilers,
-`cli_tests/records/ab_opdref_moved_51a5624.txt`): status / nPass / lost /
+`tests/cli/records/ab_opdref_moved_51a5624.txt`): status / nPass / lost /
 RMS / P-V / round trip identical everywhere; 397 (ifx) / 396 (gfortran)
 maps moved by their `Average OPD`; the 6 unmoved are flat collimated trains
 (`DAvgl == 0`).  The mmacos `dw_*` drivers pass `opd_ref='mean'` explicitly
@@ -76,7 +76,7 @@ coincident with the chief), 30 many (mostly round-off-flat maps; the flat
 window `tst_nsref_seq.in` has 724 of 740).  CALIB's LM evaluations run under
 the MEAN (`funcs_app` forces it), so WFE_ZMODE is unmoved (`tCalibTargets`).  An all-zero map on
 valid rays now fits to zero coefficients (it printed nothing: `inz==0`).
-Gate `cli_tests/cmd/ZCOEF_zero_rays.jou` (chief fit == mean fit but piston).
+Gate `tests/cli/cmd/ZCOEF_zero_rays.jou` (chief fit == mean fit but piston).
 
 **Why it matters (segmented pupils).**  `DAvgl` is one scalar over the
 whole aperture, so perturbing ONE segment shifts it by
@@ -117,8 +117,8 @@ without ray 1) to 2e-16.  Not a defect; a convention to state.  Gate:
 pymacos `opd_ref` (2026-10-10).  Acts on the LOADED deck (a load restores the
 default), and dirties the cached trace via `modified_rx` because OPDMat is
 filled DURING the trace.  Gates: `app/mmacos/tests/tOpdRef.m` (12),
-`app/pymacos/tests/test_opd_ref.py` (6), `cli_tests/cmd/OPD_reference.jou`
-(twin deck `ZGD_test_files/tst_opdref_mean.in`).
+`app/pymacos/tests/test_opd_ref.py` (6), `tests/cli/cmd/OPD_reference.jou`
+(twin deck `tests/ZGD_test_files/tst_opdref_mean.in`).
 
 Related `init` fix: `macos_api_mod`'s `init` rebuilt the engine
 (`macos_init_all`, which zeroes `nElt`) without clearing the package
@@ -186,7 +186,7 @@ source, read by the CLI notice and by api `modes_get`; mmacos `macos.load_rx` wa
 fast + 45 pymacos pol tests): `tTgPol`'s and `tTgPol2`'s scalar detector geometry
 (`detGeom`), after a test that left polarization on with crossed polarizers (a 0/0
 centroid) -- each now turns polarization off itself.  `STATUS` prints all five;
-`cli_tests/cmd/MODE_*.jou` (6, incl. `MODE_load_notice`) pin it.  The CLI `RESET`
+`tests/cli/cmd/MODE_*.jou` (6, incl. `MODE_load_notice`) pin it.  The CLI `RESET`
 still returns four of them to default; it had set `ifCentroid=.TRUE.` (a sixth
 site the 2026-08-27 chief-ray ruling missed) -- now `.FALSE.`.  IMGMODE already survives
 (`ifAstroMode` lives in plot_mode_mod, outside every `*_init_vars`).
