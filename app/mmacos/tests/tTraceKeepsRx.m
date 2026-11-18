@@ -5,7 +5,7 @@ classdef tTraceKeepsRx < matlab.unittest.TestCase
 %   Return's IndRef as a medium (ReturnSrf uses the incoming index; CPROPAGATE resets its medium only
 %   after a Refractor or a LensArray), so the stamp's one visible effect was on the prescription: after a
 %   LensArray in glass, load -> trace -> SAVE wrote the lenslet index (1.51242597) onto the next Return
-%   where load -> SAVE wrote the deck's 1.0 (Rx_SaveKeys.in = macos ZGD_test_files/tst_save_keys.in,
+%   where load -> SAVE wrote the deck's 1.0 (Rx_SaveKeys.in = macos tests/ZGD_test_files/tst_save_keys.in,
 %   elt 9 ExitPupil).  PLAN recorded it as a lensarr trace-time OVERRUN; it is not -- no array bound is
 %   crossed.  The gate: SAVE after load -> trace(nElt) == SAVE after load, byte for byte.  Red pre-fix:
 %   the IndRef line of the Return.

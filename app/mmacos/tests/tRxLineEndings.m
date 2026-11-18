@@ -7,7 +7,7 @@ classdef tRxLineEndings < matlab.unittest.TestCase
 %   records on CR; the copy makes both compilers, the CLI and both bindings take the same path.
 %
 %   In a matlab -batch SUBPROCESS with TMPDIR pointed at an empty directory: the LF / CRLF / CR twins of
-%   one deck (Rx_Eol_*.in = macos ZGD_test_files/tst_eol_*.in) trace to the identical rms; the CRLF and
+%   one deck (Rx_Eol_*.in = macos tests/ZGD_test_files/tst_eol_*.in) trace to the identical rms; the CRLF and
 %   CR loads each print ONE note naming the ORIGINAL deck, the LF load none; the temp name never appears;
 %   the temp directory is empty afterwards.  The red leg on the pre-fix mex (gfortran, which already read
 %   the CR twin natively) is the normalization itself: no note, the deck not routed through the copy.

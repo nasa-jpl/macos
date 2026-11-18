@@ -7,7 +7,7 @@
 #
 # Default prescription (set in dw_dz_zernike.py):
 #   pymacos/tests/Rx/e5hex1.in
-# (a local copy of /home/dcr/dev/macos/ZGD_test_files/e5hex1.in,
+# (a local copy of /home/dcr/dev/macos/tests/ZGD_test_files/e5hex1.in,
 # carried in the repo so the sensitivities tests are self-contained.)
 #
 # Examples

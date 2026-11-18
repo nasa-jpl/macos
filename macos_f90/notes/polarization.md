@@ -12,7 +12,7 @@
   ZERO field: `macos.intensity` all zeros, a centroid of 0/0 (macos-fd on the tg_psi_dm
   templates; A/B: on-after-load finite, on-then-load 0).  `reinitialise_variables`
   (macos_init.F) now keeps `Ex0`/`Ey0` across the load when `ifPol` is in force; a deck's
-  `Ex0Ey0=` line, parsed after it, still overrides.  Gate `cli_tests/cmd/POL_across_load.jou`
+  `Ex0Ey0=` line, parsed after it, still overrides.  Gate `tests/cli/cmd/POL_across_load.jou`
   (the two orders read the same intensity sum; red pre-fix).
 
 ## Polarization physics (PLAN_POLARIZATION, Phase 0/1)

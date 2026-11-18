@@ -1,7 +1,7 @@
 """Short / re-wrapped coefficient blocks load instead of killing the host
 (PLAN_CONSOLIDATION item 1, 2026-10-09; the pymacos surface of the shared
 msmacosio.inc parser -- the mmacos gate is tRxShortCoef, the CLI deck
-macos/ZGD_test_files/tst_short_coef.in).
+macos/tests/ZGD_test_files/tst_short_coef.in).
 
 The parser read ZernCoef= with a bare list-directed internal READ: a line with
 fewer values than nZernCoef= was an uncaught end-of-file, a Fortran runtime

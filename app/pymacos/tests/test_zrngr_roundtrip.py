@@ -1,6 +1,6 @@
 """The IRIS save_rx -> reload SIGSEGV, closed (macos db9236b + the 2026-10-10 SAVE fix).
 
-Twin of mmacos tZrnGrRoundTrip; fixtures = macos ZGD_test_files/tst_zrngr_*.in
+Twin of mmacos tZrnGrRoundTrip; fixtures = macos tests/ZGD_test_files/tst_zrngr_*.in
 (Rx_ZrnGrRoundTrip.in, Rx_ZrnGrOverflow.in, tst_zrngr_grid.txt): a Cassegrain
 whose primary is a single-member NSReflector group with a flat 64x64 ZrnGrData
 grid and NSCount= 1.  GridFile= is a bare name resolved from the cwd, so every

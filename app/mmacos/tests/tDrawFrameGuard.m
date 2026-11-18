@@ -25,7 +25,7 @@ classdef tDrawFrameGuard < matlab.unittest.TestCase
             here = fileparts(mfilename('fullpath'));         % mmacos/tests
             res_root = repo_root_();   % the repository root
             tc.heritage = fullfile(res_root, 'tools', 'segmirmaker', 'test_in', 'e5pie.in');
-            tc.globalfr = fullfile(res_root, 'ZGD_test_files', 'SegDemo3.in');
+            tc.globalfr = fullfile(res_root, 'tests', 'ZGD_test_files', 'SegDemo3.in');
             tc.assumeTrue(isfile(tc.heritage), 'heritage fixture missing');
             tc.assumeTrue(isfile(tc.globalfr), 'global-frame fixture missing');
             macos.init(512);

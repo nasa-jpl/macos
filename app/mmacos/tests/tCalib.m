@@ -15,12 +15,12 @@ classdef tCalib < matlab.unittest.TestCase
     methods (TestClassSetup)
         function setupClass(testCase)
             % opt_example.in is a dev-only fixture in this repository's
-            % ZGD_test_files/.  Resolve it
+            % tests/ZGD_test_files/.  Resolve it
             % relative to this file rather than a hardcoded absolute path
             % (the old /home/dcr/... broke on macOS / any other machine).
             here = fileparts(mfilename('fullpath'));           % mmacos/tests
             res_root = repo_root_();   % the repository root
-            testCase.RxSrc = fullfile(res_root, 'ZGD_test_files', 'opt_example.in');
+            testCase.RxSrc = fullfile(res_root, 'tests', 'ZGD_test_files', 'opt_example.in');
             testCase.assumeTrue(isfile(testCase.RxSrc), ...
                 sprintf('opt_example.in fixture not found: %s', testCase.RxSrc));
             testCase.m = macos.Session(testCase.ModelSize);

@@ -90,7 +90,7 @@ In previous versions of MACOS, separate model parameter files are used for diffe
 
 MACOS commands can be abreviated using the first letters of the command. The neccessary letters are denoted in capital letters. However, they do not need to be entered in capitals as MACOS is case insensitive.
 
-MACOS prompts the user for the next input. For example, as shown below, to enter an old file, the user types OLD. MACOS then prompts for the filename. (The examples in this section load `lens_array.in`, a lens-array test deck in the source tree's `ZGD_test_files/` folder.)
+MACOS prompts the user for the next input. For example, as shown below, to enter an old file, the user types OLD. MACOS then prompts for the filename. (The examples in this section load `lens_array.in`, a lens-array test deck in the source tree's `tests/ZGD_test_files/` folder.)
 
 <!-- transcript: s03_old -->
 

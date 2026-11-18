@@ -1456,7 +1456,7 @@ from optimising at all. **Unified to `.FALSE.`, opt in per deck with
 ## C. Corpus — no committed result changes
 
 Every deck in either repo that carries an optimization block sets `OptFEX`
-explicitly, and all four say `No`: `macos/ZGD_test_files/opt_example{,_asph,
+explicitly, and all four say `No`: `macos/tests/ZGD_test_files/opt_example{,_asph,
 _constrained}.in` and `app/pymacos/tests/Rx/opt_example.in`. Neither the fix (the
 `'N'` branch is untouched) nor the default change (they are explicit) alters
 any of them. Doc-only hits: `Lou-UpdateNotes.txt:652` — which documents

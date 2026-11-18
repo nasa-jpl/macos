@@ -12,7 +12,7 @@ classdef tRxRefuse < matlab.unittest.TestCase
 %   2 of 3 values), Rx_BadScalar.in (KrElt= minus200), a header ChfRayDir= with 2 of 3 values -- each
 %   caught, each naming its key, then a good deck loads and traces in the SAME session.  The pre-fix mex
 %   aborts at the first load: the subprocess exits nonzero.  These decks stay refusals forever (CC keeps
-%   the short-psiElt deck in macos cli_tests/must_fail/ as the permanent negative control).
+%   the short-psiElt deck in macos tests/cli/must_fail/ as the permanent negative control).
 %   Item 5c (2026-10-09): Rx_RxStop.in (EdgeSensors= 0) -- the parser printed its error and then executed
 %   STOP, which ended MATLAB; three such STOPs (EdgeSensors < 1, nPetals before nRings, tMetElt before
 %   nMetPos) now refuse the load through the same exit.

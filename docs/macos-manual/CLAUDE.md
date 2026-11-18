@@ -21,7 +21,7 @@ make appendix-c # regen src/93_appendix_c_commands.md from macos_help.inc
 make transcripts # regen src/transcripts/ (example listings + CLI dialogs; MACOS_BIN= picks the binary)
 make zernike-table # regen src/transcripts/zernike_{orderings,table8}.md (Appendix E + Table 8), MEASURED via pymacos
 make cmdref-regen # regen cmdref Parts I-III + the CLI-suite coverage appendix
-                  # (every Part I entry's "*CLI suite:*" line comes from cli_tests/cmd/*.jou)
+                  # (every Part I entry's "*CLI suite:*" line comes from tests/cli/cmd/*.jou)
 ```
 
 ## Rules / gotchas
@@ -40,7 +40,7 @@ make cmdref-regen # regen cmdref Parts I-III + the CLI-suite coverage appendix
   the build).  Never hand-edit `src/transcripts/` or type a dialog into a chapter:
   change the journal and rerun.  Every journal pins with `# EXPECT:` (5 figures, bounds
   near zero; a journal with none is refused, a miss writes nothing) and
-  `cli_tests/run_cli_tests.sh transcripts` gates both compilers.  Transcripts come from
+  `tests/cli/run_cli_tests.sh transcripts` gates both compilers.  Transcripts come from
   the ifx build of the clean worktree.  What moved against 3.2, and the open decisions,
   are in `TRANSCRIPT_DIFF.md`.  Section 4's NEW tutorials are generated too (2026-10-19): a
   `# TRANSCRIPT:` switch between two answers of one NEW cuts the dialog there (`from=` / `upto=`

@@ -2,7 +2,7 @@
 api's srt_trace; BRIEF_to_bindings B.2, 2026-10-17); twin of mmacos tSrt.
 
 Deck: the manual's Cassegrain (primary R = 10.8, K = -1 at the origin; detector at z = 1.5).
-The CLI numbers are what `srt 5` printed there (cli_tests/cmd/SRAY_SRT.jou's deck; both
+The CLI numbers are what `srt 5` printed there (tests/cli/cmd/SRAY_SRT.jou's deck; both
 compilers, 2026-10-17): the binding must reproduce its own CLI.  The analytic legs are written
 from the geometry, not read from the engine: the primary is a paraboloid, so a ray at radius r
 meets it at z = -r^2 / (2R); an on-axis Cassegrain focuses every ray on the detector axis.

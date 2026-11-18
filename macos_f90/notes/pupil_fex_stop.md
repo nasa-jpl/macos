@@ -12,10 +12,10 @@
   The x rotate branch recomputed `xLocal` from the rotated ray's `RayPos` before `DUNITVEC`; the y
   branch did not, so it normalized the STALE translate residual -- exactly 0 on a coaxial deck on
   x86_64 (correct by luck, every Linux gate green), 2.2e-16 on arm64 -O1+ (CCMac's 76.5-degree frame,
-  bisected to the line in `cli_tests/records/mac_ff_localcoord.md`), and a REAL residual on any
+  bisected to the line in `tests/cli/records/mac_ff_localcoord.md`), and a REAL residual on any
   non-coaxial deck on every platform (opt_example 1.4 degrees, e5hex1 12 degrees off the normal).
   `DUNITVEC` has no magnitude floor: a 1e-16 vector normalizes as happily as a unit one.  Gate
-  `cli_tests/cmd/COORD_offaxis_frame.jou`.  Lesson: a defect that is 'compiler-only' and bit-identical
+  `tests/cli/cmd/COORD_offaxis_frame.jou`.  Lesson: a defect that is 'compiler-only' and bit-identical
   from -O1 up is the optimizer using a right the source gave it (here: a value it was free to leave
   stale); instrument -O0 vs -O1 and diff -- the first divergent intermediate names the line.
 
@@ -415,8 +415,8 @@ an inversion.  `ztdir = 0` (the WFElt multiply) stays off: the field is built
 from the ray OPLs, which already carry the screen.  The ATM-grid option
 uses LocalCoord's beam frame (fold-safe) but positions rays relative to the
 CHIEF, so neither option models anisoplanatism.  Record + model memo:
-`cli_tests/records/atmos_fix_2026-10-18.md`; gates `ATMOS_seed.jou`,
-`ATMOS_placement.jou` (checker `cli_tests/tools/atmos_map_check.py`).
+`tests/cli/records/atmos_fix_2026-10-18.md`; gates `ATMOS_seed.jou`,
+`ATMOS_placement.jou` (checker `tests/cli/tools/atmos_map_check.py`).
 Measuring a phase screen: read the OPD at the EXIT-PUPIL Reference, never at
 the FocalPlane (path to the landing point: FP = screen + delta.x / EFL).
 
@@ -439,7 +439,7 @@ the FocalPlane (path to the landing point: FP = screen + delta.x / EFL).
   them SURFACE MISSES at the secondary (92) and the first relay refractor (463), base binary and
   fixed binary alike -- finding 1.2 (cc), open.  The deck also carries `PropType= Annulus` on
   its obscurations, no PropType name (1.2 (dd)); the load warns and defaults.
-- Gate `cli_tests/cmd/ORS_SRS.jou`: CassWithExitPupil `mod fElt(5)=5.7` -> `ors 5` recovers
+- Gate `tests/cli/cmd/ORS_SRS.jou`: CassWithExitPupil `mod fElt(5)=5.7` -> `ors 5` recovers
   5.5601 (5 figures), `srs 6 5`, `opd 6` at the 1e-11 floor; ImageDemo `ors 12` aborts.  The
   4d7b1aa1 binary fails it on exactly the abort line, the NaN, and MODify's stray
   `Debug: VAR_NAM =` print (removed in macosio.F with this fix).
@@ -452,7 +452,7 @@ the FocalPlane (path to the landing point: FP = screen + delta.x / EFL).
   beam the aperture truncates sums to LESS (the light outside is lost, never renormalized in).
   Before, `S = SQRT(Flux)` put Flux at every ray: 218x the uniform sum at a 1 m waist.
 - CassWithExitPupil.in, `int 1`, 64-point grid: uniform 0.90636; waist 1.0 -> 0.57778; waist 2.0
-  -> 0.71750 (`cli_tests/cmd/BEAM_gaussian.jou`, 5 figures).  No core-corpus deck is Gaussian,
+  -> 0.71750 (`tests/cli/cmd/BEAM_gaussian.jou`, 5 figures).  No core-corpus deck is Gaussian,
   so the load A/B does not see this change.
 
 ## OPEN (2026-10-31, TO): FEX mis-centres the sphere of a pupil BEYOND iElt+1 (a virtual exit pupil); CALIB dies on such a lens

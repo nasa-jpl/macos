@@ -1,7 +1,7 @@
 """A value with no natural zero (and, item 5c, a parser STOP after an Rx error) that cannot be read REFUSES the load; the
 process lives (PLAN_CONSOLIDATION item 1b, 2026-10-09; Dave's ruling 4a).
 The pymacos surface of the shared msmacosio.inc parser -- the mmacos gate is
-tRxRefuse, the CLI decks macos/ZGD_test_files/tst_short_vec.in and
+tRxRefuse, the CLI decks macos/tests/ZGD_test_files/tst_short_vec.in and
 tst_bad_scalar.in.
 
 THE MUST-FAIL LEG runs in a SUBPROCESS: Rx_ShortVec.in (psiElt= with 2 of 3

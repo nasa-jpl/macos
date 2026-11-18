@@ -1,6 +1,6 @@
 classdef tRxLoadRulings1018 < matlab.unittest.TestCase
 %TRXLOADRULINGS1018  The api surface of Dave's three loader / SAVE rulings of 2026-10-18 (the CLI gates are
-%   cli_tests/cmd/OUTCORD_missing.jou, PROPTYPE_numeric.jou, CALIB_save_roundtrip.jou; the reader is shared, so
+%   tests/cli/cmd/OUTCORD_missing.jou, PROPTYPE_numeric.jou, CALIB_save_roundtrip.jou; the reader is shared, so
 %   each ruling is gated here too -- PLAN_CONSOLIDATION rule 2).
 %     1 a deck with no nOutCord=/Tout= block loads through load_rx (it failed silently before): the loader
 %       proposes the beam frame at the last element and the api takes it -- the Cassegrain's OPD comes back,

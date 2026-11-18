@@ -52,6 +52,6 @@
   (`notes/surfaces.md`, grid section).
 - **Any surface / element change that can move a trace gets the corpus A/B** before its
   commit, gated from the clean worktree `~/dev/macos_cli_base`, every mover named in
-  `cli_tests/records/ab_*_moved_<sha>.txt`.
+  `tests/cli/records/ab_*_moved_<sha>.txt`.
 - **A gate's analytic is written from the textbook, never transcribed from the engine**
   (the r_p sign lesson), and every vignetting element's gate puts one ray OUTSIDE its aperture.

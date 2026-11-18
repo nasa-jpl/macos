@@ -69,7 +69,7 @@ classdef tSysProp < matlab.unittest.TestCase
 
         function test_px_not_from_an_OPD(testCase)
             % PLAN 1.2 (d) -- twin of pymacos test_sysprop.py and
-            % cli_tests/cmd/SYSPROP_after_OPD.jou.  An OPD at the element re-sets
+            % tests/cli/cmd/SYSPROP_after_OPD.jou.  An OPD at the element re-sets
             % dxElt to the RAY spacing (~0 at a focus): the pixel fields read
             % lamD_px 3.3130544e6 / pitch 1.6958903e-12 after an OPD alone and
             % after INT then OPD (0 there since 2026-10-17).  Dave's ruling

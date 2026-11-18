@@ -1097,7 +1097,7 @@ the same square is `ObsVec= 0 0 4` followed by `0.5 0.5`, `-0.5 0.5`,
 `-0.5 -0.5`, `0.5 -0.5`.  On the Cassegrain example (4 m aperture, 51-point
 grid, 1877 rays) the secondary obscuration — a circle of radius 0.5 and its
 spider — loses 121 rays; this 1 m square in its place loses 145 in all three
-forms, the ray density of the grid times its area (`cli_tests/cmd/OBS_POLYGON.jou`).
+forms, the ray density of the grid times its area (`tests/cli/cmd/OBS_POLYGON.jou`).
 Apertures have the same polygon forms under `ApType= Polygonal` with
 `PolyApVec=`, but there `xObs=` must still come first.
 

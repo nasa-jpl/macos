@@ -15,7 +15,7 @@ classdef tCalibStop < matlab.unittest.TestCase
 %   accepted step is ever flat: measured 'floor' at itr 14 with T=20, 'cap' with
 %   T=10 (the floor would land at 14).  'converged' needs a non-quadratic tail (the
 %   tDesignTelescope fourth_mirror / add_fold designs, itr 41) -- recorded in
-%   macos cli_tests/records/calib_loop_old_vs_new.md, not pinned here.
+%   macos tests/cli/records/calib_loop_old_vs_new.md, not pinned here.
 %   Pre-fix mex: no calib_stats_get, every test red.
 %   OptTol= (PLAN 3.2): the tDesignTelescope TMA conic solve ('fourth_mirror' leg,
 %   2 fields, 60 iterations) stops 'converged' at the default tolerance; emitted

@@ -1,5 +1,5 @@
 """ZernType= ExtFringe traces (macos PLAN_CONSOLIDATION 1.2, 2026-10-12; the CLI twin is
-cli_tests/cmd/ZernType_extfringe.jou).  Extended Fringe continues Fringe's ordering past 37; the
+tests/cli/cmd/ZernType_extfringe.jou).  Extended Fringe continues Fringe's ordering past 37; the
 converter (surfsub ZerntoMon_ZFE) existed but no dispatch chain called it, so an ExtFringe surface
 traced as its bare conic.  Twins (= macos ZGD tst_zerndef_{fringe,extfringe,ansi}.in): an NS
 Cassegrain whose ZrnGrData primary carries mode 9 = 2e-7 m -- spherical in Fringe and ExtFringe,
