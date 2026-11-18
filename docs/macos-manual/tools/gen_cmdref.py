@@ -25,8 +25,8 @@ CMDREF = MANUAL / "cmdref"
 ROOT = MANUAL.parent.parent                      # repo root
 HELP_INC = ROOT / "macos_f90" / "macos_help.inc"
 API_MOD = ROOT / "macos_f90" / "macos_api_mod.F90"
-MMACOS = ROOT / "mmacos" / "src" / "+macos"
-PYMACOS = ROOT / "pymacos" / "src" / "pymacos"
+MMACOS = ROOT / "app" / "mmacos" / "src" / "+macos"
+PYMACOS = ROOT / "app" / "pymacos" / "src" / "pymacos"
 CLI_CMD = ROOT / "cli_tests" / "cmd"          # the CLI suite's journals (Phase B)
 
 TODO = "*TODO: expand — dialog details, behavior notes, related commands.*"
@@ -146,10 +146,10 @@ def journal_index(cats):
 
 def binding_index(cats):
     """B.1 (BRIEF_to_bindings): {entry names: (class, detail)} from the binding
-    generator (mmacos/src/gen_mex_wrappers.py binding_classes):
+    generator (app/mmacos/src/gen_mex_wrappers.py binding_classes):
     SMACOS commands detected in macos_api_mod.F90, the rest classified in its
     binding_overrides.CLI_BINDINGS.  The generator stops on an unclassified entry."""
-    gen = ROOT / "mmacos" / "src"
+    gen = ROOT / "app" / "mmacos" / "src"
     if not (gen / "gen_mex_wrappers.py").is_file():
         raise SystemExit(f"binding generator not found at {gen}")
     sys.path.insert(0, str(gen))
@@ -253,7 +253,7 @@ def gen_engine(notes):
             "**CLI-only, legacy** (the internal linear model and the differential "
             "commands, superseded by the `dw_dx` route — Dave 2026-10-10) or "
             "**missing**.  Generated with the binding generator "
-            "(`mmacos/src/gen_mex_wrappers.py`, `binding_classes`).  "
+            "(`app/mmacos/src/gen_mex_wrappers.py`, `binding_classes`).  "
             "Counts: " + ", ".join(f"{k} {cnt[k]}" for k in
                 ("SMACOS command", "direct setter", "CLI-only", "CLI-only, legacy",
                  "missing")) + ".", ""]

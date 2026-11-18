@@ -44,11 +44,11 @@ interfaces built on it (the interfaces lived in the separate
 - **Bundled third-party code** (`external/`): the giza graphics library,
   readline, the SLSQP optimizer and the FITS writer. CMake builds them with
   the engine.
-- **Generic MACOS Interface, GMI** (`GMI/`): uses MATLAB as a front end
+- **Generic MACOS Interface, GMI** (`app/GMI/`): uses MATLAB as a front end
   for specific analyses.
-- **pymacos** (`pymacos/`): uses Python as a front end, and provides
+- **pymacos** (`app/pymacos/`): uses Python as a front end, and provides
   linear model generation and wide-ranging test facilities.
-- **mmacos** (`mmacos/`): uses MATLAB as a front end, and provides
+- **mmacos** (`app/mmacos/`): uses MATLAB as a front end, and provides
   linear model generation and optical design layers. More versatile than GMI.
 - **SegMirMaker** (`segmirmaker/`): generates segmented-mirror prescriptions.
 - **Prescription converters** (`rx_converter/`): convert CODE V and Zemax
@@ -77,9 +77,10 @@ macos/                          (this repository -- CMakeLists.txt and make*.sh 
                                  the glass table)
     external/                   (bundled third-party code: giza, readline-8.2, slsqp,
                                  fits_build)
-    GMI/                        (GMI MATLAB mex interface)
-    mmacos/                     (mmacos MATLAB mex interface -- CMakeLists.txt here)
-    pymacos/                    (pymacos Python interface)
+    app/                        (the interfaces built on the engine)
+        GMI/                    (GMI MATLAB mex interface)
+        mmacos/                 (mmacos MATLAB mex interface -- CMakeLists.txt here)
+        pymacos/                (pymacos Python interface)
     segmirmaker/                (segmented-mirror prescription generator)
     rx_converter/               (prescription converters)
     optical_design/             (design rules and reference fixtures)
@@ -296,7 +297,7 @@ For MATLAB, add the GMI directory to the MATLAB path in `startup.m` or via
 the MATLAB **Set Path** dialog:
 
 ```matlab
-addpath('~/dev/macos/GMI')
+addpath('~/dev/macos/app/GMI')
 ```
 
 ### Linux Build Output Locations
@@ -306,7 +307,7 @@ addpath('~/dev/macos/GMI')
 | `macos` executable | `build_release/bin/macos` |
 | `smacos_dvr` executable | `build_release/bin/smacos_dvr` |
 | `libsmacos.a` static library | `build_release/lib/libsmacos.a` |
-| `GMI.mexa64` MATLAB mex | `GMI/GMI.mexa64` |
+| `GMI.mexa64` MATLAB mex | `app/GMI/GMI.mexa64` |
 | `mmacos.mexa64` MATLAB mex | `build_release/bin/mmacos.mexa64` |
 
 ### Linux Build Directory Names
@@ -575,7 +576,7 @@ pymacos is the Python interface to SMACOS. It must be built **after** SMACOS.
 
 #### Build
 ```bash
-cd ~/dev/macos/pymacos/src/cmake
+cd ~/dev/macos/app/pymacos/src/cmake
 rm -rf build && mkdir build && cd build
 cmake -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DCMAKE_Fortran_COMPILER=ifx -S ..
 make
@@ -583,9 +584,9 @@ make
 
 Output: `pymacos/src/pymacos/pymacosf90.cpXXX-linux.so`
 
-Run tests from `pymacos/src`:
+Run tests from `app/pymacos/src`:
 ```bash
-cd ~/dev/macos/pymacos/src
+cd ~/dev/macos/app/pymacos/src
 python -m pytest ../tests/ -v
 ```
 
@@ -626,11 +627,11 @@ pymacos — both wrap the same `macos_api_mod` module compiled into
 Python and MATLAB simultaneously.
 
 mmacos is built from its own `CMakeLists.txt` located in
-`mmacos/`. It can be built two ways:
+`app/mmacos/`. It can be built two ways:
 
 - **Integrated**: called automatically from the main `CMakeLists.txt` via
   `BUILD_MMACOS=ON` — SMACOS and mmacos are built in one step
-- **Standalone**: invoked separately from the `mmacos/` directory, pointing
+- **Standalone**: invoked separately from the `app/mmacos/` directory, pointing
   at a pre-built SMACOS tree via `MACOS_BUILD_DIR`
 
 ### Linux
@@ -675,7 +676,7 @@ Use this when you want to rebuild mmacos without rebuilding SMACOS.
 path (`mmacos` under the repository root):
 
 ```bash
-cd ~/dev/macos/mmacos
+cd ~/dev/macos/app/mmacos
 rm -rf build
 cmake -B build -G Ninja \
   -DCMAKE_BUILD_TYPE=Release \
@@ -912,13 +913,13 @@ mmacos('init', 128)
 ```
 
 **mmacos: "Gateway function is missing" on Windows**
-The MEX file was built with an older `mmacos/CMakeLists.txt`. Rebuild with
+The MEX file was built with an older `app/mmacos/CMakeLists.txt`. Rebuild with
 the latest version which correctly exports `mexFunction` via the linker.
 
 **mmacos: "unknown command" for valid commands**
 The string dispatch in `mexFunction` is not receiving the command correctly.
 This is a known issue with some compiler/MATLAB version combinations. Ensure
-you are using the latest `mmacos/CMakeLists.txt` which uses `MX_COMPAT_32`
+you are using the latest `app/mmacos/CMakeLists.txt` which uses `MX_COMPAT_32`
 and the correct MATLAB API symbol aliases.
 
 **`error #7002: Error in opening the compiled module file` / `error #6580: Name in only-list does not exist`**
@@ -942,14 +943,14 @@ that adds new modules over time, periodically diff the contents of the
 one at a time.
 
 **`mmacos_mex.F not found` during configure**
-Set `-DMMACOS_SRC_DIR` to the full path of the `mmacos/` directory:
+Set `-DMMACOS_SRC_DIR` to the full path of the `app/mmacos/` directory:
 ```cmd
 cmake -B build -DMMACOS_SRC_DIR=C:\path\to\macos\mmacos
 ```
-Newer `mmacos` checkouts moved Fortran sources into `mmacos/src/` (mirroring
-pymacos's `src/pymacos` layout) instead of keeping them directly in `mmacos/`.
-Both this project's main `CMakeLists.txt` and `mmacos/CMakeLists.txt` check
-both locations automatically (`mmacos/src/mmacos_mex.F` first, falling back
+Newer `mmacos` checkouts moved Fortran sources into `app/mmacos/src/` (mirroring
+pymacos's `src/pymacos` layout) instead of keeping them directly in `app/mmacos/`.
+Both this project's main `CMakeLists.txt` and `app/mmacos/CMakeLists.txt` check
+both locations automatically (`app/mmacos/src/mmacos_mex.F` first, falling back
 to `mmacos/mmacos_mex.F`), so this should resolve itself on a current
 checkout. If you still hit this error, confirm `mmacos_mex.F` actually
 exists at one of those two locations in your checkout.
@@ -970,7 +971,7 @@ check both:
    the same process causes a silent exit during runtime initialization,
    before any of your code runs. This is caused by a stray
    `/reentrancy:none` compile flag on the **Windows** branch of
-   `mmacos/CMakeLists.txt`'s Fortran compile options. `/reentrancy:none`
+   `app/mmacos/CMakeLists.txt`'s Fortran compile options. `/reentrancy:none`
    is correct and required on **Linux** (see the `mmacos` Makefile's own
    `LDFLAGS`, which uses `-reentrancy=none` deliberately to avoid a
    different SIGSEGV-at-exit issue) but must **not** appear in the Windows
@@ -996,12 +997,12 @@ crash-dump frame analysis for this symptom.
 `macos.Session(...)` is a MATLAB package-qualified call resolved via a
 `+macos/Session.m` file. For MATLAB to find it, the **parent** directory
 of the `+macos` folder must be on the MATLAB path — typically
-`mmacos/src/`, not `mmacos/` itself and not the CMake `build/bin/` output
+`app/mmacos/src/`, not `app/mmacos/` itself and not the CMake `build/bin/` output
 folder. You need **both** on the path: `build/bin` (for the compiled
-`mmacos.mexw64`) and `mmacos/src` (for the `+macos` package `.m` files):
+`mmacos.mexw64`) and `app/mmacos/src` (for the `+macos` package `.m` files):
 ```matlab
 addpath('path/to/macos/build/bin')
-addpath('path/to/macos/mmacos/src')
+addpath('path/to/macos/app/mmacos/src')
 rehash
 m = macos.Session(256);
 ```

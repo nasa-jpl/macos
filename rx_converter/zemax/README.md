@@ -151,7 +151,7 @@ The program decks (DST, AFTA) are program files and are not committed: they beco
 `~/dev/MACOS_sandbox/zemax2macos`), and their tests skip with a message when absent.
 
 **G1, the DST deck.**  `dst2v2_aox_v5_di_2025_05_07_fiximgtilt_stop_at_dm1_20260507_Design-Locked.zmx`
-is checked against the CODE V import `mmacos/templates/30_instruments/bench_ctb/dst2/dst2_F01_norm.in`.
+is checked against the CODE V import `app/mmacos/templates/30_instruments/bench_ctb/dst2/dst2_F01_norm.in`.
 It converts to 14 elements: 11 Reflectors, the two FPM faces and the FocalPlane.
 Coordinate breaks and 24 dummies are dropped, and there are no warnings.  The results,
 measured 2026-11-03:

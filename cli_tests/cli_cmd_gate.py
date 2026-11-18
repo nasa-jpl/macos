@@ -15,7 +15,7 @@ ending in ':' / ']:' / '?'), plus directives:
                           token is a subdirectory under $TMP to copy into (LONG_PATH.jou
                           uses one to make a path longer than the old 130-character line)
   # <anything else>       a comment
-  $ROOT                   expands to the macos repo root; $RES to MACOS_resources;
+  $ROOT                   expands to the macos repo root; $RES to its app/ directory (the interfaces);
   $TMP                    to a per-run scratch directory (SAVE targets)
 
 Status per journal: pass | fail (an expectation missed) | crash (the CLI died) |
@@ -131,7 +131,7 @@ def run_journal(binary, path, root, res, tmp, marks=None):
 def main():
     binary, jdir, outcsv = sys.argv[1:4]
     root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
-    res = os.environ.get('MACOS_RESOURCES', root)   # one repo since the MACOS_resources merge
+    res = os.environ.get('MACOS_RESOURCES', os.path.join(root, 'app'))   # the interfaces: app/mmacos, app/pymacos, app/GMI
     # dir='/tmp': macOS's long $TMPDIR wrapped the echoed paths on the 80-column pty and six
     # ^-anchored journals missed (CCMac's Mac gate, 2026-10-19)
     tmp = tempfile.mkdtemp(prefix='cli_cmd_', dir='/tmp')

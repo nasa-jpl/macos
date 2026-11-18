@@ -13,7 +13,7 @@ from pathlib import Path
 MAN = Path(__file__).resolve().parent.parent
 SPECS = MAN / "tools" / "part2" / "specs"
 KEPT = MAN / "part2"
-TPL = MAN.parent.parent / "mmacos" / "templates"       # this repository
+TPL = MAN.parent.parent / "app" / "mmacos" / "templates"   # this repository
 
 # words an all-caps heading keeps in capitals, and the proper names it keeps capitalized
 KEEP_UPPER = {"RC", "TMA", "FOV", "M1", "M2", "M3", "M4", "FP", "FP2", "DM", "OAP", "PSI", "IFO", "MET",

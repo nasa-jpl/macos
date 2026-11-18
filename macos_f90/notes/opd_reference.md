@@ -108,7 +108,7 @@ written into `OPDMat`) misread as a lost ray.  **Consequence for any RMS compare
 `opd()` / `OPDMat` RMS is over every valid ray EXCEPT the chief, so it sits below the RMS of the full
 launched set by the chief's share -- 0.1 % on a 741-ray grid, 1e-4 at 7081 (the pupil-centre sample
 reads 0 under the chief reference while the mean does not).  `ray_info_get`'s per-ray OPL at the
-exit-pupil Return includes ray 1; `mmacos/challenges/iodc2010/iodc2010_eval.m` takes its RMS from that
+exit-pupil Return includes ray 1; `app/mmacos/challenges/iodc2010/iodc2010_eval.m` takes its RMS from that
 set and keeps the map's RMS beside it, and `iodc2010_gate` pins the identity (map RMS = per-ray set
 without ray 1) to 2e-16.  Not a defect; a convention to state.  Gate:
 `tOpdRef/test_an_obscured_chief_ray_still_serves`.
@@ -116,8 +116,8 @@ without ray 1) to 2e-16.  Not a defect; a convention to state.  Gate:
 `api`: `opd_ref_set(OK,use_chief)` / `opd_ref_get`; mmacos `macos.opd_ref`,
 pymacos `opd_ref` (2026-10-10).  Acts on the LOADED deck (a load restores the
 default), and dirties the cached trace via `modified_rx` because OPDMat is
-filled DURING the trace.  Gates: `mmacos/tests/tOpdRef.m` (12),
-`pymacos/tests/test_opd_ref.py` (6), `cli_tests/cmd/OPD_reference.jou`
+filled DURING the trace.  Gates: `app/mmacos/tests/tOpdRef.m` (12),
+`app/pymacos/tests/test_opd_ref.py` (6), `cli_tests/cmd/OPD_reference.jou`
 (twin deck `ZGD_test_files/tst_opdref_mean.in`).
 
 Related `init` fix: `macos_api_mod`'s `init` rebuilt the engine

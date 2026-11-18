@@ -41,7 +41,7 @@ Fixed-form source: .F files use the C preprocessor, .f files do not.
 | `external/giza/`, `pgplotsub.F`, any plot/display path | `external/giza/CLAUDE.md` | raster inversion + PGCTAB CI-0/1 clobber, non-raster black-on-white, labels/titles/wedge, annotation lines, supersampling/idle-window, GRAY CR/CG/CB 0-based bounds, GRAINI caching, PANEL_ENV viewport, smacos_dvr graphics init, draw_rays data-only |
 | `external/slsqp/`, `design_slsqp_optim.F`, constrained optim | `external/slsqp/CLAUDE.md` | SLSQP-default / NPSOL-opt-in dispatch, variable pre-scaling underflow fix (do **not** bump `dtt`), A/B reference, deferred setbeam port |
 | engine core: `macos_api_mod.F90`, IO/parse (`msmacosio.inc`/`iosub.inc`/`macosio.F`), `elt_mod.F`, `macos_cmd_loop.inc`, `funcsub.F`, `surfsub.F`, `mathsub.F` | `macos_f90/CLAUDE.md` (a 54-line INDEX + the every-session rules) → then the topic file it names in `macos_f90/notes/` (`hygiene`, `surfaces`, `pupil_fex_stop`, `opd_reference`, `rx_io`, `calib`, `cli`, `api_bindings`, `polarization`) | the engine record, split 2026-10-15: each notes file holds its cluster verbatim; **nothing in `notes/` is auto-injected — read the one you touch** |
-| pymacos wrappers / regression | `pymacos/CLAUDE.md` | (existing) intensity/complex_field/dx_at/apodize, PROPER-compare; **cross-ref**, do not duplicate here |
+| pymacos wrappers / regression | `app/pymacos/CLAUDE.md` | (existing) intensity/complex_field/dx_at/apodize, PROPER-compare; **cross-ref**, do not duplicate here |
 | coronagraph test prescriptions | `optical_design/CORONAGRAPH_DESIGN_RULES.md` + the `Element= Obscuring` mask rule | **cross-ref** |
 
 > **CC:** If a gotcha spans two subtrees (e.g. a wrapper that touches both
@@ -70,8 +70,8 @@ RPATH, the gfortran-portability list (the ifx-only constructs gfortran rejects),
 build choice and the debug-build notes are in `BUILD.md`.
 
 ## Branches (summary — the model and the public-release strategy are `BRANCHES.md`)
-**One repository since 2026-11**: `MACOS_resources` is merged into `macos` (`mmacos/`,
-`pymacos/`, `GMI/`, `segmirmaker/`, `rx_converter/`, `optical_design/` beside `macos_f90/`).
+**One repository since 2026-11**: `MACOS_resources` is merged into `macos` (`app/mmacos/`,
+`app/pymacos/`, `app/GMI/`, `segmirmaker/`, `rx_converter/`, `optical_design/` beside `macos_f90/`).
 `dev` is the public integration branch and `main` the public release surface; `mr_merge`
 carries the merge and the reorganization (issues #75 to #83), one temporary branch and one
 pull request per issue.  `dev-candidate`, `opt-dev`, `sls-dev` and `bench-builder` are gone

@@ -132,7 +132,7 @@ catalog arrays are blanked once in `elt_mod_init` (allocation); per-element
 `GlassElt`/`GlassCoef` stay Rx state and are still reset per load.  **Rule:
 `elt_mod_init_vars` resets PRESCRIPTION state only; anything loaded once at
 start-up (catalogs, tables) is blanked at allocation.**  Gate: CLI A/B on
-`mmacos/tests/Rx/Rx_GlassPlate.in` (pre-fix: IndRef 1.0 and OPD 0 at every
+`app/mmacos/tests/Rx/Rx_GlassPlate.in` (pre-fix: IndRef 1.0 and OPD 0 at every
 wavelength; post-fix: Malitson coefficients SAVEd, OPD 6.861e-4 / 6.679e-4 /
 6.491e-4 m at 0.5/1.0/2.0 um) + `tGlassDispersion` / `tGratingImmersed`
 (mmacos, SUITE_FAST).  Related facts pinned by TO: the Grating branch takes

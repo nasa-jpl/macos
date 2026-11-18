@@ -1,17 +1,17 @@
 # mmacos ↔ pymacos capability parity audit
 
 **Date:** 2026-07-02 (supersedes the 2026-06-12 parity note in
-`mmacos/CLAUDE.md` §"Veneer parity with pymacos").
+`app/mmacos/CLAUDE.md` §"Veneer parity with pymacos").
 **Method:** mechanical extraction + diff of the three layers from the
 sources themselves — no reliance on prior audit notes:
 
 | Layer | Source | Count |
 |---|---|---|
 | Shared backbone | `subroutine` names in `macos/macos_f90/macos_api_mod.F90` | 121 routines |
-| pymacos raw | `subroutine` names in `pymacos/src/cmake/source/pymacos_f2py.f90` | 116 wrappers |
-| mmacos raw | `mmacos/src/mmacos_gen_cmds.txt` + `CASE('…')` in `mmacos_mex.F` | 131 commands |
-| pymacos user surface | `def` names in `pymacos/src/pymacos/macos.py` + `tests/sensitivities/*.py` | ~100 public fns |
-| mmacos user surface | `mmacos/src/+macos/*.m` + `+channels/` + `+design/` + `sensitivities/` | ~109 fns + drivers |
+| pymacos raw | `subroutine` names in `app/pymacos/src/cmake/source/pymacos_f2py.f90` | 116 wrappers |
+| mmacos raw | `app/mmacos/src/mmacos_gen_cmds.txt` + `CASE('…')` in `mmacos_mex.F` | 131 commands |
+| pymacos user surface | `def` names in `app/pymacos/src/pymacos/macos.py` + `tests/sensitivities/*.py` | ~100 public fns |
+| mmacos user surface | `app/mmacos/src/+macos/*.m` + `+channels/` + `+design/` + `sensitivities/` | ~109 fns + drivers |
 
 To re-run the audit: repeat the greps above and `comm -23` the
 lowercased name lists (mmacos cmd names are lowercase; a few api
@@ -51,7 +51,7 @@ routines are mixed-case, e.g. `elt_srf_zrn_FreeForm`).
 
 Capability exists in mmacos via raw `mmacos('cmd', …)` but has no
 `+macos/*.m` wrapper. Matches the "still raw-only" tracker in
-`mmacos/CLAUDE.md` §11.6 cross-ref — verified still accurate 2026-07-02.
+`app/mmacos/CLAUDE.md` §11.6 cross-ref — verified still accurate 2026-07-02.
 
 | pymacos typed fn | mmacos raw cmd(s) backing it |
 |---|---|
@@ -115,7 +115,7 @@ mechanical add to `pymacos_f2py.f90` + `macos.py`:
   `setEltSrfZernCoef`.
 - `getActivePointSrc` / `setActivePointSrc` are `#ToDo` stubs.
 
-(All three documented in `pymacos/CLAUDE.md`; left in place because
+(All three documented in `app/pymacos/CLAUDE.md`; left in place because
 downstream code may call them.)
 
 ---

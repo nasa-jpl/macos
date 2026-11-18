@@ -45,11 +45,11 @@ These arms are **already committed**; nothing needs editing on a fresh clone:
 - **`makems.sh`** — Darwin-guarded: a portable job count (`sysctl
   hw.logicalcpu`, since `nproc` is Linux-only) and the Linux-only bundled-
   readline bootstrap is **skipped on Darwin** (CMake links Homebrew readline).
-- **`mmacos/Makefile` + `mmacos/CMakeLists.txt`** — Darwin arm: `maca64` /
+- **`app/mmacos/Makefile` + `app/mmacos/CMakeLists.txt`** — Darwin arm: `maca64` /
   `.mexmaca64`, bundle + `-Wl,-undefined,dynamic_lookup`, plain `-lmx -lmex
   -lmat`, `-mcpu=native`, `-lc++`, libgfortran on rpath; `FC` default via
   `ifeq ($(origin FC),default)`.
-- **`pymacos/src/cmake/CMakeLists.txt`** — `elseif(APPLE)` → MACOS64, gfortran
+- **`app/pymacos/src/cmake/CMakeLists.txt`** — `elseif(APPLE)` → MACOS64, gfortran
   flags, `-E -cpp -P` preprocess.
 
 ### Build commands (verified 2026-10-19)
@@ -59,20 +59,20 @@ cd <clone>/macos && source ./makems.sh release gfortran
 #    outputs: build_release_gfortran/{lib/libsmacos.a, bin/macos}
 
 # 2. mmacos mex (shell FC may be gfortran-16; pass FC=gfortran explicitly)
-cd <clone>/macos/mmacos
+cd <clone>/macos/app/mmacos
 rm -f src/mmacos.mexmaca64
 MACOS_BUILD_DIR=<clone>/macos/build_release_gfortran FC=gfortran make
 MACOS_BUILD_DIR=<clone>/macos/build_release_gfortran ./run_mmacos_tests.sh fast
 
 # 3. pymacos (f2py; venv python 3.13)
-cd <clone>/macos/pymacos/src/cmake
+cd <clone>/macos/app/pymacos/src/cmake
 PATH="$HOME/.venv/pymacos/bin:$PATH" cmake -B build_mac -S . \
   -DCMAKE_Fortran_COMPILER=gfortran-16 \
   -DMACOS_BUILD_DIR=<clone>/macos/build_release_gfortran \
   -DPython_EXECUTABLE=$HOME/.venv/pymacos/bin/python
 PATH="$HOME/.venv/pymacos/bin:$PATH" cmake --build build_mac
-cd <clone>/macos/pymacos/tests
-PYTHONPATH=<clone>/macos/pymacos/src \
+cd <clone>/macos/app/pymacos/tests
+PYTHONPATH=<clone>/macos/app/pymacos/src \
 ~/.venv/pymacos/bin/python -m pytest --ignore=proper_compare -q
 ```
 
@@ -325,8 +325,8 @@ tracks the lost rays).
 regexes on near-zero / precision-sensitive numeric prints differing in the
 trailing digits (e.g. the recurring Cassegrain `1.293791606D-12`); 2 are
 harness portability — `GPERTURB.jou` references an **untracked** fixture
-`pymacos/tests/Rx/Rx_e5hex1.in` (the committed tree has `e5hex1.in`;
-`Rx_e5hex1.in` lives only under `GMI/regression/`), and `OBS_POLYGON.jou` uses
+`app/pymacos/tests/Rx/Rx_e5hex1.in` (the committed tree has `e5hex1.in`;
+`Rx_e5hex1.in` lives only under `app/GMI/regression/`), and `OBS_POLYGON.jou` uses
 GNU `sed -i -e` in a `!`-escape.
 
 **#4 / #5 — the pin fails** are tight-tolerance / `isequaln` / exact-string

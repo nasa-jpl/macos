@@ -21,10 +21,10 @@ with the seven segments and the secondary as the actuators.
 
 ### The assistant reads
 
-- `mmacos/templates/50_sensitivities/e5hex1_budget/README.md` -- the method, the
+- `app/mmacos/templates/50_sensitivities/e5hex1_budget/README.md` -- the method, the
   group table as the interface, the WFC stage (which rows a controller removes, and the two kinds of
   rows it adds: sensing error and actuator noise), and the live-formula workbook.
-- `mmacos/design/runners/run_budget.m`, its help text -- the stage runner: the
+- `app/mmacos/design/runners/run_budget.m`, its help text -- the stage runner: the
   options for the controlled budget and for the metrology stage, the artefacts.
 - `budget_spec_e5hex1.m` -- the group table itself, printed below.
 
