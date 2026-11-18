@@ -11,7 +11,7 @@ From this directory, after `run('<path-to>/mmacos/mmacos_setup.m')`:
     singlet                                   % the defaults
     out = singlet('FNUM', 4, 'GLASS', 'N-SF6', 'OBJECT_MM', 300)
 
-Choices (name-value): `EFL_MM` 100, `FNUM` 5, `GLASS` 'N-BK7' (any name in `macos_f90/macos_glass_list.txt`), `LAMBDA_NM` 587.5618, `THICK_MM` 4, `OBJECT_MM` Inf, `NGRID` 63, `MODEL` 128, `NSCAN` 41 (0 skips the scan), `OUTDIR` `./out`.  The run writes `out/singlet_report.txt`, `out/singlet_bending.png`, `out/singlet.mat` and the decks it scored.  It takes about 20 s.
+Choices (name-value): `EFL_MM` 100, `FNUM` 5, `GLASS` 'N-BK7' (any name in `data/macos_glass_list.txt`), `LAMBDA_NM` 587.5618, `THICK_MM` 4, `OBJECT_MM` Inf, `NGRID` 63, `MODEL` 128, `NSCAN` 41 (0 skips the scan), `OUTDIR` `./out`.  The run writes `out/singlet_report.txt`, `out/singlet_bending.png`, `out/singlet.mat` and the decks it scored.  It takes about 20 s.
 
 **Metric** (stated before the numbers): RMS wavefront error in waves over the full aperture, on the exit-pupil sphere centred on the chief ray's image point (`macos.opd_ref('chief')`), piston removed, tilt and focus kept, image plane at the lens's own paraxial focus.  "Best focus" moves the image plane to the RMS minimum by CALIB on the image plane alone.
 

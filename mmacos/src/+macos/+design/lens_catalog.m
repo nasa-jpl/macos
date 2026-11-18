@@ -8,7 +8,7 @@ function [L, info] = lens_catalog(part, opts)
 %   add your parts) holds one PART line per lens -- radii, centre
 %   thicknesses, glasses, diameter, and the vendor's quoted EFL / BFL /
 %   design wavelength -- and GLASS lines for any glass the engine's table
-%   (macos_f90/macos_glass_list.txt) does not carry, as Sellmeier rows.  The
+%   (data/macos_glass_list.txt) does not carry, as Sellmeier rows.  The
 %   file's own header documents the format and the sign convention.
 %
 %   L is a Lens with D = the part diameter, its glasses resolved (a table

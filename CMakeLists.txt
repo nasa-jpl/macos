@@ -146,15 +146,37 @@ endif()
 # ==============================================================================
 set(smacos_src_dir "${CMAKE_CURRENT_SOURCE_DIR}/macos_f90")
 
-# The engine's built-in data directory: where a build finds macos_param.txt
-# and macos_glass_list.txt with no MACOS_HOME set (find_macos_file in
-# param_mod.F; $MACOS_HOME still overrides it).  Written into build_loc.inc,
-# which param_mod.F includes.
-set(MACOS_DATA_DIR "${smacos_src_dir}" CACHE PATH
-    "Directory holding macos_param.txt and macos_glass_list.txt")
+# The engine's built-in data directory, data/: where a build finds
+# macos_param.txt and macos_glass_list.txt with no MACOS_HOME set
+# (find_macos_file in param_mod.F; $MACOS_HOME still overrides it).  Written
+# into build_loc.inc, which param_mod.F includes.
+#
+# MACOS_DATA_DIR is an optional override and is empty by default; the default
+# directory is computed here on every configure, not stored in the cache, so a
+# build tree made before the data files moved does not keep pointing at their
+# old place.  A cached value that no longer holds macos_param.txt is dropped
+# with a warning for the same reason.
+set(MACOS_DATA_DIR "" CACHE PATH
+    "Directory holding macos_param.txt and macos_glass_list.txt (empty: <repository>/data)")
+set(_macos_data_default "${CMAKE_CURRENT_SOURCE_DIR}/data")
+if(MACOS_DATA_DIR AND NOT EXISTS "${MACOS_DATA_DIR}/macos_param.txt")
+  message(WARNING "MACOS_DATA_DIR=${MACOS_DATA_DIR} does not hold macos_param.txt; "
+                  "using ${_macos_data_default} instead.")
+  set(MACOS_DATA_DIR "" CACHE PATH
+      "Directory holding macos_param.txt and macos_glass_list.txt (empty: <repository>/data)" FORCE)
+endif()
+if(MACOS_DATA_DIR)
+  set(_macos_data_dir "${MACOS_DATA_DIR}")
+else()
+  set(_macos_data_dir "${_macos_data_default}")
+endif()
+if(NOT EXISTS "${_macos_data_dir}/macos_param.txt")
+  message(WARNING "${_macos_data_dir} does not hold macos_param.txt; the build "
+                  "will need MACOS_HOME at run time.")
+endif()
 set(MACOS_GENERATED_DIR "${CMAKE_BINARY_DIR}/generated")
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/macos_build_loc.cmake")
-macos_write_build_loc("${MACOS_DATA_DIR}" "${MACOS_GENERATED_DIR}/build_loc.inc")
+macos_write_build_loc("${_macos_data_dir}" "${MACOS_GENERATED_DIR}/build_loc.inc")
 if(USE_NPSOL)
   set(npsol_src_dir "${smacos_src_dir}/npsol")
   if(NOT EXISTS "${npsol_src_dir}/CMakeLists.txt")

@@ -272,7 +272,7 @@ def default_glass_list():
     beside = os.path.join(here, 'macos_glass_list.txt')     # a stand-alone package
     if os.path.isfile(beside):
         return beside
-    return os.path.normpath(os.path.join(here, '..', '..', 'macos_f90',      # this repository
+    return os.path.normpath(os.path.join(here, '..', '..', 'data',           # this repository
                                          'macos_glass_list.txt'))
 
 
@@ -1184,7 +1184,7 @@ def options(argv=None):
     ap.add_argument('--glass-list', default=default_glass_list(),
                     help='the engine glass catalog (default: $MACOS_GLASS_LIST, else '
                          'macos_glass_list.txt beside this script, else '
-                         "this repository's macos_f90/macos_glass_list.txt; "
+                         "this repository's data/macos_glass_list.txt; "
                          'here %(default)s)')
     return ap.parse_args(argv)
 

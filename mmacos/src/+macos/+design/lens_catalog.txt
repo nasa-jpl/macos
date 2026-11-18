@@ -14,7 +14,7 @@
 # EFL, BFL and lambda_nm are the vendor's quoted values: macos.design.lens_catalog
 # returns them beside the Lens and the tests check the paraxial solve against them.
 #
-# A glass the engine table (macos_f90/macos_glass_list.txt) does not carry is
+# A glass the engine table (data/macos_glass_list.txt) does not carry is
 # given here as its Sellmeier row (n^2 - 1 = sum B_i L2/(L2 - C_i), L2 in um^2);
 # nd is the published index at 587.56 nm, the check the loader's test applies.
 # The deck carries the row as GlassCoef=, so the engine traces it exactly.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate macos_f90/glass_builtin.f90 from macos_f90/macos_glass_list.txt.
+"""Generate macos_f90/glass_builtin.f90 from data/macos_glass_list.txt.
 
 Bakes the full glass catalog (Sellmeier names + 6 coefficients per
 glass) into the macos/smacos binaries (PLAN section 0: no separate
@@ -12,7 +12,7 @@ Then rebuild.  Commit both the .txt and the regenerated .f90.
 import pathlib
 
 root = pathlib.Path(__file__).resolve().parent.parent
-src = root / "macos_f90" / "macos_glass_list.txt"
+src = root / "data" / "macos_glass_list.txt"
 dst = root / "macos_f90" / "glass_builtin.f90"
 
 names, rows = [], []

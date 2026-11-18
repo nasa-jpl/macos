@@ -64,7 +64,7 @@ def mex_bound(gen_f, mex_f, api_names):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--api', default=str(
-        HERE / '..' / '..' / '..' / 'macos' / 'macos_f90' / 'macos_api_mod.F90'))
+        HERE / '..' / '..' / 'macos_f90' / 'macos_api_mod.F90'))
     ap.add_argument('--resources', default=str(HERE / '..' / '..'))
     ap.add_argument('--names', action='store_true')
     a = ap.parse_args()

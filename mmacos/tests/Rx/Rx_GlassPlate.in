@@ -9,7 +9,7 @@
 % the refracted direction must FOLLOW macos.set_src_wvl.  The test reads the
 % index off the refracted ray: n = sin(30 deg) / sin(theta_t), one number per
 % wavelength, and compares it with Malitson's fused-silica Sellmeier (the
-% coefficients in macos_f90/macos_glass_list.txt, line 'Silica').
+% coefficients in data/macos_glass_list.txt, line 'Silica').
 %
 % No index GETTER exists in macos_api_mod (IndRef_ is an unchecked TODO in its
 % audit list), which is why the gate measures the angle, not the number.
