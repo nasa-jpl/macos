@@ -10,9 +10,11 @@
 #   (2) via the shell, the same binary (the CLI's parent of the shell): five bad answers stop it, and
 #   end of input at the prompt stops it, each with exit status 1 and no runtime error.  Pre-fix binary:
 #   the first answer kills the CLI before MACOS> -> red.
+#   (ps -ww: without it ps cuts the command line at the terminal width, 80 columns under the gate,
+#   and a binary in a long path was then not found -- 2026-11-18.)
 # MODEL: abc | 256abc | 256.5 | 99999999999999999999 | 512
-! B=$(ps -o args= -p $PPID | awk '{print $1}'); printf 'a\nb\nc\nd\ne\n256\n' | $B; echo "five-bad rc=$?"
-! B=$(ps -o args= -p $PPID | awk '{print $1}'); $B </dev/null; echo "eof rc=$?"
+! B=$(ps -ww -o args= -p $PPID | awk '{print $1}'); printf 'a\nb\nc\nd\ne\n256\n' | $B; echo "five-bad rc=$?"
+! B=$(ps -ww -o args= -p $PPID | awk '{print $1}'); $B </dev/null; echo "eof rc=$?"
 # EXPECT: Model size "abc" is not one of the sizes 128 \.\.\. 8192 \(attempt 1 of 5\)
 # EXPECT: Model size "256abc" is not one of the sizes 128 \.\.\. 8192 \(attempt 2 of 5\)
 # EXPECT: Model size "256\.5" is not one of the sizes 128 \.\.\. 8192 \(attempt 3 of 5\)

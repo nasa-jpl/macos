@@ -132,4 +132,7 @@ total += convert('smacosio.F', in_ranges(mb, pl), 'MBFile6 + PARSE_LOH')
 nd = routine_range('design_optim.F', r'^\s+Subroutine nls_optim_dvr\(', r'End Subroutine nls_optim_dvr')
 total += convert('design_optim.F', stars_in(nd, deny=('nRefRay', 'nomBeamRefRayDir')), "nls_optim_dvr ' ** '")
 total += convert('macos_cmd_loop.inc', lambda ln, l, L: 'Unknown command = ' in l, 'Unknown command')
+# 2026-11-18: the CLI's own copy of the deck-load line (its twin in smacosio.F MBFile6 is above): a long
+# deck path was wrapped and split by ifx's 80-column rule for list-directed output
+total += convert('macosio.F', lambda ln, l, L: "' being loaded.'" in l, 'the deck-load line')
 print('total', total)

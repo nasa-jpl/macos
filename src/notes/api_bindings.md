@@ -273,6 +273,20 @@ capfd read nothing there, so six binding tests were guarded on the Mac.  Now `em
   <= 132 columns): `tools/emsg_convert.py`, idempotent -- re-use it for more sites rather than hand-editing.
 - **Unit 6 is unchanged** except that ifx no longer wraps a list-directed line at 80 columns (an
   internal record is as wide as emsgRec); trailing blanks are trimmed.
+- **2026-11-18, the path lines that still wrapped.**  From a clone whose path is long, the ifx CLI
+  split `Input file <path> being loaded.` over three lines, and 9 of the 122 command journals could
+  not find it (11 with the start-up line below); the journals and `make transcripts` had to be run
+  through a short link.  Two fixes, by kind:
+  - the CLI's own deck-load line (`macosio.F`, the twin of MBFile6's) is converted by the tool, from
+    its table (`' being loaded.'`, site 229);
+  - `param_mod.F`'s start-up lines -- `Using parameter file "..."`, the two lines of the stale
+    `$MACOS_HOME` warning, the build's data directory -- use explicit formats (`'(1X,3A)'` and the
+    like), NOT emsg: they print before any deck is loaded, in every binding session, and would put
+    a line in each session's message buffer.  The `1X` keeps the blank list-directed output wrote,
+    so the text is unchanged for a path that fitted.
+  With both, the command journals pass from a long path on both compilers and the manual's
+  dialogs regenerate there with no change.  `STARTUP_size.jou` reads its binary's path with
+  `ps -ww`; plain `ps` cuts the line at the terminal width (80 under the gate).
 - **The buffer** keeps the last 500 lines (256 characters each) since the last clear and counts the
   older ones as dropped.  api: `messages_count(OK, nLines_, nChars_, nDropped_)`,
   `messages_get(OK, Codes_, nChars)` (the kept lines joined by LF as character codes -- the generator

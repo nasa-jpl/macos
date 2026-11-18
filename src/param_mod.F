@@ -157,8 +157,13 @@ C
      &           ('** macos parameter file '//
      &            'macos_param.txt could not be found, bye!')
         else
-           print *, ' Using parameter file "',
+!-->  An explicit format, not list-directed output: ifx starts a new
+!     line for an item that does not fit in 80 columns, so a long
+!     path was printed on a line of its own (2026-11-18).  The 1X
+!     keeps the leading blank that list-directed output wrote.
+           print '(1X,3A)', ' Using parameter file "',
      &              macos_param_file(1:ICLEN(macos_param_file)), '"'
+!<--
         end if
 
 	macos_param_unit = 10
@@ -275,13 +280,15 @@ C
               file_name = full_file_name
               RETURN
             ELSE
-              print *, 'Warning: $',
+!-->  explicit formats: a long path must not wrap (see above)
+              print '(1X,5A)', 'Warning: $',
      &                 env_var_name(1:LEN(env_var_name)),
      &                 ' is defined to be ',
      &                 env_var_value(1:ICLEN(env_var_value)), ', but'
-              print *, '         failed to find file: $',
+              print '(1X,4A)', '         failed to find file: $',
      &                 env_var_name(1:LEN(env_var_name)), '/',
      &                 file_name(1:ICLEN(file_name))
+!<--
             END IF
           END IF
         END IF
@@ -311,7 +318,9 @@ C
      &  '  Searched: current directory, executable directory,'
         print *,
      &  '  $MACOS_HOME, and the build''s data directory.'
-        print *, '  Build''s data directory: ', build_loc
+!-->  explicit format: a long path must not wrap (see above)
+        print '(1X,2A)', '  Build''s data directory: ', build_loc
+!<--
         file_name = ''
         RETURN
         END SUBROUTINE find_macos_file
