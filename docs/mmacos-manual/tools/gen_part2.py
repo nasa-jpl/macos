@@ -173,7 +173,8 @@ def tools_tables():
         for kind, fs in (("Function", fn), ("Entry script", sc)):
             if fs:
                 hl += [f"| {kind} | What its help line says |", "|---|---|"]
-                hl += [f"| `{f.stem}` | {re.sub(r'^--\s*', '', h1_line(f)).replace('|', '/') or '(no help line)'} |" for f in fs]
+                lead = re.compile(r'^--\s*')   # outside the f-string: a backslash in one needs Python 3.12
+                hl += [f"| `{f.stem}` | {lead.sub('', h1_line(f)).replace('|', '/') or '(no help line)'} |" for f in fs]
                 hl.append("")
     return "\n".join(out), "\n".join(hl)
 

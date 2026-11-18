@@ -996,7 +996,8 @@ def emit_defaults(ov, api_names, engine_root, mmacos_root, pymacos_root):
         if isinstance(spec, str):
             return spec
         val, rel = _read_default(root, spec, what)
-        c = f'`{val or "\'\'"}` (`{rel}`)'
+        shown = val or "''"            # outside the f-string: a backslash in one needs Python 3.12
+        c = f'`{shown}` (`{rel}`)'
         return f'{c}: {note}' if note else c
 
     for o in ov.OPTIONS:
@@ -1070,7 +1071,7 @@ def binding_classes(help_entries, api_src=None):
     this raises (fail closed)."""
     here = Path(__file__).resolve().parent
     if api_src is None:
-        api_src = (here / '..' / '..' / '..' / 'macos' / 'macos_f90' /
+        api_src = (here / '..' / '..' / 'macos_f90' /
                    'macos_api_mod.F90').resolve().read_text()
     sys.path.insert(0, str(here))
     import binding_overrides as ov

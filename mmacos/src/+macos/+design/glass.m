@@ -14,7 +14,7 @@ function [n, S] = glass(name, lambda_nm, opts)
 %   GlassCoef=, so the engine traces it exactly).
 %   LAMBDA_NM may be a vector; n then has its shape.
 %
-%   The table is macos_f90/macos_glass_list.txt, the file the engine reads at
+%   The table is data/macos_glass_list.txt, the file the engine reads at
 %   start-up (and compiles in as glass_builtin.f90; tools/gen_glass_builtin.py).
 %   Each row is NAME B1 B2 B3 C1 C2 C3 and the index is Schott's Sellmeier
 %       n^2 - 1 = sum_i B_i L2 / (L2 - C_i),   L2 = lambda_um^2,
@@ -32,7 +32,7 @@ function [n, S] = glass(name, lambda_nm, opts)
 %   last are the ones traced).
 %
 %   The file is found at opts.file, else $MACOS_HOME/macos_glass_list.txt, else
-%   this checkout's own macos_f90 directory.  It is read
+%   this checkout's own data directory.  It is read
 %   once per MATLAB session (cached per path).
 %
 %   See also macos.design.Lens, macos.design.Bench.
@@ -106,5 +106,5 @@ end
 % +design -> +macos -> src -> mmacos -> the repository root
 here = fileparts(mfilename('fullpath'));
 root = fileparts(fileparts(fileparts(fileparts(here))));
-f = fullfile(root, 'macos_f90', 'macos_glass_list.txt');
+f = fullfile(root, 'data', 'macos_glass_list.txt');
 end

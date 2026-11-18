@@ -72,8 +72,9 @@ Replace `<username>` with your login name throughout.
 
 ```
 macos/                          (this repository -- CMakeLists.txt and make*.sh here)
-    macos_f90/                  (engine Fortran and C source; macos_param.txt and the
-                                 glass table)
+    macos_f90/                  (engine Fortran and C source)
+    data/                       (what the engine reads at start-up: macos_param.txt and
+                                 the glass table)
     external/                   (bundled third-party code: giza, readline-8.2, slsqp,
                                  fits_build)
     GMI/                        (GMI MATLAB mex interface)
@@ -786,7 +787,7 @@ cf = mmacos('complex_field', 9)   % Complex wavefront at element 9
 > **Important:** `mmacos('init', ...)` reads `macos_param.txt`, which defines
 > the model parameters (array sizes, element limits, etc.). The engine looks
 > in the current working directory, then in `$MACOS_HOME`, then in the
-> `macos_f90/` directory of the checkout it was built from (`BUILD.md`,
+> `data/` directory of the checkout it was built from (`BUILD.md`,
 > "Where the engine finds its data files"). If it finds the file nowhere,
 > which can happen to a MEX file copied to another machine, MATLAB exits
 > without an error message.
@@ -903,9 +904,9 @@ The engine could not find `macos_param.txt`, which `param_mod_init` reads
 during SMACOS initialization. A MEX file run in the checkout it was built
 from finds the file by itself; one that was copied elsewhere does not. Set
 `MACOS_HOME` to a directory that holds the file, or copy
-`macos_f90/macos_param.txt` to the working directory:
+`data/macos_param.txt` to the working directory:
 ```matlab
-setenv('MACOS_HOME', 'path/to/macos/macos_f90')
+setenv('MACOS_HOME', 'path/to/macos/data')
 mmacos('init', 128)
 ```
 

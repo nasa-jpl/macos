@@ -5,8 +5,12 @@ classdef tSegMirMaker < matlab.unittest.TestCase
     % interactive dialog over stdin.  These tests pin (a) the answer
     % ordering the driver assembles and (b) the generator's output
     % against the committed references in segmirmaker/test_in:
-    % a batch run must reproduce e5pie / e5hex2 BYTE-IDENTICALLY
-    % (the binary is deterministic and built -fp-model strict).
+    % a batch run must reproduce e5pie / e5hex2 -- the same text, and
+    % every number to 1e-12 of the scale of its line (TEXT_NUMBERS_MATCH).  The comparison was
+    % byte for byte until 2026-11-17; the references are x86_64 output
+    % and the arm64 build prints a sixteenth digit that differs by one
+    % (CCMac's Mac run of issue #76), so it compares numbers now, and
+    % test_comparator_refuses_real_changes shows what it still refuses.
     %
     % Runs no engine session (the binary is standalone); skips cleanly
     % if the SegMirMaker binary has not been built on this machine.
@@ -19,7 +23,7 @@ classdef tSegMirMaker < matlab.unittest.TestCase
     methods (TestClassSetup)
         function locate(tc)
             here = fileparts(mfilename('fullpath'));            % mmacos/tests
-            res_root = fileparts(fileparts(here));              % MACOS_resources
+            res_root = fileparts(fileparts(here));              % the repository root
             tc.tin = fullfile(res_root, 'segmirmaker', 'test_in');
             % Locate whichever build tree exists (ifx on Linux, gfortran on
             % macOS / gfortran builds); ifx preferred when both are present.
@@ -43,14 +47,8 @@ classdef tSegMirMaker < matlab.unittest.TestCase
                 fullfile(tc.tin, 'e5mono.in'), ...
                 'name', 'e5pie', 'grid', 'Pie', 'rings', 1, ...
                 'gap', 50, 'dofs', 6, 'meas_config', 1);
-            % byte-identical modulo the sign of printed zeros (-0.0E+00 vs
-            % 0.0E+00 flips with FP round-off noise -- inconsequential)
-            tc.verifyEqual(normalize_zero_signs(fileread(out.presc)), ...
-                normalize_zero_signs(fileread(fullfile(tc.tin, 'e5pie.presc'))), ...
-                'e5pie.presc not byte-identical to the committed reference');
-            tc.verifyEqual(normalize_zero_signs(fileread(out.hx)), ...
-                normalize_zero_signs(fileread(fullfile(tc.tin, 'e5pieHx.m'))), ...
-                'e5pieHx.m not byte-identical to the committed reference');
+            tc.verify_matches_(out.presc, 'e5pie.presc');
+            tc.verify_matches_(out.hx, 'e5pieHx.m');
         end
 
         function test_hex2_reproduces_committed(tc)
@@ -61,12 +59,8 @@ classdef tSegMirMaker < matlab.unittest.TestCase
                 fullfile(tc.tin, 'e5mono.in'), ...
                 'name', 'e5hex2', 'grid', 'hex', 'rings', 2, ...
                 'gap', 50, 'dofs', 6, 'meas_config', 2);
-            tc.verifyEqual(normalize_zero_signs(fileread(out.presc)), ...
-                normalize_zero_signs(fileread(fullfile(tc.tin, 'e5hex2.presc'))), ...
-                'e5hex2.presc not byte-identical to the committed reference');
-            tc.verifyEqual(normalize_zero_signs(fileread(out.hx)), ...
-                normalize_zero_signs(fileread(fullfile(tc.tin, 'e5hex2Hx.m'))), ...
-                'e5hex2Hx.m not byte-identical to the committed reference');
+            tc.verify_matches_(out.presc, 'e5hex2.presc');
+            tc.verify_matches_(out.hx, 'e5hex2Hx.m');
             % Hx dimension sanity from the committed run: 19 segments,
             % 42 shared edges x 2 locations x 3 axes (2026-07-19 model,
             % no anchor row) -> nMeas=252, nState=114.
@@ -75,11 +69,48 @@ classdef tSegMirMaker < matlab.unittest.TestCase
             tc.verifySubstring(hxtxt, 'nState=   114;');
         end
 
+        function test_comparator_refuses_real_changes(tc)
+            % The must-fail legs of the comparison the two tests above rely on, on the
+            % committed e5pie reference itself: round-off passes, a real change does not.
+            ref = fileread(fullfile(tc.tin, 'e5pie.presc'));
+            tc.verifyTrue(text_numbers_match(ref, ref), 'a file matches itself');
+            v = regexp(ref, '\d\.\d{15}E[-+]\d\d', 'match', 'once');       % a 16-digit value
+            tc.assertNotEmpty(v, 'the reference prints 16-digit values');
+            last = v(17);  bump = char('0' + mod(last - '0' + 1, 10));
+            ulp = [v(1:16) bump v(18:end)];                                    % one unit in the last digit
+            tc.verifyTrue(text_numbers_match(strrep(ref, v, ulp), ref), 'one unit in the 16th digit is round-off');
+            d7 = v;  d7(8) = char('0' + mod(v(8) - '0' + 1, 10));              % the 7th significant digit
+            [ok, msg] = text_numbers_match(strrep(ref, v, d7), ref);
+            tc.verifyFalse(ok, 'a change in the 7th digit must be refused');
+            tc.verifySubstring(msg, 'against', 'and the message names the pair');
+            tc.verifyFalse(text_numbers_match(regexprep(ref, 'nSeg=\s*7', 'nSeg=  8', 'once'), ref), 'an integer must be equal');
+            tc.verifyFalse(text_numbers_match(strrep(ref, 'Segment', 'Segmint'), ref), 'the text must be equal');
+            tc.verifyTrue(text_numbers_match(' -0.0E+00  1.7E-16', '  0.0E+00 -3.1E-17'), 'numerical zeros are equal, sign and digits aside');
+            tc.verifyFalse(text_numbers_match('5.01E+01', '5.0E+01'), 'a short print gets no last-digit allowance');
+            % a small entry beside large ones is judged against the scale of its line: the pair the
+            % arm64 build actually printed (e5hex2Hx.m row 62, CCMac 2026-11-17) is round-off ...
+            row = ' Hx(62,1:6)=[ -0.460734883D+01 -0.619165476D+01  0.399952076D+03 %s -0.999880191D+00 -0.154791369D-01];';
+            x86 = sprintf(row, '-0.364217987D-08');
+            tc.verifyTrue(text_numbers_match(sprintf(row, '-0.364217951D-08'), x86), 'round-off of the terms the entry came from');
+            % ... and a real change of the same entry is not, nor is the same pair alone on a line
+            tc.verifyFalse(text_numbers_match(sprintf(row, '-0.364217987D-06'), x86), 'the entry a hundred times larger must be refused');
+            tc.verifyFalse(text_numbers_match('-0.364217951D-08', '-0.364217987D-08'), 'alone on its line the entry is its own scale');
+            tc.verifyFalse(text_numbers_match(sprintf('1.0\n2.0\n'), sprintf('1.0\n')), 'the lines must correspond');
+        end
+
         function test_size_args_mutually_exclusive(tc)
             tc.verifyError(@() macos.design.segmirmaker_run( ...
                 fullfile(tc.tin, 'e5mono.in'), ...
                 'seg_size', 100, 'ap_diam', 8000), ...
                 'macos:design:segmirmaker_run:sizeargs');
         end
+    end
+
+    methods (Access = private)
+        function verify_matches_(tc, got_file, ref_name)
+            [ok, msg] = text_numbers_match(fileread(got_file), fileread(fullfile(tc.tin, ref_name)));
+            tc.verifyTrue(ok, sprintf('%s does not match the committed reference: %s', ref_name, msg));
+        end
+
     end
 end

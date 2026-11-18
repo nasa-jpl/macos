@@ -115,7 +115,7 @@ Ours, term by term:
   coefficients in the paraxial model, the independent tracer and the deck
   (`GlassElt= N-BK7` with its `GlassType`/`GlassCoef` row, so the deck is the
   named glass on any engine build) and in the engine table row added
-  2026-10-30 (`macos_f90/macos_glass_list.txt`: N-BK7 and N-SF6, Schott data
+  2026-10-30 (`data/macos_glass_list.txt`: N-BK7 and N-SF6, Schott data
   sheets as tabulated by refractiveindex.info; the catalog's older `BK7` row
   carries the same six numbers under the un-prefixed name).
 

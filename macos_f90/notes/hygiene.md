@@ -77,6 +77,8 @@
   status 1, so a run with no parameter file fails its caller (it was
   status 0: a pymacos suite died at test 6,982 of 7,029 and read as
   passed).
+  Since issue #77 the two files live in `data/` at the repository root,
+  and that is the default of `MACOS_DATA_DIR`.
 
 ## Per-ray status tracking
 *(Documented: Manual §5 "Per-ray status reporting" (statuses, the clipping element, restarts, the bindings' getter).  Below: the engine record.)*

@@ -59,7 +59,7 @@ convex/concave mirror.  In the Dyson the slit sits off the axis by
   and in every binding.  Symptom: `Default used for GlassCoef(k)` at
   load; measured index 1.000 at every wavelength.  Until fixed, a
   block is a fixed `IndRef=` and sweeps are achromatic.
-  Names come from `macos_f90/macos_glass_list.txt` (built into the
+  Names come from `data/macos_glass_list.txt` (built into the
   engine by `tools/gen_glass_builtin.py`): `Silica` (Malitson) and,
   from macos dev-candidate 2026-09-30, `CaF2` (Malitson 1963).  An
   UNKNOWN name is silently ignored (`LGlass` false; the written

@@ -125,7 +125,7 @@ classdef tGlassDispersion < matlab.unittest.TestCase
         end
 
         function test_caf2_when_the_engine_table_carries_it(tc)
-            % Added to macos_f90/macos_glass_list.txt (dev-candidate) as the
+            % Added to data/macos_glass_list.txt (dev-candidate) as the
             % Malitson 1963 Sellmeier; an engine built before that row leaves
             % the element at its written IndRef= 1 and this leg reports
             % Incomplete -- visible, never a silent pass.
