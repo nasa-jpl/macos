@@ -19,6 +19,16 @@ Build entry points (in `~/dev/macos/`):
 - `source ./makegmi.sh` — GMI mex only (requires macos+smacos pre-built)
 - `source ./makejoint.sh` — macos + smacos + smacos_dvr + GMI
 
+**macOS (2026-11-18).** The Makefile has a Darwin branch copied from
+`app/mmacos/Makefile` (the one proven on the Mac): `uname -m` not `uname -i`,
+MATLAB under `/Applications/MATLAB_R20XXx.app`, `MEXTAG` `mexmaca64`/`mexmaci64`,
+a `-bundle -Wl,-undefined,dynamic_lookup` link with `-lmx -lmex -lmat`, gfortran
+only (ifx stops with a message).  `MATLAB_DIR` from the command line OR the
+environment wins over auto-detection; `makegmi.sh` forwards it.  `MLARCH` is
+MATLAB's platform name; `ARCH` is kept only for the legacy Linux engine layout.
+`make print-mextag` names the mex for scripts.  When a Linux line changes, check
+the Darwin twin beside it.
+
 `make` doesn't see `.inc` includes, so when only `GMI.inc` changes, the
 .o files don't rebuild. Force-rebuild via:
 ```

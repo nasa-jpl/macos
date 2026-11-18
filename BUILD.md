@@ -19,7 +19,7 @@ non-constrained problems.
 | `source ./makeall.sh` | macos + smacos + smacos_dvr + GMI (all four) |
 | `source ./makems.sh` | macos + libsmacos.a |
 | `source ./makesd.sh` | smacos_dvr (builds macos/smacos too if needed) |
-| `source ./makegmi.sh` | GMI.mexa64 (requires macos+smacos built first; defaults to gfortran — see GMI build choice section) |
+| `source ./makegmi.sh` | GMI.mexa64, or GMI.mexmaca64 on a Mac (requires macos+smacos built first; defaults to gfortran — see GMI build choice section) |
 | `source ./makegfortran.sh` | macos + smacos + smacos_dvr + GMI via gfortran (all four) |
 
 All build scripts accept `npsol` to enable `-DUSE_NPSOL=ON` (this

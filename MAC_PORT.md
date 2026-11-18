@@ -76,6 +76,28 @@ PYTHONPATH=<clone>/macos/app/pymacos/src \
 ~/.venv/pymacos/bin/python -m pytest --ignore=proper_compare -q
 ```
 
+### GMI (ported 2026-11-18, awaiting its first Mac build)
+
+`app/GMI/Makefile` gained a Darwin branch that follows the mmacos Makefile; `makegmi.sh`
+forwards `MATLAB_DIR`; `app/GMI/regression/run_regression.sh` finds MATLAB under
+`/Applications`. Until then GMI had never been built on a Mac: the Makefile called
+`uname -i`, looked for MATLAB only under `/usr/local/MATLAB`, and linked with GNU-ld
+options.
+
+```bash
+source ./makems.sh release gfortran      # the engine, as above
+source ./makegmi.sh                      # -> app/GMI/GMI.mexmaca64
+app/GMI/regression/run_regression.sh     # against references made on Linux x86-64
+```
+
+The port was written on Linux, where the build and the regression are unchanged.
+First Mac build, 2026-11-18 (CCMac, R2024a, arm64): builds with `MATLAB_DIR` set and with
+MATLAB auto-detected, loads, runs and exits MATLAB cleanly. Against the Linux references the
+maps differ by 6 to 12 units of round-off of the chief-ray path, eps x L (e2e_pie
+5.7e-14 and 8.5e-14 m; e5hex1 1.2e-10 and 8.7e-11 mm). The regression's tolerance was a fixed
+1e-12, which the e5hex1 pair missed; it is now 32 of those units for each prescription
+(`app/GMI/regression/lib/ref_tolerance.m`), the same rule in both decks' units.
+
 ### The load-bearing gotchas (still bite)
 - **`macos_param.txt` + MEX = SIGSEGV — closed for a build run in its own
   tree.** `init` loads `macos_param.txt` from cwd, exe dir, `$MACOS_HOME`, then
@@ -116,6 +138,21 @@ PYTHONPATH=<clone>/macos/app/pymacos/src \
 ---
 
 ## Part 2 — Validation record
+
+### 2026-11-18 — GMI's first Mac build (branch `mr_merge_gmi_mac`, gfortran 16.1.0, MATLAB R2024a arm64)
+
+First time GMI has been built on Apple Silicon. `source ./makegmi.sh` builds `app/GMI/GMI.mexmaca64`
+both with `MATLAB_DIR` set and with MATLAB auto-detected under `/Applications`; the two CCMac-reported
+blockers (`uname -i`, `MATLAB_DIR` not forwarded) and the Linux-only `/usr/local/MATLAB` path and GNU-ld
+options are all resolved. Compile flags are the mmacos Mac set; link is `-bundle -undefined dynamic_lookup`
+with `-lmx -lmex -lmat` and maca64 + libgfortran rpaths. Only diagnostic is the benign `GMIG.F:491`
+rank-mismatch warning (absorbed by `-fallow-argument-mismatch`, as on Linux). The mex loads in MATLAB
+with no missing symbol and `matlab -batch` exits cleanly. **Regression 7/7** against the Linux x86-64
+references under the new path-scaled tolerance `32 x eps x L` (`ref_tolerance.m`): e2e_pie tests 02/03 at
+5.684e-14 / 8.527e-14 (tol 2.271e-13 m); e5hex1 tests 05/06 at 1.164e-10 / 8.731e-11 (tol 4.911e-10 mm) —
+the e5hex1 differences that overran the old fixed 1e-12 are last-ULP cross-architecture round-off on a
+69,121 mm path, and sit at 7.6 and 5.7 in units of eps x L; test07 refuses half-tolerance-pass / twice-fail
+for both decks. No reference re-made, no tolerance hand-edited.
 
 ### 2026-11-02 (14) — release gate part A, clean clone (pair macos `0984cd34` + resources `ef2d7f9a`)
 Full record: `tests/cli/records/mac_gate_gfortran_0984cd34.md`. The full clean-clone gate on the pair the
