@@ -5,7 +5,7 @@
 > work, re-read the doc set across ALL working dirs (the conversation
 > summary drops mechanical how-to): `macos/CLAUDE.md`; this file +
 > `{pymacos,GMI}/CLAUDE.md` + `README.md`s; and, IF PRESENT,
-> `macos/PLAN.md` and the agent `MEMORY.md` (esp. the build/test workflow
+> `devnotes/PLAN.md` and the agent `MEMORY.md` (esp. the build/test workflow
 > entries) -- the plans and the memory live on the `dev` branch only; a
 > release checkout has the `CLAUDE.md` set and the READMEs and no plans,
 > and a citation of a PLAN or BRIEF in this file is provenance, not a file
@@ -128,7 +128,7 @@ or `unaligned tcache chunk` or `munmap_chunk: invalid pointer`.
 
 Same bug pymacos has (its `run_proper_tests.sh` invokes a separate
 pytest process per phase to dodge it).  Logged as a real
-engine-level fix in macos/PLAN.md §0.
+engine-level fix in devnotes/PLAN.md §0.
 
 **Workaround in `run_mmacos_tests.sh`:** the full-suite run splits
 into per-model_size matlab -batch invocations.  When you pass a
@@ -367,7 +367,7 @@ edits — it runs the small classes in ~10 s.  Save the full
 
 ### Standing rule: grow the regression suite alongside every phase
 
-Per macos/PLAN.md §5.4: when a new +macos wrapper, helper, or mex
+Per devnotes/PLAN.md §5.4: when a new +macos wrapper, helper, or mex
 command lands in any phase, add a `tCodeV*` (or topical) test that
 exercises it — even if the immediate motivating task didn't require
 it.  The longer-term goal is a continuously expanding `make
@@ -399,7 +399,7 @@ Shared test conventions:
 ## Design layer (`src/+macos/+design/`, Sprint 2A-i, 2026-06-12)
 
 `macos.design.System` is the high-level **import / analysis / optimize**
-front-end (plan: `~/dev/macos/PLAN_DESIGN_LAYER.md`).  It wraps the
+front-end (plan: `devnotes/PLAN_DESIGN_LAYER.md`).  It wraps the
 existing `+macos` surface; it does NOT touch Fortran.
 
 - `System.from_rx(path, 'model_size', N)` — load via SMACOS, read
@@ -554,7 +554,7 @@ Gregorian / DK layout + conics) is backed by a self-checked reference
 set in **`optical_design/`** — a shared root dir (beside
 `rx_converter`/`segmirmaker`), NOT under mmacos, because it is
 language-agnostic and the JSON fixtures are the cross-language parity
-golden specs (`macos/PLAN_DESIGN_LAYER.md` §3).  From mmacos tests,
+golden specs (`devnotes/PLAN_DESIGN_LAYER.md` §3).  From mmacos tests,
 resolve it with a `tests/private/` path helper (mirror
 `rx_fixture_path.m`).
 
@@ -604,7 +604,7 @@ not capability.  First batch added 2026-06-12: `spot`, `fex` +
 Still raw-only (no veneer): grid-surface family (`elt_srf_grid_*`),
 `src_size`/`src_csys`/`src_info`, surface-csys, `elt_zrn_type`/
 `norm_rad`, `set_ray_info`, `elt_grp` query helpers.  Tracker:
-`~/dev/macos/PLAN.md` §11.6.
+`devnotes/PLAN.md` §11.6.
 
 Other engine wrappers added this cycle: `get_ray_status(N)` (per-category
 RayStat counts; complements binary `get_ray_info`) backed by
@@ -808,7 +808,7 @@ here.  mmacos-side facts only:
   closed form, with AOI and azimuth taken from RAY DIRECTIONS so no
   pupil-grid mapping is assumed (median 2.1e-15).  Reproducer:
   `tools/pol_sp_sign_probe/probe_sp_sign.m`.  Packet (with the closeout
-  entry): `macos/REVIEW_POL_SP_SIGN_2026-07-27.md`; engine detail in
+  entry): `devnotes/REVIEW_POL_SP_SIGN_2026-07-27.md`; engine detail in
   `macos/macos_f90/CLAUDE.md`; report evidence in `polval/50_sp_sign`.
   **Watch out when reading `ray_field`:** `RayE`/`RayDir` are the CURRENT
   trace state, not a per-element history — `trace(e)` then `ray_field(e)`,

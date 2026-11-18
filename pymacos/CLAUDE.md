@@ -5,7 +5,7 @@
 > work, re-read the doc set across ALL working dirs (the conversation
 > summary drops mechanical how-to): `macos/CLAUDE.md`; this file +
 > `{mmacos,GMI}/CLAUDE.md` + `README.md`s; and, IF PRESENT,
-> `macos/PLAN.md` and the agent `MEMORY.md` (esp. the build/test workflow
+> `devnotes/PLAN.md` and the agent `MEMORY.md` (esp. the build/test workflow
 > entries) -- the plans and the memory live on the `dev` branch only; a
 > release checkout has the `CLAUDE.md` set and the READMEs and no plans,
 > and a citation of a PLAN or BRIEF in this file is provenance, not a file

@@ -17,6 +17,10 @@
 - **"Engine first, resources second" becomes "in the same commit".**  The failure it guards
   against is unchanged -- an emitter ahead of its engine keyword fails at prescription-load time,
   not at build time -- but with one repository the engine change and the emitter land together.
+- **The developer notes are in `devnotes/`** (issue #78): the plans, briefs, notes, reviews,
+  runbooks, drafts and reports that were at the top of the repository.  `release-exclude.txt`
+  strips that directory from `main` in one line.  A new note goes there.  Elsewhere a note is
+  still cited by its bare name (`PLAN_CONSOLIDATION.md` 3b); look for it in `devnotes/`.
 - **Old clones:** delete the old `macos` and `MACOS_resources` clones and clone once.  Do not
   pull into, or push from, a clone made before the 2026-11 history rewrite.
 
@@ -88,7 +92,7 @@ Worked example — the 2026-07-28 promotions, which followed the rule:
 - **Branches:** `main` is updated to **sls-dev functionality**; a public
   **`dev`** branch is retained.  All developer-facing files (CLAUDE.md,
   PLAN*.md, `.claude/`, the BRIEF/REPORT/REVIEW/NOTES process files,
-  `docs/Archive/dev_optimization_surfsub` -- the list is `DEV_FILES.md` +
+  `docs/Archive/dev_optimization_surfsub` -- the list is `devnotes/DEV_FILES.md` +
   `release-exclude.txt`) **stay on `dev` but are stripped from `main`**.
   `ZGD_test_files/` is engine test fixtures and stays on BOTH.  **Both
   branches are public.**

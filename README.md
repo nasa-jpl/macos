@@ -87,6 +87,7 @@ macos/                          (this repository -- CMakeLists.txt and make*.sh 
     cli_tests/                  (command-line regression gates)
     ZGD_test_files/             (test prescriptions)
     cmake/                      (CMake helpers)
+    devnotes/                   (developer notes: plans, briefs, reviews; on dev only, not in a release)
     tools/                      (source generators and release scripts)
     build_release/              (CMake build output -- generated)
 ```
