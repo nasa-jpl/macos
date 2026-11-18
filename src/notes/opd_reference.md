@@ -148,7 +148,9 @@ the start-up path set 1 but the load reset ran after them (same trap as
 `reinitialise_variables`).  Fixed: `spcOption = 1` at allocation in
 `elt_mod_init`, removed from `elt_mod_init_vars`; `SPCENTER` still sets
 it.  **The bindings were never affected**: `spot_cmd` issues `SPC` with
-the caller's `ref_pos` on every call.  Gate: `scratchpad/spot_cli_gate.py`
+the caller's `ref_pos` on every call.  Gate: `tests/cli/cmd/SPCENTER.jou` (the
+written spot about the element after a LOAD); first shown with the
+`scratchpad/spot_cli_gate.py` (removed with `scratchpad/`, 2026-11; in the history)
 pattern (pty CLI; `TEXT`; `SPOT 6 TOUT` on `Rx_Cass_FarField`; `PERTURB
 3` by 2e-7 rad; the written spot's mean must move with the chief; the
 `--chfray` leg puts the same binary in the pre-fix state and must fail).

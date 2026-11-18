@@ -1,1 +1,0 @@
-../BRIEF_r2_packaging.md
