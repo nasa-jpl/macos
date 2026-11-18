@@ -260,7 +260,7 @@ macros are not defined in the giza build.  Display only.
 
 ### 3.4 MRESET after CD does not find the glass table start-up found
 
-Start-up reads `<macos>/macos_f90/macos_glass_list.txt` (201 glasses); after `cd` to a scratch
+Start-up reads `<macos>/src/macos_glass_list.txt` (201 glasses); after `cd` to a scratch
 directory, MRESET prints "No glass table file found; using built-in catalog: 201 glasses".  The
 built-in catalog has the same count, so no result moves here; a user's own table would be dropped.
 
@@ -346,14 +346,14 @@ Sections 3 and 7 document (and SINT's data file follows the same rule, `<name as
 
 **Rulings, Dave 2026-10-19** (by this section's numbers):
 #1 keep the SAVE-form decks.  #3 write ImageDemo.jou: `stop` elt 4; `fex` 12, yes; `opd` 12; `int` 13.
-#4 A.8 becomes `macos_f90/smacos_dvr.F`.  #5 Section 3 runs on `tests/ZGD_test_files/lens_array.in` and
+#4 A.8 becomes `src/smacos_dvr.F`.  #5 Section 3 runs on `tests/ZGD_test_files/lens_array.in` and
 `tmo.in` (now in the tree).  #6 fix BINARY.  #7 keep the SINT deck.  #8 yes: remove the debug prints,
 pass CENTER's count out.  #9 take a look at PARTIALS.  #11 regenerate Section 4's tutorials as plain
 dialogs.  (#2 and #10 ruled earlier, below.)
 
 Done at 5aff70dd (gate 15/15 both compilers): **#3** `examples/ImageDemo.jou` (A.7; gate
 `tools/transcripts/appA_imagedemo.jou` replays it with EXEcute -- the plot device is opened first, since
-the device prompt reads the terminal, not the macro).  **#4** A.8 lists `macos_f90/smacos_dvr.F` from the
+the device prompt reads the terminal, not the macro).  **#4** A.8 lists `src/smacos_dvr.F` from the
 tree; `smacosvars.cmn` and `smacosExample.f` removed.  **#5** OLD / stacked OLD / SHOW on `lens_array.in`;
 STRETCH + INT 9, TEXT and the device list on `Telescope.in` (Dave's tmo.in: the five pre-3.2 type names
 mapped, then re-saved by Dave with the exit pupil's zElt +91.48 -- the -91.48 gave a negative far-field dx
@@ -383,7 +383,7 @@ the plot refused).  Open: BUILD + EXPORT stays on CassWithExitPupil.in while len
 4. **A.8 S-MACOS files are obsolete.**  `smacosvars.cmn` documents the COMMON-block / `INCLUDE
    'param.cmn'` interface that Section 9 says was replaced by Fortran 90 modules, and
    `smacosExample.f` declares `INTEGER` / `REAL*4` / `REAL*8` with nothing after them (blank in the
-   3.2 PDF too); neither can compile today: no `param.cmn`, `elt.cmn` or `src.cmn` exists in the tree.  Candidate replacement: `macos_f90/smacos_dvr.F` (82 lines,
+   3.2 PDF too); neither can compile today: no `param.cmn`, `elt.cmn` or `src.cmn` exists in the tree.  Candidate replacement: `src/smacos_dvr.F` (82 lines,
    the module-based driver built by `makesd.sh`), or a short module-based example written from
    Section 9.
 5. **Section 3's decks** (`lens_array.in`, `tmo.in`, not in the tree): the dialogs now run on

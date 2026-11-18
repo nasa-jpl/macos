@@ -9,7 +9,7 @@
 #   release  — -O2 (default)
 #   gfortran — use gfortran instead of ifx
 #   npsol    — build with -DUSE_NPSOL=ON (constrained-optim path);
-#              requires macos_f90/npsol/ tree (only on opt-dev branch).
+#              requires src/npsol/ tree (only on opt-dev branch).
 #              Build dir gets _npsol suffix.
 #
 # Output locations (default build):

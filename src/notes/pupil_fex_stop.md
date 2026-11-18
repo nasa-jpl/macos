@@ -2,7 +2,7 @@
 
 > **Read this file before touching:** `FEX`/`SXP`/`XPS`/`STOP`, `LocalCoord`, `sourcsub.F`, `OrthoSrcFrame`, `UpdSrcGrid`.  These notes are the engine record
 > (what moved, the measurements, the gates); they are NOT auto-injected — the index is
-> `macos_f90/CLAUDE.md`, the root rules `../../CLAUDE.md`.  Text is moved verbatim from the
+> `src/CLAUDE.md`, the root rules `../../CLAUDE.md`.  Text is moved verbatim from the
 > former monolithic cheatsheet (2026-10-15 split); add new entries here, not to the index.
 
 ## LocalCoord's y branch must recompute before it normalizes (1.2 (ff), fixed 2026-10-21)

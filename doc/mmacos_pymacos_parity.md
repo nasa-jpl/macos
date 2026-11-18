@@ -7,7 +7,7 @@ sources themselves — no reliance on prior audit notes:
 
 | Layer | Source | Count |
 |---|---|---|
-| Shared backbone | `subroutine` names in `macos/macos_f90/macos_api_mod.F90` | 121 routines |
+| Shared backbone | `subroutine` names in `macos/src/macos_api_mod.F90` | 121 routines |
 | pymacos raw | `subroutine` names in `app/pymacos/src/cmake/source/pymacos_f2py.f90` | 116 wrappers |
 | mmacos raw | `app/mmacos/src/mmacos_gen_cmds.txt` + `CASE('…')` in `mmacos_mex.F` | 131 commands |
 | pymacos user surface | `def` names in `app/pymacos/src/pymacos/macos.py` + `tests/sensitivities/*.py` | ~100 public fns |

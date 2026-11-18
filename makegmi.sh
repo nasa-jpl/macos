@@ -84,7 +84,7 @@ fi
 echo "makegmi: building GMI via ${GMI_DIR}/Makefile ..."
 make -C "${GMI_DIR}" \
   FC="${FC}" \
-  macossrc_dir="${SCRIPT_DIR}/macos_f90" \
+  macossrc_dir="${SCRIPT_DIR}/src" \
   MACOS_BUILD_DIR="${BUILD_DIR}" \
   || { echo "makegmi: GMI build FAILED"; return 1 2>/dev/null || exit 1; }
 

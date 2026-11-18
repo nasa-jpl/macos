@@ -1,5 +1,5 @@
 # MOD with spaces around '=' once killed the CLI (forrtl severe 24, EOF on an empty value);
-# the guard prints one warning and the prompt continues (macos_f90/CLAUDE.md "MOD command: empty-value crash guard")
+# the guard prints one warning and the prompt continues (src/CLAUDE.md "MOD command: empty-value crash guard")
 old $ROOT/docs/macos-manual/examples/Cassegrain.in
 mod ngridpts = 33
 q

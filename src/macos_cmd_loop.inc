@@ -141,7 +141,7 @@ C         *** reset model size ***
 !     macos.F) but were missing from this deallocate, so at MRESET the
 !     whole allocate statement FAILED ("MACOS: allocate failed!") and
 !     every scratch buffer kept the OLD model's size -- the model-size
-!     transition hazard (PLAN 1.2 (g), 2026-10-16; gate cli_tests/cmd/MRESET.jou).
+!     transition hazard (PLAN 1.2 (g), 2026-10-16; gate tests/cli/cmd/MRESET.jou).
 		   deallocate(L1,DrawEltVec,
      &		     R1,R2,PertVec,DrawRayVec,
      &		     D2,DV1,DV2,CD1,CD2,DWF,
@@ -419,7 +419,7 @@ C         ***next command: Load optical description data***
             OPDRefRayLen_FLG=.FALSE.; ShowMetData_FLG=.FALSE.
 !-->  BWK_FLG is Rx state (`CalBWk= Y`), reset per load -- but it was reset
 !     AFTER MBFile6 had parsed the key, so the CLI's BWK always answered
-!     "Need set CalBWk= Y" (2026-10-16, PLAN 1.2; gate cli_tests/cmd/BWK.jou).
+!     "Need set CalBWk= Y" (2026-10-16, PLAN 1.2; gate tests/cli/cmd/BWK.jou).
             BWK_FLG=.FALSE.
 !<--
 !	    Do i=1,mElt

@@ -20,7 +20,7 @@ MMACOS_DIR := $(shell pwd)
 # so the MATLAB path only needs src/ on it.
 SRCDIR  := src
 SRCPATH := $(MMACOS_DIR)/$(SRCDIR)
-# macos_api_mod is now compiled into libsmacos.a (lives in macos_f90/
+# macos_api_mod is now compiled into libsmacos.a (lives in src/
 # in the macos repo).  The .mod is taken from $(SMACOS_OBJS), the
 # library code is linked via $(SMACOS_LIBS) -- no separate compile step.
 

@@ -647,7 +647,7 @@ C   4) Choice between Nonlinear (default) and Linear algorithms.
 !     never fires there.  Do NOT shorten the floor: on the fast suite
 !     one solve recovers after SIX rejections (tDesignTelescope convex
 !     conic), and a 3-rejection floor stopped base_sphere_zernike at
-!     itr 9, merit 481x the old loop's (macos_f90/CLAUDE.md).  The
+!     itr 9, merit 481x the old loop's (src/CLAUDE.md).  The
 !     linear (SVD) path keeps the old schedule, now with itr_done
 !     initialised.
 	itr_done = .false.

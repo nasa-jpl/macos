@@ -139,7 +139,7 @@ F2PY_EXTRA = ["      ! Subroutine wrapper around the model-size FUNCTION so f2py
 # from that source at generation time (group 1 = the default as written); a
 # pattern that no longer matches stops the generator (fail closed), so the table
 # cannot keep describing a default the code no longer has.  Paths: engine under
-# macos/macos_f90, mmacos under mmacos/src/+macos, pymacos under pymacos/src/pymacos.
+# src/, mmacos under app/mmacos/src/+macos, pymacos under app/pymacos/src/pymacos.
 # `get` / `set` must name macos_api_mod routines (checked against the parse).
 # `status`: 'inherits' (the veneer reads the engine), 'agrees' (restated, same
 # value, no api getter to inherit from), 'fixed' (a restatement removed by A.6),

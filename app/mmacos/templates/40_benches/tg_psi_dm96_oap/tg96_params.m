@@ -274,7 +274,7 @@ P.oap.OAP1_SIDE   = 1;   P.oap.OAP2_SIDE = 1;
 %   'qwAl'        the SAME stack at a QUARTER wave of the bench's own
 %                 632.8 nm (MgF2 n 1.38 -> 114.6 nm physical, half the
 %                 'protectedAl' thickness).  The engine's measured overcoat
-%                 rule (macos_f90/CLAUDE.md, "overcoat quarter-wave
+%                 rule (src/CLAUDE.md, "overcoat quarter-wave
 %                 reversal") is that the trade REVERSES across the
 %                 quarter-wave condition: at the true quarter wave of the
 %                 WORKING wavelength the coating's cross-polarization is

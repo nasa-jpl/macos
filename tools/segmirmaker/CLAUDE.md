@@ -70,7 +70,7 @@ arm64 (e5pie nSeg=7, e5hex2 nSeg=19 / nMeas=252 / nState=114).
 - `segmir_parent_mod` (top of SegMirMaker.f) — holds `_p` parent state
   (`Kc_p`, `Kr_p`, `f_p`, `e_p`, `psi_p`, `pv_p`, `pMon_p`, `lFF_p`,
   `FFCoef_p`, `GridMat_p`, …) and the `FmtD` compact formatter.
-- `SurfCoordFF` — wraps MACOS `FreeFormSrf` (macos_f90/surfsub.F); one
+- `SurfCoordFF` — wraps MACOS `FreeFormSrf` (src/surfsub.F); one
   call per segment returns surface point, normal, and local coord frame.
 - `LoadParent(iParent)` — copies parent's element arrays from `elt_mod`
   into `_p` after SMACOS has loaded the .in file. Sets

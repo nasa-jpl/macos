@@ -67,7 +67,7 @@ License notice: `LICENSE.txt` (public domain).
 
 ## Phase 2 — `slsqp_optim_dvr`
 
-New file `macos_f90/design_slsqp_optim.F` mirroring
+New file `src/design_slsqp_optim.F` mirroring
 `design_cons_optim.F`.  Same external signature as `np_optim_dvr` so
 the call sites in `macos_cmd_loop.inc` don't change semantically.
 

@@ -66,7 +66,7 @@ element. The limiting aperture here is the **DM** (radius 22.5 mm, the pupil
 stop), not the oversized OAPs (radius 75 mm). The generator sets
 `Aperture = R_DM·FILL / r` as if `Aperture` were the half-angle NA, but the
 engine takes a point source's `Aperture` as the **FULL cone angle**
-(`macos_f90/sourcsub.F`: `A = Aperture/2`), so `R_DM·FILL = 21.375 mm` lands
+(`src/sourcsub.F`: `A = Aperture/2`), so `R_DM·FILL = 21.375 mm` lands
 on the DM as the beam **diameter**, not its radius. Measured
 (`ctb_beam_probe`, `ctb_dcr.in`, model 512, 50618 rays): the beam at DM1/DM2
 is **21.24 mm in diameter** (radius 10.62 mm), i.e. the DM is filled to

@@ -119,7 +119,7 @@ set(pymacos_src_dir      "${CMAKE_SOURCE_DIR}/source")
 
 # --- Two-file split ---------------------------------------------------
 # macos_api_mod.F90 : pure-Fortran language-neutral backbone (no !f2py).
-#                    NOW LIVES IN libsmacos.a (macos/macos_f90/).  Only
+#                    NOW LIVES IN libsmacos.a (macos/src/).  Only
 #                    its .mod is needed here for the f2py wrapper layer.
 # pymacos_f2py.f90 : module `api` -- f2py-facing wrappers that forward
 #                     into macos_api_mod via NAME_impl => NAME use-rename.

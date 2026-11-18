@@ -106,7 +106,7 @@ if [ -f "${GMI_DIR}/Makefile" ]; then
   # Makefile defaults to gfortran; use makegfortran.sh for the
   # all-four gfortran build.
   make -C "${GMI_DIR}" FC=ifx \
-    macossrc_dir="${SCRIPT_DIR}/macos_f90" \
+    macossrc_dir="${SCRIPT_DIR}/src" \
     MACOS_BUILD_DIR="${BUILD_DIR}" \
     || { echo "makeall: WARNING — GMI build failed (continuing)"; }
 else

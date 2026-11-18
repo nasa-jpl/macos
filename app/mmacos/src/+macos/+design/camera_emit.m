@@ -33,7 +33,7 @@ function E = camera_emit(C, path, opts)
 %   (relay surfaces whose position is free; DOF 6), .var_fp, .max_iters, .tol,
 %   .ray_grid, .fov_weights, .fex, .wavelengths_nm (OptWaveLen=).  The primary
 %   is element-bound as the stop (ApStop= 0 0).  The CALIB lessons of the lens
-%   templates hold (macos_f90/notes/calib.md): one element never carries both a
+%   templates hold (src/notes/calib.md): one element never carries both a
 %   position and a radius DOF; radius solves want OptMaxItrs in the thousands.
 %
 %   See also macos.design.cass_camera, macos.design.lens_emit, macos.design.lens_eval.

@@ -396,7 +396,7 @@ budget lines before quoting a number.
   term.  Not modeled: the metasurface's own oblique-incidence terms over
   the f/4.2 cone (retardance and geometric phase both ~theta^2, 0.7% at
   the edge) -- a pupil-varying eta and dimple phase, V2-type; the
-  vector-mode/scalar conjugate is documented in macos_f90/CLAUDE.md.
+  vector-mode/scalar conjugate is documented in src/CLAUDE.md.
 - **V2 (2026-09-12): the metasurface's retardance error, priced -- NOT a
   term in the differential or servo budget.**  A real geometric-phase
   mask has retardance pi + err; it converts eta = cos^2(err/2) of the

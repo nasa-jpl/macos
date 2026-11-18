@@ -5,7 +5,7 @@
 
 ## One repository (2026-11-17) — read this first
 - **`MACOS_resources` is merged into `macos`.**  The merge is on branch `mr_merge`
-  (`0a526602`); the interfaces and tools sit at the top level beside `macos_f90/`.  The
+  (`0a526602`); the interfaces and tools sit at the top level beside `src/`.  The
   sections below were written for two repositories and are kept as the record; where they
   say "both repos", "resources" or "the pair", read "this repository".
 - **Live branches on `nasa-jpl/macos` (`git ls-remote --heads`, 2026-11-17):** `main`, `dev`,

@@ -2,7 +2,7 @@
 
 > **Read this file before touching:** `design_optim.F`, `nls.F`, `macos_ops.F`, `calib_*` api, `Opt*` keywords.  These notes are the engine record
 > (what moved, the measurements, the gates); they are NOT auto-injected — the index is
-> `macos_f90/CLAUDE.md`, the root rules `../../CLAUDE.md`.  Text is moved verbatim from the
+> `src/CLAUDE.md`, the root rules `../../CLAUDE.md`.  Text is moved verbatim from the
 > former monolithic cheatsheet (2026-10-15 split); add new entries here, not to the index.
 
 ## CALIB wrappers in macos_api_mod (Phase 1a/1b/1c)

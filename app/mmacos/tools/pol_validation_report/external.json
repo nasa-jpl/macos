@@ -88,14 +88,14 @@
     "X_SPSIGN_CAPTURED": {
       "text": "2026-07-27",
       "gate": "capture date of the pre-fix A/B below",
-      "command": "copy macos_f90/elemsub.F aside, restore the pre-fix RP form (the '! fixed by jzlou' line), makems.sh release gfortran, relink the mex, run tPolarization -k odd_mirror; then restore the copy and rebuild",
+      "command": "copy src/elemsub.F aside, restore the pre-fix RP form (the '! fixed by jzlou' line), makems.sh release gfortran, relink the mex, run tPolarization -k odd_mirror; then restore the copy and rebuild",
       "captured": "2026-07-27",
       "source": "external"
     },
     "X_SPSIGN_PREFIX_RESID": {
       "text": "1.14e+02",
       "gate": "pre-fix median relative residual vs the perfect-conductor closed form (max 1.61e+05)",
-      "command": "copy macos_f90/elemsub.F aside, restore the pre-fix RP form (the '! fixed by jzlou' line), makems.sh release gfortran, relink the mex, run tPolarization -k odd_mirror; then restore the copy and rebuild",
+      "command": "copy src/elemsub.F aside, restore the pre-fix RP form (the '! fixed by jzlou' line), makems.sh release gfortran, relink the mex, run tPolarization -k odd_mirror; then restore the copy and rebuild",
       "captured": "2026-07-27",
       "note": "model 128, Rx_Cass_FarField, same rays as G41",
       "source": "external"
@@ -103,7 +103,7 @@
     "X_SPSIGN_PREFIX_RADIAL": {
       "text": "0.988 / 1.038 / 1.029 / 1.035",
       "gate": "pre-fix median |Ey/Ex| at rho = 0.25 / 0.50 / 0.75 / 1.00",
-      "command": "copy macos_f90/elemsub.F aside, restore the pre-fix RP form (the '! fixed by jzlou' line), makems.sh release gfortran, relink the mex, run tPolarization -k odd_mirror; then restore the copy and rebuild",
+      "command": "copy src/elemsub.F aside, restore the pre-fix RP form (the '! fixed by jzlou' line), makems.sh release gfortran, relink the mex, run tPolarization -k odd_mirror; then restore the copy and rebuild",
       "captured": "2026-07-27",
       "note": "flat -- no slope-driven effect can be",
       "source": "external"
@@ -111,14 +111,14 @@
     "X_SPSIGN_PREFIX_SLOPE": {
       "text": "0.033",
       "gate": "pre-fix log-log slope of cross-pol vs pupil radius",
-      "command": "copy macos_f90/elemsub.F aside, restore the pre-fix RP form (the '! fixed by jzlou' line), makems.sh release gfortran, relink the mex, run tPolarization -k odd_mirror; then restore the copy and rebuild",
+      "command": "copy src/elemsub.F aside, restore the pre-fix RP form (the '! fixed by jzlou' line), makems.sh release gfortran, relink the mex, run tPolarization -k odd_mirror; then restore the copy and rebuild",
       "captured": "2026-07-27",
       "source": "external"
     },
     "X_SPSIGN_PREFIX_RET": {
       "text": "3.9e-10",
       "gate": "pre-fix spurious retardance from a perfect conductor",
-      "command": "copy macos_f90/elemsub.F aside, restore the pre-fix RP form (the '! fixed by jzlou' line), makems.sh release gfortran, relink the mex, run tPolarization -k odd_mirror; then restore the copy and rebuild",
+      "command": "copy src/elemsub.F aside, restore the pre-fix RP form (the '! fixed by jzlou' line), makems.sh release gfortran, relink the mex, run tPolarization -k odd_mirror; then restore the copy and rebuild",
       "captured": "2026-07-27",
       "source": "external"
     },
@@ -210,7 +210,7 @@
     "X_RAD_PREFIX_NORMAL": {
       "text": "0.8164965809",
       "gate": "non-vacuity -- PRE-fix coated/uncoated transmitted amplitude at normal incidence, index-matched layer",
-      "command": "copy macos_f90/elemsub.F aside, `git checkout` it to the pre-landing state (drops the RADIOMETRIC NORMALIZATION block in the coated Refractor branch), makems.sh release gfortran, relink the mex, run tPolRadiometric; then restore the copy and rebuild",
+      "command": "copy src/elemsub.F aside, `git checkout` it to the pre-landing state (drops the RADIOMETRIC NORMALIZATION block in the coated Refractor branch), makems.sh release gfortran, relink the mex, run tPolRadiometric; then restore the copy and rebuild",
       "captured": "2026-07-28",
       "note": "HISTORICAL. model 128, Rx_Refract.in. Exactly 1/sqrt(1.5) -- the index half of the missing factor, with both cosines equal to 1.",
       "source": "external"
@@ -218,7 +218,7 @@
     "X_RAD_PREFIX_P": {
       "text": "0.7311104457",
       "gate": "non-vacuity -- PRE-fix coated/uncoated transmitted amplitude, p at 45 deg",
-      "command": "copy macos_f90/elemsub.F aside, `git checkout` it to the pre-landing state, makems.sh release gfortran, relink the mex, run tPolRadiometric; then restore the copy and rebuild",
+      "command": "copy src/elemsub.F aside, `git checkout` it to the pre-landing state, makems.sh release gfortran, relink the mex, run tPolRadiometric; then restore the copy and rebuild",
       "captured": "2026-07-28",
       "note": "HISTORICAL. model 128, Rx_Refract45.in. = 1/sqrt(1.5*cos(28.1255deg)/cos(45deg)), i.e. both halves of the factor.",
       "source": "external"
@@ -226,7 +226,7 @@
     "X_RAD_PREFIX_S": {
       "text": "0.7311104457",
       "gate": "non-vacuity -- PRE-fix coated/uncoated transmitted amplitude, s at 45 deg",
-      "command": "copy macos_f90/elemsub.F aside, `git checkout` it to the pre-landing state, makems.sh release gfortran, relink the mex, run tPolRadiometric; then restore the copy and rebuild",
+      "command": "copy src/elemsub.F aside, `git checkout` it to the pre-landing state, makems.sh release gfortran, relink the mex, run tPolRadiometric; then restore the copy and rebuild",
       "captured": "2026-07-28",
       "note": "HISTORICAL. Bit-identical to the p value, which is the tell: a Fresnel error would separate s from p, a missing COMMON scalar cannot.",
       "source": "external"
@@ -234,7 +234,7 @@
     "X_RAD_PREFIX_GRID": {
       "text": "0.6666666667",
       "gate": "non-vacuity, grid side -- PRE-fix coated/uncoated integrated detector-plane INTENSITY",
-      "command": "copy macos_f90/elemsub.F aside, `git checkout` it to the pre-landing state, makems.sh release gfortran, relink the mex, run tPolRadiometric -k detector_plane; then restore the copy and rebuild",
+      "command": "copy src/elemsub.F aside, `git checkout` it to the pre-landing state, makems.sh release gfortran, relink the mex, run tPolRadiometric -k detector_plane; then restore the copy and rebuild",
       "captured": "2026-07-28",
       "note": "HISTORICAL. model 128, Rx_Refract.in elt 6. Exactly 1/1.5 = the square of the amplitude number: propsub's CPROPAGATE chain inherited the defect, so the image under-reported flux by a third.",
       "source": "external"
@@ -242,7 +242,7 @@
     "X_RAD_PREFIX_SUITE": {
       "text": "6 pass, 7 fail",
       "gate": "non-vacuity -- tPolRadiometric scored against the pre-fix engine",
-      "command": "copy macos_f90/elemsub.F aside, `git checkout` it to the pre-landing state, makems.sh release gfortran, relink the mex, run tPolRadiometric; then restore the copy and rebuild",
+      "command": "copy src/elemsub.F aside, `git checkout` it to the pre-landing state, makems.sh release gfortran, relink the mex, run tPolRadiometric; then restore the copy and rebuild",
       "captured": "2026-07-28",
       "note": "HISTORICAL. The six that pass are the six that should: the two uncoated-convention gates, the 45-deg fixture's s/p purity check, the fully-coated-plate telescoping identity (invariant under the landing by construction), the polarization-state invariance, and the pol-off gate.",
       "source": "external"
@@ -250,7 +250,7 @@
     "X_RAD_CAPTURED": {
       "text": "2026-07-28",
       "gate": "capture date of the pre-fix radiometric A/B above",
-      "command": "copy macos_f90/elemsub.F aside, `git checkout` it to the pre-landing state, makems.sh release gfortran, relink the mex, run tPolRadiometric; then restore the copy and rebuild",
+      "command": "copy src/elemsub.F aside, `git checkout` it to the pre-landing state, makems.sh release gfortran, relink the mex, run tPolRadiometric; then restore the copy and rebuild",
       "captured": "2026-07-28",
       "source": "external"
     },
