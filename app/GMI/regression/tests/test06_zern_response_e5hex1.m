@@ -55,7 +55,7 @@ function result = test06_zern_response_e5hex1(opts)
     end
     ref = load(ref_path);
     [pass_ref, max_ref, msg_ref] = compare_within(dOPD, ref.dOPD, ...
-                                                   opts.tol, 'vs reference');
+                                                   ref_tolerance('e5hex1', opts), 'vs reference');
     if ~pass_ref
         result.pass = false;
         result.msg = sprintf('[%s] FAIL  %s', name, msg_ref);
@@ -66,7 +66,7 @@ function result = test06_zern_response_e5hex1(opts)
     result.msg = sprintf(['[%s] PASS  Z%d=%.1e on Elt %d -> dOPD ' ...
                           'max|.|=%.3e, vs-ref=%.3e (tol %.3e)'], ...
                          name, target_mode, amplitude_mm, target_elt, ...
-                         max(abs(dOPD(:))), max_ref, opts.tol);
+                         max(abs(dOPD(:))), max_ref, ref_tolerance('e5hex1', opts));
 end
 
 function r = make_result(name)

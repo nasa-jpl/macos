@@ -13,10 +13,11 @@ function [pass, max_diff, msg] = compare_within(a, b, tol, label)
 %   max_diff -- max(|a - b|) (the actual measurement)
 %   msg      -- one-line description suitable for printing
 %
-% Hard-absolute rather than relative because the reference values are
-% generated from the same build (bootstrap_reference) and should match
-% bit-for-bit modulo a small floor.  If the floor needs raising for a
-% specific test, pass a larger tol -- don't switch to relative.
+% The check itself is absolute.  The caller chooses tol: 0 for two calls
+% of the same build (they must agree bit for bit), and
+% lib/ref_tolerance.m for a comparison against a stored reference, which
+% scales with the prescription's path length so that it holds on a
+% second architecture.
 
     if ~isequal(size(a), size(b))
         pass = false;

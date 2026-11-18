@@ -43,10 +43,20 @@ Needs MATLAB (any `R20xx` under `/usr/local/MATLAB/`) and a built
 | 04 smoke (e5hex1) | `Rx_e5hex1.in` (FreeForm chain) | nominal | basic FreeForm loading |
 | 05 nominal repro (e5hex1) | e5hex1 | nominal x2 | FreeForm save/restore (`pFF/xFF/yFF/zFF`, `pData/xData/...`) |
 | 06 Zernike response (e5hex1) | e5hex1 | Z4 on Elt 8 (Zernike-typed) | Zernike apply on a mixed FreeForm+Zernike chain |
+| 07 tolerance refuses | none | no engine call | a tolerance loosened until it passes everything |
 
-Tolerance: hard absolute `|a - b| <= 1e-12` (in mm OPD units).  Loose
-enough to survive harmless re-link-order drift, tight enough that any
-real numeric change shows.
+Tolerance against the stored references: `|a - b| <= 32 * eps * L`, where
+`L` is the prescription's chief-ray path length and `eps` the machine
+epsilon, so `eps * L` is the round-off of the path (`lib/ref_tolerance.m`):
+2.3e-13 m for e2e_pie (L = 31.96 m) and 4.9e-10 mm for e5hex1
+(L = 69,121 mm).  An OPD is
+the difference of two paths, so it is good to the round-off of the path.
+The references were made on Linux x86-64; the first Mac (arm64) run,
+2026-11-18, differed from them by 8 and 12 of these units on e2e_pie and by
+8 and 6 on e5hex1.  The fixed `1e-12` used until then passed the first and failed
+the second only because one deck is in metres and the other in
+millimetres.  The two calls of one build in tests 02 and 05 are still
+compared at tolerance 0.
 
 **References re-made 2026-11-17** (gfortran mex; the ifx mex reproduces
 them bit for bit).  The previous set dated from before 2026-10-10, when
@@ -57,7 +67,7 @@ and tests 02, 03, 05 and 06 failed.  With the old reference forced back
 (`UseChfRay4OPD= N` in the deck) the e2e_pie maps matched the old files to
 3e-14; the e5hex1 maps matched to 8.7e-11 mm, six units in the last place
 of the 66,573 mm path, which is round-off from engine changes since and
-is above this tolerance.  The current references are chief-referenced.
+was above the fixed `1e-12` tolerance of the time.  The current references are chief-referenced.
 
 ## Files
 
@@ -73,9 +83,11 @@ regression/
 │   ├── test03_zern_response_e2e_pie.m
 │   ├── test04_smoke_e5hex1.m
 │   ├── test05_nominal_repro_e5hex1.m
-│   └── test06_zern_response_e5hex1.m
+│   ├── test06_zern_response_e5hex1.m
+│   └── test07_tolerance_refuses.m
 ├── lib/
 │   ├── compare_within.m         absolute-tolerance equality check
+│   ├── ref_tolerance.m          the tolerance against a reference, from the path length
 │   ├── init_e2e_pie.m           param struct for the e2e_pie Rx
 │   └── init_e5hex1.m            param struct for the e5hex1 Rx
 ├── reference/                   committed `.mat` ground truth

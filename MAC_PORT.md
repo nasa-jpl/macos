@@ -87,11 +87,16 @@ options.
 ```bash
 source ./makems.sh release gfortran      # the engine, as above
 source ./makegmi.sh                      # -> app/GMI/GMI.mexmaca64
-app/GMI/regression/run_regression.sh     # six tests against references made on Linux x86-64
+app/GMI/regression/run_regression.sh     # against references made on Linux x86-64
 ```
 
-The port was written on Linux, where the build and the regression are unchanged (6 of 6).
-The first Mac build and regression results go in Part 2.
+The port was written on Linux, where the build and the regression are unchanged.
+First Mac build, 2026-11-18 (CCMac, R2024a, arm64): builds with `MATLAB_DIR` set and with
+MATLAB auto-detected, loads, runs and exits MATLAB cleanly. Against the Linux references the
+maps differ by 6 to 12 units of round-off of the chief-ray path, eps x L (e2e_pie
+5.7e-14 and 8.5e-14 m; e5hex1 1.2e-10 and 8.7e-11 mm). The regression's tolerance was a fixed
+1e-12, which the e5hex1 pair missed; it is now 32 of those units for each prescription
+(`app/GMI/regression/lib/ref_tolerance.m`), the same rule in both decks' units.
 
 ### The load-bearing gotchas (still bite)
 - **`macos_param.txt` + MEX = SIGSEGV — closed for a build run in its own

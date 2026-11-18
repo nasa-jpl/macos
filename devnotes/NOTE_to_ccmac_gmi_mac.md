@@ -1,5 +1,10 @@
 # NOTE to CCMac — GMI on the Mac, branch `mr_merge_gmi_mac` (CC, 2026-11-18)
 
+> **Update, same day:** your first Mac build succeeded and the regression gave 4 of 6. The
+> tolerance is changed in a second commit on this branch; see
+> `devnotes/NOTE_to_ccmac_gmi_mac_tolerance.md`. The PR text at the end of this note is
+> updated for it. The rest of this note is as first written.
+
 Dave asked for this after your report that GMI has not been ported and stops at two blockers
 (`uname -i`, `MATLAB_DIR` not forwarded). **Please proceed with this branch**, and keep watching
 for issue #82: it is pushed (`mr_merge_remove_scratch`, `55d77d04`, note
@@ -56,7 +61,7 @@ compiled on arm64. Expect to iterate; send me what breaks.
 | `source ./makegmi.sh`, MATLAB auto-detected | builds |
 | `MATLAB_DIR` set in the environment | reported, passed on, builds |
 | `MATLAB_DIR` naming a directory that does not exist, after a clean | the build fails at the first compile, as it should |
-| GMI regression, gfortran | 6 of 6 pass |
+| GMI regression, gfortran | 7 of 7 pass (the six engine tests at a difference of exactly 0, and the new tolerance test) |
 | The Makefile run as if on an Apple Silicon Mac (dry run) | issues the compile and bundle-link commands of the mmacos Makefile's Mac branch |
 
 ## Reporting
@@ -89,6 +94,7 @@ On a Mac, GMI can now be built. It never could: the Makefile called `uname -i`, 
 - **A bare `make` in `app/GMI`** now uses gfortran. `FC ?= gfortran` never took effect, because make has a built-in `FC = f77`.
 - **`makegmi.sh`** no longer uses `${VAR,,}`, which needs bash 4 (macOS ships bash 3.2 and zsh), and prints the mex name of the platform.
 - **`app/GMI/regression/run_regression.sh`** finds MATLAB on either platform or through `MATLAB_DIR`. On a machine with no `/usr/local/MATLAB` it used to stop without a message.
+- **The regression's tolerance follows the optical path.** It was a fixed 1e-12. It is now 32 x eps x L, where L is the prescription's chief-ray path length and eps the machine epsilon: 2.3e-13 m for e2e_pie and 4.9e-10 mm for e5hex1. An OPD is the difference of two paths, so it is good to the round-off of the path. The first Mac run differed from the Linux references by 8 and 12 of these units on e2e_pie and by 8 and 6 on e5hex1; the fixed number passed the first pair and failed the second only because one deck is in metres and the other in millimetres. The two calls of one build are still compared at tolerance 0, and a seventh test checks that the rule refuses a change of twice the tolerance.
 - **Documents:** the GMI README and cheatsheet, `MAC_PORT.md` and `BUILD.md`.
 
 ## Test results (Linux)
@@ -99,12 +105,11 @@ On a Mac, GMI can now be built. It never could: the Makefile called `uname -i`, 
 | `source ./makegmi.sh`, MATLAB auto-detected | builds |
 | `MATLAB_DIR` set in the environment | reported, passed on, builds |
 | `MATLAB_DIR` naming a directory that does not exist, after a clean | the build fails at the first compile, as it should |
-| GMI regression, gfortran | 6 of 6 pass |
+| GMI regression, gfortran | 7 of 7 pass (the six engine tests at a difference of exactly 0, and the new tolerance test) |
 | The Makefile run as if on an Apple Silicon Mac (dry run) | issues the compile and bundle-link commands of the mmacos Makefile's Mac branch |
 
 ## Not covered
 
-- **The Mac itself.** Nothing here was built or run on a Mac. The Mac branch is copied from a Makefile that works there, but GMI's own sources have never been compiled on arm64.
-- **The regression on arm64.** Its references were made on Linux x86-64 and it compares at an absolute 1e-12. A difference at round-off level between the two architectures would fail it without anything being wrong; the tolerance is not changed here.
+- **An Intel Mac.** The Mac results are from Apple Silicon.
 - **The CMake route to GMI** (`makegfortran.sh`, `-DBUILD_GMI=ON`) is untouched.
 ```
