@@ -35,7 +35,7 @@ its probe.  Engine at macos `dev` 443140a._
 
 ## 1. Definition and sign
 
-The engine computes, per ray ([tracesub.F:190-233](../../..//macos/macos_f90/tracesub.F)):
+The engine computes, per ray ([tracesub.F:190-233](../../..//macos/src/tracesub.F)):
 
 ```
 OPD(i,j) = CumRayL(ray) − Ref            [longer path ⇒ positive]

@@ -37,7 +37,7 @@ order:
 
 - The `00_`–`04_` chapters are ordinary Markdown — edit freely.
 - The Part I–III catalogs are **generated** by `tools/gen_cmdref.py`
-  from `macos_f90/macos_help.inc`, the mmacos `.m` help headers, the
+  from `src/macos_help.inc`, the mmacos `.m` help headers, the
   pymacos docstrings, and `macos_api_mod.F90`.  Running
   `make cmdref-regen` overwrites them — with one exception:
 - **Hand-written prose survives regeneration only inside the NOTES

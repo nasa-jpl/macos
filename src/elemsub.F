@@ -2832,7 +2832,7 @@ C  unpolarized trace through a WavePlate is bit-identical to the same
 C  trace through a Reference surface.  That equivalence is a gate.
 C
 C  CONVENTIONS (derived from the engine's own, not newly legislated --
-C  see macos_f90/CLAUDE.md "Polarization physics"):
+C  see src/CLAUDE.md "Polarization physics"):
 C
 C  1. AXIS.  PolAxis is the element's reference axis as a 3-vector in
 C     global coordinates: the TRANSMISSION axis of a polarizer, the

@@ -203,7 +203,7 @@ Silicon; no cross-architecture `ZerntoMon*`/hzdef difference. (ff) persists unch
 
 ### 2026-10-20 (7) — re-gate (pair macos `9a971d25` + resources `bcf351c`)
 Full record: `tests/cli/records/mac_gate_gfortran_9a971d25.md`. **Engine
-byte-identical to gate 6** (`macos_f90/` + CMakeLists untouched since `814082d4`),
+byte-identical to gate 6** (`src/` + CMakeLists untouched since `814082d4`),
 so this gate confirms the manual/Zernike/binding-veneer additions land clean on
 Apple Silicon. On Mac: load **163/163** (0 movers vs fcc648c5); cmd **107/108**
 (only COORD_ACOOR = (ff); 2 must-fail red); mmacos fast **656/0**; pymacos

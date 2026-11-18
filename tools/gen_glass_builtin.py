@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate macos_f90/glass_builtin.f90 from data/macos_glass_list.txt.
+"""Generate src/glass_builtin.f90 from data/macos_glass_list.txt.
 
 Bakes the full glass catalog (Sellmeier names + 6 coefficients per
 glass) into the macos/smacos binaries (PLAN section 0: no separate
@@ -13,7 +13,7 @@ import pathlib
 
 root = pathlib.Path(__file__).resolve().parent.parent
 src = root / "data" / "macos_glass_list.txt"
-dst = root / "macos_f90" / "glass_builtin.f90"
+dst = root / "src" / "glass_builtin.f90"
 
 names, rows = [], []
 for line in src.read_text().splitlines():

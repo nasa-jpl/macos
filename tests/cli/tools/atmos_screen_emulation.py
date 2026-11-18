@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Exact pure-Python replica of AtmosPhase (macos_f90/sourcsub.F): the Kolmogorov phase-screen
+"""Exact pure-Python replica of AtmosPhase (src/sourcsub.F): the Kolmogorov phase-screen
 generator -- the filter sqrt(PSD) = 0.151 r0^(-5/6) f^(-11/6) times the frequency measure 1/(N dx), the
 Hermitian-symmetric complex Gaussian noise, the unnormalized inverse transform, the piston/tilt
 removal over nradius, the optional re-added tilt -- with the engine's own RNG / GAUSS (mathsub.F).

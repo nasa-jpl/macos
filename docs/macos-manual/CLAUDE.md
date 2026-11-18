@@ -26,7 +26,7 @@ make cmdref-regen # regen cmdref Parts I-III + the CLI-suite coverage appendix
 
 ## Rules / gotchas
 
-- **Appendix C is generated** from `macos_f90/macos_help.inc` by
+- **Appendix C is generated** from `src/macos_help.inc` by
   `tools/gen_appendix_c.py`. Never hand-edit
   `src/93_appendix_c_commands.md`; when a command is added to
   `macos_cmd_loop.inc` + `macos_help.inc`, run `make appendix-c`.

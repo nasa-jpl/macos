@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate macos_f90/hzdef.inc -- the NormHex (ZernType 7) polynomials ZerntoMon4 converts -- against an
+"""Validate src/hzdef.inc -- the NormHex (ZernType 7) polynomials ZerntoMon4 converts -- against an
 independent construction (BRIEF_to_zernike_repairs.md (uu), Dave 2026-10-20).
 
 The construction is the textbook one (Mahajan & Dai, "Orthonormal polynomials in wavefront analysis:
@@ -179,7 +179,7 @@ def read_table(hz_path):
 
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith('-')]
-    hz_path = Path(args[0]) if args else ROOT / 'macos_f90' / 'hzdef.inc'
+    hz_path = Path(args[0]) if args else ROOT / 'src' / 'hzdef.inc'
     tab = read_table(hz_path)
     print(f'{hz_path}: {len(tab)} modes; exponent / coefficient counts = ZerntoMon4 nterm')
     rng = np.random.default_rng(0)

@@ -58,7 +58,7 @@ This directory also produces two further documents:
 cd docs/macos-manual
 make            # build/macosMan.docx + build/macosMan.html
 make pdf        # build/macosMan.pdf (via headless LibreOffice)
-make appendix-c # regenerate Appendix C from macos_f90/macos_help.inc
+make appendix-c # regenerate Appendix C from src/macos_help.inc
 make cmdref     # build/macosCmdRef.docx + .html
 make cmdref-pdf # build/macosCmdRef.pdf
 make polval     # build/macosPolVal.docx + .html  (polarization validation)

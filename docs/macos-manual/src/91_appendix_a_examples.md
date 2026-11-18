@@ -106,7 +106,7 @@ This appendix contains prescriptions and macros that illustrate various aspects 
 
 #### smacos_dvr.F
 
-The SMACOS test driver built by `makesd.sh` (`macos_f90/smacos_dvr.F`): it opens the graphics
+The SMACOS test driver built by `makesd.sh` (`src/smacos_dvr.F`): it opens the graphics
 device, loads `tests/ZGD_test_files/SegDemo3.in` with `OLD`, and calls `OPD` and `SPOT` through the
 `SMACOS` subroutine (Section 9).
 

@@ -3,7 +3,7 @@
 #   make            -> build/macosMan.docx + build/macosMan.html
 #   make pdf        -> build/macosMan.pdf   (docx -> PDF via LibreOffice)
 #   make appendix-c -> regenerate src/93_appendix_c_commands.md from
-#                      macos_f90/macos_help.inc
+#                      src/macos_help.inc
 #   make transcripts -> regenerate src/transcripts/ (the example listings and the CLI
 #                      dialogs, tools/regen_transcripts.py; MACOS_BIN= picks the binary)
 #   make zernike-table -> regenerate src/transcripts/zernike_orderings.md (Appendix E, measured
@@ -91,7 +91,7 @@ transcripts:
 PYMACOS ?= $(abspath ../../app/pymacos)
 zernike-table:
 	bash -c 'source /opt/intel/oneapi/setvars.sh intel64 >/dev/null 2>&1; \
-	  PYMACOS_SRC=$(PYMACOS)/src MACOS_HOME=$(abspath ../../macos_f90) MPLBACKEND=Agg \
+	  PYMACOS_SRC=$(PYMACOS)/src MPLBACKEND=Agg \
 	  $(PYMACOS)/.venv/bin/python tools/gen_zernike_table.py'
 
 # ---- MACOS Command Reference (cmdref/) ------------------------------

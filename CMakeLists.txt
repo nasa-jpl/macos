@@ -144,7 +144,7 @@ endif()
 # ==============================================================================
 # 3. Source Directory Configuration
 # ==============================================================================
-set(smacos_src_dir "${CMAKE_CURRENT_SOURCE_DIR}/macos_f90")
+set(smacos_src_dir "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 # The engine's built-in data directory, data/: where a build finds
 # macos_param.txt and macos_glass_list.txt with no MACOS_HOME set
@@ -180,7 +180,7 @@ macos_write_build_loc("${_macos_data_dir}" "${MACOS_GENERATED_DIR}/build_loc.inc
 if(USE_NPSOL)
   set(npsol_src_dir "${smacos_src_dir}/npsol")
   if(NOT EXISTS "${npsol_src_dir}/CMakeLists.txt")
-    message(FATAL_ERROR "USE_NPSOL=ON requires macos_f90/npsol/ tree.")
+    message(FATAL_ERROR "USE_NPSOL=ON requires src/npsol/ tree.")
   endif()
 endif()
 # Third-party code bundled with MACOS: giza (the PGPLOT-API graphics library),

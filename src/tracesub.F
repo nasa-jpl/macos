@@ -299,7 +299,7 @@ C       plane sits h**2/(2*Kr) beyond the surface at image height h, and
 C       the EP reference sphere inherits that as PURE DEFOCUS in the
 C       off-axis OPD -- identically zero on axis, which is why it went
 C       unnoticed for a year.  Dave ruled the fix 2026-08-28; mechanism,
-C       measured numbers and blast radius in macos_f90/CLAUDE.md.
+C       measured numbers and blast radius in src/CLAUDE.md.
 C
 C       The chief/conic intersection is solved LOCALLY here, and
 C       deliberately NOT through ConSrf: ConSrf picks its quadratic root
@@ -3255,7 +3255,7 @@ C***********************************************************************
 !     descriptors: SRT died with SIGSEGV on the manual's Cassegrain
 !     (debug build: 'thisray' index 1 outside (0:0), tracesub.F:4821).
 !     Sized per trace to nElt (2026-10-17, PLAN 1.2 (l); gate
-!     cli_tests/cmd/SRAY_SRT.jou).
+!     tests/cli/cmd/SRAY_SRT.jou).
         CALL ThisRayAlloc(nElt)
 !<--
 	CALL CTRACE(RayIndex,ifBuild,ifDMBuild,ifPol,ifDraw,

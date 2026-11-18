@@ -15,7 +15,7 @@
 #   vqw22   -- bench.coat_oap 'qwAl': the MgF2 overcoat at a QUARTER wave of
 #              the bench's own 632.8 nm (114.6 nm physical).  The record's
 #              'protectedAl' is 229.3 nm = a HALF wave there.  The engine's
-#              measured overcoat rule (macos_f90/CLAUDE.md, "overcoat
+#              measured overcoat rule (src/CLAUDE.md, "overcoat
 #              quarter-wave reversal") is that the polarization trade REVERSES
 #              across the quarter-wave condition -- at the true quarter wave
 #              the coating's cross-polarization is ~0.05x of bare.  bareAl

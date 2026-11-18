@@ -74,7 +74,7 @@ classdef tStopReload < matlab.unittest.TestCase
             % single FEX probe about xGrid that moved the pupil radius by
             % 6.2e-4 (1.58 mm).  Since the frame-independent four-probe FEX
             % (engine 2026-09-08, FEXProbeCross) the two stops agree to
-            % round-off -- asserted at 1e-9 below.  See macos_f90/CLAUDE.md
+            % round-off -- asserted at 1e-9 below.  See src/CLAUDE.md
             % 'FEX probe is FRAME-INDEPENDENT'.
             % Non-vacuity: get_stop_info must report the segment -- pre-fix
             % the refused call left the object stop in force.

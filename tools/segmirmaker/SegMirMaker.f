@@ -1499,7 +1499,7 @@ C***********************************************************************
 	END
 
 C***********************************************************************
-C  IntToChar is provided by macos_f90/utilsub.F via libsmacos.a; do not
+C  IntToChar is provided by src/utilsub.F via libsmacos.a; do not
 C  redefine it locally (causes duplicate-symbol link error).
 C***********************************************************************
 C  ZeroParent

@@ -140,7 +140,7 @@ P.bench.coat_qwAl        = struct('index',[1.38 1.373], 'extinc',[0 7.62], 'thic
                              % MgF2 at a QUARTER wave of 632.8 nm (114.6 nm physical = half the
                              % 'protectedAl' film, which is a HALF wave there) over the same opaque Al.
                              % The engine's measured overcoat rule: the polarization trade REVERSES
-                             % across the quarter-wave condition (macos_f90/CLAUDE.md).
+                             % across the quarter-wave condition (src/CLAUDE.md).
 P.bench.mask_prop = 'nf';    % 'nf' = SYMMETRIC reference-sphere sandwich about the mask
                              % (the corrected model, S7); 'nf_legacy' reproduces the
                              % Fresnel-DEFOCUSED S1-S6 sensor (record only)

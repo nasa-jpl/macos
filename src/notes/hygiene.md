@@ -2,7 +2,7 @@
 
 > **Read this file before touching:** any engine file; `SetRayFail`, `RayStatus`, `DMPROD`.  These notes are the engine record
 > (what moved, the measurements, the gates); they are NOT auto-injected — the index is
-> `macos_f90/CLAUDE.md`, the root rules `../../CLAUDE.md`.  Text is moved verbatim from the
+> `src/CLAUDE.md`, the root rules `../../CLAUDE.md`.  Text is moved verbatim from the
 > former monolithic cheatsheet (2026-10-15 split); add new entries here, not to the index.
 
 ## §0 hygiene cluster (latent bugs closed on opt-dev)
@@ -128,8 +128,8 @@
   corrupts B or C if aliased), so no regression.
 
 ## Reference
-- macos_f90/Archive/surfsub_old.F : pre-FreeForm surfsub; reference for SGSrf, GSZPB, GSZPSolve
-- macos_f90/Archive/ : obsolete source files (sourcsub variants, test programs, etc.)
+- src/Archive/surfsub_old.F : pre-FreeForm surfsub; reference for SGSrf, GSZPB, GSZPSolve
+- src/Archive/ : obsolete source files (sourcsub variants, test programs, etc.)
 
 ## Name collision warnings
 - macos_mod exports scalar LOGICAL ifGrid (ray-grid-established flag, used everywhere).

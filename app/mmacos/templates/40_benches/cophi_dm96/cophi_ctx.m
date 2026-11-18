@@ -757,7 +757,7 @@ function [Eo, sg, sp] = lo_on_test_(El, CL, CT, lam)
     W = macos_opd_at_(CL, N);                          % mm, per LO pixel (from the last LO trace's OPD)
     % the SIGN of the field's path phase is MEASURED, not assumed: the scalar
     % field carries +k W, but a vector-mode field (RayE) on a plain trace-to-
-    % detector train is CONJUGATE to the OPD (macos_f90/CLAUDE.md, Phase 3a,
+    % detector train is CONJUGATE to the OPD (src/CLAUDE.md, Phase 3a,
     % "TRAIN-DEPENDENT").  The right sign leaves E exp(-i sg k W) flat in phase.
     [~, cd] = max(squeeze(sum(sum(abs(El).^2, 1), 2)));
     Ed = El(:,:,cd);  Ed = Ed(CL.pix);  sp = zeros(1, 2);  sgs = [1 -1];

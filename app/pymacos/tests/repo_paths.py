@@ -4,4 +4,4 @@ is called, wherever it is, and whatever MACOS_HOME holds."""
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-ENGINE_DIR = REPO_ROOT / 'macos_f90'      # the engine's Fortran source
+ENGINE_DIR = REPO_ROOT / 'src'      # the engine's Fortran source

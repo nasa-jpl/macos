@@ -2,7 +2,7 @@
 
 > **Read this file before touching:** `macos_api_mod.F90`, pymacos/mmacos veneers, coronagraph fixtures.  These notes are the engine record
 > (what moved, the measurements, the gates); they are NOT auto-injected — the index is
-> `macos_f90/CLAUDE.md`, the root rules `../../CLAUDE.md`.  Text is moved verbatim from the
+> `src/CLAUDE.md`, the root rules `../../CLAUDE.md`.  Text is moved verbatim from the
 > former monolithic cheatsheet (2026-10-15 split); add new entries here, not to the index.
 
 ## Regression tests via pymacos (~/dev/macos/app/pymacos/)
@@ -73,7 +73,7 @@
 ## macos_api_mod: language-neutral wrapper layer for pymacos + mmacos
 *(The routine catalog is cmdref Part II (generated from the api source); the bindings program is PLAN_CONSOLIDATION §1.4a/b, BRIEF_to_bindings.md.  Below: the layer's shape and its porting record.)*
 
-`macos_f90/macos_api_mod.F90` (compiled into `libsmacos.a`) is the
+`src/macos_api_mod.F90` (compiled into `libsmacos.a`) is the
 shared SMACOS-call wrapper that both `pymacos` (Python) and `mmacos`
 (MATLAB) bind into.  Lives in `MODULE macos_api_mod`; holds the SMACOS
 call-line buffer (`command`, `CARG/DARG/IARG/LARG/RARG`), the shared
@@ -151,7 +151,7 @@ back end references `slsqp_`).
 Promotion history: until §5.2 the file lived in
 `pymacos/src/cmake/source/macos_api_mod.F90` and was
 compiled separately by each binding's own CMake/Make build.  Now it
-lives in `macos_f90/` and the binding builds just link `libsmacos.a`
+lives in `src/` and the binding builds just link `libsmacos.a`
 + pull the `.mod` from `mod_smacos/`.  pymacos's `CMakeLists.txt`
 takes `MACOS_BUILD_DIR` as a cache var (default
 `~/dev/macos/build_release`); mmacos's Makefile takes the same.

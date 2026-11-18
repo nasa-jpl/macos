@@ -29,8 +29,8 @@ OFF.
 
 Build directory naming: `build_{release|debug}[_gfortran][_npsol]`
 
-- CMakeLists.txt: top-level `CMakeLists.txt` (macos_f90 sources).
-  (The legacy `macos_f90/npsol/CMakeLists.txt` is gone with rem_npsol.)
+- CMakeLists.txt: top-level `CMakeLists.txt` (the engine sources in `src/`).
+  (The legacy `src/npsol/CMakeLists.txt` is gone with rem_npsol.)
 - CMakePresets.json: debug and release presets for VS Code CMake Tools integration.
 - C compiler must be gcc (not icx) — legacy C files use implicit function declarations.
 - smacos_dvr re-compiles macos_mod.F with -DCMACOS (smacos_lib's copy lacks CMACOS-only symbols like ifPGColor).
@@ -42,7 +42,7 @@ Build directory naming: `build_{release|debug}[_gfortran][_npsol]`
 The engine reads `macos_param.txt` and `macos_glass_list.txt` at start-up; both
 live in `data/` at the top of the repository.  It
 looks in four places, in this order, and takes the first that has the file
-(`find_macos_file` in `macos_f90/param_mod.F`):
+(`find_macos_file` in `src/param_mod.F`):
 
 1. the current working directory;
 2. the directory of the running executable (no use under MATLAB or Python,
@@ -157,9 +157,9 @@ working directory and then the recorded directory.
   plus macosio.o/pgplotsub.o/macos_vars_mod.o/macos_mod.o from MACOS_OBJS.
 
 ## Build notes
-- Never leave a surfsub.f (lowercase .f) in macos_f90/ alongside surfsub.F — cmake
+- Never leave a surfsub.f (lowercase .f) in src/ alongside surfsub.F — cmake
   may pick it up and try to build it as a standalone executable.
-- Use `source ./makems.sh` for macos_f90-only changes (faster than makeall.sh).
+- Use `source ./makems.sh` for engine-only changes (faster than makeall.sh).
   cmake recompiles only changed files; delete the build directory for a clean rebuild.
 - macos.F line 59: `use propsub_mod128` was a stale name; fixed to `use propsub_mod`.
 - GMI (Matlab mex): built via standalone app/GMI/Makefile (invoked by

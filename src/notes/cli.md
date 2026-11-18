@@ -2,7 +2,7 @@
 
 > **Read this file before touching:** `macosio.F`, `mhist.c`, `macos_cmd_loop.inc` prompts.  These notes are the engine record
 > (what moved, the measurements, the gates); they are NOT auto-injected — the index is
-> `macos_f90/CLAUDE.md`, the root rules `../../CLAUDE.md`.  Text is moved verbatim from the
+> `src/CLAUDE.md`, the root rules `../../CLAUDE.md`.  Text is moved verbatim from the
 > former monolithic cheatsheet (2026-10-15 split); add new entries here, not to the index.
 
 ## CLI sub-prompts via mhist cache (macosio.F + mhist.c)

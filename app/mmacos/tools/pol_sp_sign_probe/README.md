@@ -47,7 +47,7 @@ own expression — circular in this sign.
 ## Confirming the diagnosis
 
 Restore the standard Fresnel `r_p` — the line already sitting commented out as
-`! dcr's original` at `macos_f90/elemsub.F:454` — rebuild, and re-run.  The
+`! dcr's original` at `src/elemsub.F:454` — rebuild, and re-run.  The
 one-mirror number drops to `2.0724e-04` (4900×) while the two-mirror number is
 **bit-identical**.  Revert afterwards; this is not a landed fix.
 

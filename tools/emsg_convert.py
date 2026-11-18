@@ -14,7 +14,7 @@ Run:  python3 tools/emsg_convert.py [--dry]
 import re, sys
 from pathlib import Path
 
-M = Path(__file__).resolve().parents[1] / 'macos_f90'
+M = Path(__file__).resolve().parents[1] / 'src'
 DRY = '--dry' in sys.argv
 
 START = re.compile(r'(WRITE\s*\(\s*(\*|6)\s*,|PRINT\s*\*\s*(,|$))', re.I)

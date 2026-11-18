@@ -792,7 +792,7 @@ the five hours of relaxes among them) are not committed; the whole folder is
 copied to `~/dev/MACOS_sandbox/iodc2010_search_2026-11-01/` so the repository
 re-clone does not erase them.  Resume point: the merit-shaped relax as the
 next paragraph states it.  The engine's FEX for a virtual exit pupil (the
-OPEN entry in `macos_f90/notes/pupil_fex_stop.md`) stays open for Dave.
+OPEN entry in `src/notes/pupil_fex_stop.md`) stays open for Dave.
 
 The relax solver with the field in its residual: the per-ray OPD at the
 design fields 0 / θ/2 / θ (and the distortion row the climb lacks), D and θ

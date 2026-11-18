@@ -176,7 +176,7 @@ set(Fortran_FLAGS_Lib_SMACOS "${FFlags_SMACOS}")
 
 
 # Common variables
-set(smacos_src_dir "${CMAKE_SOURCE_DIR}/../macos_f90")
+set(smacos_src_dir "${CMAKE_SOURCE_DIR}/../src")
 cmake_path(ABSOLUTE_PATH smacos_src_dir NORMALIZE OUTPUT_VARIABLE smacos_src_dir)  # eliminate /../
 
 set(lib_bin_dir    "${CMAKE_BINARY_DIR}/libs")

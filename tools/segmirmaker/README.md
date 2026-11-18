@@ -236,7 +236,7 @@ computes `pr`.
 - `test_in/` — sample parent prescriptions (`ffparent.in`,
   `monparent.in`, `psiparent.in`) plus example outputs and the
   shared `flat.txt` / `zern41em5z155em3.txt` data files.
-- `~/dev/macos/macos_f90/surfsub.F:FreeFormSrf` — the surface
+- `~/dev/macos/src/surfsub.F:FreeFormSrf` — the surface
   evaluator that backs `SurfCoordFF`.
-- `~/dev/macos/macos_f90/macos_cmd_loop.inc` — `SEGRAYTRACE` command
+- `~/dev/macos/src/macos_cmd_loop.inc` — `SEGRAYTRACE` command
   for verification.

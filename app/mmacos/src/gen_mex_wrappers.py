@@ -1071,7 +1071,7 @@ def binding_classes(help_entries, api_src=None):
     this raises (fail closed)."""
     here = Path(__file__).resolve().parent
     if api_src is None:
-        api_src = (here / '..' / '..' / '..' / 'macos_f90' /
+        api_src = (here / '..' / '..' / '..' / 'src' /
                    'macos_api_mod.F90').resolve().read_text()
     sys.path.insert(0, str(here))
     import binding_overrides as ov
@@ -1103,12 +1103,12 @@ def binding_classes(help_entries, api_src=None):
 
 def main():
     here = Path(__file__).parent          # mmacos/src
-    # ../../../macos_f90 : src -> mmacos -> app -> the repository root
-    default_src = here / '..' / '..' / '..' / 'macos_f90' / 'macos_api_mod.F90'
+    # ../../../src : (mmacos's own) src -> mmacos -> app -> the repository root, then the engine's src/
+    default_src = here / '..' / '..' / '..' / 'src' / 'macos_api_mod.F90'
     import argparse
     ap = argparse.ArgumentParser(description=__doc__.split('\n\n')[0])
     ap.add_argument('api', nargs='?', default=str(default_src.resolve()),
-                    help='macos_api_mod.F90 (default: this repository\'s macos_f90)')
+                    help='macos_api_mod.F90 (default: this repository\'s src/)')
     ap.add_argument('--targets', default='mex,f2py,veneer',
                     help='comma list of mex, f2py, veneer, defaults (default: the '
                          'three binding targets; defaults = cmdref/25_defaults.md)')

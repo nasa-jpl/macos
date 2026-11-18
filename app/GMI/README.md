@@ -122,4 +122,4 @@ is reused.
   pflg block ordering, and `GMI.inc` compile-time sizing
 - `../../tools/segmirmaker/` — generates the FreeForm pie/hex prescriptions
   consumed by `test_ff/`
-- `~/dev/macos/macos_f90/` — the SMACOS library and MACOS cmake tree
+- `~/dev/macos/src/` — the SMACOS library and MACOS cmake tree

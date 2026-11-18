@@ -56,7 +56,7 @@ session per MATLAB process.  Pick whichever surface fits the code:
 - `macos.Session` — handle class that wraps the package functions for
   dot-notation flow (`m.trace().nRays`).  No per-instance state.
 
-`macos_api_mod` lives at `~/dev/macos/macos_f90/macos_api_mod.F90` and
+`macos_api_mod` lives at `~/dev/macos/src/macos_api_mod.F90` and
 is compiled INTO `libsmacos.a` — mmacos doesn't compile it locally,
 just `use macos_api_mod` + link the lib.  Likewise pymacos's
 `pymacos_f2py.f90` `use`s the same module.
@@ -627,7 +627,7 @@ piston" flagged 2026-06-28 was NOT a conjugate/reset artifact: it was the engine
 FreeFormSrf, collapsing the grid index to the center pixel so the grid acted as a
 pure piston (the figure was discarded).  Fixed in the macos engine (sls-dev
 `03db580` / opt-dev `1b535a5`, threads the real grid frame; see
-`macos/macos_f90/CLAUDE.md`).  GMI regression 6/6 bit-identical.
+`macos/src/CLAUDE.md`).  GMI regression 6/6 bit-identical.
 
 - **Rx** (`SegDemo3conic.in`, self-contained): PM-conic Reference=elt1, S1=elt2,
   6 GridData segments S2..S7=elts3..8, SecMir=9, FclPlaneReturn=10, ExitPupil=11
@@ -721,7 +721,7 @@ shipped earlier (245af94).
 ## Polarization (PLAN_POLARIZATION)
 
 Engine-side conventions, coating models, the Phase-2 Jones layer and the
-Phase-3a vector chain all live in **`macos/macos_f90/CLAUDE.md`** — read
+Phase-3a vector chain all live in **`macos/src/CLAUDE.md`** — read
 that before touching anything polarization-related; do not duplicate it
 here.  mmacos-side facts only:
 
@@ -809,7 +809,7 @@ here.  mmacos-side facts only:
   pupil-grid mapping is assumed (median 2.1e-15).  Reproducer:
   `tools/pol_sp_sign_probe/probe_sp_sign.m`.  Packet (with the closeout
   entry): `devnotes/REVIEW_POL_SP_SIGN_2026-07-27.md`; engine detail in
-  `macos/macos_f90/CLAUDE.md`; report evidence in `polval/50_sp_sign`.
+  `macos/src/CLAUDE.md`; report evidence in `polval/50_sp_sign`.
   **Watch out when reading `ray_field`:** `RayE`/`RayDir` are the CURRENT
   trace state, not a per-element history — `trace(e)` then `ray_field(e)`,
   or you get the state at whatever element you last traced to.
@@ -829,7 +829,7 @@ here.  mmacos-side facts only:
   TANGENTIAL amplitude coefficient**, larger than the ordinary Fresnel
   `t_p` by `cos_sub/cos_inc` (1.2472 at 45° into n=1.5) — convert before
   comparing to a measured `E_out/E_in`, or a correct engine looks broken.
-  Engine detail + scope: `macos/macos_f90/CLAUDE.md`; report evidence in
+  Engine detail + scope: `macos/src/CLAUDE.md`; report evidence in
   `polval/80_radiometric`.
 - **`complex_field(..., 'reset_trace', false)` is bit-identical and ~100×
   faster** for the 2nd/3rd component plane at the same element (0.01 s vs
@@ -860,7 +860,7 @@ here.  mmacos-side facts only:
 - **Phase 3 elements (`polarizer` / `waveplate` / `elt_jones`, 2026-07-27)** —
   `TrPolarizer` (EltID 15, finished from a name-table-only stub) and the new
   `WavePlate` (EltID 18).  Engine detail + all four conventions live in
-  `macos_f90/CLAUDE.md`; mmacos-side facts:
+  `src/CLAUDE.md`; mmacos-side facts:
   (1) **`macos.polarizer`/`macos.waveplate` follow the OVERLOADED
   query-when-no-opts form** (`coating.m`'s shape), not the `get_`/`set_`
   split the naming convention prescribes — consistency inside the
@@ -1053,4 +1053,4 @@ stage.  Gotchas:
 | `challenges/` | rodgers1 / rodgers2 / afocal4 -- a stated target plus our worked answer |
 | `run_mmacos_tests.sh` | Bash entrypoint; `fast` / `masks` / `proper` / `<Class>` |
 | `Makefile` | GMI-style build; links libsmacos + slsqplib (+ fits) |
-| `~/dev/macos/macos_f90/macos_api_mod.F90` | Shared backbone (in libsmacos.a) |
+| `~/dev/macos/src/macos_api_mod.F90` | Shared backbone (in libsmacos.a) |

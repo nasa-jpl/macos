@@ -57,7 +57,7 @@ EXAMPLES = MAN / "examples"
 LISTED = ("*.in", "*.jou", "*.test", "*.cmn", "*.f")
 # engine sources the appendix lists from the tree itself (Dave 2026-10-19: A.8 is smacos_dvr.F); fixed-form
 # TABs are expanded at 8 (as an editor shows them) -- the listing is the file, not a copy that can drift
-SOURCES = (ROOT / "macos_f90" / "smacos_dvr.F",)
+SOURCES = (ROOT / "src" / "smacos_dvr.F",)
 
 os.environ.setdefault("CLI_PTY_COLS", "400")   # no readline horizontal-scroll redraws (cli_cmd_gate.py)
 sys.path.insert(0, str(ROOT / "tests" / "cli"))
@@ -134,8 +134,8 @@ DROP = [re.compile(r"^\s*Compute time was")]
 def clean(l, tmp):
     l = l.replace(tmp + os.sep, "").replace(tmp, ".")
     # the engine's own data files (parameter file, glass table) may come from another tree than this one
-    # (a fresh clone runs the worktree's binary): any .../macos_f90/ prints as <macos>/macos_f90/
-    l = re.sub(r"[^\s\"']*/macos_f90/", "<macos>/macos_f90/", l)
+    # (a fresh clone runs the worktree's binary): any .../data/<file> prints as <macos>/data/<file>
+    l = re.sub(r"[^\s\"']*/data/(macos_param\.txt|macos_glass_list\.txt)", r"<macos>/data/\1", l)
     return l.replace(str(ROOT), "<macos>").replace(str(Path.home()), "~")
 
 
