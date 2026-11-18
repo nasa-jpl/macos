@@ -72,7 +72,7 @@ list below is so short.
 | `macos` | the interactive ray-tracer | `build_release/bin/macos` |
 | `libsmacos.a` | the static library (backs pymacos / mmacos / GMI) | `build_release/lib/libsmacos.a` |
 | `smacos_dvr` | the batch/scripting test driver | `build_release/bin/smacos_dvr` |
-| `GMI.mexa64` | the MATLAB interface (skipped if no MATLAB) | `~/dev/macos/GMI/GMI.mexa64` |
+| `GMI.mexa64` | the MATLAB interface (skipped if no MATLAB) | `~/dev/macos/app/GMI/GMI.mexa64` |
 
 ---
 
@@ -121,7 +121,8 @@ interfaces built on the engine:
 └── macos/            ← this repository
     ├── macos_f90/    ← engine source
     ├── external/     ← bundled third-party code (giza, readline, slsqp, FITS)
-    └── GMI/  mmacos/  pymacos/  segmirmaker/   ← the interfaces and tools
+    ├── app/          ← the interfaces: GMI/  mmacos/  pymacos/
+    └── segmirmaker/  rx_converter/   ← tools
 ```
 
 (Until 2026-11 the interfaces lived in a second repository,
@@ -214,7 +215,7 @@ For the MATLAB interface, add GMI to your MATLAB path (in `startup.m` or via
 **Set Path**):
 
 ```matlab
-addpath('~/dev/macos/GMI')
+addpath('~/dev/macos/app/GMI')
 ```
 
 ---

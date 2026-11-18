@@ -104,7 +104,7 @@ SMACOS uses the following dummy variables to pass output:
 
 #### Sharing Data via Fortran Modules
 
-SMACOS shares data with the calling program through a small set of Fortran 90 modules. This replaces the COMMON-block / .cmn include-file mechanism used in MACOS 2.x; calling programs only need a list of \`use\` statements -- no manual array sizing, no shared-memory layout to keep in sync, no preprocessor model-size switches. The canonical reference implementation is GMI/GMI.F (the MATLAB MEX interface), which exercises every module described here.
+SMACOS shares data with the calling program through a small set of Fortran 90 modules. This replaces the COMMON-block / .cmn include-file mechanism used in MACOS 2.x; calling programs only need a list of \`use\` statements -- no manual array sizing, no shared-memory layout to keep in sync, no preprocessor model-size switches. The canonical reference implementation is app/GMI/GMI.F (the MATLAB MEX interface), which exercises every module described here.
 
 #### The SMACOS modules
 
@@ -841,7 +841,7 @@ CARG(1)=’YES’ (to overwrite if a file-writing plot type is selected and a fi
 
 ### GMI: MATLAB MEX interface (FreeForm updates)
 
-GMI (GMI/) is a thin MATLAB MEX wrapper around SMACOS, packaging perturbations and pulling back OPD / PIX / SPOT / complex-EF arrays into MATLAB. V4.00 changes:
+GMI (app/GMI/) is a thin MATLAB MEX wrapper around SMACOS, packaging perturbations and pulling back OPD / PIX / SPOT / complex-EF arrays into MATLAB. V4.00 changes:
 
 -   NRHS = 14 (was 13). Old call_GMI.m callers passing 13 arguments will fail with 'GMI requires 14 input arguments'. The new 14th argument is pmonzern, a MonZernCoef perturbation vector parallel to pzern for FreeForm surfaces.
 
@@ -853,4 +853,4 @@ GMI (GMI/) is a thin MATLAB MEX wrapper around SMACOS, packaging perturbations a
 
 -   Nominal save/restore expanded to FreeForm frames. ObtainNominalSettings / SetToNominalSettings now snapshot and restore pFF/xFF/yFF/zFF and (when nGridMat \> 0) pData/xData/yData/zData alongside the existing pMon / psiElt / vptElt / TElt entries. This fixes a v3.x bug where per-call prb perturbations on FreeForm elements leaked the FreeForm coordinate frames forward, so the 'nominal-equivalent' OPD drifted across iterations of a sensitivity loop.
 
-See GMI/README.md and GMI/CLAUDE.md for full architecture details.
+See app/GMI/README.md and app/GMI/CLAUDE.md for full architecture details.

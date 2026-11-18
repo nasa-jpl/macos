@@ -103,7 +103,7 @@ end do
 * Build scripts: drop `npsol` argument from
   `makems.sh / makeall.sh / makegfortran.sh / makegmi.sh`
 * `MACOS_resources` companion: drop `libnpsol.a / liblapacklib.a /
-  libblaslib.a` auto-detect from `GMI/Makefile`
+  libblaslib.a` auto-detect from `app/GMI/Makefile`
 
 ## Phase 4 — Regression  ✓ CLOSED
 

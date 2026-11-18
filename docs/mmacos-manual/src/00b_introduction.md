@@ -83,7 +83,7 @@ afternoon the first time and a minute after that.
    build scripts and the library find each other inside it. Your administrator has the repository
    address and the branch to use.
 2. **Build the engine, then the interface.** Follow *Installation* in the front matter: build the
-   gfortran engine in `macos/`, then `make` in `mmacos/`, then run the fast test
+   gfortran engine in `macos/`, then `make` in `app/mmacos/`, then run the fast test
    suite once. A green suite is your proof that the installation works before the assistant
    touches anything.
 3. **Start MATLAB and run the setup script** (`mmacos_setup.m`, once per session). Type
@@ -92,7 +92,7 @@ afternoon the first time and a minute after that.
    there. With Claude Code, that is the command `claude`; in VS Code, open that directory as
    the workspace and open the assistant's panel; other assistants have their own command. The
    directory you start in matters: the assistant reads the `CLAUDE.md` files it finds there
-   (`CLAUDE.md`, `macos_f90/CLAUDE.md`, `mmacos/CLAUDE.md`), and those
+   (`CLAUDE.md`, `macos_f90/CLAUDE.md`, `app/mmacos/CLAUDE.md`), and those
    files carry the working rules that this manual's examples relied on.
 5. **Point the assistant at this manual.** Its sources are
    `macos/docs/mmacos-manual/src/*.md`, one file per section, and the built copy is

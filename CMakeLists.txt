@@ -574,14 +574,19 @@ endif()
 
 # ==============================================================================
 # GMI MATLAB mex interface (Linux + Windows)
-# Build logic lives in GMI/CMakeLists.txt — cross-platform, auto-detects MATLAB.
+# Build logic lives in app/GMI/CMakeLists.txt — cross-platform, auto-detects MATLAB.
 # ==============================================================================
 if(BUILD_GMI)
-  # GMI/ is at the root of this repository (one repository since the
-  # MACOS_resources merge).
-  set(_gmi_default "${CMAKE_CURRENT_SOURCE_DIR}/GMI")
+  # GMI is in app/GMI.  A build tree made before it moved there has the old
+  # directory in its cache; that value is replaced, with a warning.
+  set(_gmi_default "${CMAKE_CURRENT_SOURCE_DIR}/app/GMI")
   set(GMI_SRC_DIR "${_gmi_default}" CACHE PATH
       "Directory containing GMI.F, GMIG.F and CMakeLists.txt")
+  if(NOT EXISTS "${GMI_SRC_DIR}/GMI.F" AND EXISTS "${_gmi_default}/GMI.F")
+    message(WARNING "GMI_SRC_DIR=${GMI_SRC_DIR} does not hold GMI.F; using ${_gmi_default} instead.")
+    set(GMI_SRC_DIR "${_gmi_default}" CACHE PATH
+        "Directory containing GMI.F, GMIG.F and CMakeLists.txt" FORCE)
+  endif()
   if(NOT EXISTS "${GMI_SRC_DIR}/GMI.F")
     message(FATAL_ERROR "GMI.F not found in ${GMI_SRC_DIR}
 Set -DGMI_SRC_DIR=<path> on the cmake command line.")
@@ -591,15 +596,20 @@ endif()
 
 # ==============================================================================
 # mmacos MATLAB MEX interface (Linux + Windows)
-# Build logic lives in mmacos/CMakeLists.txt — cross-platform, auto-detects
+# Build logic lives in app/mmacos/CMakeLists.txt — cross-platform, auto-detects
 # MATLAB.  gfortran default; override with -DCMAKE_Fortran_COMPILER=ifx.
 # ==============================================================================
 if(BUILD_MMACOS)
-  # mmacos/ is at the root of this repository (one repository since the
-  # MACOS_resources merge).
-  set(_mmacos_default "${CMAKE_CURRENT_SOURCE_DIR}/mmacos")
+  # mmacos is in app/mmacos.  A build tree made before it moved there has the
+  # old directory in its cache; that value is replaced, with a warning.
+  set(_mmacos_default "${CMAKE_CURRENT_SOURCE_DIR}/app/mmacos")
   set(MMACOS_SRC_DIR "${_mmacos_default}" CACHE PATH
       "Directory containing mmacos's CMakeLists.txt (mmacos_mex.F may be directly here or under src/)")
+  if(NOT EXISTS "${MMACOS_SRC_DIR}/CMakeLists.txt" AND EXISTS "${_mmacos_default}/CMakeLists.txt")
+    message(WARNING "MMACOS_SRC_DIR=${MMACOS_SRC_DIR} does not hold mmacos; using ${_mmacos_default} instead.")
+    set(MMACOS_SRC_DIR "${_mmacos_default}" CACHE PATH
+        "Directory containing mmacos's CMakeLists.txt (mmacos_mex.F may be directly here or under src/)" FORCE)
+  endif()
   # Newer mmacos checkouts (with their own mmacos/CMakeLists.txt) keep
   # Fortran sources under mmacos/src/ rather than directly in mmacos/.
   # Check both locations so this works against older and newer layouts.

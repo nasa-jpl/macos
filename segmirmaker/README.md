@@ -149,7 +149,7 @@ out = macos.design.segmirmaker_run('test_in/e5mono.in', ...
 % out.presc, out.hx, out.workdir, out.log, out.answers
 ```
 
-The `tSegMirMaker` class in `mmacos/tests` is the regression: driver
+The `tSegMirMaker` class in `app/mmacos/tests` is the regression: driver
 runs must reproduce the committed `e5pie` / `e5hex2` outputs
 byte-identically.
 

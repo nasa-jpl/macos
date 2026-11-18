@@ -27,7 +27,7 @@ can find it.
   MATLAB design layer — are ported and validated against the two-mirror
   and TMA fixtures.
 - The mmacos test suite reads the fixtures via
-  `mmacos/tests/private/design_fixture_path.m` (see `tDesignTelescope`).
+  `app/mmacos/tests/private/design_fixture_path.m` (see `tDesignTelescope`).
 
 ## Conventions (fixed — do not reinterpret)
 

@@ -130,7 +130,7 @@ there.  Assembling with `pihat` instead is NOT an admissible alternative
 fix: `pihat` is perpendicular to the INCIDENT ray, so it emits a
 longitudinal component along the outgoing ray.  Full analysis, suite
 impact and the decision: `macos/REVIEW_POL_SP_SIGN_2026-07-27.md`.
-Reproducer: `mmacos/tools/pol_sp_sign_probe/`.
+Reproducer: `app/mmacos/tools/pol_sp_sign_probe/`.
 
 **Reflected-p̂ / r_p sign fix (2026-07-27).**  `Reflector` assembles
 `Eout` on `prhat = shat x rhat` (p̂ follows the OUTGOING ray) but the
@@ -148,7 +148,7 @@ was FLAT in radius).  Two-mirror results bit-identical -- all published
 original` line was correct all along; the same file's (dead)
 transmittance code was already in the standard convention.  Diagnosis:
 Opus, `REVIEW_POL_SP_SIGN_2026-07-27.md` + reproducer
-`mmacos/tools/pol_sp_sign_probe/`.  Refractor's copy of the coated
+`app/mmacos/tools/pol_sp_sign_probe/`.  Refractor's copy of the coated
 recursion is deliberately UNTOUCHED (its transmitted output contains
 only r·r products -- invariant under the consistent flip); Refractor
 audit + odd-mirror ρ² gate = scoped follow-on.  Gate-blindness lesson:
@@ -253,7 +253,7 @@ FITS k), and an index-table difference is NOT a machinery error.
 Their index convention `N = n - ik`, k>=0, is IDENTICAL to ours, so
 nothing translates -- and it is load-bearing, since they report the
 opposite sign made their fitted oxide come out ~50 nm instead of ~4 nm.
-Tool `mmacos/tools/pol_external_anchor/`, gate `tPolExternal`, polval
+Tool `app/mmacos/tools/pol_external_anchor/`, gate `tPolExternal`, polval
 section 8, packet `macos/REVIEW_POL_EXTERNAL_2026-07-28.md`.
 **Two measurement traps this exposed, both of which are self-cancelling
 at exactly 45 deg -- the one angle the pre-existing Fresnel gate runs
@@ -319,7 +319,7 @@ and the uncoated geometric floor is lambda-invariant (1.6e-15).
 **Measure TOTAL POWER, never a fixed-pixel annulus mean, when comparing
 across wavelengths** -- the annulus subtends a different lambda/D range
 at each lambda and would mix the coating effect with the diffraction
-scale.  Tool `mmacos/tools/pol_overcoat_chromatic/` (`oc_ladder` +
+scale.  Tool `app/mmacos/tools/pol_overcoat_chromatic/` (`oc_ladder` +
 `oc_nonvacuity`), gate `tPolContrast/
 test_overcoat_trade_reverses_across_the_quarter_wave_condition`, polval
 section 8.3.1, packet `macos/REVIEW_POL_OVERCOAT_CHROMATIC_2026-07-28.md`.
@@ -584,8 +584,8 @@ Debug gotcha that cost this review an hour: obscured rays carry
 `RayE=0`, and `ATAN2(0,0)=0` reads as "zero phase, zero Ez" -- gate ANY
 per-ray probe on `LRayPass` before interpreting phases.
 
-**Gate prescription.**  `mmacos/tests/Rx/Rx_VecChain.in` (copied to
-`pymacos/tests/Rx/`) -- collimated on-axis source, flat normal-incidence
+**Gate prescription.**  `app/mmacos/tests/Rx/Rx_VecChain.in` (copied to
+`app/pymacos/tests/Rx/`) -- collimated on-axis source, flat normal-incidence
 uncoated planes, TWO bracketed near-field legs (`NFPlane`→`Geometric`, the
 `Rx_Coro.in` idiom; consecutive same-PropType elements MERGE into one leg,
 which silently defeats a multi-leg test), aperture + central obscuration.

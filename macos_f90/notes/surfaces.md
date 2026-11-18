@@ -148,7 +148,7 @@ deck remains in the corpus, but a NaN ray from any other path would otherwise co
   (identical for odd grids and for `iwf`): a trace change for EVEN-grid
   POINT-SOURCE diffraction -- measured as a pure ONE-ROW translation of the
   seeded field (Rx_Coro, n=510: pre = post rolled by 1 in j; n=511 bit-identical),
-  gate `pymacos/tests/test_ptsource_even_centring.py`.  (3) **a grid DECLARED larger than `mGridMat`**
+  gate `app/pymacos/tests/test_ptsource_even_centring.py`.  (3) **a grid DECLARED larger than `mGridMat`**
   (`Rx_Coro_DM`'s `nGridMat= 1024`, its data installed by the bindings at
   run time) was traced as a phantom and indexed `GridMat` past
   `mGridMat`: the grid term now also requires `nGridMat <= mGridMat`
@@ -351,7 +351,7 @@ computes `WaveMed = WaveBU/LegIndRef` once per leg for all 21 kernel /
 FnCalc sites (a `WRITE` announces any leg with n /= 1).  A leg is assumed
 HOMOGENEOUS -- a leg that crosses a refracting face was never something the
 kernels modelled.  Gate = an identity: a leg of z in index n equals the same
-leg of z/n in vacuum (`pymacos/tests/test_prop_medium.py` on
+leg of z/n in vacuum (`app/pymacos/tests/test_prop_medium.py` on
 `Rx_PropMedium_{glass,vac}.in`, twins of `Rx_VecChain.in`; intensities
 compared -- the fields differ by a global piston).  Measured: pre-fix the
 glass twin matched the UNSCALED vacuum deck to 1.1e-15 and missed the scaled
@@ -378,7 +378,7 @@ it: the pymacos grating tests check parameter GETTERS only, and the one
 concave fixture (`Grating_example_001.in`, Kr -6 m) is never ray-compared.
 Gates: `tGratingImmersed` (mmacos; its closed form is now the chord model
 and the pre-fix engine fails it by up to 0.5% of the kick on a 100 mm /
-20 mm fixture) and `pymacos/tests/test_grating_chord.py` (the vector
+20 mm fixture) and `app/pymacos/tests/test_grating_chord.py` (the vector
 grating equation per ray, chord vs surface model as the must-fail leg).
 Holographic / variable-line-space gratings are a DIFFERENT model and are
 not what `h1HOE`/`RuleWidth` describe.
@@ -612,7 +612,7 @@ ray is lost and the field is silently all zero.
   `tGridInterp`, `tE2eSensing/test_grid_dm_c1_no_steps` (order 3 on the cycle-4 state: zero steps) beside the
   order-1 pin; `ctb_dm_rx 'order'`, `e2e_params P.grid_order` (default 1: every committed stage record is
   order 1; switching re-measures the Jacobian truths -- Dave's call).  Two traps met on the way, both
-  recorded in mmacos/CLAUDE.md: a "private mex" run that calls a templates function loads the SHARED mex
+  recorded in app/mmacos/CLAUDE.md: a "private mex" run that calls a templates function loads the SHARED mex
   (the templates addpath the shared src -- every private-build number before 09:40 that day was the shared
   engine), and a MATLAB launched from the editor's Bash tool lives in the editor's cgroup (a 23-GB runaway
   from a units bug in the new gate took the editor and both sessions down three times: run heavy jobs as

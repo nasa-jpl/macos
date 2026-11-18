@@ -15,10 +15,10 @@ when *not* to split a design into a telescope and an instrument.
 
 ### The assistant reads
 
-- `mmacos/templates/80_end_to_end/e2e/README.md`, the `s2_instrument.m` row -- the
+- `app/mmacos/templates/80_end_to_end/e2e/README.md`, the `s2_instrument.m` row -- the
   stage's inputs (the stage-1 `.mat`), the relay types it offers, and the dead ends already walked
   (kept in `s2_instrument.m` so nobody re-walks them).
-- `mmacos/templates/00_INDEX.md`, tier T3 -- the imager rung *is* this stage until a
+- `app/mmacos/templates/00_INDEX.md`, tier T3 -- the imager rung *is* this stage until a
   standalone template is extracted.
 - `optical_design/OPTICAL_DESIGN_AGENT_GUIDE.md` -- the sphere-plus-Zernike solve
   rules again, now for a joint telescope-and-relay solve.
@@ -177,7 +177,7 @@ mask, and a detector at the image of the DM pupil.
 > Lay out a folded test-arm bench in the X-Y plane with real angles of incidence: collimate onto the
 > DM, focus at a field mask, and put the detector at the DM's pupil image. Then optimize it.
 
-- `mmacos/CLAUDE.md`, the `Bench` entries -- among them, ask `Bench.station` where
+- `app/mmacos/CLAUDE.md`, the `Bench` entries -- among them, ask `Bench.station` where
   an element sits on the bench; an off-axis section's vertex is its parent's.
 - `templates/40_benches/bench_layout/example_bench_layout.m` -- its header: why the solve is
   staged, one conjugate condition per plane, so that a single wavefront solve at the detector

@@ -98,7 +98,7 @@ cmake --build "${BUILD_DIR}" -j"$(nproc)" \
 # --- Build GMI via its own Makefile — the single GMI builder here
 #     (cmake BUILD_GMI is OFF above to avoid a duplicate mex build; the
 #     Makefile handles MATLAB detection + ifx -reentrancy=none itself) ---
-GMI_DIR="${SCRIPT_DIR}/GMI"   # one repo since the MACOS_resources merge
+GMI_DIR="${SCRIPT_DIR}/app/GMI"
 GMI_MEX="${GMI_DIR}/GMI.mexa64"
 if [ -f "${GMI_DIR}/Makefile" ]; then
   echo "makeall: building GMI via ${GMI_DIR}/Makefile (FC=ifx) ..."

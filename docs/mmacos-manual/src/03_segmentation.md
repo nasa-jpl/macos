@@ -15,15 +15,15 @@ and control: every segment becomes an element with its own frame and its own six
 
 ### The assistant reads
 
-- `mmacos/templates/80_end_to_end/e2e/README.md`, the `s3_segmentation.m` row --
+- `app/mmacos/templates/80_end_to_end/e2e/README.md`, the `s3_segmentation.m` row --
   the two variants, the knob that picks the one stages 4 to 6 consume, and the gotchas this stage
   flushed out (a Zernike parent's figure that SegMirMaker would drop; the heritage `xGrid` frame the
   tiling contract needs).
-- `mmacos/design/runners/run_segmentation.m`, its help text -- the general stage
+- `app/mmacos/design/runners/run_segmentation.m`, its help text -- the general stage
   runner the e2e stage is a thin driver over, its artefacts, and its verification ladder: a parent
   baseline, a bare segmentation trace, engine-truth footprints, the trace with physical apertures,
   and a standalone reload of the emitted deck.
-- `mmacos/templates/20_segmentation/` (`e5_pie`, `e5_seg`) -- the segmentation
+- `app/mmacos/templates/20_segmentation/` (`e5_pie`, `e5_seg`) -- the segmentation
   templates of the library, at twice this aperture.
 
 ### It runs

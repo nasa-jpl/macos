@@ -11,7 +11,7 @@ import numpy as np
 import pytest
 import win32com.client
 
-sys.path.insert(0, str(Path(".").absolute().parent.parent.parent / 'pymacos' / 'src'))
+sys.path.insert(0, str(Path(".").absolute().parent.parent.parent / 'app' / 'pymacos' / 'src'))
 # import pymacos.macos as pymacos
 import pymacos
 

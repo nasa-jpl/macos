@@ -7,7 +7,7 @@ translating a reference mirror.  Four analyzer angles are a standard
 four-step PSI; the recovered map is compared against the DM map that was
 injected.
 
-Gates live in `mmacos/tests/tTgPol.m` (9 tests, model 128, `SUITE_FAST`).
+Gates live in `app/mmacos/tests/tTgPol.m` (9 tests, model 128, `SUITE_FAST`).
 
 ```
 cd <this dir>

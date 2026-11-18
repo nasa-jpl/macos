@@ -10,7 +10,7 @@ is printed as that (n, m); the fitted coefficient is its normalization (1, or th
 mode that applies no surface, or is not one term, is reported, not printed as a row.
 
 Runs under the pymacos venv (`make zernike-table` sets it up: oneAPI runtime, PYMACOS_SRC, MACOS_HOME).
-The gate is pymacos/tests/test_zernike_orderings.py, which re-evaluates every printed
+The gate is app/pymacos/tests/test_zernike_orderings.py, which re-evaluates every printed
 polynomial against the engine.  Never hand-edit the output: rerun this.
 """
 import math, os, sys, tempfile
@@ -23,7 +23,7 @@ HERE = Path(__file__).resolve().parent
 OUT = HERE.parent / "src" / "transcripts" / "zernike_orderings.md"
 OUT8 = HERE.parent / "src" / "transcripts" / "zernike_table8.md"      # Section 4's excerpt (orders 0-4)
 NSHORT = 4
-sys.path.insert(0, os.environ.get("PYMACOS_SRC", str(HERE.parents[2] / "pymacos" / "src")))
+sys.path.insert(0, os.environ.get("PYMACOS_SRC", str(HERE.parents[2] / "app" / "pymacos" / "src")))
 import pymacos.macos as m  # noqa: E402
 sys.path.insert(0, str(HERE.parents[2] / "cli_tests" / "tools"))
 import hzdef_check as hexz  # noqa: E402  the hexagon-orthonormal construction (Mahajan & Dai), textbook

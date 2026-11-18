@@ -1,6 +1,6 @@
 """Fixtures for the zmx2macos tests.
 
-The engine is pymacos from MACOS_resources/pymacos/src (env PYMACOS_SRC overrides).  The
+The engine is pymacos from app/pymacos/src (env PYMACOS_SRC overrides).  The
 program decks (DST, AFTA) are not committed: they are read from ZMX2MACOS_DECKS (default
 ~/dev/MACOS_sandbox/zemax2macos) and their tests skip with a message when absent.
 """
@@ -21,7 +21,7 @@ DECKS = Path(os.environ.get('ZMX2MACOS_DECKS',
                             Path.home() / 'dev' / 'MACOS_sandbox' / 'zemax2macos'))
 DST = DECKS / 'dst2v2_aox_v5_di_2025_05_07_fiximgtilt_stop_at_dm1_20260507_Design-Locked.zmx'
 AFTA = DECKS / 'AFTA COR V5B-2-3-5-Testbed-O tmp 1 60inch oap source_FSS99-removed.zmx'
-DST_CODEV = RES / 'mmacos' / 'templates' / '30_instruments' / 'bench_ctb' / 'dst2' / 'dst2_F01_norm.in'
+DST_CODEV = RES / 'app' / 'mmacos' / 'templates' / '30_instruments' / 'bench_ctb' / 'dst2' / 'dst2_F01_norm.in'
 
 
 def need(path):
@@ -33,7 +33,7 @@ def need(path):
 
 @pytest.fixture(scope='session')
 def engine():
-    src = os.environ.get('PYMACOS_SRC', str(RES / 'pymacos' / 'src'))
+    src = os.environ.get('PYMACOS_SRC', str(RES / 'app' / 'pymacos' / 'src'))
     sys.path.insert(0, src)
     try:
         import pymacos

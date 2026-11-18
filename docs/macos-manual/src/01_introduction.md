@@ -46,7 +46,7 @@ Three companion tools are worth knowing from the outset:
 
 -   **SegMirMaker** (`segmirmaker/`) converts a monolithic primary mirror into a many-segment one, generating the segmented-mirror prescription and segment-influence files from a parent-mirror description (see §4.4.11).
 
--   **GMI** (`GMI/`) is a MATLAB MEX front end built directly on the SMACOS subroutine interface — both a complete forward simulator and the reference example of a real SMACOS application (see Section 9).
+-   **GMI** (`app/GMI/`) is a MATLAB MEX front end built directly on the SMACOS subroutine interface — both a complete forward simulator and the reference example of a real SMACOS application (see Section 9).
 
 -   The rx_converter, `cv2macos.seq`, can be used in CodeV to generate a MACOS prescription – a “.in-file” – from a CodeV prescription.
 

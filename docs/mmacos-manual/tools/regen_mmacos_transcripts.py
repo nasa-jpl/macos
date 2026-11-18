@@ -38,7 +38,7 @@ worked thread consume each other's products, so their drivers share it) as `<thr
 Usage (from docs/mmacos-manual):
   python3 tools/regen_mmacos_transcripts.py [--repin] [driver names...]
 Environment: MMMAN_KEEP (a directory: a passing run's scratch directory is moved there as <dir>/<driver>,
-not deleted), MATLAB (default `matlab`), MMACOS_ROOT (default this repository's mmacos/, the
+not deleted), MATLAB (default `matlab`), MMACOS_ROOT (default this repository's app/mmacos/, the
 mmacos the drivers add to the path).
 """
 import os, re, shutil, subprocess, sys, tempfile
@@ -133,7 +133,7 @@ def run_driver(name, repin):
     drv = DRIVERS / f"{name}.m"
     work = tempfile.mkdtemp(prefix=f"mmman_{name}_")
     env = dict(os.environ)
-    env.setdefault("MMACOS_ROOT", str(HERE.parents[2] / "mmacos"))
+    env.setdefault("MMACOS_ROOT", str(HERE.parents[2] / "app" / "mmacos"))
     env["MMMAN_WORK"] = work
     # the e2e thread: each stage consumes the one before, so its drivers share one persistent
     # directory (build/thread); the first stage's driver (ch01) copies the template there afresh

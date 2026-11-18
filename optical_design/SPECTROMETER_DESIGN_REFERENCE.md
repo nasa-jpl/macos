@@ -3,7 +3,7 @@
 Companion to `TELESCOPE_DESIGN_REFERENCE.md`, same rules: closed forms
 the design layer seeds from, conventions the MACOS emitter must honour,
 and the engine facts that were VERIFIED rather than assumed.  Started
-2026-09-30 for the `dyson5` challenge (`mmacos/challenges/dyson5/`,
+2026-09-30 for the `dyson5` challenge (`app/mmacos/challenges/dyson5/`,
 brief `macos/BRIEF_to_dyson5.md`).  Dev-only (strip list).
 
 ## 0. How to use this file
@@ -44,7 +44,7 @@ convex/concave mirror.  In the Dyson the slit sits off the axis by
   Reflector, the Grating branch never overwrites `IndRef(iElt)` with the
   incident medium.  RULE: a grating that sees glass carries the glass on
   its OWN element (`GlassElt= Silica`); the mirror habit `IndRef= 1`
-  silently gives `nb = 1`.  Gate: `mmacos/tests/tGratingImmersed.m`
+  silently gives `nb = 1`.  Gate: `app/mmacos/tests/tGratingImmersed.m`
   (immersed law 1e-10, air control, the trap pinned).
 - **Glass -- BROKEN IN THE CURRENT TREE (found 2026-09-30, gate
   `tGlassDispersion`; CC's engine slice).**  `GlassElt= <name>` is meant
@@ -216,7 +216,7 @@ FIFTH order: blur ∝ h^4 (measured exponent 4.00–4.06) and ∝ r^-3
 
     blur_rms ≈ k · h^4 / r^3,   k ≈ 0.68 um · (100 mm)^3 / (10 mm)^4 at F/1.8, n = 1.4585
 
-**Scaling law for the spec** (runner record `mmacos/challenges/dyson5/
+**Scaling law for the spec** (runner record `app/mmacos/challenges/dyson5/
 dyson5_s0_scaling.txt`, n = 1.450417 at 1 um, F/1.8, u = 11.04 deg; the
 54 mm slit with an 8 mm dispersion offset puts the slit CORNER at
 h = 28.16 mm; budget 0.25 px = 4.5 um rms):
@@ -238,7 +238,7 @@ report the law first, then add elements.  `dyson5_run` stage `s0`
 reproduces every number above (`dyson_layout`, `dyson_scaling`).
 
 **Departure ladder at fixed scale (dyson5 beat 3, r = 220 mm, F/1.8,
-54 mm slit; `mmacos/challenges/dyson5/dyson5_s3.txt`):** the concentric
+54 mm slit; `app/mmacos/challenges/dyson5/dyson5_s3.txt`):** the concentric
 knobs (R_g factor, face offset) take keystone 0.095 -> 0.038 px; an
 axisymmetric asphere/conic on the block face is INERT (a 1-D scan is a
 steep bowl at zero -- it acts on every field alike and cannot cancel an
@@ -266,7 +266,7 @@ FPA's spectral height (beat 2).
 
 ## 4. The Offner
 
-`mmacos/design/src/offner_layout.m` already lays out the concentric
+`app/mmacos/design/src/offner_layout.m` already lays out the concentric
 Offner relay (concave R used twice, convex R/2 at the stop, ring field
 radius h) in the Bauer-chain form the Telescope builder consumes and
 asserts closure (image at -h, symmetric path).  The spectrometer form
@@ -276,7 +276,7 @@ scorer (§5) is shared with the Dyson.
 ## 5. Metrics -- state the convention, then the number
 
 Definitions in Mouroulis & Green 2018's form (Sec. 4.1; digest
-`mmacos/challenges/dyson5/NOTE_mg2018_digest.md`):
+`app/mmacos/challenges/dyson5/NOTE_mg2018_digest.md`):
 
 - **SRF(y) = rect(slit) ⊗ LSF_spectrometer(y) ⊗ DET(y)** (spectral);
   **CRF(x) = LSF_system(x) ⊗ DET(x)** (cross-track; Joe's "XRF");
@@ -346,7 +346,7 @@ beat 1's concentric seed (r ≥ 213 mm, R_g 687 mm) is the same order.
 - L. Mertz, "Concentric spectrographs," Appl. Opt. 16, 3122 (1977).
 - P. Mouroulis & R. O. Green, "Review of high fidelity imaging
   spectrometer design for remote sensing," Opt. Eng. 57(4), 040901
-  (2018).  PDF on disk in `mmacos/challenges/dyson5/` (SPIE copyright:
+  (2018).  PDF on disk in `app/mmacos/challenges/dyson5/` (SPIE copyright:
   git-ignored, cite only); digest `NOTE_mg2018_digest.md`.  It does not
   restate the concentric condition (cites Dyson 1959) -- the numerical
   verification in §3 is the basis.

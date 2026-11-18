@@ -16,7 +16,7 @@ MAN = Path(__file__).resolve().parent.parent
 SPECS = MAN / "tools" / "part2" / "specs"
 ORDER = MAN / "tools" / "part2" / "order.txt"
 KEPT = MAN / "part2"                               # README text for templates without one
-TPL = MAN.parent.parent / "mmacos" / "templates"       # this repository
+TPL = MAN.parent.parent / "app" / "mmacos" / "templates"   # this repository
 FIRST_FIGURE = 33                                  # Part I ends at FIGURE 32
 
 INTRO = """## SECTION 9: The Template Catalog

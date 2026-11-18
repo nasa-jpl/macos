@@ -315,7 +315,7 @@ Divergent: manual `Cassegrain.in` (EP Reference right after SM)
 legacy −1.2295 → new +6.7907 == exactly CassWithExitPupil's value —
 the rework computes the right answer where legacy was degenerate;
 `eac2_7seg` −289.7 → +52597.6.  GMI regression all-pass.  Sweep tool:
-`mmacos/tools/fex_sweep/`.  Negative-L background
+`app/mmacos/tools/fex_sweep/`.  Negative-L background
 (why small spheres fail SILENTLY): ordinary train rejects L<0 (GO TO
 98 → miss); near Reference/Obscuring/Return/LensArray
 `ifLNsrf=.TRUE.` allows it and ConSrf picks the quadratic root by
@@ -456,7 +456,7 @@ the FocalPlane (path to the landing point: FP = screen + delta.x / EFL).
   so the load A/B does not see this change.
 
 ## OPEN (2026-10-31, TO): FEX mis-centres the sphere of a pupil BEYOND iElt+1 (a virtual exit pupil); CALIB dies on such a lens
-*(Found by the IODC 2010 on-axis work, `mmacos/challenges/iodc2010`, README "A virtual exit pupil".  Evaluator-side fix landed there; the engine side waits on Dave.)*
+*(Found by the IODC 2010 on-axis work, `app/mmacos/challenges/iodc2010`, README "A virtual exit pupil".  Evaluator-side fix landed there; the engine side waits on Dave.)*
 
 **What:** when the chief's crossing of the iElt+1 plane (the FP) lies UPSTREAM of the pupil
 station -- the paraxial exit pupil beyond the image plane: a stop inside a rear group's front

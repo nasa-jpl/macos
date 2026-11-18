@@ -50,7 +50,7 @@ make cmdref-regen # regen cmdref Parts I-III + the CLI-suite coverage appendix
   puts a unit coefficient in one mode at a time on a flat mirror through pymacos and fits the traced sag, so
   a row is what the engine does.  It refuses to write a table when a mode is not one term or a factor is
   off -- that is an engine finding for `PLAN_CONSOLIDATION.md` 1.2, not a row.  Gate:
-  `pymacos/tests/test_zernike_orderings.py` (re-evaluates the printed text; a regenerated
+  `app/pymacos/tests/test_zernike_orderings.py` (re-evaluates the printed text; a regenerated
   table must pass it before its commit).
 - **No TOC in source** — pandoc `--toc` builds it. A plain
   `soffice --convert-to pdf` leaves the Word TOC field EMPTY; the

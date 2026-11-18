@@ -209,7 +209,7 @@ def dialog(raw, marks, sends, tmp, opts, banner):
 
 
 def transcripts(binary, only):
-    res = os.environ.get("MACOS_RESOURCES", str(ROOT))   # one repository since the MACOS_resources merge
+    res = os.environ.get("MACOS_RESOURCES", str(ROOT / "app"))   # the interfaces: app/mmacos, app/pymacos, app/GMI
     jous = sorted(JOU.glob("*.jou"))
     if only:
         jous = [j for j in jous if j.stem in only]

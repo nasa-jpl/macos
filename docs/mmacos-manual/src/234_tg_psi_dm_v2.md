@@ -18,9 +18,9 @@ published Mueller data at ~1e-14).  So a PBS is coating physics: no ray
 splitting, no `RfPolarizer` element, still two decks — the engine does not
 split rays.
 
-New builder pieces, all in `mmacos/src/+macos/+design/`:
+New builder pieces, all in `app/mmacos/src/+macos/+design/`:
 
-Gates: `mmacos/tests/tTgPol2.m` (9 tests, model 128, `SUITE_FAST`, ~6 s).
+Gates: `app/mmacos/tests/tTgPol2.m` (9 tests, model 128, `SUITE_FAST`, ~6 s).
 v1's `tTgPol` (9 tests) is **unchanged and still green** — v2 is a sibling,
 not a replacement, and v1 remains the rehearsed demo default.
 

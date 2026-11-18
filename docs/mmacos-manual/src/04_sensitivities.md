@@ -14,13 +14,13 @@ in one stacked form, `w = J·x + w0`: a column per degree of freedom, a row per 
 
 ### The assistant reads
 
-- `mmacos/templates/80_end_to_end/e2e/README.md`, the `s4_jacobians.m` row -- the
+- `app/mmacos/templates/80_end_to_end/e2e/README.md`, the `s4_jacobians.m` row -- the
   three channels, the field set (the center and the four corners of the ±2′ field), and why the
   figure channel uses each segment's own Zernike basis rather than the parent's.
-- `mmacos/design/runners/run_sensitivities.m` -- the runner over the production
+- `app/mmacos/design/runners/run_sensitivities.m` -- the runner over the production
   `macos.dw_d*_multi` supervisors, the grid augmentation (`macos.design.grid_augment_rx`), and the
   report it writes.
-- `mmacos/tests/tDwDx.m`, the comments on its pins -- the noise floor of a
+- `app/mmacos/tests/tDwDx.m`, the comments on its pins -- the noise floor of a
   finite-difference sensitivity (about 1e-6 absolute, up to 3e-5 on columns that are nearly zero),
   which decides which numbers below are signals and which are bounds.
 

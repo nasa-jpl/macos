@@ -43,7 +43,7 @@ U.S. Government sponsorship of parts of MACOS under NASA Contract NAS7-918 is ac
 
 #### Installation
 
-*mmacos* is the MATLAB interface to the MACOS engine. It lives in the `macos` repository beside the engine, in `mmacos/`; build the gfortran engine first (the MACOS Manual, Installation: `source ./makems.sh release gfortran`), then the interface (`mmacos/README.md`, Build):
+*mmacos* is the MATLAB interface to the MACOS engine. It lives in the `macos` repository beside the engine, in `app/mmacos/`; build the gfortran engine first (the MACOS Manual, Installation: `source ./makems.sh release gfortran`), then the interface (`app/mmacos/README.md`, Build):
 
     cd mmacos
     make                                  # the mex, linked against the gfortran engine build
@@ -51,7 +51,7 @@ U.S. Government sponsorship of parts of MACOS under NASA Contract NAS7-918 is ac
 
 and in MATLAB, once per session:
 
-    run('<path-to>/macos/mmacos/mmacos_setup.m');
+    run('<path-to>/macos/app/mmacos/mmacos_setup.m');
 
 #### How this manual is made
 
