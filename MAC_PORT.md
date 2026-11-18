@@ -139,6 +139,21 @@ maps differ by 6 to 12 units of round-off of the chief-ray path, eps x L (e2e_pi
 
 ## Part 2 — Validation record
 
+### 2026-11-18 — GMI's first Mac build (branch `mr_merge_gmi_mac`, gfortran 16.1.0, MATLAB R2024a arm64)
+
+First time GMI has been built on Apple Silicon. `source ./makegmi.sh` builds `app/GMI/GMI.mexmaca64`
+both with `MATLAB_DIR` set and with MATLAB auto-detected under `/Applications`; the two CCMac-reported
+blockers (`uname -i`, `MATLAB_DIR` not forwarded) and the Linux-only `/usr/local/MATLAB` path and GNU-ld
+options are all resolved. Compile flags are the mmacos Mac set; link is `-bundle -undefined dynamic_lookup`
+with `-lmx -lmex -lmat` and maca64 + libgfortran rpaths. Only diagnostic is the benign `GMIG.F:491`
+rank-mismatch warning (absorbed by `-fallow-argument-mismatch`, as on Linux). The mex loads in MATLAB
+with no missing symbol and `matlab -batch` exits cleanly. **Regression 7/7** against the Linux x86-64
+references under the new path-scaled tolerance `32 x eps x L` (`ref_tolerance.m`): e2e_pie tests 02/03 at
+5.684e-14 / 8.527e-14 (tol 2.271e-13 m); e5hex1 tests 05/06 at 1.164e-10 / 8.731e-11 (tol 4.911e-10 mm) —
+the e5hex1 differences that overran the old fixed 1e-12 are last-ULP cross-architecture round-off on a
+69,121 mm path, and sit at 7.6 and 5.7 in units of eps x L; test07 refuses half-tolerance-pass / twice-fail
+for both decks. No reference re-made, no tolerance hand-edited.
+
 ### 2026-11-02 (14) — release gate part A, clean clone (pair macos `0984cd34` + resources `ef2d7f9a`)
 Full record: `tests/cli/records/mac_gate_gfortran_0984cd34.md`. The full clean-clone gate on the pair the
 release is cut from, before Andy's repo consolidation (part B — re-clone the rewritten repo, gate from
