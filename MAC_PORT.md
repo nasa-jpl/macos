@@ -76,6 +76,23 @@ PYTHONPATH=<clone>/macos/app/pymacos/src \
 ~/.venv/pymacos/bin/python -m pytest --ignore=proper_compare -q
 ```
 
+### GMI (ported 2026-11-18, awaiting its first Mac build)
+
+`app/GMI/Makefile` gained a Darwin branch that follows the mmacos Makefile; `makegmi.sh`
+forwards `MATLAB_DIR`; `app/GMI/regression/run_regression.sh` finds MATLAB under
+`/Applications`. Until then GMI had never been built on a Mac: the Makefile called
+`uname -i`, looked for MATLAB only under `/usr/local/MATLAB`, and linked with GNU-ld
+options.
+
+```bash
+source ./makems.sh release gfortran      # the engine, as above
+source ./makegmi.sh                      # -> app/GMI/GMI.mexmaca64
+app/GMI/regression/run_regression.sh     # six tests against references made on Linux x86-64
+```
+
+The port was written on Linux, where the build and the regression are unchanged (6 of 6).
+The first Mac build and regression results go in Part 2.
+
 ### The load-bearing gotchas (still bite)
 - **`macos_param.txt` + MEX = SIGSEGV — closed for a build run in its own
   tree.** `init` loads `macos_param.txt` from cwd, exe dir, `$MACOS_HOME`, then

@@ -16,8 +16,8 @@ wavefront sensing demos.
 | `GMI.F` | `MODULE GMI_mod` containing `GMI_DVR` (work routine) and helpers (`ObtainNominalSettings`, `SetToNominalSettings`, `ApplyPerturbationToOpticalSystem`, …) |
 | `GMIG.F` | MEX gateway (`SUBROUTINE mexfunction`); validates `PRHS`, copies into Fortran arrays, calls `GMI_DVR` |
 | `GMI.inc` | Compile-time array sizes (`numseg`, `mzern`, `mpzern`, `mprb`, `mpgrid`, …) |
-| `GMI.mexa64` | Built MEX binary (gitignored; produced by `Makefile`) |
-| `Makefile` | Standalone build (auto-detects MATLAB under `/usr/local/MATLAB`) |
+| `GMI.mexa64` | Built MEX binary on Linux (`GMI.mexmaca64` on an Apple Silicon Mac); gitignored; produced by `Makefile` |
+| `Makefile` | Standalone build (auto-detects MATLAB: `/usr/local/MATLAB` on Linux, `/Applications` on macOS; `MATLAB_DIR` overrides) |
 | `call_GMI.m` | MATLAB wrapper — packs a `param` struct into `pflg` and invokes the MEX |
 | `e2e_pie_init.m` | Reference `param` initializer (e2e_pie Rx) |
 | `test_gmi.m` | Sample driver (rb sensitivity loops) |
@@ -36,6 +36,14 @@ libraries from `~/dev/macos/build_release_giza/`:
 Entry points (in `~/dev/macos/`):
 - `source ./makegmi.sh` — GMI MEX only (requires macos+smacos pre-built)
 - `source ./makejoint.sh` — macos + smacos + smacos_dvr + GMI
+
+**On a Mac** (added 2026-11-18, following the mmacos Makefile): gfortran only.
+Build the engine with `source ./makems.sh release gfortran`, then
+`source ./makegmi.sh`. The mex is `GMI.mexmaca64`. MATLAB is found under
+`/Applications/MATLAB_R20XXx.app`; to pick one, set `MATLAB_DIR` in the
+environment before sourcing the script. `regression/run_regression.sh` finds
+MATLAB the same way. The reference `.mat` files were made on Linux x86-64;
+see `MAC_PORT.md` for what the regression gives on arm64.
 
 `make` doesn't see `.inc` includes, so when only `GMI.inc` changes the
 `.o` files don't rebuild. Force a rebuild:

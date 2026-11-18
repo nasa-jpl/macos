@@ -15,9 +15,20 @@
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-MATLAB_BIN="$(ls -d /usr/local/MATLAB/R*/bin/matlab 2>/dev/null | tail -1)"
-if [ -z "$MATLAB_BIN" ]; then
-    echo "ERROR: no MATLAB found under /usr/local/MATLAB/R*/bin/matlab"
+# MATLAB: MATLAB_DIR from the environment if set, else the latest release where the
+# platform puts it (Linux /usr/local/MATLAB/R20XXx, macOS /Applications/MATLAB_R20XXx.app).
+# `|| true`: under `set -o pipefail` a listing that matches nothing would otherwise end
+# the script here, before the message below.
+if [ -n "${MATLAB_DIR:-}" ]; then
+    MATLAB_BIN="${MATLAB_DIR}/bin/matlab"
+elif [ "$(uname -s)" = "Darwin" ]; then
+    MATLAB_BIN="$(ls -d /Applications/MATLAB_R*.app/bin/matlab 2>/dev/null | sort | tail -1 || true)"
+else
+    MATLAB_BIN="$(ls -d /usr/local/MATLAB/R*/bin/matlab 2>/dev/null | sort | tail -1 || true)"
+fi
+if [ -z "$MATLAB_BIN" ] || [ ! -x "$MATLAB_BIN" ]; then
+    echo "ERROR: no MATLAB found (looked at MATLAB_DIR, then /usr/local/MATLAB/R*/bin/matlab on Linux"
+    echo "  or /Applications/MATLAB_R*.app/bin/matlab on macOS)"
     echo "  (GMI regression requires MATLAB to load the mex)"
     exit 1
 fi

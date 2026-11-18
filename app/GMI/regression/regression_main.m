@@ -17,7 +17,7 @@ here = fileparts(mfilename('fullpath'));
 % SMACOS's OLD command can find the prescription file.
 addpath(fullfile(here, 'tests'));
 addpath(fullfile(here, 'lib'));
-addpath(fileparts(here));        % parent GMI/ holds call_GMI.m + GMI.mexa64
+addpath(fileparts(here));        % parent GMI/ holds call_GMI.m + the GMI mex
 
 % Hard absolute tolerance.  See lib/compare_within.m.
 opts.tol = 1.0e-12;
