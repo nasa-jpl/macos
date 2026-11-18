@@ -1,5 +1,9 @@
 # Developer-only files — strip from public `main`, keep on `dev`
 
+> **2026-11 (issue #78):** the top-level files this page lists are now in `devnotes/`, this page
+> among them, and `release-exclude.txt` strips that directory in one line.  The paths below are as
+> they were written.
+
 Manifest of developer/agent process files in the **macos** repo that should
 be **removed from the public `main` branch** but **preserved on `dev`** for the
 2026 public-release split.  These hold agent instructions, planning/working

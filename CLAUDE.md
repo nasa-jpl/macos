@@ -5,15 +5,18 @@ Fixed-form source: .F files use the C preprocessor, .f files do not.
 
 > **Post-compaction / post-upgrade — re-read the docs first.** After a
 > context compaction or a tooling upgrade, before resuming build or
-> engine work, re-read: **this file**, then -- IF PRESENT -- `PLAN.md`,
-> `PLAN_CONSOLIDATION.md` (the active sequencing, 2026-10-08),
-> `PLAN_DESIGN_LAYER.md`, `CURRENT_SLICE.md` (in-flight state), and the
+> engine work, re-read: **this file**, then -- IF PRESENT -- `devnotes/PLAN.md`,
+> `devnotes/PLAN_CONSOLIDATION.md` (the active sequencing, 2026-10-08),
+> `devnotes/PLAN_DESIGN_LAYER.md`, `devnotes/CURRENT_SLICE.md` (in-flight state), and the
 > agent `MEMORY.md` (build/test workflow entries).  The plans, the slice
-> and the memory live on the `dev` branch only; a release checkout
+> and every other developer note are in `devnotes/`, which, like the
+> memory, exists on the `dev` branch only; a release checkout
 > (`main`) carries this file, the nested `CLAUDE.md` set and
 > `macos_f90/notes/` and nothing else of the kind -- citations such as
 > "PLAN_CONSOLIDATION 1.2 (tt)" in the notes are provenance pointers to
-> the dev branch's record, not files to look for.
+> the dev branch's record (`devnotes/PLAN_CONSOLIDATION.md` there), not
+> files to look for on `main`.  A new brief, note, plan or report goes
+> in `devnotes/`, not at the top of the repository.
 >
 > **THEN re-read the nested `CLAUDE.md` for whatever subsystem you are
 > resuming — and, for the engine core, the `macos_f90/notes/<topic>.md` it points to** — see the index below. Nested CLAUDE.md files load on demand

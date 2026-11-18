@@ -792,11 +792,11 @@ See §2.1 and §3 above.
 
 ### 4.5 Metrology completion
 
-Data model in place today: per-element arrays `iEltToMetSrf`, `nMetPos`, `tMetSrf`, `ntMetPos`, `SrfMetPos(3,mMetPos,mMetSrf)`, `SrfMetMea(mMetBeam,mMetSrf)`, `metBeamFlg(mMetPos,mMetPos,mMetSrf)`, flat output `metMeasBuf(mSysMetBeam)` + `nMetMeas`; edge-sensor pair `EdgeSensor(mElt)` + `EdgeSensVec(9,mES,mElt)`; limits `mMetSrf=20`, `mMetBeam=48`, `mMetPos=48`, `mSysMetBeam=128`, `mES=10`. `METcalc` command (3-char min-match) dispatches `SrfMetCalc` ([utilsub.F:1783](macos_f90/utilsub.F#L1783)) — pure 3-D Euclidean distance between point pairs in the global frame. Rx keywords `nMetPos` / `tMetElt` / `EdgeSensors` / `ShowMetData` ([msmacosio.inc:1894](macos_f90/msmacosio.inc#L1894), [3257](macos_f90/msmacosio.inc#L3257)). GMI mex exposes output #9 `MetMeas` via `pflg(27)` triggering `SMACOS('METcalc',...)` ([GMI.F:1448](../MACOS_resources/GMI/GMI.F#L1448)). Example Rx exercising the full path: [e2e_pie_met.in](../MACOS_resources/GMI/e2e_pie_met.in).
+Data model in place today: per-element arrays `iEltToMetSrf`, `nMetPos`, `tMetSrf`, `ntMetPos`, `SrfMetPos(3,mMetPos,mMetSrf)`, `SrfMetMea(mMetBeam,mMetSrf)`, `metBeamFlg(mMetPos,mMetPos,mMetSrf)`, flat output `metMeasBuf(mSysMetBeam)` + `nMetMeas`; edge-sensor pair `EdgeSensor(mElt)` + `EdgeSensVec(9,mES,mElt)`; limits `mMetSrf=20`, `mMetBeam=48`, `mMetPos=48`, `mSysMetBeam=128`, `mES=10`. `METcalc` command (3-char min-match) dispatches `SrfMetCalc` ([utilsub.F:1783](../macos_f90/utilsub.F#L1783)) — pure 3-D Euclidean distance between point pairs in the global frame. Rx keywords `nMetPos` / `tMetElt` / `EdgeSensors` / `ShowMetData` ([msmacosio.inc:1894](../macos_f90/msmacosio.inc#L1894), [3257](../macos_f90/msmacosio.inc#L3257)). GMI mex exposes output #9 `MetMeas` via `pflg(27)` triggering `SMACOS('METcalc',...)` ([GMI.F:1448](../MACOS_resources/GMI/GMI.F#L1448)). Example Rx exercising the full path: [e2e_pie_met.in](../MACOS_resources/GMI/e2e_pie_met.in).
 
 - [ ] PERTURB coverage gap — `SrfMetPos` updated by only 2 of 5 perturbation paths
-  - [x] `CPERTURB` ([funcsub.F:184](macos_f90/funcsub.F#L184))
-  - [x] `CPERTURB_GRP` ([funcsub.F:1254](macos_f90/funcsub.F#L1254))
+  - [x] `CPERTURB` ([funcsub.F:184](../macos_f90/funcsub.F#L184))
+  - [x] `CPERTURB_GRP` ([funcsub.F:1254](../macos_f90/funcsub.F#L1254))
   - [ ] `CPRead` (funcsub.F) — add rotate-then-translate SrfMetPos block
   - [ ] `CPERTURB_2` (macos_ops.F) — same pattern
   - [ ] `LnkEltCPERTURB` (lnk_pert.inc) — same; linked-element metrology silently wrong without this
@@ -819,7 +819,7 @@ Data model in place today: per-element arrays `iEltToMetSrf`, `nMetPos`, `tMetSr
   - [ ] Decide: implement (companion to METcalc — leg-length measurements modeling actual Stewart-platform geometry) OR remove from GMI mex side
   - [ ] If implement: mirror metrology arrays as `nPfPos` / `tPfElt` / `pfMeasBuf` / `nPfMeas`; flag wired to `pflg(28)`
 - [ ] Prescription output formatter missing
-  - [ ] [iosub.inc](macos_f90/iosub.inc) `PrtSingleEltInfo` emits no `nMetPos` / `tMetElt` / `EdgeSensors` fields
+  - [ ] [iosub.inc](../macos_f90/iosub.inc) `PrtSingleEltInfo` emits no `nMetPos` / `tMetElt` / `EdgeSensors` fields
   - [ ] Load → modify → save round-trip silently drops metrology config (and edge-sensor config once consumer lands)
   - [ ] Add output blocks following per-element keyword format already used elsewhere
   - [ ] Regression: round-trip `e2e_pie_met.in` and confirm METcalc output identical
