@@ -395,7 +395,7 @@ the report and this section states the FINDINGS.
   six readings, within-scan 0 / 1).  Figure: `<tag>_pdi.png` (the focal
   spot with pinhole, dimple and mode; the reference amplitudes; the
   reference's motion by diameter; the visibility maps).  Deck:
-  `macos/demo_session/deck_pdi.md` (DRAFT).  *The P/SRI as a BUILDABLE
+  `deck_pdi.md` (DRAFT; the deck workshop is no longer in this repository).  *The P/SRI as a BUILDABLE
   bench (Dave 2026-09-12: "separate but balanced arms, the reference
   through the pinhole / phase shifter"):* `macos.design.psri_bench` +
   `psri_layout_fig.m` (`psri_layout.png`, `psri_render.png`,

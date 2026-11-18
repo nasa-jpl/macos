@@ -12,7 +12,6 @@ BRIEF_*.md
 REPORT_*.md
 RUNBOOK_*.md
 NOTES_*.md
-demo_session
 NOTE_*.md
 docs/macos-manual/audit_4.1beta.txt
 # 2026-10-21 (Dave): the CLAUDE.md set, src/notes/ and MAC_PORT.md SHIP (agent use by MACOS users); the plans, slice and process files stay on dev

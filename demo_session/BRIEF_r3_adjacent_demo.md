@@ -1,1 +1,0 @@
-../BRIEF_r3_adjacent_demo.md
