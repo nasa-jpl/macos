@@ -272,7 +272,7 @@ def default_glass_list():
     beside = os.path.join(here, 'macos_glass_list.txt')     # a stand-alone package
     if os.path.isfile(beside):
         return beside
-    return os.path.normpath(os.path.join(here, '..', '..', 'data',           # this repository
+    return os.path.normpath(os.path.join(here, '..', '..', '..', 'data',           # this repository
                                          'macos_glass_list.txt'))
 
 

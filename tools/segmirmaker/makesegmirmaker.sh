@@ -38,7 +38,10 @@ if [ "$fc" = "ifx" ] && [ -f /opt/intel/oneapi/setvars.sh ]; then
   source /opt/intel/oneapi/setvars.sh --force >/dev/null 2>&1
 fi
 
-# Select the pre-built MACOS tree that matches this compiler + build type.
+here="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+
+# Select the pre-built MACOS tree that matches this compiler + build type:
+# the one at the top of this repository, two levels above tools/segmirmaker.
 if [ -z "${MACOS_BUILD_DIR:-}" ]; then
   bt_lc="$(printf '%s' "$build_type" | tr '[:upper:]' '[:lower:]')"
   if [ "$fc" = "gfortran" ]; then
@@ -46,10 +49,9 @@ if [ -z "${MACOS_BUILD_DIR:-}" ]; then
   else
     macos_tree="build_${bt_lc}"
   fi
-  MACOS_BUILD_DIR="${HOME}/dev/macos/${macos_tree}"
+  MACOS_BUILD_DIR="$(cd "${here}/../.." && pwd)/${macos_tree}"
 fi
 
-here="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 build_dir="${here}/build_${build_tag}"
 mkdir -p "${build_dir}"
 

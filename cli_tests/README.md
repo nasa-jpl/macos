@@ -84,7 +84,7 @@ a pty (readline needs a tty; the model-size prompt comes first) and writes RECOR
   by its file time).  File times alone cannot order committed records — a fresh clone
   stamps them all with one moment.
 - `make_corpus.sh` — `corpus_core.txt` (ZGD_test_files, the manual's examples,
-  mmacos and pymacos `tests/Rx`, GMI `test_ff`, segmirmaker), `corpus_committed.txt`
+  mmacos and pymacos `tests/Rx`, GMI `test_ff`), `corpus_committed.txt`
   (every tracked `.in` that declares `nElt=` or `Element=`),
   `corpus_extended.txt` (+ `$MACOS_SANDBOX`, default `~/dev/MACOS_sandbox`; gitignored —
   machine-local).  The two committed lists carry this box's absolute paths; re-run

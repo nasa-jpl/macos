@@ -310,7 +310,7 @@ SEGMENT_RX  Segment one element of a MACOS prescription (SegMirMaker splice).  o
 
 `macos.design.out = segmirmaker_run(parent_in, opts)`
 
-SEGMIRMAKER_RUN  Drive the SegMirMaker generator non-interactively.  out = macos.design.segmirmaker_run(parent_in, Name=Value) runs the standalone SegMirMaker binary (segmirmaker/) on a parent MACOS prescription by scripting its interactive dialog over stdin, in a
+SEGMIRMAKER_RUN  Drive the SegMirMaker generator non-interactively.  out = macos.design.segmirmaker_run(parent_in, Name=Value) runs the standalone SegMirMaker binary (tools/segmirmaker/) on a parent MACOS prescription by scripting its interactive dialog over stdin, in a
 
 <!-- BEGIN NOTES hl-segmirmaker-run -->
 <!-- END NOTES hl-segmirmaker-run -->

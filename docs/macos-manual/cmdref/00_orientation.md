@@ -78,7 +78,7 @@ underlying routine, which is the ground truth for argument meanings.
 
 Two companions ship alongside the four surfaces:
 
-- **SegMirMaker** (`segmirmaker/`) — standalone
+- **SegMirMaker** (`tools/segmirmaker/`) — standalone
   utility for converting a monolithic primary mirror into a
   many-segment one: it generates the segmented-mirror prescription
   (`.presc`) and segment-influence (`Hx.m`) files from a parent-mirror

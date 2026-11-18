@@ -4,13 +4,13 @@ project(SegMirMaker Fortran)
 # Pre-built MACOS tree supplies libsmacos.a plus its dependency stack and
 # the Fortran module files SegMirMaker needs (smacos_mod, surfsub, elt_mod,
 # segmir_parent_mod compiled in-tree, param_mod, cfiles_mod).
-set(MACOS_BUILD_DIR "$ENV{HOME}/dev/macos/build_release" CACHE PATH
+set(MACOS_BUILD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../build_release" CACHE PATH
     "Pre-built MACOS build tree (use makems.sh to build it)")
 
 if(NOT EXISTS "${MACOS_BUILD_DIR}/lib/libsmacos.a")
   message(FATAL_ERROR
       "libsmacos.a not found in ${MACOS_BUILD_DIR}/lib. "
-      "Build MACOS first: cd ../../macos/macos && source ./makems.sh")
+      "Build MACOS first, from the top of the repository: source ./makems.sh")
 endif()
 
 find_library(SMACOS_LIB    smacos    PATHS ${MACOS_BUILD_DIR}/lib NO_DEFAULT_PATH REQUIRED)
@@ -36,7 +36,7 @@ if(APPLE)
   set(READLINE_LIB "${_brew_readline}/lib/libreadline.a"
       CACHE FILEPATH "Static readline library")
 else()
-  set(READLINE_LIB "${CMAKE_CURRENT_SOURCE_DIR}/../external/readline-8.2/libreadline.a"
+  set(READLINE_LIB "${CMAKE_CURRENT_SOURCE_DIR}/../../external/readline-8.2/libreadline.a"
       CACHE FILEPATH "Static readline library")
 endif()
 if(NOT EXISTS "${READLINE_LIB}")

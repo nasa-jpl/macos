@@ -122,7 +122,7 @@ interfaces built on the engine:
     ├── macos_f90/    ← engine source
     ├── external/     ← bundled third-party code (giza, readline, slsqp, FITS)
     ├── app/          ← the interfaces: GMI/  mmacos/  pymacos/
-    └── segmirmaker/  rx_converter/   ← tools
+    └── tools/        ← stand-alone programs: segmirmaker/  rx_converter/
 ```
 
 (Until 2026-11 the interfaces lived in a second repository,

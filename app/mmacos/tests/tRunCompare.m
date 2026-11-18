@@ -28,10 +28,10 @@ classdef tRunCompare < matlab.unittest.TestCase
             here = fileparts(mfilename('fullpath'));
             res_root = repo_root_();   % the repository root
             addpath(fullfile(res_root, 'app', 'mmacos', 'design', 'runners'));
-            tin = fullfile(res_root, 'segmirmaker', 'test_in');
+            tin = fullfile(res_root, 'tools', 'segmirmaker', 'test_in');
             % Locate whichever build tree exists (ifx on Linux, gfortran on
             % macOS / gfortran builds); ifx preferred when both are present.
-            smmdir = fullfile(res_root, 'segmirmaker');
+            smmdir = fullfile(res_root, 'tools', 'segmirmaker');
             bin = '';
             for tag = ["build_release_ifx", "build_release_gfortran", ...
                        "build_debug_ifx", "build_debug_gfortran"]

@@ -18,8 +18,8 @@ docs/macos-manual/audit_4.1beta.txt
 # 2026-10-21 (Dave): the CLAUDE.md set, macos_f90/notes/ and MAC_PORT.md SHIP (agent use by MACOS users); the plans, slice and process files stay on dev
 PLAN_*.md
 # via MACOS_resources merge
-segmirmaker/.vscode/launch.json
-segmirmaker/.vscode/tasks.json
+tools/segmirmaker/.vscode/launch.json
+tools/segmirmaker/.vscode/tasks.json
 doc/STYLE_REPORTS.md
 app/mmacos/design/PLAN_AFOCAL4.md
 app/mmacos/design/PLAN_TMA_E2E2.md

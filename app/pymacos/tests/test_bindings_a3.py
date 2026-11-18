@@ -178,7 +178,7 @@ def test_polelt_round_trip_and_jones_identities():
 # ---- met / met_geom (mmacos tMet) --------------------------------------------------------
 @pytest.fixture
 def mono_met(tmp_path):
-    tin = RES.parent / 'segmirmaker' / 'test_in'     # segmirmaker is at the repository root
+    tin = RES.parent / 'tools' / 'segmirmaker' / 'test_in'     # tools/ is at the repository root
     (tmp_path / 'flat.txt').write_text((tin / 'flat.txt').read_text())
     a = np.array([0.0, -5471.177517626807, -21308.82954482988])   # m2 Vpt (mm, global)
     b = a + [100.0, 0.0, 0.0]

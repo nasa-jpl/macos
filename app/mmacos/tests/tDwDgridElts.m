@@ -23,7 +23,7 @@ classdef tDwDgridElts < matlab.unittest.TestCase
         function locate(tc)
             here = fileparts(mfilename('fullpath'));
             res_root = repo_root_();   % the repository root
-            tc.rx = fullfile(res_root, 'segmirmaker', 'test_in', 'e5pie.in');
+            tc.rx = fullfile(res_root, 'tools', 'segmirmaker', 'test_in', 'e5pie.in');
             tc.assumeTrue(isfile(tc.rx), 'e5pie fixture missing');
         end
     end

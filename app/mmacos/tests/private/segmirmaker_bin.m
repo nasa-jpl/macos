@@ -13,7 +13,7 @@ function bin = segmirmaker_bin()
 %   See also tSegMirMaker, tSegmentRx, tEdgeSensors, tMet, tRunMet,
 %   tRunSegmentation.
 
-smmdir = fullfile(repo_root_(), 'segmirmaker');
+smmdir = fullfile(repo_root_(), 'tools', 'segmirmaker');
 bin = '';
 for tag = ["build_release_ifx", "build_release_gfortran", ...
            "build_debug_ifx", "build_debug_gfortran"]

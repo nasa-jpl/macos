@@ -71,7 +71,7 @@ build choice and the debug-build notes are in `BUILD.md`.
 
 ## Branches (summary — the model and the public-release strategy are `BRANCHES.md`)
 **One repository since 2026-11**: `MACOS_resources` is merged into `macos` (`app/mmacos/`,
-`app/pymacos/`, `app/GMI/`, `segmirmaker/`, `rx_converter/`, `optical_design/` beside `macos_f90/`).
+`app/pymacos/`, `app/GMI/`, `tools/segmirmaker/`, `tools/rx_converter/`, `optical_design/` beside `macos_f90/`).
 `dev` is the public integration branch and `main` the public release surface; `mr_merge`
 carries the merge and the reorganization (issues #75 to #83), one temporary branch and one
 pull request per issue.  `dev-candidate`, `opt-dev`, `sls-dev` and `bench-builder` are gone
