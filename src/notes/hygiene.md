@@ -79,6 +79,33 @@
   passed).
   Since issue #77 the two files live in `data/` at the repository root,
   and that is the default of `MACOS_DATA_DIR`.
+- **`spot_get` centroid over the whole spot array (macos_api_mod.F90,
+  2026-11-18).**  `centroid = sum(RaySpot, dim=1)/N` summed all `mRay`
+  rows where SPOT writes only rows `1..iSpot`.  Two effects.  (1) STALE
+  rows: a spot taken after one with more rays kept the earlier tail in
+  its sum -- e5hex1 at source sampling 31 (552 rays) after the deck's own
+  sampling (10,245 rays) read centroid y = -1,156.7 mm where the mean of
+  the returned points is -62.32 mm.  Deterministic, both compilers.
+  (2) UNINITIALIZED rows: the library allocated `PixArray`, `OPDMat` and
+  `RaySpot` without zeroing them (the command-line program zeroes its own
+  copies in macos_mod.F), so the rows no spot had written held whatever
+  the allocation returned.  A fresh block is zero and the answer is
+  right; a recycled block is not.  This is the reading of the three
+  tDwDx centroid tests that returned NaN on the Mac on 2026-11-18 in a
+  suite run beside other jobs and passed when re-run alone -- load
+  matters only through the allocator.  The NaN itself was not
+  reproduced; the stale-row half was.  Fixed: sum rows `1:N`, and zero
+  the three arrays at allocation.  `dw_dx`'s `dcdx` is a difference of
+  two such centroids, so equal tails cancelled and it was wrong only
+  when a perturbation changed the ray count (or the tail was not
+  finite).  Why no test saw it: every spot test ran on a centred deck,
+  where the tail sums to nearly nothing; and of the five tDwDx tests
+  that ask for `dcdx`, two could not notice a NaN (a shape check, and a
+  `verifyEqual` of two results -- MATLAB counts NaN equal to NaN there).
+  **A getter reads the rows its command wrote, never the whole buffer;
+  a comparison of two computed results needs its own `isfinite`.**
+  Gates: mmacos `tSpot.test_centroid_is_the_mean_of_the_returned_points`,
+  pymacos `tests/test_spot_centroid.py`.
 
 ## Per-ray status tracking
 *(Documented: Manual §5 "Per-ray status reporting" (statuses, the clipping element, restarts, the bindings' getter).  Below: the engine record.)*

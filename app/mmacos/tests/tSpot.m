@@ -66,6 +66,41 @@ classdef tSpot < matlab.unittest.TestCase
             testCase.verifyEqual(so.centroid, se.centroid, 'AbsTol', 1e-12);
         end
 
+        function test_centroid_is_the_mean_of_the_returned_points(testCase)
+            % The centroid is the mean of the points the SAME call returns.
+            % Until 2026-11-18 the api's spot_get summed EVERY row of the
+            % engine's spot array and divided by this spot's ray count, so
+            % the rows of an earlier, larger spot stayed in the sum: on
+            % e5hex1 at source sampling 31 (552 rays) after the deck's own
+            % sampling (10,245 rays) the centroid read -1,156.7 mm in y
+            % where the mean of the returned points is -62.32 mm.  The
+            % library never zeroed those rows either, so a first spot could
+            % read whatever the allocation returned (the dw_dx centroid NaN
+            % seen on the Mac under memory pressure).
+            % The deck matters: e5hex1's focal-plane spot sits 62 mm off the
+            % element vertex, so a stale tail is far from zero.  On this
+            % class's centred Cassegrain the tail sums to nearly nothing,
+            % which is why no test here saw the defect.
+            % Twin: pymacos tests/test_spot_centroid.py.
+            macos.load_rx(rx_fixture_path('e5hex1.in'));
+            n = macos.num_elt();
+            big = macos.spot(n, 'ref', 'tout', 'at', 'elt');
+            mb  = mean(big.pts, 1);
+            testCase.assertGreaterThan(abs(mb(2)), 10, ...
+                'the first spot must sit well off the vertex, or the test is blind');
+            testCase.verifyEqual(big.centroid, mb, 'AbsTol', 1e-10*max(abs(big.pts(:))));
+
+            macos.set_src_sampling(31);
+            small = macos.spot(n, 'ref', 'tout', 'at', 'elt');
+            testCase.assertLessThan(small.nSpot, big.nSpot/4, ...
+                'the second spot must be much smaller than the first');
+            testCase.verifyTrue(all(isfinite(small.centroid)));
+            ms = mean(small.pts, 1);
+            testCase.verifyEqual(small.centroid, ms, 'AbsTol', 1e-10*max(abs(small.pts(:))), ...
+                sprintf('centroid %s vs the mean of its own points %s', ...
+                        mat2str(small.centroid, 6), mat2str(ms, 6)));
+        end
+
         function test_struct_shape(testCase)
             n = macos.num_elt();
             s = macos.spot(n, 'ref', 'beam');
