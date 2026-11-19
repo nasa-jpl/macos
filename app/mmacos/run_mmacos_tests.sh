@@ -2,7 +2,7 @@
 # run_mmacos_tests.sh -- run the mmacos matlab.unittest suite in batch
 # mode and exit non-zero on any failure.
 #
-# Mirror of MACOS_resources/pymacos/run_proper_tests.sh.  See PLAN.md
+# Mirror of app/pymacos/run_proper_tests.sh.  See PLAN.md
 # §5.4 Phase 3 for the design.
 #
 # Usage:

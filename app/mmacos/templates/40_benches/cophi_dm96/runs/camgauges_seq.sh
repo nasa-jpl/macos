@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # the composite deck's "seconds to SNR 1 at 1 pm" row for the other gauges, through their own readings on a named camera (2026-10-12)
-B=/home/dcr/dev/MACOS_resources/mmacos/templates/40_benches
+B=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 POL="struct('name','IMX250MZR class: polarization 2448x2048, 75 fps, well ~10 ke (IMX253 pixel; UNCONFIRMED), read 2.4 e- ASSUMED','npix',2048,'well',1e4,'read',2.4,'rate',75,'fill',0.5,'pol',1)"
 MONO="struct('name','IMX250 mono class: 2448x2048, 75 fps, well ~10 ke (UNCONFIRMED), read 2.4 e- ASSUMED','npix',2048,'well',1e4,'read',2.4,'rate',75,'fill',0.5,'pol',0)"
 OAP="'bench.optics','oap','bench.POL_IN','source','bench.D_RC_L2',125,'oap.OAP1_AOI',20,'oap.OAP2_AOI',25,'oap.OAP1_SIDE',1,'oap.OAP2_SIDE',-1"

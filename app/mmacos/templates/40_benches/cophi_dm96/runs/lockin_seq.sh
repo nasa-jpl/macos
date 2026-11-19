@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # the lock-in camera as a READING in every COPHI table (CC 2026-10-12); after the sensors' camera run
-cd /home/dcr/dev/MACOS_resources/mmacos/templates/40_benches/cophi_dm96
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
 until grep -q CAMSENS_DONE runs/camsens_seq.log; do sleep 60; done
 OAP="'bench.optics','oap','bench.polarizing',false,'cophi.iq',true"
 LENS="'bench.polarizing',false,'cophi.iq',true"

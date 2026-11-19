@@ -30,7 +30,7 @@ function OUT = dyson5_tma_step1(over)
     for k = 1:numel(fn), if ~isfield(opt, fn{k}), error('unknown option %s', fn{k}); end, opt.(fn{k}) = over.(fn{k}); end
     D = opt.EFL_m/opt.Fsys;
 
-    addpath('/Users/dcr/dev/MACOS_resources/mmacos/src');  macos.init(opt.model);
+    addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src'));  macos.init(opt.model);
     fid = fopen(fullfile(here, [opt.tag '.txt']), 'w');  pr = @(varargin) dp_(fid, opt.quiet, varargin{:});
     pr('dyson5 round 4 step 1 -- coaxial TMA parent (%s)\n', datestr(now,'yyyy-mm-dd HH:MM'));
     pr('f=%.0f mm, F/%.1f, D=%.1f mm; primary f/%.2f, secondary mag %.2f; conics solved AT the bias (CALIB); entrance stop\n', ...

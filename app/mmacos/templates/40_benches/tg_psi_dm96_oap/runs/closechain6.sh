@@ -6,7 +6,7 @@
 # this chain refuses to start if the stage is not there rather than running two
 # jobs that would print nothing new.
 set -u
-T=/home/dcr/dev/MACOS_resources/mmacos/templates/40_benches/tg_psi_dm96_oap/runs
+T=$(cd "$(dirname "${BASH_SOURCE[0]}")/." && pwd)
 n=0
 while ! grep -q '\[closechain5\] queue drained' "$T/closechain5.nohup" 2>/dev/null; do
     n=$((n+1)); [ $n -gt 1440 ] && { echo "[closechain6] ABORT: chain5 never drained (12 h)"; exit 1; }

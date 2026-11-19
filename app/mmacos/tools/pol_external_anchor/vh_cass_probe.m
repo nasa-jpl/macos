@@ -34,7 +34,7 @@ function vh_cass_probe(outfile)
     % tool directory, so mirror its search order here: the shared corpus
     % under pymacos first, the mmacos-local Rx/ second.
     here  = fileparts(mfilename('fullpath'));
-    roots = {fullfile(getenv('HOME'), 'dev', 'MACOS_resources', 'pymacos', 'tests', 'Rx'), ...
+    roots = {fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'pymacos', 'tests', 'Rx'), ...
              fullfile(here, '..', '..', 'tests', 'Rx')};
     rx = '';
     for i = 1:numel(roots)

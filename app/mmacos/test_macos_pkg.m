@@ -10,7 +10,7 @@ function test_macos_pkg(rx_path)
 %              class-style observes; and vice versa)
 
 if nargin < 1 || isempty(rx_path)
-    rx_path = fullfile(getenv('HOME'), 'dev', 'MACOS_resources', ...
+    rx_path = fullfile(fileparts(mfilename('fullpath')), '..', ...
         'pymacos', 'tests', 'Rx', 'Rx_Cass_FarField.in');
 end
 

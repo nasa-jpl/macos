@@ -24,7 +24,7 @@ function out = E4_lambda_loop_cost(n_lambda)
 
     MODEL_SIZE = 1024;
     DET_ELT    = 21;
-    rxdir = fullfile(getenv('HOME'),'dev','MACOS_resources','pymacos','tests','Rx');
+    rxdir = fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', '..', 'pymacos','tests','Rx');
     rx = @(n) fullfile(rxdir, n);
 
     macos.init(MODEL_SIZE);

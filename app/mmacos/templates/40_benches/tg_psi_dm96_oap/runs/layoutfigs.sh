@@ -3,7 +3,7 @@
 # (substrates in, the beam opened, the vlayout's reference arm drawn first so
 # the shared output leg reads blue).  One MATLAB at a time.
 set -u
-B=~/dev/MACOS_resources/mmacos/templates/40_benches
+B=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 say(){ echo "[$(date '+%F %T')] $*"; }
 
 cd "$B/tg_psi_dm96_oap"

@@ -11,8 +11,8 @@
 #                   DIAMETER).  Ask the engine before building a measurement
 #                   on top of it.
 set -u
-T=/home/dcr/dev/MACOS_resources/mmacos/templates/40_benches/tg_psi_dm96_oap/runs
-C=/home/dcr/dev/MACOS_resources/mmacos/templates/30_instruments/bench_ctb
+T=$(cd "$(dirname "${BASH_SOURCE[0]}")/." && pwd)
+C=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../30_instruments/bench_ctb" && pwd)
 n=0
 while ! grep -q '\[closechain4\] queue drained' "$T/closechain4.nohup" 2>/dev/null; do
     n=$((n+1)); [ $n -gt 1200 ] && { echo "[closechain5] ABORT: chain4 never drained (10 h)"; exit 1; }

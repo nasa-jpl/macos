@@ -49,7 +49,7 @@
 %  (Batch check: matlab -batch "run('.../example_bench_layout.m')")
 % ===================================================================
 
-addpath('~/dev/MACOS_resources/mmacos/src');     % +macos on path
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'src'));     % +macos on path
 exdir = fileparts(mfilename('fullpath'));
 if isempty(exdir), exdir = pwd; end
 

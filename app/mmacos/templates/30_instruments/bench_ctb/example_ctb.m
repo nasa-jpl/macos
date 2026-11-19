@@ -48,7 +48,7 @@
 %  Run:   >> run('.../example_ctb.m')
 % ===================================================================
 
-addpath('~/dev/MACOS_resources/mmacos/src');
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'src'));
 exdir = fileparts(mfilename('fullpath'));
 if isempty(exdir), exdir = pwd; end
 macos.init(256);

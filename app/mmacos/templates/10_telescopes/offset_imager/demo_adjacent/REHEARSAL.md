@@ -114,7 +114,7 @@ solve MATLAB** (the second desktop session — the slide shows these
 exact lines):
 
 ```
->> cd ~/dev/MACOS_resources/mmacos/templates/10_telescopes/offset_imager
+>> cd <macos>/app/mmacos/templates/10_telescopes/offset_imager
 >> OUT = oi_demo_step(12)     % the room's width
 ```
 

@@ -53,7 +53,7 @@ function OUT = dyson5_tma_step5(over)
     for k = 1:numel(fn), if ~isfield(opt, fn{k}), error('unknown option %s', fn{k}); end, opt.(fn{k}) = over.(fn{k}); end
     D = opt.EFL_m/opt.Fsys;
 
-    addpath('/Users/dcr/dev/MACOS_resources/mmacos/src');  macos.init(opt.model);
+    addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src'));  macos.init(opt.model);
     fid = fopen(fullfile(here,[opt.tag '.txt']),'w');  pr = @(varargin) dp_(fid, opt.quiet, varargin{:});
     pr('dyson5 round 4 step 5 (CCMac) -- freeform on the outer field (%s)\n', datestr(now,'yyyy-mm-dd HH:MM'));
     pr('one bounded Zernike rung per module on the stage-B CONIC section: modes ANSI %s on M%s, lMon = footprint radius,\n', ...

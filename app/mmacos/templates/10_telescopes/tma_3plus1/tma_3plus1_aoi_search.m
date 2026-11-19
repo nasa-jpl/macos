@@ -23,8 +23,8 @@
 %
 %  Run:  >> run('.../tma_3plus1/tma_3plus1_aoi_search.m')
 % =====================================================================
-addpath(fullfile(getenv('HOME'),'dev/MACOS_resources/mmacos/src'));
-addpath(fullfile(getenv('HOME'),'dev/MACOS_resources/mmacos/design/src'));
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'src'));
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'design', 'src'));
 exdir = fileparts(mfilename('fullpath'));  if isempty(exdir), exdir = pwd; end
 
 % ====================  USER DESIGN CHOICES  ==========================

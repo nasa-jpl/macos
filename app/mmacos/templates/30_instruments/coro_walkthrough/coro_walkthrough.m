@@ -29,7 +29,7 @@ end
 
 here = fileparts(mfilename('fullpath'));
 if isempty(rx_path)
-    rx_path = fullfile(getenv('HOME'), 'dev', 'MACOS_resources', ...
+    rx_path = fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', '..', ...
         'pymacos', 'tests', 'Rx', 'Rx_Coro_FPM.in');
 end
 if isempty(outdir)

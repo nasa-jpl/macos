@@ -24,11 +24,11 @@
 %    2. pol-off bit-identity: with polarization OFF the coating is inert,
 %       so the coated train's OPD equals the uncoated train's to round-off.
 %
-%  Run: cd ~/dev/MACOS_resources/mmacos/templates/90_polarization/bench_ifo_pol
+%  Run: cd <macos>/app/mmacos/templates/90_polarization/bench_ifo_pol
 %       matlab -batch "run('example_bench_ifo_pol.m')"
 % ========================================================================
 
-addpath('~/dev/MACOS_resources/mmacos/src');
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'src'));
 exdir = fileparts(mfilename('fullpath'));
 if isempty(exdir), exdir = pwd; end
 cd(exdir);

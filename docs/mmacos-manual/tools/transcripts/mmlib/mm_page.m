@@ -68,14 +68,14 @@ try
 catch ME                       % a failed run is checked against the library too, then reported
     cd(work);
     if ~strcmp(gs(), before)
-        error('mm_page:library', '%s: the run failed (%s) AND changed MACOS_resources (git status moved)', name, ME.message);
+        error('mm_page:library', '%s: the run failed (%s) AND changed the repository (git status moved)', name, ME.message);
     end
     rethrow(ME);
 end
 fprintf('%s wall time %.0f s\n', name, toc(t0));
 cd(work);
 if ~strcmp(gs(), before)
-    error('mm_page:library', '%s: the run changed MACOS_resources (git status moved) -- refused', name);
+    error('mm_page:library', '%s: the run changed the repository (git status moved) -- refused', name);
 end
 disp(txt)                                                      % the whole run, in the log
 

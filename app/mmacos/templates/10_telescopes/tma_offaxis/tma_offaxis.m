@@ -28,7 +28,7 @@
 %  Run:  >> run('.../templates/10_telescopes/tma_offaxis/tma_offaxis.m')
 % ====================================================================
 
-addpath('~/dev/MACOS_resources/mmacos/src');
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'src'));
 exdir = fileparts(mfilename('fullpath'));  if isempty(exdir), exdir = pwd; end
 
 % ---- CONFIG: the j18mono f/20 convex-secondary TMA (edit for yours) ---

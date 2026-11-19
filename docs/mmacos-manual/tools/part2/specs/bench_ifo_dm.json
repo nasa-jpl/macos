@@ -1,5 +1,8 @@
 {
  "section": "40_benches",
+ "res_links": [
+  "app/pymacos"
+ ],
  "entry": "run(fullfile(pwd,'example_bench_ifo_dm.m'));",
  "figure": "ifo_dm_recovery.png",
  "run": {
