@@ -139,6 +139,40 @@ maps differ by 6 to 12 units of round-off of the chief-ray path, eps x L (e2e_pi
 
 ## Part 2 — Validation record
 
+### 2026-11-18 — full gate on the merged `mr_merge` (`b5b37c34`, fresh clone, gfortran 16.1.0, MATLAB R2024a arm64)
+The whole reorganization (#75–#82, #87), the GMI Mac port, the rebuilt manuals and the print fix,
+tested together for the first time. Fresh clone, `MACOS_HOME` unset, everything built from nothing
+(engine, `smacos_dvr`, mmacos mex, pymacos, GMI, SegMirMaker). **Every expected count met:** start-up
+probe finds `data/` with `MACOS_HOME` unset and warns-then-falls-through when it is stale; CLI load
+**166/166** (0 compared — a fresh clone path has no prior record, the gate says so); CLI cmd
+**122/122** + 3 must-fail; pymacos **6987/0/1 skip** (incl. `test_data_dir.py` 2/2); mmacos fast
+**813/0/3** (the three by-design arm64 incompletes `tCalibStop`-OptTol + two `tBudgetKernel`); GMI
+regression **7/7** under `32×eps×L`. After the runs `git status` was clean (the ctb suite rewrote the
+tracked fixture `app/mmacos/templates/30_instruments/bench_ctb/ctb_dm.in` in place — the engine adds an
+explicit `GridSrfOrder=1` on save-roundtrip — restored).
+
+**The known spot_centroid NaN** (`spot_get`/uninitialized `RaySpot`, fix on `mr_merge_spot_centroid`)
+did not surface this run; it is memory-recycling dependent.
+
+**The non-fast mmacos groups, run on the Mac for the first time** (the Mac gate had been size-128
+`fast` only). masks (128) **62/0/0** clean. The size-256+ groups fail only on the known Apple-Silicon
+floating-point-print/tolerance class against x86_64-minted references, plus two pre-existing
+non-arm64 items — no engine regression in the merged content:
+- freeform (256) **201/12**: 4 byte-for-byte `.in` reproduction mismatches (last-digit), 3
+  numeric-tolerance, one `tRodgers3` setup assertion (byte-repro, cascading to its 6 tests), one
+  `tPolContrast` overcoat-trade (sign flip across the quarter-wave boundary).
+- ctb (512) **43/1/2**: `tCtbProp/test_generator_reproduces_hand_decks` misses at ~1e-7 relative; two
+  `tE2eSensing` incomplete.
+- polfloor (256/512) **20/1**: the same `tPolContrast/test_overcoat_trade_reverses...` test.
+- proper (512/1024) **1/22**: every `tProperCompare*` loads a deck from the pre-merge path
+  `~/dev/MACOS_resources/pymacos/tests/Rx/...` (the `MACOS_resources` stale-default class CC's #79
+  note lists as a separate fix), not an arm64 or engine issue.
+- bench1024 (1024) **0/9**: all `tCophiBench` need the pre-generated fixture `redo96_lens_tail.mat`,
+  which is not in the repository.
+
+If the size-256+ groups are to join the Mac gate, their references/fixtures need the same
+numeric-comparison treatment already applied to `tSegMirMaker` (#77) and the GMI regression.
+
 ### 2026-11-18 — GMI's first Mac build (branch `mr_merge_gmi_mac`, gfortran 16.1.0, MATLAB R2024a arm64)
 
 First time GMI has been built on Apple Silicon. `source ./makegmi.sh` builds `app/GMI/GMI.mexmaca64`
