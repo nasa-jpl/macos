@@ -252,9 +252,9 @@ p2_offset_imager_s5max	12415.1
 p2_pdi_dm96_pgain	0.9808
 p2_pdi_dm96_pres	744.20
 p2_pdi_dm96_g5	4.508
-p2_pupil_id_df	2.735e-04
-p2_pupil_id_dfe	2.734e-04
-p2_pupil_id_dep	1.843e-07
+p2_pupil_id_df	2.738e-04
+p2_pupil_id_dfe	2.737e-04
+p2_pupil_id_dep	1.853e-07
 p2_rc_onaxis_obsc	0.19
 p2_rc_onaxis_dl0	2.7
 p2_rc_onaxis_dl1	3.3
