@@ -10,7 +10,7 @@ From this directory, after `run('<path-to>/macos/app/mmacos/mmacos_setup.m')`:
 
 ## What a run gives
 
-The aplanat is diffraction-limited on axis and out to 2.7 arcmin, where the astigmatism two conics cannot null crosses λ/14; balancing the radius and conic over ±4′ trades a little on-axis quality for a field diffraction-limited out to 3.3 arcmin. The secondary's central obscuration is 0.19 of the aperture.
+The aplanat is diffraction-limited on axis and out to 2.7 arcmin, where the astigmatism two conics cannot null crosses λ/14; balancing the radius and conic over ±4′ trades a little on-axis quality for a field diffraction-limited out to 4.0 arcmin. The secondary's central obscuration is 0.19 of the aperture.
 
 ## Source
 

@@ -150,6 +150,48 @@ classdef tApertureFrame < matlab.unittest.TestCase
             tc.t.clear_realized_apertures();
         end
 
+        function test_realized_apertures_pass_the_scan_edge_field(tc)
+            % realize_apertures read the DRAW fan's projected (U,V) as global
+            % (Z,Y) until 2026-11-18.  DRAW projects each crossing on the
+            % SOURCE axes, which the field angle rotates about the global
+            % origin, so every footprint came out displaced by
+            % -z_elt*tan(field): nothing on axis or for an element at z = 0,
+            % but on this on-axis RC (focal plane 0.3 m behind M1, focal
+            % length 10 m) the focal-plane square was sized 3% short, and the
+            % scan-edge field -- 4 arcmin, the field rc_onaxis balances at --
+            % lost every ray on it.  The sizer now reads draw_rays3d (global
+            % x,y,z).  The gate: after a field-scan realize_apertures, every
+            % scan field still passes the rays it passed with apertures off.
+            % NON-VACUITY, measured 2026-11-18 with this test on the unfixed
+            % sizer: the 4-arcmin field passes 0 of 1185 rays (the other six
+            % pass all of theirs).
+            t2 = macos.design.Telescope('family','RC', ...
+                'aperture_diameter_m',1.0, 'primary_fnum',2.0, ...
+                'system_fnum',10.0, 'BFD_m',0.30, 'wavelength_m',633e-9, ...
+                'model_size',tc.ModelSize);
+            tc.addTeardown(@() tc.t.build());      % hand the session back to the class fixture
+            fov = linspace(0, 4.0, 7).';           % arcmin, +y
+            F = [zeros(numel(fov),1), deg2rad(fov/60)];
+            t2.set_field_points(F);
+            t2.build();
+            nE = numel(t2.spec.elt);
+            n_off = zeros(1, size(F,1));
+            for j = 1:size(F,1)
+                t2.trace_at_field(F(j,:));
+                n_off(j) = pass_count(nE);
+            end
+            tc.assumeGreaterThan(min(n_off), 0, ...
+                'fixture loses a scan field with apertures off');
+            t2.realize_apertures('fields', F, 'margin', 0.05, 'quiet', true);
+            for j = 1:size(F,1)
+                t2.trace_at_field(F(j,:));
+                n = pass_count(nE);
+                tc.verifyGreaterThanOrEqual(n, 0.98*n_off(j), sprintf( ...
+                    ['field %.2f arcmin: %d rays pass the realized apertures ' ...
+                     'against %d with apertures off'], fov(j), n, n_off(j)));
+            end
+        end
+
         function test_global_frame_numbers_would_break_the_reload(tc)
             % NON-VACUITY.  Take the deck the FIXED sizer emits and patch
             % each ApVec centre to the PRE-FIX quantity -- the GLOBAL x,y
