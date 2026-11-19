@@ -40,16 +40,25 @@ classdef tCtbProbe < matlab.unittest.TestCase
             here     = fileparts(mfilename('fullpath'));
             tc.bench = fullfile(fileparts(here), 'templates', ...
                                 '30_instruments', 'bench_ctb');
-            tc.assumeTrue(isfile(fullfile(tc.bench, 'ctb_dm.in')), ...
+            tc.assumeTrue(isfile(fullfile(tc.bench, 'ctb_dcr.in')), ...
                 'bench_ctb decks not present');
             addpath(fullfile(fileparts(here), 'src'));
             addpath(tc.bench);
+            % Work in a scratch folder.  The generator's default output is
+            % the tracked ctb_dm.in beside ctb_dcr.in, and ctb_dm_jacobian
+            % regenerates it there when it is not handed a deck; a test
+            % must not rewrite a library file.  The deck and its flat seed
+            % grid are emitted into the scratch folder, which is made the
+            % current folder (GridFile= resolves against cwd).
+            w = tempname;  mkdir(w);
+            tc.addTeardown(@() rmdir(w, 's'));
             prev = pwd;
             tc.addTeardown(@() cd(prev));
-            cd(tc.bench);                  % GridFile= resolves against cwd
-            tc.J = ctb_dm_jacobian('model_size', tc.ModelSize, 'nact', 12, ...
+            cd(w);
+            r = ctb_dm_rx('rx_out', fullfile(w, 'ctb_dm.in'));
+            tc.J = ctb_dm_jacobian('dmrx', r, 'model_size', tc.ModelSize, 'nact', 12, ...
                 'inner_lamD', 3, 'outer_lamD', 5, 'save', false, 'verbose', false);
-            tc.ch = ctb_chain('rx', fullfile(tc.bench, 'ctb_dm.in'), ...
+            tc.ch = ctb_chain('rx', r.rx_out, ...
                 'model_size', tc.ModelSize);
         end
     end
