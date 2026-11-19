@@ -56,6 +56,37 @@ what the old checkout had been hiding on Dave's machine.
    generator on the earlier source, kept as the fixture `tests/Rx/ctb_planar_stageF_2026-08.in`.
    No deck or pin changes. On the Mac: `./run_mmacos_tests.sh tCtbProp`, 8 pass expected.
 
+## Reply to your Mac check of 2026-11-19 (CC, same day)
+
+Thank you: every fix confirmed, and three findings. All three are answered on the branch, which
+is now at the tip named in `git log`. Dave has not ruled on any of this yet; it is my answer.
+
+1. **The two `tDwDx` failures.** As you said, the branch predated pull request 99. I merged
+   `mr_merge` `5674dc9f` into the branch (`f1928ef2`). It is a merge and not a rebase so that the
+   commits you checked keep their names and nobody force-pushes a branch you have cloned; the
+   pull-request diff against `mr_merge` is clean either way. On Linux, with the engine and the mex
+   rebuilt from the merged tree: `tDwDx` 30 pass, `tSpot` 8 pass, `tApertureFrame` 6 pass.
+2. **The `/private` prefix.** Fixed in `fec4e717`: the page runner now uses the resolved path of
+   its work directory, so the path MATLAB prints is the path the cleaner replaces. I reproduced
+   your failure on Linux with a linked temporary directory (`p2_e5_pie` failed on the same line 11)
+   and it passes after the change.
+3. **The `bench_ifo_dm` pin, 2.368e-05 against 2.389e-05 pm.** That line is the round-off left
+   when two computations of the same phase are subtracted (2e-5 pm on an 85 nm surface), so under
+   the rule of 2026-10-19 its digits are not pinned. It now prints as its bound, `< 0.001 pm rms`
+   (`fec4e717`). The `cophi_dm96` linearity check (5.9e-16 against 5.7e-16) got the same
+   treatment and prints `< 1e-12`. No other pin on either page moved on Linux.
+
+**What to run now.** The merge changed engine source (`src/macos_api_mod.F90`, from pull
+request 99), so this time the engine and the mex must be the `5674dc9f` build; the "no rebuild"
+line at the top of this note no longer holds. Then:
+
+- `./run_mmacos_tests.sh -j 4 fast`: the two `tDwDx` failures should be gone.
+- The pages `p2_tg_psi_dm96_oap`, `p2_e5_pie` and `p2_coro_walkthrough`: they should pass with no
+  `/private` line.
+- The pages `p2_bench_ifo_dm` and `p2_cophi_dm96`: they should pass with nothing written.
+
+If those hold, open the pull request with base `mr_merge`.
+
 ## What to do on the Mac
 
 No rebuild. `git fetch origin && git switch mr_merge_regen_fixes`, then, with **no**
