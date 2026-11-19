@@ -68,6 +68,7 @@
          nGridMat=  256
          GridFile=  flat256.txt
         GridSrfdx=0.17647058823529413
+     GridSrfOrder=  1
             pData=  1928.25101380656  -104.18890660015801  0
             xData=  -0.087155742747658152  0.99619469809174555  0
             yData=  0  -0  1
@@ -140,6 +141,7 @@
          nGridMat=  256
          GridFile=  flat256.txt
         GridSrfdx=0.17647058823529413
+     GridSrfOrder=  1
             pData=  2428.25101380656  -104.18890660015801  0
             xData=  0.087155742747658152  -0.99619469809174555  0
             yData=  0  0  1
