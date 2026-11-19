@@ -247,7 +247,8 @@ C	Get file name
 	INQUIRE (file=infil,exist=exist)
 	IF (exist) THEN
 	  IF (ifOld) THEN
-	    WRITE (*,*) ' Input file ',infil(1:L),' being loaded.'
+	    WRITE(emsgRec,*) ' Input file ',infil(1:L),' being loaded.'
+	    CALL emsg_put
 !-->  (f): remember the deck's folder for GridFile= (GridInit)
 	    RxDir = ' '
 	    iRxSep = MAX(INDEX(infil(1:L),'/',BACK=.TRUE.),
