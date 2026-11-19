@@ -13,7 +13,7 @@ The runner:
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/35_lenses/doublet');
+cd('<path-to>/macos/app/mmacos/templates/35_lenses/doublet');
 out = doublet();
 ```
 

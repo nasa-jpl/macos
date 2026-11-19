@@ -9,7 +9,7 @@ run the command and compare.  The numbers quoted here were produced on
 2026-10-17 from the committed sources.
 
 ```matlab
-run('<path-to>/mmacos/mmacos_setup.m');     % once per session: the +macos package and the mex
+run('<path-to>/macos/app/mmacos/mmacos_setup.m');     % once per session: the +macos package and the mex
 ```
 
 ### 10.1 A sensitivity workflow and an error budget (`e5hex1_budget`)
@@ -26,7 +26,7 @@ freedom each, 48 actuators, by the pseudo-inverse controller; a wavefront
 sensing row and one actuator row per control group are added.
 
 ```matlab
-cd <path-to>/mmacos/templates/50_sensitivities/e5hex1_budget
+cd <path-to>/macos/app/mmacos/templates/50_sensitivities/e5hex1_budget
 run_budget_e5hex1
 ```
 
@@ -61,7 +61,7 @@ default instrument is the dyson5 3k front end: focal length 330 mm, aperture
 183 mm, F/1.8, a ±4.7° strip onto a 54 mm slit.  Two stages run in seconds:
 
 ```matlab
-addpath('<path-to>/mmacos/templates/10_telescopes/tma_longslit');
+addpath('<path-to>/macos/app/mmacos/templates/10_telescopes/tma_longslit');
 OUT = tma_longslit_run({'first_order','section'});
 ```
 
@@ -97,7 +97,7 @@ and runs in under a minute; it sets the classical concentric Dyson at the
 spec and finds the scaling law the rest of the design obeys.
 
 ```matlab
-addpath('<path-to>/mmacos/challenges/dyson5');
+addpath('<path-to>/macos/app/mmacos/challenges/dyson5');
 OUT = dyson5_run();                      % stage s0 at the spec (then s1, the deck)
 ```
 
@@ -131,7 +131,7 @@ oscillator's footprint over the test arm's pupil image and its own wavefront
 there, and the null phase on the flat DM.
 
 ```matlab
-cd <path-to>/mmacos/templates/40_benches/cophi_dm96
+cd <path-to>/macos/app/mmacos/templates/40_benches/cophi_dm96
 OUT = cophi_run('bench.optics','oap','tag','bench_oap','stages',{'bench'});   % the mirror rig of record
 ```
 

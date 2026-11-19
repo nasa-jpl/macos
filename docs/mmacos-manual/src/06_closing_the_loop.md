@@ -31,7 +31,7 @@ running, and watch the wavefront for 500 seconds.
 The stage-6 script, unchanged, in the thread directory:
 
 ```matlab
-run('<path-to>/mmacos/templates/80_end_to_end/e2e/s6_compare.m')
+run('<path-to>/macos/app/mmacos/templates/80_end_to_end/e2e/s6_compare.m')
 ```
 
 It pokes each of the %pin:ch06_x_pokes% rigid-body degrees of freedom by 100 nrad or 100 nm, each of
@@ -99,7 +99,7 @@ The stage-7 script, unchanged. Its random draws are seeded (`rng(7)` in `s7_simu
 rerun from this page gives these numbers:
 
 ```matlab
-run('<path-to>/mmacos/templates/80_end_to_end/e2e/s7_simulate.m')
+run('<path-to>/macos/app/mmacos/templates/80_end_to_end/e2e/s7_simulate.m')
 ```
 
 Both scenarios start from the as-deployed telescope, about 100 µm of wavefront error, mostly

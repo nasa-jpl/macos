@@ -8,7 +8,7 @@ base-independent — tg_psi_dm96 run 10)?
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/40_benches/zwfs_dm96');
+cd('<path-to>/macos/app/mmacos/templates/40_benches/zwfs_dm96');
 out = zwfs_run('stages',{'bench'});
 ```
 

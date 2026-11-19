@@ -5,7 +5,7 @@ The classical Cassegrain-form RC: a two-mirror APLANAT (zero 3rd-order spherical
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/10_telescopes/rc_onaxis');
+cd('<path-to>/macos/app/mmacos/templates/10_telescopes/rc_onaxis');
 run(fullfile(pwd,'rc_onaxis.m'));
 ```
 

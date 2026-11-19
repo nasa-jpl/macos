@@ -45,7 +45,7 @@ U.S. Government sponsorship of parts of MACOS under NASA Contract NAS7-918 is ac
 
 *mmacos* is the MATLAB interface to the MACOS engine. It lives in the `macos` repository beside the engine, in `app/mmacos/`; build the gfortran engine first (the MACOS Manual, Installation: `source ./makems.sh release gfortran`), then the interface (`app/mmacos/README.md`, Build):
 
-    cd mmacos
+    cd app/mmacos
     make                                  # the mex, linked against the gfortran engine build
     ./run_mmacos_tests.sh fast            # the fast suite
 

@@ -25,7 +25,7 @@ The brief (Dave, 2026-07-06):
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/10_telescopes/tma_unobscured');
+cd('<path-to>/macos/app/mmacos/templates/10_telescopes/tma_unobscured');
 run(fullfile(pwd,'tma_unobscured_search.m')); run(fullfile(pwd,'tma_unobscured.m'));
 ```
 

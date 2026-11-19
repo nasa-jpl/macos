@@ -10,8 +10,8 @@ is the validation.
 ## Run it
 
 ```matlab
-run('<path-to>/mmacos/mmacos_setup.m');
-addpath('<path-to>/mmacos/templates/10_telescopes/offset_imager');  % F1: setup does NOT add templates
+run('<path-to>/macos/app/mmacos/mmacos_setup.m');
+addpath('<path-to>/macos/app/mmacos/templates/10_telescopes/offset_imager');  % F1: setup does NOT add templates
 OUT = oi_story();                       % the WHOLE story: ladder + counter-designs + <tag>_STORY.md manifest
 OUT = offset_imager();                  % the five-stage ladder only (rodgers3 instance)
 OUT = oi_story(struct( ...              % your instrument (see "Choosing an envelope" below)

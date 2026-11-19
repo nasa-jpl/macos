@@ -584,7 +584,7 @@ cmake -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DCMAKE_Fortran_COMPILER=
 make
 ```
 
-Output: `pymacos/src/pymacos/pymacosf90.cpXXX-linux.so`
+Output: `app/pymacos/src/pymacos/pymacosf90.cpXXX-linux.so`
 
 Run tests from `app/pymacos/src`:
 ```bash
@@ -601,7 +601,7 @@ python -m pytest ../tests/ -v
 
 #### Build
 ```cmd
-cd pymacos\src\cmake
+cd app\pymacos\src\cmake
 rmdir /s /q build
 mkdir build
 cd build
@@ -609,15 +609,15 @@ cmake -G "NMake Makefiles" -S ..
 nmake
 ```
 
-Output: `pymacos\src\pymacos\pymacosf90.cp314-win_amd64.pyd`
+Output: `app\pymacos\src\pymacos\pymacosf90.cp314-win_amd64.pyd`
 
-Run tests from `pymacos\src`:
+Run tests from `app\pymacos\src`:
 ```cmd
-cd pymacos\src
+cd app\pymacos\src
 python -m pytest ..\tests\ -v
 ```
 
-> **Note:** Tests must be run from `pymacos\src` so Python can find the `pymacos` package.
+> **Note:** Tests must be run from `app\pymacos\src` so Python can find the `pymacos` package.
 
 ---
 

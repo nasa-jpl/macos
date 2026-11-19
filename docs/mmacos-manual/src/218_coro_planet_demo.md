@@ -5,7 +5,7 @@
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/30_instruments/coro_planet_demo');
+cd('<path-to>/macos/app/mmacos/templates/30_instruments/coro_planet_demo');
 out = coro_planet_demo();
 ```
 

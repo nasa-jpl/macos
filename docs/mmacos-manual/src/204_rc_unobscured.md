@@ -5,7 +5,7 @@ Pick the four design knobs below; the script builds the on-axis RC parent, takes
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/10_telescopes/rc_unobscured');
+cd('<path-to>/macos/app/mmacos/templates/10_telescopes/rc_unobscured');
 run(fullfile(pwd,'rc_unobscured.m'));
 ```
 

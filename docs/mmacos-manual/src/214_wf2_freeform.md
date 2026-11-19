@@ -5,7 +5,7 @@ Pick the knobs below; the script builds an aplanatic Ritchey-Chretien and shows 
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/10_telescopes/wf2_freeform');
+cd('<path-to>/macos/app/mmacos/templates/10_telescopes/wf2_freeform');
 run(fullfile(pwd,'wf2_freeform.m'));
 ```
 

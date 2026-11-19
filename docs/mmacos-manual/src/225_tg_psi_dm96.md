@@ -10,7 +10,7 @@ scaled build, Stage C battery, Stage D actuator-lattice transfer curve.
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/40_benches/tg_psi_dm96');
+cd('<path-to>/macos/app/mmacos/templates/40_benches/tg_psi_dm96');
 out = tg96();
 ```
 

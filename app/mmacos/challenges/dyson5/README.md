@@ -345,8 +345,8 @@ Records `dyson5_jim_3a.txt` / `dyson5_jim_3b.{txt,mat}`; report `BRIEF_dyson5_ji
 ## Run it yourself
 
 ```matlab
-run('<path-to>/mmacos/mmacos_setup.m');
-addpath('<path-to>/mmacos/challenges/dyson5');
+run('<path-to>/macos/app/mmacos/mmacos_setup.m');
+addpath('<path-to>/macos/app/mmacos/challenges/dyson5');
 OUT = dyson5_run();                                   % stage s0 at the spec
 OUT = dyson5_run(struct('Fno',2.2,'y_offset_m',6e-3)); % another instance
 OUT = dyson5_run(struct('stages', {{'t1','t2'}}));     % the telescope, then end to end (after s3 and s5)

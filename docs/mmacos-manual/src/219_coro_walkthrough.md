@@ -8,7 +8,7 @@ example; reproducible from one script.
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/30_instruments/coro_walkthrough');
+cd('<path-to>/macos/app/mmacos/templates/30_instruments/coro_walkthrough');
 coro_walkthrough();
 ```
 

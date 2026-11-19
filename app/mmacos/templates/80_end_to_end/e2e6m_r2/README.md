@@ -4,7 +4,7 @@ Round 1's back end carried apodizer / FPM / Lyot only; its close-out named the m
 
 ## Running it
 
-From this directory, after `run('<path-to>/mmacos/mmacos_setup.m')`:
+From this directory, after `run('<path-to>/macos/app/mmacos/mmacos_setup.m')`:
 
     r1_backend()
 

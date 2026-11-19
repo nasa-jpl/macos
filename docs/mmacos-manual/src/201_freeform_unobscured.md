@@ -29,7 +29,7 @@ Why sphere+Zernike wins here:
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/10_telescopes/freeform_unobscured');
+cd('<path-to>/macos/app/mmacos/templates/10_telescopes/freeform_unobscured');
 run(fullfile(pwd,'freeform_unobscured.m'));
 ```
 

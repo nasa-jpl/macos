@@ -5,7 +5,7 @@ The companion to wf2_freeform, where freeform genuinely earns its keep. Pick the
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/10_telescopes/tma_freeform');
+cd('<path-to>/macos/app/mmacos/templates/10_telescopes/tma_freeform');
 run(fullfile(pwd,'tma_freeform.m'));
 ```
 

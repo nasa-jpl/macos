@@ -4,7 +4,7 @@ The classical Cassegrain-form RC: a two-mirror APLANAT (zero 3rd-order spherical
 
 ## Running it
 
-From this directory, after `run('<path-to>/mmacos/mmacos_setup.m')`:
+From this directory, after `run('<path-to>/macos/app/mmacos/mmacos_setup.m')`:
 
     rc_onaxis
 

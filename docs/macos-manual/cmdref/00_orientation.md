@@ -100,7 +100,7 @@ each surface:
   Appendix A prescriptions, each `<name>.in` paired with a
   `<name>.jou` journal that drives a complete analysis
   (`EXEcute <name>` after loading).
-- **mmacos** — `mmacos/examples/`; further runnable
+- **mmacos** — `app/mmacos/examples/`; further runnable
   demos sit in `app/mmacos/design/` (telescope design layer) and
   `app/mmacos/sensitivities/` (Jacobian / dw_* drivers).
 - **pymacos** — `app/pymacos/tests/`: the test suite

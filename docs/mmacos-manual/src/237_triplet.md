@@ -21,7 +21,7 @@ These are the lessons of `challenges/iodc2010`.  Its other lesson stands too: CA
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/35_lenses/triplet');
+cd('<path-to>/macos/app/mmacos/templates/35_lenses/triplet');
 out = triplet();
 ```
 
