@@ -203,12 +203,14 @@ p2_bench_ctb_spot	0.02713
 p2_bench_ifo_agree	< 1e-08
 p2_bench_ifo_vis	0.833
 p2_bench_ifo_resid	0.0014
+p2_bench_ifo_dm_psi_direct	< 0.001
 p2_bench_ifo_dm_corr	0.998426
 p2_bench_ifo_dm_truth	16.92
 p2_bench_ifo_dm_resid	0.969
 p2_bench_ifo_pol_fres	< 1e-12
 p2_bench_ifo_pol_dia	7.2133e-02
 p2_bench_ifo_pol_ret	8.3521e-02
+p2_cophi_dm96_linearity	< 1e-12
 p2_cophi_dm96_contrast	0.9825
 p2_cophi_dm96_overfill	33.9
 p2_cophi_dm96_magratio	0.998353

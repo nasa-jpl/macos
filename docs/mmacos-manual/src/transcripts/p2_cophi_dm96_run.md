@@ -4,7 +4,7 @@
     LO arm: fiber tip at [2457.68    1.39    0.00] mm, collimator powered face AT the flat's seat [1575.53    1.39    0.00] mm (elt 3 of 21)
     Test-arm launch (laser at the input polarizer): Ex 0.7071-0.0000i, Ey 0.7071+0.0000i (open-analyzer power Ex-only 0.1356, Ey-only 0.1356, solved 0.2712)
     Analyzer: test-arm power at 0/45/90 deg = 0.143022 / 0.271043 / 0.128222 -> passes at 43.436 deg (0.271245; extinction -1.00e-06)
-    LO launch (PM fiber axis): Ex 0.7324+0.0000i, Ey -0.6809+0.0000i (power through the analyzer: Ex-only 0.3129, Ey-only 0.2705, solved 0.5834; linearity check 5.9e-16)
+    LO launch (PM fiber axis): Ex 0.7324+0.0000i, Ey -0.6809+0.0000i (power through the analyzer: Ex-only 0.3129, Ey-only 0.2705, solved 0.5834; linearity check < 1e-12)
     LO placement: the LO field's path phase measured as -1 k W (residual phase rms 3.1e-09 rad; the other sign 1.79 rad)
 
     Detector grid: N 1024 both decks; engine pitch test 0.0295188809 mm, LO 0.0295188805 mm (ratio - 1 = -1.44e-08)
