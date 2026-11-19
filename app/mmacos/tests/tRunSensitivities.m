@@ -25,7 +25,7 @@ classdef tRunSensitivities < matlab.unittest.TestCase
             addpath(fullfile(tc.res_root, 'app', 'mmacos', 'sensitivities'));
             % Locate whichever build tree exists (ifx on Linux, gfortran on
             % macOS / gfortran builds); ifx preferred when both are present.
-            smmdir = fullfile(tc.res_root, 'segmirmaker');
+            smmdir = fullfile(tc.res_root, 'tools', 'segmirmaker');
             for tag = ["build_release_ifx", "build_release_gfortran", ...
                        "build_debug_ifx", "build_debug_gfortran"]
                 cand = fullfile(smmdir, tag, 'SegMirMaker');
@@ -45,7 +45,7 @@ classdef tRunSensitivities < matlab.unittest.TestCase
             tc.assumeTrue(~isempty(tc.smm_bin) && isfile(tc.smm_bin), ...
                 'SegMirMaker not built');
             if isempty(tc.seg)
-                tin = fullfile(tc.res_root, 'segmirmaker', 'test_in');
+                tin = fullfile(tc.res_root, 'tools', 'segmirmaker', 'test_in');
                 tc.seg = macos.design.segment_rx(fullfile(tin, 'e5mono.in'), ...
                     'elt', 1, 'rings', 1, 'grid', 'Pie', 'gap', 50, ...
                     'dofs', 6, 'meas_config', 1);
@@ -615,7 +615,7 @@ classdef tRunSensitivities < matlab.unittest.TestCase
             cwd = onCleanup(@() rmdir(wd, 's'));
             res_root = tc.res_root;
             copyfile(sg.in, fullfile(wd, 'pie.in'));
-            copyfile(fullfile(res_root, 'segmirmaker', 'test_in', ...
+            copyfile(fullfile(res_root, 'tools', 'segmirmaker', 'test_in', ...
                 'flat.txt'), fullfile(wd, 'flat.txt'));   % rx's own 256 grid
             art = run_sensitivities(fullfile(wd, 'pie.in'), ...
                 'fov_rad', 1e-4, 'ngridpts', 31, 'ng', 64, ...

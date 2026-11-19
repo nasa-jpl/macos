@@ -7,7 +7,7 @@ beside it:
 
 | step | call | in → out |
 |---|---|---|
-| 0 | `rx_converter/zemax/zmx2macos.py zemax_cassegrain.zmx -o zemax_cassegrain.in` (Python, numpy only) | the `.zmx` → a 3-element deck |
+| 0 | `tools/rx_converter/zemax/zmx2macos.py zemax_cassegrain.zmx -o zemax_cassegrain.in` (Python, numpy only) | the `.zmx` → a 3-element deck |
 | 1 | `macos.design.add_exit_pupil` | `zemax_cassegrain.in` → `zc_xp.in`: FP_return + ExitPupil before the focal plane, 5 elements |
 | 2 | `run_segmentation` (elt 1, Hex, 1 ring, gap 5 mm) | `zc_hex1.in` + `zc_hex1Hx.m`: the primary → 7 hexagonal segments, 11 elements |
 | 3 | `run_sensitivities` (dwdx + dwdz, centre + 4 corners at 1 arcmin) | `zc_hex1_sens.mat` + report + pages |
@@ -85,11 +85,11 @@ feasible (`tests/tRunMet.m`, the infeasible-gate test).
 ## Run
 
 ```matlab
-run('<path-to>/mmacos/mmacos_setup.m');
-run('<path-to>/mmacos/templates/20_segmentation/zemax_cassegrain/zemax_cassegrain.m');
+run('<path-to>/macos/app/mmacos/mmacos_setup.m');
+run('<path-to>/macos/app/mmacos/templates/20_segmentation/zemax_cassegrain/zemax_cassegrain.m');
 ```
 
 About three minutes at model 256 with the layout search off (measured 2026-11-04: pupil 10 s, segmentation 10 s, sensitivities 2.5 min, MET 10 s); the search adds about an hour.  Needs the
-SegMirMaker binary (`segmirmaker/README.md`) and a built mmacos mex.  The
+SegMirMaker binary (`tools/segmirmaker/README.md`) and a built mmacos mex.  The
 committed products are the two decks, the pupil deck, the segmented deck and
 its Hx, and the three reports; the `.mat`, pages and figures regenerate.

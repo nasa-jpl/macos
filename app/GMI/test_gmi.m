@@ -1,5 +1,5 @@
 % 
-% A script running GMI interface to macos_f90
+% A script running GMI interface to the MACOS engine
 % for e2e_pie optical prescription. 
 % John Z. Lou, Jet Propulsion Laboratory
 % Last modified: Feb 21, 2012

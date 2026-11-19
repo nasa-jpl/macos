@@ -12,7 +12,7 @@ CTB while tracking the real instrument in parallel.
   **identical to the generic CTB `F_OAP` seeds**. Stop at dm1; 500 nm; metres.
 - **`raw/DST2V2_AOX_V5_stop_at_dm1_F0{1..5}.IN`** — cv2macos output of that
   design (one Rx per field point), the "stop at dm1" variant matching the seq.
-  `cv2macos` (`../../../../rx_converter/codev/cv2macos.seq`) is a CODE V macro;
+  `cv2macos` (`../../../../../../tools/rx_converter/codev/cv2macos.seq`) is a CODE V macro;
   it was run on Brandon's lens to produce these — **CODE V is not needed here**.
 - **`load_dst2.m`** — imports + traces all 5 fields, renders F01, saves
   `dst2.mat`. Writes the loadable `dst2_F0{1..5}_norm.in` (below).

@@ -4,7 +4,7 @@ A generic folded-bench worked example: build a complete test-bench train SEQUENT
 
 ## Running it
 
-From this directory, after `run('<path-to>/mmacos/mmacos_setup.m')`:
+From this directory, after `run('<path-to>/macos/app/mmacos/mmacos_setup.m')`:
 
     example_bench_layout
 

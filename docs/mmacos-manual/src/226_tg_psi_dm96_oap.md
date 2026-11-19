@@ -10,7 +10,7 @@ it, driven by the **same** builder (`macos.design.twyman_green`, new option
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/40_benches/tg_psi_dm96_oap');
+cd('<path-to>/macos/app/mmacos/templates/40_benches/tg_psi_dm96_oap');
 out = tg96_run('stages',{'bench','figs'});
 ```
 

@@ -16,7 +16,7 @@
 
     MACOS model size: 128
      Using specified model size          128
-     Using parameter file "<macos>/macos_f90/macos_param.txt"
+     Using parameter file "<macos>/data/macos_param.txt"
 
      This run is limited to 210 surfaces, 209 segments,  16385
      rays (  441 for sensitivity calcs). Up to 3 diffraction planes are stored.
@@ -24,7 +24,7 @@
      Maximum pixel array size is   128 by   128.
      Diffraction grid size is   128 by   128.
 
-     Glass table <macos>/macos_f90/macos_glass_list.txt read, with 201 glasses included.
+     Glass table <macos>/data/macos_glass_list.txt read, with 205 glasses included.
 
      For a list of commands, type HELp.
      Use RX command to show prescription files in current folder.

@@ -23,7 +23,7 @@ function assert_draw_frame_global(plane, caller)
 %   about the Y axis.  On any pair of features straddling the X axis a
 %   mirror is indistinguishable from a 180-deg rotation -- that is
 %   exactly the trap that inverted round 1 of the segment-routing
-%   audit (segmirmaker/SEG_AUDIT_STATUS.md, T2), and once before that
+%   audit (tools/segmirmaker/SEG_AUDIT_STATUS.md, T2), and once before that
 %   it sent center_focal_plane a metre off.
 %
 %   The test is on ORIENTATION (dot > cos 8.1 deg), not equality: the engine

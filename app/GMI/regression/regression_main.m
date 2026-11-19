@@ -1,7 +1,7 @@
 % regression_main.m -- top-level runner for the GMI regression suite.
 %
 % Adds the lib/ + tests/ dirs + the GMI mex location to the path,
-% invokes the six tests, prints a summary table, exits non-zero if
+% invokes the tests, prints a summary table, exits non-zero if
 % any test failed.  Invoked via:
 %
 %   ./run_regression.sh
@@ -17,10 +17,12 @@ here = fileparts(mfilename('fullpath'));
 % SMACOS's OLD command can find the prescription file.
 addpath(fullfile(here, 'tests'));
 addpath(fullfile(here, 'lib'));
-addpath(fileparts(here));        % parent GMI/ holds call_GMI.m + GMI.mexa64
+addpath(fileparts(here));        % parent GMI/ holds call_GMI.m + the GMI mex
 
-% Hard absolute tolerance.  See lib/compare_within.m.
-opts.tol = 1.0e-12;
+% Tolerance against the stored references: opts.ulp units of round-off
+% (eps * L) of each prescription's chief-ray path length L.  See
+% lib/ref_tolerance.m for the rule and why it is not one fixed number.
+opts.ulp = 32;
 
 % cd into Rx/ so SMACOS('OLD', 'Rx_e5hex1', ...) and
 % SMACOS('OLD', 'e2e_pie_met', ...) resolve.  The
@@ -45,6 +47,7 @@ tests = {
     @test04_smoke_e5hex1
     @test05_nominal_repro_e5hex1
     @test06_zern_response_e5hex1
+    @test07_tolerance_refuses
 };
 
 n = length(tests);
@@ -53,7 +56,9 @@ n_pass = 0;
 n_fail = 0;
 
 fprintf('\n=== GMI regression suite ===\n');
-fprintf('tolerance: %.3e (absolute |a-b|)\n\n', opts.tol);
+fprintf('tolerance vs reference: %d x eps x (chief-ray path length)\n', opts.ulp);
+fprintf('  e2e_pie %.3e m, e5hex1 %.3e mm (absolute |a-b|)\n\n', ...
+        ref_tolerance('e2e_pie', opts), ref_tolerance('e5hex1', opts));
 
 for k = 1:n
     fprintf('--- %d/%d  %s\n', k, n, func2str(tests{k}));

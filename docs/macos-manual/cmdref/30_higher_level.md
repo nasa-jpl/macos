@@ -18,6 +18,15 @@ MACOS.DESIGN.BENCH  Sequential optical-bench builder (add-optic utilities). B = 
 <!-- BEGIN NOTES hl-Bench -->
 <!-- END NOTES hl-Bench -->
 
+#### design.Lens
+
+`classdef Lens`
+
+MACOS.DESIGN.LENS  An N-surface refractive element: the lens primitive. L = macos.design.Lens('R', [61.6 -44.2 -128.9], 't', [6 2.5], ... 'glass', {'N-BK7', 'N-SF6'}, 'D', 25, 'name', 'AC254')  A lens is its surfaces and the media between them, in the CODE V sign
+
+<!-- BEGIN NOTES hl-Lens -->
+<!-- END NOTES hl-Lens -->
+
 #### design.System
 
 `classdef System < handle`
@@ -35,6 +44,15 @@ MACOS.DESIGN.TELESCOPE  De-novo two-mirror telescope builder (Sprint 2A-ii). The
 
 <!-- BEGIN NOTES hl-Telescope -->
 <!-- END NOTES hl-Telescope -->
+
+#### design.add_exit_pupil
+
+`macos.design.info = add_exit_pupil(rx_in, rx_out, opts)`
+
+ADD_EXIT_PUPIL  Give an imported prescription the exit-pupil pair the chain reads.  info = MACOS.DESIGN.ADD_EXIT_PUPIL(RX_IN, RX_OUT) writes RX_OUT: RX_IN with two Return elements inserted immediately BEFORE its terminal FocalPlane --
+
+<!-- BEGIN NOTES hl-add-exit-pupil -->
+<!-- END NOTES hl-add-exit-pupil -->
 
 #### design.add_met
 
@@ -62,6 +80,24 @@ ASSERT_DRAW_FRAME_GLOBAL  Refuse to read draw_rays' U/V as global x,y,z unless t
 
 <!-- BEGIN NOTES hl-assert-draw-frame-global -->
 <!-- END NOTES hl-assert-draw-frame-global -->
+
+#### design.camera_emit
+
+`macos.design.E = camera_emit(C, path, opts)`
+
+MACOS.DESIGN.CAMERA_EMIT  Write a Cassegrain camera (macos.design.cass_camera) as a MACOS deck. E = macos.design.camera_emit(C, path) writes PATH and returns the element map, ready for macos.design.lens_eval(E, E.P, theta_deg): E.iObs      the secondary's shadow (Element= Obscuring at the secondary's vertex plane; 0 when C.obscuration is 0)
+
+<!-- BEGIN NOTES hl-camera-emit -->
+<!-- END NOTES hl-camera-emit -->
+
+#### design.cass_camera
+
+`macos.design.C = cass_camera(opts)`
+
+MACOS.DESIGN.CASS_CAMERA  A small dedicated imager: a two-mirror Cassegrain with a refractive relay. C = macos.design.cass_camera('family','rc', 'D',350, 'primary_fnum',1.334, ... 'telescope_fnum',8.956, 'bfd',47.08, 'relay',{L1, z1; L2, z2}, ...) lays out the camera of templates/36_cameras/small_camera (worked case: its deck, small_camera.in): a primary at z = 0, a
+
+<!-- BEGIN NOTES hl-cass-camera -->
+<!-- END NOTES hl-cass-camera -->
 
 #### design.configs_from_table
 
@@ -135,6 +171,15 @@ FIELD_RING  Ring field set -- the CIRCULAR-field spec. F = macos.design.field_ri
 <!-- BEGIN NOTES hl-field-ring -->
 <!-- END NOTES hl-field-ring -->
 
+#### design.glass
+
+`macos.design.[n, S] = glass(name, lambda_nm, opts)`
+
+MACOS.DESIGN.GLASS  Refractive index of a catalog glass, from the ENGINE's own table. n = macos.design.glass('N-BK7', 587.56)   index at 587.56 nm [n, S] = ...  also returns the catalog row: S.name   the catalog spelling ('N-BK7'); 'air' for air S.B      1x3 Sellmeier B coefficients
+
+<!-- BEGIN NOTES hl-glass -->
+<!-- END NOTES hl-glass -->
+
 #### design.grid_augment_rx
 
 `macos.design.out = grid_augment_rx(rx_in, rx_out, opts)`
@@ -170,6 +215,42 @@ MACOS.DESIGN.IDEAL_LENS_EMIT  Render an ideal_lens spec to Rx element text. txt 
 
 <!-- BEGIN NOTES hl-ideal-lens-emit -->
 <!-- END NOTES hl-ideal-lens-emit -->
+
+#### design.lens_catalog
+
+`macos.design.[L, info] = lens_catalog(part, opts)`
+
+MACOS.DESIGN.LENS_CATALOG  A vendor lens from a prescription table, as a macos.design.Lens. L = macos.design.lens_catalog('PAC095AR.14') [L, info] = macos.design.lens_catalog(part, 'file', 'my_parts.txt') parts = macos.design.lens_catalog()          the part names in the table 
+
+<!-- BEGIN NOTES hl-lens-catalog -->
+<!-- END NOTES hl-lens-catalog -->
+
+#### design.lens_emit
+
+`macos.design.E = lens_emit(L, P, path, opts)`
+
+MACOS.DESIGN.LENS_EMIT  Write a lens and its stop as a MACOS evaluation deck. E = macos.design.lens_emit(L, P, path) writes PATH (a .in) for the Lens L with the first-order layout P (macos.design.lens_pupils) and returns the element map: E.iSurf(k)  element index of lens surface k
+
+<!-- BEGIN NOTES hl-lens-emit -->
+<!-- END NOTES hl-lens-emit -->
+
+#### design.lens_eval
+
+`macos.design.F = lens_eval(E, P, theta_deg, opts)`
+
+MACOS.DESIGN.LENS_EVAL  RMS wavefront error and distortion of ONE field of a loaded lens deck. F = macos.design.lens_eval(E, P, theta_deg) evaluates the deck macos.design.lens_emit wrote (E; macos.load_rx(E.path) first) with the first-order layout P (macos.design.lens_pupils) at the semi-field THETA_DEG (+y; 0 for a finite object) and returns
+
+<!-- BEGIN NOTES hl-lens-eval -->
+<!-- END NOTES hl-lens-eval -->
+
+#### design.lens_pupils
+
+`macos.design.P = lens_pupils(L, lambda_nm, opts)`
+
+MACOS.DESIGN.LENS_PUPILS  First-order layout of a lens with its stop: pupils, f-number, image. P = macos.design.lens_pupils(L, lambda_nm, 'stop', [z_s a_s]) P = macos.design.lens_pupils(L, lambda_nm, 'stop', [z_s NaN], 'epd', D)  L is a macos.design.Lens.  The STOP is a plane at z_s (measured from
+
+<!-- BEGIN NOTES hl-lens-pupils -->
+<!-- END NOTES hl-lens-pupils -->
 
 #### design.met_bodies
 
@@ -310,7 +391,7 @@ SEGMENT_RX  Segment one element of a MACOS prescription (SegMirMaker splice).  o
 
 `macos.design.out = segmirmaker_run(parent_in, opts)`
 
-SEGMIRMAKER_RUN  Drive the SegMirMaker generator non-interactively.  out = macos.design.segmirmaker_run(parent_in, Name=Value) runs the standalone SegMirMaker binary (segmirmaker/) on a parent MACOS prescription by scripting its interactive dialog over stdin, in a
+SEGMIRMAKER_RUN  Drive the SegMirMaker generator non-interactively.  out = macos.design.segmirmaker_run(parent_in, Name=Value) runs the standalone SegMirMaker binary (tools/segmirmaker/) on a parent MACOS prescription by scripting its interactive dialog over stdin, in a
 
 <!-- BEGIN NOTES hl-segmirmaker-run -->
 <!-- END NOTES hl-segmirmaker-run -->

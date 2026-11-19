@@ -67,7 +67,7 @@ License notice: `LICENSE.txt` (public domain).
 
 ## Phase 2 — `slsqp_optim_dvr`
 
-New file `macos_f90/design_slsqp_optim.F` mirroring
+New file `src/design_slsqp_optim.F` mirroring
 `design_cons_optim.F`.  Same external signature as `np_optim_dvr` so
 the call sites in `macos_cmd_loop.inc` don't change semantically.
 
@@ -151,7 +151,7 @@ when USE_NPSOL=OFF (default) and back to `np_optim_dvr` when ON
 
 A/B targets when SLSQP is verified on more prescriptions:
 * `opt_example.in` (BeamOnly + bound-constrained rigid body)
-* Any prescription in `ZGD_test_files/` that exercises constrained
+* Any prescription in `tests/ZGD_test_files/` that exercises constrained
   optimization
 * Pymacos tests/test_calib_constrained.py (new, exercises bounds via
   programmatic setters)

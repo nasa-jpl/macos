@@ -4,7 +4,7 @@ Polarization-honest Twyman-Green: a real Al coating on the beam-splitter face, i
 
 ## Running it
 
-From this directory, after `run('<path-to>/mmacos/mmacos_setup.m')`:
+From this directory, after `run('<path-to>/macos/app/mmacos/mmacos_setup.m')`:
 
     example_bench_ifo_pol
 

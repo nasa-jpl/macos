@@ -1,1 +1,0 @@
-../BRIEF_tg_ifo_v2.md

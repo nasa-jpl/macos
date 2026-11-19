@@ -36,7 +36,7 @@ demo_tg_psi_v2                                   # interactive: pauses per beat
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/90_polarization/tg_psi_dm_v2');
+cd('<path-to>/macos/app/mmacos/templates/90_polarization/tg_psi_dm_v2');
 run(fullfile(pwd,'example_tg_psi_dm_v2.m'));
 ```
 

@@ -24,8 +24,8 @@ F/1.8, a ±4.7° strip onto a 54 mm slit.
 ## Run it yourself
 
 ```matlab
-run('<path-to>/mmacos/mmacos_setup.m');
-addpath('<path-to>/mmacos/templates/10_telescopes/tma_longslit');
+run('<path-to>/macos/app/mmacos/mmacos_setup.m');
+addpath('<path-to>/macos/app/mmacos/templates/10_telescopes/tma_longslit');
 OUT = tma_longslit_run({'first_order','section'});       % first order + the engine section (seconds)
 OUT = tma_longslit_run('figure');                        % the figure ladder (15-80 min a rung)
 OUT = tma_longslit_run('e2e');                           % the best clear rung joined to the dyson5 3k Dyson

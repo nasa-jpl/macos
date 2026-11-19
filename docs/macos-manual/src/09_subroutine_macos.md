@@ -136,7 +136,7 @@ macos_mod -- session state: ifPlot, ifGrid, ifBuild, macos_realloc, plus the mac
 
 smacos_mod -- the SMACOS subroutine plus its dispatch helpers. \`call SMACOS('OLD', CARG, DARG, IARG, LARG, RARG, OPDMat, RaySpot, RMSWFE, PixArray)\` is the call signature.
 
-math_mod -- helpers shared with macos_f90 internals: DMPROD (matrix product), DOT, DXPROD, DUNITIZE, DORTHOGANALIZE, etc.
+math_mod -- helpers shared with the engine's internals: DMPROD (matrix product), DOT, DXPROD, DUNITIZE, DORTHOGANALIZE, etc.
 
 #### Initializing the runtime
 
@@ -218,7 +218,7 @@ Programs that apply repeated perturbations (sensitivity loops, tolerancing) need
 
 #### Legacy COMMON-block support
 
-The old smacosvars.cmn / elt.cmn / src.cmn / param.cmn include files were retired in v3.2. Calling programs that still depend on them must be rewritten to \`use\` the modules above. In almost every case this is a one-for-one mapping: \`KrElt(i)\` from elt.cmn becomes \`use elt_mod, only : KrElt\` and the same subscript expression. See git history of macos_f90/elt_mod.F for the full alias map.
+The old smacosvars.cmn / elt.cmn / src.cmn / param.cmn include files were retired in v3.2. Calling programs that still depend on them must be rewritten to \`use\` the modules above. In almost every case this is a one-for-one mapping: \`KrElt(i)\` from elt.cmn becomes \`use elt_mod, only : KrElt\` and the same subscript expression. See git history of src/elt_mod.F for the full alias map.
 
 ### Specification of Model Size in SMACOS
 

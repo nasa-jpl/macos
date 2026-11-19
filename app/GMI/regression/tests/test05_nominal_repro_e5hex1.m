@@ -39,7 +39,7 @@ function result = test05_nominal_repro_e5hex1(opts)
     end
     ref = load(ref_path);
     [pass_ref, max_ref, msg_ref] = compare_within(OPDnom1, ref.OPDnom, ...
-                                                   opts.tol, 'vs reference');
+                                                   ref_tolerance('e5hex1', opts), 'vs reference');
     if ~pass_ref
         result.pass = false;
         result.msg = sprintf('[%s] FAIL  %s', name, msg_ref);
@@ -48,7 +48,7 @@ function result = test05_nominal_repro_e5hex1(opts)
 
     result.pass = true;
     result.msg = sprintf('[%s] PASS  round-trip=%.3e, vs-ref=%.3e (tol %.3e)', ...
-                         name, max_rt, max_ref, opts.tol);
+                         name, max_rt, max_ref, ref_tolerance('e5hex1', opts));
 end
 
 function r = make_result(name)

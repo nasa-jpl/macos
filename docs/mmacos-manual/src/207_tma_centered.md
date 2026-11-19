@@ -10,7 +10,7 @@ clearance-verified, focus/tilt-aligned folded design.
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/10_telescopes/tma_centered');
+cd('<path-to>/macos/app/mmacos/templates/10_telescopes/tma_centered');
 run(fullfile(pwd,'tma_centered.m'));
 ```
 

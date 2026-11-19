@@ -23,7 +23,7 @@ function out = waveplate(srf, opts)
 %   dependence, so the slow axis accumulates the more negative phase and the
 %   element Jones in its (fast, slow) eigenbasis is diag(1, exp(-i*delta))
 %   with delta = 2*pi*R.  "Fast axis leads", as pinned in the conventions
-%   table in macos_f90/CLAUDE.md.
+%   table in src/CLAUDE.md.
 %
 %   The element is a thin, non-ray-splitting idealization: no o/e walk-off,
 %   no Fresnel loss at the faces, no substrate thickness. R is also

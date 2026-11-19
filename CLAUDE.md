@@ -12,14 +12,14 @@ Fixed-form source: .F files use the C preprocessor, .f files do not.
 > and every other developer note are in `devnotes/`, which, like the
 > memory, exists on the `dev` branch only; a release checkout
 > (`main`) carries this file, the nested `CLAUDE.md` set and
-> `macos_f90/notes/` and nothing else of the kind -- citations such as
+> `src/notes/` and nothing else of the kind -- citations such as
 > "PLAN_CONSOLIDATION 1.2 (tt)" in the notes are provenance pointers to
 > the dev branch's record (`devnotes/PLAN_CONSOLIDATION.md` there), not
 > files to look for on `main`.  A new brief, note, plan or report goes
 > in `devnotes/`, not at the top of the repository.
 >
 > **THEN re-read the nested `CLAUDE.md` for whatever subsystem you are
-> resuming — and, for the engine core, the `macos_f90/notes/<topic>.md` it points to** — see the index below. Nested CLAUDE.md files load on demand
+> resuming — and, for the engine core, the `src/notes/<topic>.md` it points to** — see the index below. Nested CLAUDE.md files load on demand
 > when CC reads a file in their directory and are **NOT auto-re-injected
 > after compaction**; if you resume a giza / optimizer / engine-core task
 > without first opening a file there, that subsystem's gotchas are not in
@@ -40,7 +40,7 @@ Fixed-form source: .F files use the C preprocessor, .f files do not.
 |---|---|---|
 | `external/giza/`, `pgplotsub.F`, any plot/display path | `external/giza/CLAUDE.md` | raster inversion + PGCTAB CI-0/1 clobber, non-raster black-on-white, labels/titles/wedge, annotation lines, supersampling/idle-window, GRAY CR/CG/CB 0-based bounds, GRAINI caching, PANEL_ENV viewport, smacos_dvr graphics init, draw_rays data-only |
 | `external/slsqp/`, `design_slsqp_optim.F`, constrained optim | `external/slsqp/CLAUDE.md` | SLSQP-default / NPSOL-opt-in dispatch, variable pre-scaling underflow fix (do **not** bump `dtt`), A/B reference, deferred setbeam port |
-| engine core: `macos_api_mod.F90`, IO/parse (`msmacosio.inc`/`iosub.inc`/`macosio.F`), `elt_mod.F`, `macos_cmd_loop.inc`, `funcsub.F`, `surfsub.F`, `mathsub.F` | `macos_f90/CLAUDE.md` (a 54-line INDEX + the every-session rules) → then the topic file it names in `macos_f90/notes/` (`hygiene`, `surfaces`, `pupil_fex_stop`, `opd_reference`, `rx_io`, `calib`, `cli`, `api_bindings`, `polarization`) | the engine record, split 2026-10-15: each notes file holds its cluster verbatim; **nothing in `notes/` is auto-injected — read the one you touch** |
+| engine core: `macos_api_mod.F90`, IO/parse (`msmacosio.inc`/`iosub.inc`/`macosio.F`), `elt_mod.F`, `macos_cmd_loop.inc`, `funcsub.F`, `surfsub.F`, `mathsub.F` | `src/CLAUDE.md` (a 54-line INDEX + the every-session rules) → then the topic file it names in `src/notes/` (`hygiene`, `surfaces`, `pupil_fex_stop`, `opd_reference`, `rx_io`, `calib`, `cli`, `api_bindings`, `polarization`) | the engine record, split 2026-10-15: each notes file holds its cluster verbatim; **nothing in `notes/` is auto-injected — read the one you touch** |
 | pymacos wrappers / regression | `app/pymacos/CLAUDE.md` | (existing) intensity/complex_field/dx_at/apodize, PROPER-compare; **cross-ref**, do not duplicate here |
 | coronagraph test prescriptions | `optical_design/CORONAGRAPH_DESIGN_RULES.md` + the `Element= Obscuring` mask rule | **cross-ref** |
 
@@ -71,7 +71,7 @@ build choice and the debug-build notes are in `BUILD.md`.
 
 ## Branches (summary — the model and the public-release strategy are `BRANCHES.md`)
 **One repository since 2026-11**: `MACOS_resources` is merged into `macos` (`app/mmacos/`,
-`app/pymacos/`, `app/GMI/`, `segmirmaker/`, `rx_converter/`, `optical_design/` beside `macos_f90/`).
+`app/pymacos/`, `app/GMI/`, `tools/segmirmaker/`, `tools/rx_converter/`, `optical_design/` beside `src/`).
 `dev` is the public integration branch and `main` the public release surface; `mr_merge`
 carries the merge and the reorganization (issues #75 to #83), one temporary branch and one
 pull request per issue.  `dev-candidate`, `opt-dev`, `sls-dev` and `bench-builder` are gone
@@ -82,20 +82,20 @@ Always `git ls-remote --heads` before assuming the live set.  Push only on Dave'
 human-readable commit messages, PRs merged and deleted within a week.
 
 ## Key files for current work
-- macos_f90/elt_mod.F        : per-element data arrays and SrfType constants
-- macos_f90/surfsub.F        : all surface intersection routines
-- macos_f90/elemsub.F        : calls surface routines during ray trace (FindSrf, Reflector, Refractor)
-- macos_f90/param_mod.F      : array dimension parameters (mElt, mGridMat, etc.)
-- macos_f90/iosub.inc        : ChkDf2 defaults, PrtSingleEltInfo output (included by macosio.F)
-- macos_f90/msmacosio.inc    : prescription file reader (included by macosio.F and smacosio.F)
-- macos_f90/macosio.F        : interactive UI dialog for element entry
-- macos_f90/tracesub.F       : ray trace loop (Reflector + Refractor + FindSrf call sites)
-- macos_f90/propsub.F        : propagation (Reflector + Refractor + FindSrf call sites)
-- macos_f90/srtrace.F        : single-ray trace (Reflector call sites)
-- macos_f90/funcsub.F        : CPERTURB, CPRead, CPERTURB_GRP (perturbation routines)
-- macos_f90/macos_ops.F      : CPERTURB_2 (perturbation, macos_ops_mod)
-- macos_f90/lnk_pert.inc     : LnkEltCPERTURB (linked-element perturbation)
-- macos_f90/macos_api_mod.F90: language-neutral SMACOS-call wrapper layer (`MODULE macos_api_mod`) — backbone for pymacos and mmacos; compiled into libsmacos.a
+- src/elt_mod.F        : per-element data arrays and SrfType constants
+- src/surfsub.F        : all surface intersection routines
+- src/elemsub.F        : calls surface routines during ray trace (FindSrf, Reflector, Refractor)
+- src/param_mod.F      : array dimension parameters (mElt, mGridMat, etc.)
+- src/iosub.inc        : ChkDf2 defaults, PrtSingleEltInfo output (included by macosio.F)
+- src/msmacosio.inc    : prescription file reader (included by macosio.F and smacosio.F)
+- src/macosio.F        : interactive UI dialog for element entry
+- src/tracesub.F       : ray trace loop (Reflector + Refractor + FindSrf call sites)
+- src/propsub.F        : propagation (Reflector + Refractor + FindSrf call sites)
+- src/srtrace.F        : single-ray trace (Reflector call sites)
+- src/funcsub.F        : CPERTURB, CPRead, CPERTURB_GRP (perturbation routines)
+- src/macos_ops.F      : CPERTURB_2 (perturbation, macos_ops_mod)
+- src/lnk_pert.inc     : LnkEltCPERTURB (linked-element perturbation)
+- src/macos_api_mod.F90: language-neutral SMACOS-call wrapper layer (`MODULE macos_api_mod`) — backbone for pymacos and mmacos; compiled into libsmacos.a
 
 ## Conventions (new code)
 - IMPLICIT NONE throughout

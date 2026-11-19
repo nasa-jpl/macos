@@ -1,5 +1,5 @@
 """Two silent drops in the Opt* parse now SAY so (macos PLAN_CONSOLIDATION 1.1b, 2026-10-12) -- the
-binding surface of the shared parser (msmacosio.inc; the CLI twins are cli_tests/cmd/
+binding surface of the shared parser (msmacosio.inc; the CLI twins are tests/cli/cmd/
 Rx_header_unknown.jou and OptAsph_order.jou).  The engine writes these lines to the process
 stdout from Fortran, so they are read here at the file-descriptor level (capfd).
 

@@ -5,7 +5,7 @@ Polarization-honest Twyman-Green: a real Al coating on the beam-splitter face, i
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/90_polarization/bench_ifo_pol');
+cd('<path-to>/macos/app/mmacos/templates/90_polarization/bench_ifo_pol');
 run(fullfile(pwd,'example_bench_ifo_pol.m'));
 ```
 

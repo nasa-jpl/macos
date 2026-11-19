@@ -27,7 +27,7 @@ function idx = per_field_indx(out, ic, k)
 %   chief-ray reference a valid pixel can read exactly 0 -- a perfect on-axis
 %   telescope reads 0 over its whole pupil -- and the nonzero test dropped
 %   those rows (v2m "Vectors must be the same length" on the Zemax Cassegrain
-%   template, 2026-11-04; the rule is macos_f90/notes/opd_reference.md,
+%   template, 2026-11-04; the rule is src/notes/opd_reference.md,
 %   "zero is not no ray").  A harvest that predates the mask field falls back
 %   to the map, as before.
 if nargin < 3, k = ic;  ic = 1;  end

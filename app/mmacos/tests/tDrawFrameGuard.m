@@ -13,7 +13,7 @@ classdef tDrawFrameGuard < matlab.unittest.TestCase
     % These tests use REAL decks from the segmentation corpus -- one of each
     % handedness -- and cross-check against draw_rays3d, which returns true
     % global (x,y,z) (engine Draw3DVec = RayPos verbatim).  That is arbiter B
-    % of the round-2 routing audit; see segmirmaker/SEG_AUDIT_STATUS.md.
+    % of the round-2 routing audit; see tools/segmirmaker/SEG_AUDIT_STATUS.md.
 
     properties
         heritage   % a deck with xGrid = (-1,0,0)  (the e5/e2e corpus)
@@ -24,8 +24,8 @@ classdef tDrawFrameGuard < matlab.unittest.TestCase
         function locate(tc)
             here = fileparts(mfilename('fullpath'));         % mmacos/tests
             res_root = repo_root_();   % the repository root
-            tc.heritage = fullfile(res_root, 'segmirmaker', 'test_in', 'e5pie.in');
-            tc.globalfr = fullfile(res_root, 'ZGD_test_files', 'SegDemo3.in');
+            tc.heritage = fullfile(res_root, 'tools', 'segmirmaker', 'test_in', 'e5pie.in');
+            tc.globalfr = fullfile(res_root, 'tests', 'ZGD_test_files', 'SegDemo3.in');
             tc.assumeTrue(isfile(tc.heritage), 'heritage fixture missing');
             tc.assumeTrue(isfile(tc.globalfr), 'global-frame fixture missing');
             macos.init(512);

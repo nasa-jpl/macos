@@ -51,7 +51,7 @@ fixture).
 
 ## Starting from an imported deck (Zemax, CODE V)
 
-A deck that arrived as text -- `rx_converter/zemax/zmx2macos.py` output, a
+A deck that arrived as text -- `tools/rx_converter/zemax/zmx2macos.py` output, a
 CODE V conversion, a hand-written `.in` -- enters the same pipeline at the
 segmentation stage, after ONE preparatory step.  Zemax and CODE V have no
 exit-pupil element, and every wavefront read in the chain (the `dw_d*`

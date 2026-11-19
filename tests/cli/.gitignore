@@ -1,0 +1,9 @@
+records/*.log
+corpus_extended.txt
+must_fail/list.txt
+corpus_manual.txt
+records/*_transcripts/
+records/manual_work/
+# the deck lists hold absolute paths: run_cli_tests.sh writes them on every run
+corpus_core.txt
+corpus_committed.txt

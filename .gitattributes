@@ -1,7 +1,7 @@
 # ==============================================================================
 # .gitattributes — Enforce consistent line endings across platforms
 #
-# Place this file at the repo root (MACOS_resources/.gitattributes).
+# This file stays at the top of the repository.
 #
 # * text=auto tells git to auto-detect text files and normalize them.
 # Specific rules below enforce LF for file types where CRLF on Linux
@@ -70,6 +70,7 @@ Makefile    text eol=lf
 
 # Line-ending gate fixtures (PLAN_CONSOLIDATION item 5): their CR / CRLF bytes ARE the test --
 # never normalize them (text=auto would store the CRLF twin as LF and the gate would test nothing).
-ZGD_test_files/tst_eol_*.in      -text
-ZGD_test_files/tst_short_coef_cr.in -text
-pymacos/tests/Rx/Rx_Eol_*.in     -text
+# These three paths are anchored at the top of the repository: when a directory moves, move its line.
+tests/ZGD_test_files/tst_eol_*.in      -text
+tests/ZGD_test_files/tst_short_coef_cr.in -text
+app/pymacos/tests/Rx/Rx_Eol_*.in     -text

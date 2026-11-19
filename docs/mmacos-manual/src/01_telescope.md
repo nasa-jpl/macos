@@ -32,7 +32,7 @@ by that run (the front matter, *How this manual is made*).
   `app/mmacos/templates/80_end_to_end/e2e/README.md` -- which template answers the
   request, and the stage contract (one parameter file; each stage writes its `.in`, `.mat`,
   figures and report beside itself).
-- `macos/macos_f90/notes/pupil_fex_stop.md` -- how the engine finds the exit pupil (FEX) and the
+- `macos/src/notes/pupil_fex_stop.md` -- how the engine finds the exit pupil (FEX) and the
   stop, so the pupil the report names is the one the engine uses.
 
 The request is the e2e flow's first stage almost word for word, so the assistant does not write a
@@ -50,7 +50,7 @@ The knobs are one file, `e2e_params.m`. Its telescope block, as the run read it:
 Then the stage script, unchanged:
 
 ```matlab
-run('<path-to>/mmacos/templates/80_end_to_end/e2e/s1_telescope.m')
+run('<path-to>/macos/app/mmacos/templates/80_end_to_end/e2e/s1_telescope.m')
 ```
 
 `s1_telescope.m` works in eight steps, each printed as it runs: (1) the first-order Korsch layout

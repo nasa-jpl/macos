@@ -54,7 +54,7 @@ From the pymacos root:
 ```bash
 ./run_proper_tests.sh              # straight run
 ./run_proper_tests.sh --build      # rebuild pymacosf90 first (after a
-                                   #   macos_f90/ change + makems.sh)
+                                   #   src/ change + makems.sh)
 ./run_proper_tests.sh -v           # forwarded to pytest
 ```
 

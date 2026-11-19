@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# makegmi.sh  — Build GMI.mexa64 via app/GMI/Makefile
+# makegmi.sh  — Build the GMI mex (GMI.mexa64 on Linux, GMI.mexmaca64 on an Apple Silicon Mac)
+#               via app/GMI/Makefile
 #
 # Usage:
 #   source ./makegmi.sh [debug|release] [ifx|gfortran]
@@ -15,10 +16,15 @@
 # Either compiler choice picks up libsmacos.a from the matching
 # build_release[_gfortran] tree, so build macos+smacos with the
 # same compiler first (makems.sh for ifx, makegfortran.sh for
-# gfortran).  MATLAB is auto-detected under /usr/local/MATLAB/.
+# gfortran).  On macOS only gfortran is supported (ifx has no macOS build).
+#
+# MATLAB is auto-detected: the latest release under /usr/local/MATLAB/ on
+# Linux, /Applications/MATLAB_R20XXx.app on macOS.  To choose another one,
+# set MATLAB_DIR in the environment before sourcing this script:
+#   MATLAB_DIR=/Applications/MATLAB_R2025b.app source ./makegmi.sh
 #
 # Output location:
-#   GMI.mexa64 : ./app/GMI/GMI.mexa64
+#   ./app/GMI/GMI.<mex extension of this platform>
 #
 # Note: PGPLOT support was removed on release-candidate; Giza is now
 # the only PGPLOT-API provider.
@@ -45,7 +51,9 @@ for arg in "$@"; do
   esac
 done
 
-BUILD_TAG="$(echo "${BUILD_TYPE}" | tr '[:upper:]' '[:lower:]')"
+# lower case without ${VAR,,}: that form needs bash 4, and macOS ships bash 3.2 and zsh
+BUILD_TYPE_LC="$(echo "${BUILD_TYPE}" | tr '[:upper:]' '[:lower:]')"
+BUILD_TAG="${BUILD_TYPE_LC}"
 [ "${FC}" = "gfortran" ]    && BUILD_TAG="${BUILD_TAG}_gfortran"
 [ "${USE_NPSOL}" = "ON" ]   && BUILD_TAG="${BUILD_TAG}_npsol"
 BUILD_DIR="${SCRIPT_DIR}/build_${BUILD_TAG}"
@@ -73,21 +81,26 @@ fi
 if [ ! -d "${BUILD_DIR}/mod_smacos" ]; then
   echo "makegmi: ERROR — module directory not found: ${BUILD_DIR}/mod_smacos"
   if [ "${FC}" = "gfortran" ]; then
-    echo "  Build macos+smacos first: source ./makegfortran.sh ${BUILD_TYPE,,}"
+    echo "  Build macos+smacos first: source ./makems.sh ${BUILD_TYPE_LC} gfortran"
   else
-    echo "  Build macos+smacos first: source ./makems.sh ${BUILD_TYPE,,}"
+    echo "  Build macos+smacos first: source ./makems.sh ${BUILD_TYPE_LC}"
   fi
   return 1 2>/dev/null || exit 1
 fi
 
 # --- Build ---
 echo "makegmi: building GMI via ${GMI_DIR}/Makefile ..."
-make -C "${GMI_DIR}" \
-  FC="${FC}" \
-  macossrc_dir="${SCRIPT_DIR}/macos_f90" \
-  MACOS_BUILD_DIR="${BUILD_DIR}" \
+# MATLAB_DIR from the environment is passed on when it is set; otherwise the
+# Makefile finds MATLAB itself.
+GMI_MAKE_ARGS=(FC="${FC}" macossrc_dir="${SCRIPT_DIR}/src" MACOS_BUILD_DIR="${BUILD_DIR}")
+if [ -n "${MATLAB_DIR:-}" ]; then
+  echo "makegmi: MATLAB_DIR=${MATLAB_DIR}"
+  GMI_MAKE_ARGS+=(MATLAB_DIR="${MATLAB_DIR}")
+fi
+make -C "${GMI_DIR}" "${GMI_MAKE_ARGS[@]}" \
   || { echo "makegmi: GMI build FAILED"; return 1 2>/dev/null || exit 1; }
 
+GMI_MEXTAG="$(make -s -C "${GMI_DIR}" "${GMI_MAKE_ARGS[@]}" print-mextag 2>/dev/null)"
 echo ""
 echo "makegmi: BUILD SUCCEEDED"
-echo "  GMI : ${GMI_DIR}/GMI.mexa64"
+echo "  GMI : ${GMI_DIR}/GMI.${GMI_MEXTAG:-mex}"

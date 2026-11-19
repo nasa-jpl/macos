@@ -3,7 +3,7 @@
 devnotes
 CURRENT_SLICE.md
 release-exclude.txt
-macos_f90/SAVE_KEYWORD_AUDIT.md
+src/SAVE_KEYWORD_AUDIT.md
 docs/macos-manual/FIGURE_RESCUE_LOG.md
 docs/macos-manual/RECONCILE_4_01.md
 docs/macos-manual/src/_dropped_legacy_index.md
@@ -12,14 +12,13 @@ BRIEF_*.md
 REPORT_*.md
 RUNBOOK_*.md
 NOTES_*.md
-demo_session
 NOTE_*.md
 docs/macos-manual/audit_4.1beta.txt
-# 2026-10-21 (Dave): the CLAUDE.md set, macos_f90/notes/ and MAC_PORT.md SHIP (agent use by MACOS users); the plans, slice and process files stay on dev
+# 2026-10-21 (Dave): the CLAUDE.md set, src/notes/ and MAC_PORT.md SHIP (agent use by MACOS users); the plans, slice and process files stay on dev
 PLAN_*.md
 # via MACOS_resources merge
-segmirmaker/.vscode/launch.json
-segmirmaker/.vscode/tasks.json
+tools/segmirmaker/.vscode/launch.json
+tools/segmirmaker/.vscode/tasks.json
 doc/STYLE_REPORTS.md
 app/mmacos/design/PLAN_AFOCAL4.md
 app/mmacos/design/PLAN_TMA_E2E2.md

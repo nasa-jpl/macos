@@ -34,8 +34,8 @@ post-processing the array.
 Run any template with the package on the path:
 
 ```matlab
-run('<path-to>/mmacos/mmacos_setup.m');
-run('<path-to>/mmacos/templates/10_telescopes/tma_offaxis/tma_offaxis.m');
+run('<path-to>/macos/app/mmacos/mmacos_setup.m');
+run('<path-to>/macos/app/mmacos/templates/10_telescopes/tma_offaxis/tma_offaxis.m');
 ```
 
 ## Directory map (2026-10-17; every directory, one line from its own README)

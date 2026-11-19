@@ -29,7 +29,7 @@ in one stacked form, `w = J·x + w0`: a column per degree of freedom, a row per 
 The stage script, unchanged, in the thread directory:
 
 ```matlab
-run('<path-to>/mmacos/templates/80_end_to_end/e2e/s4_jacobians.m')
+run('<path-to>/macos/app/mmacos/templates/80_end_to_end/e2e/s4_jacobians.m')
 ```
 
 It takes `e2e_pie.in` from Section 3 and writes `s4_jacobians.mat` (the three matrices, for the

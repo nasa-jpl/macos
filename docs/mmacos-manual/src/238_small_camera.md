@@ -25,7 +25,7 @@ The first re-solves shift m and undo part of the balance.  The rounds settle as 
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/36_cameras/small_camera');
+cd('<path-to>/macos/app/mmacos/templates/36_cameras/small_camera');
 out = small_camera();
 ```
 

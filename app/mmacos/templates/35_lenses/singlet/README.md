@@ -6,7 +6,7 @@ The lens is a `macos.design.Lens`; its deck comes from `macos.design.lens_emit`,
 
 ## Running it
 
-From this directory, after `run('<path-to>/mmacos/mmacos_setup.m')`:
+From this directory, after `run('<path-to>/macos/app/mmacos/mmacos_setup.m')`:
 
     singlet                                   % the defaults
     out = singlet('FNUM', 4, 'GLASS', 'N-SF6', 'OBJECT_MM', 300)

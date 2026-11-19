@@ -5,7 +5,7 @@ A wide-field design strategy where GEOMETRY and CORRECTION fully decouple: 0th-o
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/10_telescopes/sz_tma');
+cd('<path-to>/macos/app/mmacos/templates/10_telescopes/sz_tma');
 run(fullfile(pwd,'sz_tma.m'));
 ```
 

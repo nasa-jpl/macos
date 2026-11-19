@@ -170,7 +170,7 @@ Filter options:
 
 ## Codegen
 
-`src/gen_mex_wrappers.py` parses `~/dev/macos/macos_f90/macos_api_mod.F90`
+`src/gen_mex_wrappers.py` parses `~/dev/macos/src/macos_api_mod.F90`
 and emits `src/mmacos_gen.F` (148 `do_<name>` mex helpers plus a
 `gen_dispatch` fallback that the main `mexFunction` falls through to
 after its 15 hand-written cases).  Re-run after any api signature
@@ -229,7 +229,7 @@ wins under the cmd name `prb_elt`, codegen emits the single form under
 | `test_state_after_roundtrip.m` | Diagnostic probe for the ULP residual |
 | `Makefile` | GMI-style build; `make` / `make test` / `make unittest` |
 | `src/mmacos.mexa64` | Built artefact (gitignored) |
-| `~/dev/macos/macos_f90/macos_api_mod.F90` | Shared backbone (in libsmacos.a) |
+| `~/dev/macos/src/macos_api_mod.F90` | Shared backbone (in libsmacos.a) |
 
 Links against:
 - `libsmacos.a` (carries `macos_api_mod`, the SMACOS engine, etc.)

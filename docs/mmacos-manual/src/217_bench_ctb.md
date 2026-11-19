@@ -9,7 +9,7 @@ Teaching example — every block in the runner states its **parameters**, the
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/30_instruments/bench_ctb');
+cd('<path-to>/macos/app/mmacos/templates/30_instruments/bench_ctb');
 run(fullfile(pwd,'example_ctb.m'));
 ```
 

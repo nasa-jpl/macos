@@ -62,14 +62,14 @@ rather than lens design.  There are four ways to use it:
 All four share one prescription format (`.in` files), one state model,
 and one set of units conventions, because underneath they are the same
 compiled engine.  The bindings (3, 4) go through a common wrapper
-layer, `macos_f90/macos_api_mod.F90` — each Part II entry names the
+layer, `src/macos_api_mod.F90` — each Part II entry names the
 underlying routine, which is the ground truth for argument meanings.
 
 ## Where things live
 
 | Piece | Location | Build |
 |---|---|---|
-| engine + CLI (`macos`) | `nasa-jpl/macos` repo, `macos_f90/` | `source ./makeall.sh` (cmake; gfortran or Intel ifx) |
+| engine + CLI (`macos`) | `nasa-jpl/macos` repo, `src/` | `source ./makeall.sh` (cmake; gfortran or Intel ifx) |
 | SMACOS library | same repo | built by `makeall.sh`/`makems.sh` (`libsmacos.a`) |
 | mmacos | `app/mmacos/` | see its README (MEX build against libsmacos) |
 | pymacos | `app/pymacos/` | see its README (f2py build) |
@@ -78,7 +78,7 @@ underlying routine, which is the ground truth for argument meanings.
 
 Two companions ship alongside the four surfaces:
 
-- **SegMirMaker** (`segmirmaker/`) — standalone
+- **SegMirMaker** (`tools/segmirmaker/`) — standalone
   utility for converting a monolithic primary mirror into a
   many-segment one: it generates the segmented-mirror prescription
   (`.presc`) and segment-influence (`Hx.m`) files from a parent-mirror
@@ -100,7 +100,7 @@ each surface:
   Appendix A prescriptions, each `<name>.in` paired with a
   `<name>.jou` journal that drives a complete analysis
   (`EXEcute <name>` after loading).
-- **mmacos** — `mmacos/examples/`; further runnable
+- **mmacos** — `app/mmacos/examples/`; further runnable
   demos sit in `app/mmacos/design/` (telescope design layer) and
   `app/mmacos/sensitivities/` (Jacobian / dw_* drivers).
 - **pymacos** — `app/pymacos/tests/`: the test suite

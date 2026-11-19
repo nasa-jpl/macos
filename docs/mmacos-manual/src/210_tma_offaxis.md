@@ -5,7 +5,7 @@ j18mono-geometry 3-mirror anastigmat (M1 concave, M2 CONVEX, M3 concave, f/20): 
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/10_telescopes/tma_offaxis');
+cd('<path-to>/macos/app/mmacos/templates/10_telescopes/tma_offaxis');
 run(fullfile(pwd,'tma_offaxis.m'));
 ```
 

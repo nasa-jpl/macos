@@ -5,7 +5,8 @@ function dyson5_view_figs(decks, outdir)
 %   Each deck -> <tag>_view3d.png (macos.view_rx default view) and
 %   <tag>_viewyz.png (the dispersion plane, az 90 el 0).  The bodies, rays
 %   and labels are read back from the engine (macos.view_rx), never drawn
-%   by hand; deck_dyson tiles these two per deck (demo_session/tile_views.py).
+%   by hand; deck_dyson tiles these two per deck (tile_views.py, in the deck
+%   workshop, which is no longer in this repository).
 %   Model 128 is enough: the viewer cuts a sparse ring-and-spoke bundle.
 here = fileparts(mfilename('fullpath'));
 if nargin < 1 || isempty(decks), decks = {'dyson5_s3_r3', 'dyson5_s1_offner'}; end

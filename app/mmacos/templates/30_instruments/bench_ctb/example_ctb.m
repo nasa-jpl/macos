@@ -36,7 +36,7 @@
 %  here as R_DM*FILL/r, i.e. as if it were the half-angle NA sized to
 %  fill the LIMITING aperture (the DM stop).  NOTE (2026-09-16): the
 %  engine takes a point source's Aperture as the FULL cone angle
-%  (macos_f90/sourcsub.F: A = Aperture/2), so R_DM*FILL lands on the DM
+%  (src/sourcsub.F: A = Aperture/2), so R_DM*FILL lands on the DM
 %  as the beam DIAMETER (measured 21.24 mm) -- 47% fill of the DM radius,
 %  not FILL.  Kept as-is pending Dave's regeneration decision.
 %

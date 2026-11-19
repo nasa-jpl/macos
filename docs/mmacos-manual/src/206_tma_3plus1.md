@@ -5,7 +5,7 @@ Three conic mirrors (j18mono-geometry Korsch, 6.6 m f/20, unobscured eccentric-p
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/10_telescopes/tma_3plus1');
+cd('<path-to>/macos/app/mmacos/templates/10_telescopes/tma_3plus1');
 run(fullfile(pwd,'tma_3plus1.m'));
 ```
 

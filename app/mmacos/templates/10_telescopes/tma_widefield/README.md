@@ -4,7 +4,7 @@ Multi-mirror telescopes exist to widen the corrected field of view. This example
 
 ## Running it
 
-From this directory, after `run('<path-to>/mmacos/mmacos_setup.m')`:
+From this directory, after `run('<path-to>/macos/app/mmacos/mmacos_setup.m')`:
 
     example_tma_widefield
 

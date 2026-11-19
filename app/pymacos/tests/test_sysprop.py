@@ -1,6 +1,6 @@
 """first_order_properties (the SYSPROP command) -- the pixel-based fields come only from a
 DIFFRACTION pitch (PLAN_CONSOLIDATION 1.2 (d)); twin of mmacos tSysProp/test_px_not_from_an_OPD
-and cli_tests/cmd/SYSPROP_after_OPD.jou.
+and tests/cli/cmd/SYSPROP_after_OPD.jou.
 
 An OPD at the element re-sets dxElt to the ray-grid spacing (~0 at a focus): on
 Rx_Cass_FarField (model 128) the fields read lamD_px 3.3130544e6, pitch 1.6958903e-12 after

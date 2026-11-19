@@ -17,12 +17,12 @@
 % R -1000 K -1 = the stop, secondary R -240 K -1.96 400 mm in front, image
 % 200 mm behind the primary) with a 25 mm hole in the primary (Zemax OBSC),
 % written by OpticStudio-style `.zmx` text.  Regenerate the deck with
-%   python3 ../../../../rx_converter/zemax/zmx2macos.py zemax_cassegrain.zmx -o zemax_cassegrain.in
-% (numpy only; see rx_converter/zemax/README.md).
+%   python3 ../../../../../tools/rx_converter/zemax/zmx2macos.py zemax_cassegrain.zmx -o zemax_cassegrain.in
+% (numpy only; see tools/rx_converter/zemax/README.md).
 %
 % Modify the knobs and re-run.  Outputs land beside this script; the
 % committed ones are the deck, the pupil deck and the report.  Needs the
-% SegMirMaker binary (segmirmaker/README.md) and a built mmacos mex.
+% SegMirMaker binary (tools/segmirmaker/README.md) and a built mmacos mex.
 
 %% ------------------------------- knobs ---------------------------------
 MODEL   = 256;            % engine model size (nGridpts 65 in the deck)

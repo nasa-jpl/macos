@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Regenerate src/93_appendix_c_commands.md from the live
-macos_f90/macos_help.inc (single source of truth — same rule as the
+src/macos_help.inc (single source of truth — same rule as the
 old docx patch 90_appendix_c.py: never hand-edit Appendix C).
 
 Each WRITE(*,*) literal becomes a line of the appendix.  Category
@@ -13,12 +13,12 @@ import re
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-HELP_INC = HERE.parent.parent.parent / "macos_f90" / "macos_help.inc"
+HELP_INC = HERE.parent.parent.parent / "src" / "macos_help.inc"
 OUT = HERE.parent / "src" / "93_appendix_c_commands.md"
 
 INTRO = (
     "The following is the complete command list as printed by the "
-    "HELP command, regenerated from macos_f90/macos_help.inc (single "
+    "HELP command, regenerated from src/macos_help.inc (single "
     "source of truth).  Casing convention: \\<UPPER prefix\\>\\<lower "
     "tail\\> — the uppercase part is the minimum-match abbreviation "
     "tested by the dispatcher.  Tags: \\[Rx\\] needs a loaded "
@@ -71,7 +71,7 @@ def parse_help_inc():
 def main():
     out = ["<!-- GENERATED FILE — do not edit by hand.",
            "     Regenerate with: python tools/gen_appendix_c.py",
-           "     Source: macos_f90/macos_help.inc  -->",
+           "     Source: src/macos_help.inc  -->",
            "",
            "## APPENDIX C: Complete Command Reference",
            "",

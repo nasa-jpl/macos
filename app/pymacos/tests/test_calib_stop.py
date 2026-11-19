@@ -2,7 +2,7 @@
 mmacos tCalibStop.  Rx_AsphCalib.in (SPOT target, h^4 spoiled) converges to the round-off
 floor by itr 3-4 -- QUADRATICALLY, so no accepted step is flat: 'floor' at itr 14 (T=20),
 'cap' at T=10.  'converged' needs a non-quadratic tail (macos
-cli_tests/records/calib_loop_old_vs_new.md: the tDesignTelescope fourth_mirror designs).
+tests/cli/records/calib_loop_old_vs_new.md: the tDesignTelescope fourth_mirror designs).
 
 The old loop exited on itr_done, a logical never set before the loop and static under
 nls_optim_dvr's blanket Save: a T=4 CALIB exited on whatever the previous CALIB left (CLI:

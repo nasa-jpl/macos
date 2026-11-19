@@ -9,7 +9,7 @@ interactive MACOS prompt.
 
 > Status: under active development by collaborators outside the main MACOS
 > source tree. This README captures the layout as it stands so that downstream
-> changes in `macos_f90/` can be assessed against the pymacos surface and the
+> changes in `src/` can be assessed against the pymacos surface and the
 > build can be reproduced.
 
 ## Layout
@@ -116,7 +116,7 @@ Three layers, top-down:
 ┌────────────────────────────────────────────────────┐
 │  SMACOS static libs (libsmacos / libnpsol /         │
 │    libblaslib / liblapacklib) from the main         │
-│    macos_f90 source tree                            │
+│    engine source tree (src/)                        │
 └────────────────────────────────────────────────────┘
 ```
 
@@ -484,7 +484,7 @@ pytest test_api_rx_grating.py test_masks.py -q --tb=no
 pytest proper_compare/ -q --tb=no
 ```
 
-If you change something in `macos_f90/` and rebuild via `makems.sh`,
+If you change something in `src/` and rebuild via `makems.sh`,
 both suites should still be green. A new failure usually points at the
 edit. As of 2026-05-18 the suites pass 6601/6601 (CodeV) and the
 PROPER-comparison suite has matured through Phases 1–5 + the Cycle-5

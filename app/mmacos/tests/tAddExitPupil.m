@@ -2,7 +2,7 @@ classdef tAddExitPupil < matlab.unittest.TestCase
 %TADDEXITPUPIL  macos.design.add_exit_pupil -- the exit-pupil pair on an imported deck.
 %
 %   The fixture is the zmx2macos conversion of the synthetic f/6 Cassegrain
-%   (rx_converter/zemax/examples/cassegrain_example.zmx): primary R -1000 mm K -1
+%   (tools/rx_converter/zemax/examples/cassegrain_example.zmx): primary R -1000 mm K -1
 %   (the stop), secondary 400 mm in front with R -240 mm K -1.96, image 600 mm
 %   behind the secondary.  Its exit pupil is the stop's image in the secondary,
 %   a textbook number: 1/s' = 2/R2 - 1/s with s = 400 -> s' = -92.3077 mm,

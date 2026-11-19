@@ -36,7 +36,7 @@ sizes a segment as the aperture over (2 × rings + 1), so the tiling scales with
 Then the stage script, unchanged, in the directory Sections 1 and 2 left their products in:
 
 ```matlab
-run('<path-to>/mmacos/templates/80_end_to_end/e2e/s3_segmentation.m')
+run('<path-to>/macos/app/mmacos/templates/80_end_to_end/e2e/s3_segmentation.m')
 ```
 
 Each variant goes through `run_segmentation` once. The stage report:

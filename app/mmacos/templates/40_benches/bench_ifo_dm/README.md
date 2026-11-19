@@ -4,7 +4,7 @@ Follow-on to templates/40_benches/bench_ifo (read that first): the same compensa
 
 ## Running it
 
-From this directory, after `run('<path-to>/mmacos/mmacos_setup.m')`:
+From this directory, after `run('<path-to>/macos/app/mmacos/mmacos_setup.m')`:
 
     example_bench_ifo_dm
 

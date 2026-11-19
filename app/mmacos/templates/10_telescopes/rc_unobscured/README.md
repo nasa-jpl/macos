@@ -4,7 +4,7 @@ Pick the four design knobs below; the script builds the on-axis RC parent, takes
 
 ## Running it
 
-From this directory, after `run('<path-to>/mmacos/mmacos_setup.m')`:
+From this directory, after `run('<path-to>/macos/app/mmacos/mmacos_setup.m')`:
 
     rc_unobscured
 

@@ -239,13 +239,13 @@ fort.*
 # be committed.  While they were ignored the two comparison tests errored
 # on every clean worktree, and passed only where someone had run the
 # generator by hand -- against a local artifact of unknown provenance.
-segmirmaker/test_in/SegMirMaker
-segmirmaker/test_in/*.presc
-!segmirmaker/test_in/e5pie.presc
-!segmirmaker/test_in/e5hex2.presc
-segmirmaker/test_in/*Hx.m
-!segmirmaker/test_in/e5pieHx.m
-!segmirmaker/test_in/e5hex2Hx.m
+tools/segmirmaker/test_in/SegMirMaker
+tools/segmirmaker/test_in/*.presc
+!tools/segmirmaker/test_in/e5pie.presc
+!tools/segmirmaker/test_in/e5hex2.presc
+tools/segmirmaker/test_in/*Hx.m
+!tools/segmirmaker/test_in/e5pieHx.m
+!tools/segmirmaker/test_in/e5hex2Hx.m
 
 # Matlab autosave + output caches
 *.asv

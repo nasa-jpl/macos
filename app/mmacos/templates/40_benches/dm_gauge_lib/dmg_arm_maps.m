@@ -25,7 +25,7 @@ function [qL, qR, info] = dmg_arm_maps(iSRF, msk, laser_deg)
 %   the vector-mode field's phase is the exact CONJUGATE of the scalar
 %   trace's (the common phase of J/E0 fits -2.0000 x the pupil phase,
 %   residual 4e-9 -- the RayE-vs-CumRayL bookkeeping of a plain
-%   trace-to-detector train, macos_f90/CLAUDE.md "PHASE CONVENTION AT THE
+%   trace-to-detector train, src/CLAUDE.md "PHASE CONVENTION AT THE
 %   SEED"), and its amplitude carries the Fresnel losses the scalar trace
 %   does not.  Neither is polarization physics; the record's field is the
 %   scalar trace's, the maps carry only what polarization adds to it.

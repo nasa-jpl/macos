@@ -5,7 +5,7 @@ A generic folded-bench worked example: build a complete test-bench train SEQUENT
 **Run it.**
 
 ```matlab
-cd('<path-to>/mmacos/templates/40_benches/bench_layout');
+cd('<path-to>/macos/app/mmacos/templates/40_benches/bench_layout');
 run(fullfile(pwd,'example_bench_layout.m'));
 ```
 

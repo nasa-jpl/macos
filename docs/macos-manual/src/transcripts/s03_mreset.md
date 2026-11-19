@@ -5,7 +5,7 @@ MACOS\>**mreset**
     Enter new size (128, 256, 512, 1024, 2048, 4096, 8192): [128]: 256
     macos_model_size =          256
     Resetting MACOS model size...
-     Using parameter file "<macos>/macos_f90/macos_param.txt"
+     Using parameter file "<macos>/data/macos_param.txt"
 
      This run is limited to 210 surfaces, 209 segments,  65537
      rays (  500 for sensitivity calcs). Up to 3 diffraction planes are stored.
@@ -13,4 +13,4 @@ MACOS\>**mreset**
      Maximum pixel array size is   256 by   256.
      Diffraction grid size is   256 by   256.
 
-     No glass table file found; using built-in catalog:         201  glasses.
+     No glass table file found; using built-in catalog:         205  glasses.

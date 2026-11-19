@@ -15,7 +15,7 @@ import argparse, os, re, select, shutil, sys, tempfile, time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(ROOT / "cli_tests"))
+sys.path.insert(0, str(ROOT / "tests" / "cli"))
 from cli_load_gate import Cli  # noqa: E402
 
 PROMPT = re.compile(r"(:|\?|\]|>)\s*$")

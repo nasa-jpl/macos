@@ -64,7 +64,7 @@ def page(name, fig_no):
     s = json.loads((SPECS / f"{name}.json").read_text())
     title, intro = readme_intro(name, s["section"], s.get("intro_from"))
     out = [f"### `{name}`: {title}", "", intro, ""]
-    cd = f"cd('<path-to>/mmacos/templates/{s['section']}/{name}');"
+    cd = f"cd('<path-to>/macos/app/mmacos/templates/{s['section']}/{name}');"
     if "refusal" in s:                             # the bare call refuses today: that is printed first
         out += ["**Run it, as it stands today.**", "", "```matlab", cd, s["refusal"]["entry"], "```", ""]
         out += ["**It refuses:**", "", f"<!-- transcript: p2_{name}_refusal -->", ""]

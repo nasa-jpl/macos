@@ -25,7 +25,7 @@ OUT8 = HERE.parent / "src" / "transcripts" / "zernike_table8.md"      # Section 
 NSHORT = 4
 sys.path.insert(0, os.environ.get("PYMACOS_SRC", str(HERE.parents[2] / "app" / "pymacos" / "src")))
 import pymacos.macos as m  # noqa: E402
-sys.path.insert(0, str(HERE.parents[2] / "cli_tests" / "tools"))
+sys.path.insert(0, str(HERE.parents[2] / "tests" / "cli" / "tools"))
 import hzdef_check as hexz  # noqa: E402  the hexagon-orthonormal construction (Mahajan & Dai), textbook
 
 NHEX_PRINT = 15                # NormHex modes printed as polynomials (orders 0-4); the rest by name

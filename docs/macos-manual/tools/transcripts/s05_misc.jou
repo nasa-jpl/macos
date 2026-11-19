@@ -4,7 +4,7 @@
 # COPY: $ROOT/docs/macos-manual/examples/SegDemo.in s05m
 # COPY: $ROOT/docs/macos-manual/examples/AOExample.in s05m
 # COPY: $ROOT/docs/macos-manual/examples/AOmirror.test s05m
-# COPY: $ROOT/ZGD_test_files/tst_trace_rewrites.in s05m
+# COPY: $ROOT/tests/ZGD_test_files/tst_trace_rewrites.in s05m
 cd $TMP/s05m
 old ImageDemo
 pgd

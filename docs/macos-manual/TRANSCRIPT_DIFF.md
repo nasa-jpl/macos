@@ -106,7 +106,7 @@ dialog in 3.2 and has none now.
 
 Decks: Cassegrain.in (MAP, RAY, OPD, SPOT/OBS, STOP, CENTER, PERTURB, PREAD), CassWithExitPupil.in
 (RRAY/TPR, COORD, FFP, PFP, FEX), ImageDemo.in (DRAW), SegDemo.in (segmented MAP, SEGRAYTRACE),
-AOExample.in (ATMOS, seeded 12345), and for SINT the CLI suite's `ZGD_test_files/tst_trace_rewrites.in`
+AOExample.in (ATMOS, seeded 12345), and for SINT the CLI suite's `tests/ZGD_test_files/tst_trace_rewrites.in`
 (the 3.2 SINT deck is not named; section 4).  Every RAY / SEGRAYTRACE print is now one quantity per line
 at 15 digits.
 
@@ -221,7 +221,7 @@ ray-2 dialog is its own PARTIALS.
 Dave 2026-10-19: fix.  ee7d8a1c writes the monomial frame for SrfType 7, emits `UDSrfParam` (the six
 values the engine reads) before `UDSrfFile`, and drops the orphaned continuation line; AOExample.in's
 DM frame is restored from 65a223ec^ (`opd 16` 1.267521723e-6 on both compilers, a SAVE reloads to the
-same number); `cli_tests/cmd/UDSINIT.jou` re-pinned to 1.2675 with a SAVE-reload leg.  The finding as
+same number); `tests/cli/cmd/UDSINIT.jou` re-pinned to 1.2675 with a SAVE-reload leg.  The finding as
 filed:
 
 `iosub.inc` (PrtSingleEltInfo, ~line 2056) writes `pMon`/`xMon`/`yMon`/`zMon` only for the eight
@@ -235,7 +235,7 @@ build of `macos_cli_base` (725e0389 engine):
 | the same with the 3.2 frame restored (pMon −2.249426003, −19.51098758, 75.375; xMon (−0.4697, 0.8828, 0); yMon (0,0,1); zMon (0.8828, 0.4697, 0); lMon 0) | 1.267521723e-06 |
 | that deck SAVEd and reloaded | 3.163832026e-07 (the frame lost again) |
 
-So today's AO example no longer traces the 3.2 example's DM, and `cli_tests/cmd/UDSINIT.jou` pins the
+So today's AO example no longer traces the 3.2 example's DM, and `tests/cli/cmd/UDSINIT.jou` pins the
 post-loss 3.1638e-7.  (Fixed since: see the head of this section.)
 
 ### 3.2 BINARY output: RECL wrong for REAL*8 rows (crash on gfortran, padded on ifx) — FIXED in e17587a1
@@ -260,7 +260,7 @@ macros are not defined in the giza build.  Display only.
 
 ### 3.4 MRESET after CD does not find the glass table start-up found
 
-Start-up reads `<macos>/macos_f90/macos_glass_list.txt` (201 glasses); after `cd` to a scratch
+Start-up reads `<macos>/src/macos_glass_list.txt` (201 glasses); after `cd` to a scratch
 directory, MRESET prints "No glass table file found; using built-in catalog: 201 glasses".  The
 built-in catalog has the same count, so no result moves here; a user's own table would be dropped.
 
@@ -295,7 +295,7 @@ to ray at Element 0 (InputRay)" as all zeros, for the chief ray (global) and for
 (actuator/sensor); 3.2 printed a 3.036 direction magnification, path partials 5.549 / 0.2479, and
 0.2996e1 for ray 2.  The element blocks (primary, secondary) agree with 3.2 to its four digits.  Not
 established whether the source partials are no longer built or no longer printed (a BUILD-to-detector
-check in `cli_tests/cmd/LINEAR_MODEL.jou` reads ray 3's element partials only).
+check in `tests/cli/cmd/LINEAR_MODEL.jou` reads ray 3's element partials only).
 
 ### 3.8 ORS behind an occulting mask (CoroExample element 7): starved, and garbage on ifx — FIXED in bba2e362
 
@@ -346,14 +346,14 @@ Sections 3 and 7 document (and SINT's data file follows the same rule, `<name as
 
 **Rulings, Dave 2026-10-19** (by this section's numbers):
 #1 keep the SAVE-form decks.  #3 write ImageDemo.jou: `stop` elt 4; `fex` 12, yes; `opd` 12; `int` 13.
-#4 A.8 becomes `macos_f90/smacos_dvr.F`.  #5 Section 3 runs on `ZGD_test_files/lens_array.in` and
+#4 A.8 becomes `src/smacos_dvr.F`.  #5 Section 3 runs on `tests/ZGD_test_files/lens_array.in` and
 `tmo.in` (now in the tree).  #6 fix BINARY.  #7 keep the SINT deck.  #8 yes: remove the debug prints,
 pass CENTER's count out.  #9 take a look at PARTIALS.  #11 regenerate Section 4's tutorials as plain
 dialogs.  (#2 and #10 ruled earlier, below.)
 
 Done at 5aff70dd (gate 15/15 both compilers): **#3** `examples/ImageDemo.jou` (A.7; gate
 `tools/transcripts/appA_imagedemo.jou` replays it with EXEcute -- the plot device is opened first, since
-the device prompt reads the terminal, not the macro).  **#4** A.8 lists `macos_f90/smacos_dvr.F` from the
+the device prompt reads the terminal, not the macro).  **#4** A.8 lists `src/smacos_dvr.F` from the
 tree; `smacosvars.cmn` and `smacosExample.f` removed.  **#5** OLD / stacked OLD / SHOW on `lens_array.in`;
 STRETCH + INT 9, TEXT and the device list on `Telescope.in` (Dave's tmo.in: the five pre-3.2 type names
 mapped, then re-saved by Dave with the exit pupil's zElt +91.48 -- the -91.48 gave a negative far-field dx
@@ -383,7 +383,7 @@ the plot refused).  Open: BUILD + EXPORT stays on CassWithExitPupil.in while len
 4. **A.8 S-MACOS files are obsolete.**  `smacosvars.cmn` documents the COMMON-block / `INCLUDE
    'param.cmn'` interface that Section 9 says was replaced by Fortran 90 modules, and
    `smacosExample.f` declares `INTEGER` / `REAL*4` / `REAL*8` with nothing after them (blank in the
-   3.2 PDF too); neither can compile today: no `param.cmn`, `elt.cmn` or `src.cmn` exists in the tree.  Candidate replacement: `macos_f90/smacos_dvr.F` (82 lines,
+   3.2 PDF too); neither can compile today: no `param.cmn`, `elt.cmn` or `src.cmn` exists in the tree.  Candidate replacement: `src/smacos_dvr.F` (82 lines,
    the module-based driver built by `makesd.sh`), or a short module-based example written from
    Section 9.
 5. **Section 3's decks** (`lens_array.in`, `tmo.in`, not in the tree): the dialogs now run on
@@ -393,7 +393,7 @@ the plot refused).  Open: BUILD + EXPORT stays on CassWithExitPupil.in while len
 6. **BINARY** (3.2): fix the RECL (halves the ifx file), and put Section 3's file-output example back
    on BINARY?
 7. **Section 5's SINT deck** (3.2 does not name it): the dialog runs on the CLI suite's interpolated
-   paraboloid `ZGD_test_files/tst_trace_rewrites.in` with a written 15 x 15 data file.  Keep, or an
+   paraboloid `tests/ZGD_test_files/tst_trace_rewrites.in` with a written 15 x 15 data file.  Keep, or an
    Appendix A example with an interpolated surface?
 8. **Engine cosmetics found by the dialogs** (3.5, 3.6): remove the three debug prints and pass CENTER's
    iteration count out?

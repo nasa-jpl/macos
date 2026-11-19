@@ -39,7 +39,7 @@ the Jet Propulsion Laboratory. One repository holds the engine and the
 interfaces built on it (the interfaces lived in the separate
 `MACOS_resources` repository until 2026-11).
 
-- **MACOS / SMACOS engine** (`macos_f90/`): the interactive `macos` program
+- **MACOS / SMACOS engine** (`src/`): the interactive `macos` program
   and the `libsmacos.a` library that every interface links.
 - **Bundled third-party code** (`external/`): the giza graphics library,
   readline, the SLSQP optimizer and the FITS writer. CMake builds them with
@@ -50,8 +50,8 @@ interfaces built on it (the interfaces lived in the separate
   linear model generation and wide-ranging test facilities.
 - **mmacos** (`app/mmacos/`): uses MATLAB as a front end, and provides
   linear model generation and optical design layers. More versatile than GMI.
-- **SegMirMaker** (`segmirmaker/`): generates segmented-mirror prescriptions.
-- **Prescription converters** (`rx_converter/`): convert CODE V and Zemax
+- **SegMirMaker** (`tools/segmirmaker/`): generates segmented-mirror prescriptions.
+- **Prescription converters** (`tools/rx_converter/`): convert CODE V and Zemax
   prescriptions.
 - **Manuals** (`docs/`): `macosMan.pdf`, `macosCmdRef.pdf`, `mmacosMan.pdf`
   and their sources.
@@ -72,7 +72,7 @@ Replace `<username>` with your login name throughout.
 
 ```
 macos/                          (this repository -- CMakeLists.txt and make*.sh here)
-    macos_f90/                  (engine Fortran and C source)
+    src/                        (engine Fortran and C source)
     data/                       (what the engine reads at start-up: macos_param.txt and
                                  the glass table)
     external/                   (bundled third-party code: giza, readline-8.2, slsqp,
@@ -81,12 +81,14 @@ macos/                          (this repository -- CMakeLists.txt and make*.sh 
         GMI/                    (GMI MATLAB mex interface)
         mmacos/                 (mmacos MATLAB mex interface -- CMakeLists.txt here)
         pymacos/                (pymacos Python interface)
-    segmirmaker/                (segmented-mirror prescription generator)
-    rx_converter/               (prescription converters)
+    tools/                      (stand-alone programs, and three maintenance scripts)
+        segmirmaker/            (segmented-mirror prescription generator)
+        rx_converter/           (CODE V and Zemax prescription converters)
     optical_design/             (design rules and reference fixtures)
     docs/                       (manuals and their sources)
-    cli_tests/                  (command-line regression gates)
-    ZGD_test_files/             (test prescriptions)
+    tests/                      (the engine's own tests)
+        cli/                    (command-line regression gates)
+        ZGD_test_files/         (test prescriptions)
     cmake/                      (CMake helpers)
     devnotes/                   (developer notes: plans, briefs, reviews; on dev only, not in a release)
     tools/                      (source generators and release scripts)
@@ -246,7 +248,7 @@ SLSQP is the default constrained-optim back end and is always built in;
 you only need this if you also want NPSOL available for A/B comparison or
 to honor existing journals that hardwired the NPSOL code path.
 Requires a separately-licensed Stanford SOL NPSOL source tree at
-`macos_f90/npsol/`.
+`src/npsol/`.
 ```bash
 rm -rf build_release_npsol
 cmake -B build_release_npsol -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DUSE_NPSOL=ON
@@ -493,7 +495,7 @@ cmake --build build_lean
 
 #### Build with NPSOL constrained optimization (opt-in)
 SLSQP is the default and is always built; only enable NPSOL if you have
-the Stanford SOL source available at `macos_f90/npsol/`.
+the Stanford SOL source available at `src/npsol/`.
 ```cmd
 rmdir /s /q build_release_npsol
 cmake -B build_release_npsol -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DUSE_NPSOL=ON
@@ -542,7 +544,7 @@ Pass these to cmake with `-D<OPTION>=ON/OFF`:
 | `BUILD_MMACOS` | OFF | Build the MATLAB mmacos mex interface (Linux + Windows) |
 | `MMACOS_SRC_DIR` | auto-detected | Path to mmacos source directory containing `mmacos_mex.F` |
 | `MMACOS_FC` | (inherit) | Override Fortran compiler for mmacos only (e.g. `gfortran` while main build uses `ifx`) |
-| `USE_NPSOL` | OFF | Also build the NPSOL constrained-optim back end (opt-in). SLSQP is always built and is the default. Requires `macos_f90/npsol/` source tree |
+| `USE_NPSOL` | OFF | Also build the NPSOL constrained-optim back end (opt-in). SLSQP is always built and is the default. Requires `src/npsol/` source tree |
 | `MATLAB_ROOT` | `/usr/local/MATLAB/R2025b` | MATLAB installation path (for GMI build) |
 
 ---
@@ -582,7 +584,7 @@ cmake -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DCMAKE_Fortran_COMPILER=
 make
 ```
 
-Output: `pymacos/src/pymacos/pymacosf90.cpXXX-linux.so`
+Output: `app/pymacos/src/pymacos/pymacosf90.cpXXX-linux.so`
 
 Run tests from `app/pymacos/src`:
 ```bash
@@ -599,7 +601,7 @@ python -m pytest ../tests/ -v
 
 #### Build
 ```cmd
-cd pymacos\src\cmake
+cd app\pymacos\src\cmake
 rmdir /s /q build
 mkdir build
 cd build
@@ -607,15 +609,15 @@ cmake -G "NMake Makefiles" -S ..
 nmake
 ```
 
-Output: `pymacos\src\pymacos\pymacosf90.cp314-win_amd64.pyd`
+Output: `app\pymacos\src\pymacos\pymacosf90.cp314-win_amd64.pyd`
 
-Run tests from `pymacos\src`:
+Run tests from `app\pymacos\src`:
 ```cmd
-cd pymacos\src
+cd app\pymacos\src
 python -m pytest ..\tests\ -v
 ```
 
-> **Note:** Tests must be run from `pymacos\src` so Python can find the `pymacos` package.
+> **Note:** Tests must be run from `app\pymacos\src` so Python can find the `pymacos` package.
 
 ---
 
@@ -869,7 +871,7 @@ or whichever version's `latest` symlink resolves there). Re-verify with
 `icx --version` — it should report `2025.3.x`, not `2026.0`.
 
 **`pgplot_mod` not found**
-`pgplotdummy.F` must be present in the `macos_f90/` directory. It provides
+`pgplotdummy.F` must be present in the `src/` directory. It provides
 stub graphics module definitions needed by the smacos library.
 
 **`ifx: command not found`**
@@ -930,7 +932,7 @@ never built. This typically happens when a newer branch adds a new Fortran
 module that the `CMakeLists.txt` hasn't been updated to include yet. Find
 the missing file and add it to `COMMON_SOURCES`:
 ```cmd
-dir /s /b macos_f90\\*MODULENAME*
+dir /s /b src\\*MODULENAME*
 ```
 (replace `MODULENAME` with the actual module name). Then add
 `${smacos_src_dir}/MODULENAME.F` to the `COMMON_SOURCES` list, anywhere
@@ -938,7 +940,7 @@ before the targets that consume it (CMake's Fortran dependency scanner
 generally orders compilation correctly once a file is present in the
 sources list — exact position rarely matters). If you're tracking a branch
 that adds new modules over time, periodically diff the contents of the
-`macos_f90` folder's `.F` and `.F90` files against what's listed in
+`src` folder's `.F` and `.F90` files against what's listed in
 `COMMON_SOURCES` to catch additions before they surface as build errors
 one at a time.
 

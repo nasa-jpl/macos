@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Regenerate the manual figures that come from the running engine.
 
-Each figure has a journal in tools/figs/ that the CLI suite's driver (cli_tests/cli_cmd_gate.py)
+Each figure has a journal in tools/figs/ that the CLI suite's driver (tests/cli/cli_cmd_gate.py)
 runs on the /png device; the journal copies its giza pages into build/figs/<dir>/ and the SPEC
 below assembles media/fig_engine_NN.png from them (one page, or pages side by side).  A journal
 whose EXPECT fails stops the figure, so a figure cannot silently rot into a wrong picture
@@ -57,7 +57,7 @@ FONT = "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf"
 args = [a for a in sys.argv[1:] if not a.startswith("--")]
 assemble_only = "--assemble-only" in sys.argv      # reuse build/figs/ pages (labels, layout)
 binary = args[0] if args else str(ROOT / "build_release" / "bin" / "macos")
-gate = ROOT / "cli_tests" / "cli_cmd_gate.py"
+gate = ROOT / "tests" / "cli" / "cli_cmd_gate.py"
 if FIGS.exists() and not assemble_only:
     shutil.rmtree(FIGS)
 with tempfile.TemporaryDirectory() as td:

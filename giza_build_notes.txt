@@ -282,7 +282,7 @@ work on all platforms. This fix should be contributed back to upstream giza.
 --------------------------------------------------------------------------------
 FIX 2: Color plots showing as grayscale despite CIR command / PgplotImage=Color
 ---------------------------------------------------------------------------------
-File: macos_f90/pgplotsub.F  (GRAY subroutine)
+File: src/pgplotsub.F  (GRAY subroutine)
 
 Root cause: MACOS uses PGSCR to set color representations (indices 16-79 from
 CInd array in mcolors.inc). Original PGPLOT's PGIMAG renders using PGSCIR
