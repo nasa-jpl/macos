@@ -283,6 +283,9 @@ classdef tDwDx < matlab.unittest.TestCase
                 numel(out.field_names));
             Nz = size(out.dwdxall, 2);
             testCase.verifyEqual(size(out.dcdx_per_field{1}), [Nz 2]);
+            % a shape check passes on an all-NaN centroid (2026-11-18)
+            testCase.verifyTrue(all(isfinite(out.dcdx_per_field{1}(:))), ...
+                'dcdx must be finite');
             testCase.verifyEqual(out.spot_elt, macos.num_elt());
         end
 
@@ -306,6 +309,10 @@ classdef tDwDx < matlab.unittest.TestCase
             testCase.verifyEqual(ob.trans_output, 'base');
             testCase.verifyEqual(os.trans_output, 'si');
             t = ob.dof_idx >= 3;
+            % verifyEqual counts NaN equal to NaN, so the comparisons below
+            % pass on two all-NaN centroids (2026-11-18)
+            testCase.verifyTrue(all(isfinite(ob.dcdx(:))) && all(isfinite(os.dcdx(:))), ...
+                'dcdx must be finite');
             testCase.verifyEqual(ob.dwdx(:, t), os.dwdx(:, t) * os.cbm, ...
                 'RelTol', 1e-12, 'base translation columns = si x cbm');
             testCase.verifyEqual(ob.dcdx(t, :), os.dcdx(t, :) * os.cbm, ...

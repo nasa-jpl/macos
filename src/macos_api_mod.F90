@@ -4748,7 +4748,11 @@
           SPOT      = RaySpot(1:N,1:2)                      ! ... RaySpot(mRay,2)  N=nSpot
           shift     = (/CntrSpot(:2), &                     ! Chief-Ray Position in selected CSYS
                         RefSpot(:2)/)                       ! VptElt    Position in selected CSYS
-          centroid  = sum(RaySpot, dim=1)/real(N, kind=pr)  ! w.r.t. to Reference Position
+          ! Rows 1..N only: SPOT writes rows 1..iSpot, and the rows after them
+          ! still hold an earlier, larger spot (or, before 2026-11-18, whatever
+          ! the allocation returned).  Summing the whole array put them in the
+          ! centroid (notes/hygiene.md).
+          centroid  = sum(RaySpot(1:N,1:2), dim=1)/real(N, kind=pr)  ! w.r.t. to Reference Position
           csys(:,1) = xLocal
           csys(:,2) = yLocal
           csys(:,3) = zLocal
@@ -7138,6 +7142,9 @@
             stop "*** Memory allocation failed ***"
             return
           END IF
+          ! Zeroed as the command-line program zeroes its own copies
+          ! (macos_mod.F): a getter must never see what the allocation returned.
+          PixArray(:,:) = 0d0;  OPDMat(:,:) = 0d0;  RaySpot(:,:) = 0d0
 
           mPix2=mPix*mPix
 
