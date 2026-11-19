@@ -48,6 +48,14 @@ what the old checkout had been hiding on Dave's machine.
    bench run. Two lines; nothing to check beyond `git status` staying empty after a
    `ctb_dm_jacobian` call without a deck.
 
+8. **`177fe171` Check the CTB deck generator on the source deck the hand decks were made from.**
+   `tCtbProp/test_generator_reproduces_hand_decks` failed on `mr_merge` itself. The engine had
+   not moved: commit `d3e4770f` (2026-10-29) regenerated the generator's source deck
+   `ctb_planar_stageF.in` a day after the pins were set, and that moved the optics (105 of 614
+   lines of the generated compact deck), not only the four radii. The test now runs the
+   generator on the earlier source, kept as the fixture `tests/Rx/ctb_planar_stageF_2026-08.in`.
+   No deck or pin changes. On the Mac: `./run_mmacos_tests.sh tCtbProp`, 8 pass expected.
+
 ## What to do on the Mac
 
 No rebuild. `git fetch origin && git switch mr_merge_regen_fixes`, then, with **no**
@@ -84,16 +92,6 @@ Send me any pin that differs, with the digits MATLAB prints.
 
 ## Known, not fixed here
 
-- **`tCtbProp/test_generator_reproduces_hand_decks` fails on `mr_merge` itself**, on Linux, with
-  the same digits on the fix branch. The cause is found and is not the engine: commit `d3e4770f`
-  (2026-10-29) regenerated the generator's source deck `ctb_planar_stageF.in` a day after the
-  pins were set (`40fe4a05`). With the pin-time deck, today's engine and generator give all four
-  pinned radii to the last digit, and the ifx and gfortran builds agree exactly on the same FEX
-  decks. The regenerated source moved the optics, not only the reference-sphere radii: today's
-  generator output differs from the committed `ctb_dcr_gen.in` in 105 of 614 lines. A re-pin of
-  the radius lines alone, as on 10-28, makes the hand decks agree WORSE with the generator (PSF
-  peak 1.33e-5 -> 2.40e-5 compact, 3.62e-5 -> 4.69e-5 full; tolerance 1e-5). The choice of cure
-  is with Dave. Expect this one failure on the Mac too.
 - **The full suite's model-1024 PROPER group cannot run four shards at once in 20 GB.** The
   runner's clamp assumes 4 GB per shard. Run that group at `-j 1`, or set `MM_SHARD_GB=8`.
 - **Two `tE2eSensing` grid-DM tests are skipped** on a fresh checkout (they need local stage-11
