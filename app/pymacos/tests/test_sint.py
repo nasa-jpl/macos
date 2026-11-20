@@ -12,6 +12,7 @@ set, both names in messages(); the file under either name -> set, the CLI's RMS;
 same RMS and the warning in messages() (the pre-fix engine traced an unread row: RMS 6.17e-7).
 The pre-B.2 .so has no sint_cmd: every leg is red.
 """
+import os
 import shutil
 
 import numpy as np
@@ -47,7 +48,8 @@ def test_no_data_file_is_not_set_and_says_why(deck):
     assert list(r['set']) == [-1] + [0] * (m.num_elt() - 1)
     got = m.messages()
     for name in ('Rx_TraceRewrites.srf1.txt', 'Rx_TraceRewrites.in.srf1.txt'):
-        assert [l for l in got if l.rstrip().endswith('/' + name + ' does not exist.')], (name, got)
+        # the engine prints the path as given: os.sep is '/' on Linux/macOS, '\' on Windows
+        assert [l for l in got if l.rstrip().endswith(os.sep + name + ' does not exist.')], (name, got)
     assert [l for l in got if 'not correctly set for element   1' in l], got
 
 

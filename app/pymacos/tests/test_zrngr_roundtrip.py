@@ -42,8 +42,10 @@ FILES = ('Rx_ZrnGrRoundTrip.in', 'Rx_ZrnGrOverflow.in', 'tst_zrngr_grid.txt')
 def staged(tmp_path, monkeypatch):
     # a SHORT directory: the engine refuses path + name over 128 characters, and macOS's pytest
     # tmp_path is ~100 characters before the file name (CCMac's Mac gate 2026-10-19)
+    # Windows has no /tmp: use the system temp dir there (~40 characters)
     import tempfile
-    tmp_path = __import__('pathlib').Path(tempfile.mkdtemp(prefix='zrngr_', dir='/tmp'))
+    short = None if sys.platform == 'win32' else '/tmp'
+    tmp_path = __import__('pathlib').Path(tempfile.mkdtemp(prefix='zrngr_', dir=short))
     for f in FILES:
         shutil.copy(rx_path(f), tmp_path / f)
     monkeypatch.chdir(tmp_path)
