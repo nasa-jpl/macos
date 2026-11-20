@@ -94,7 +94,7 @@ endif()
 if(CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
   if(WIN32)
     if(BUILD_SMACOS_LEAN)
-      set(BASE_FFLAGS "/4L132 /align /O2 /fpp /nologo /warn:nointerfaces")
+      set(BASE_FFLAGS "/4L132 /align /O2 /fpp /nologo /warn:nointerfaces /assume:noold_unit_star")
       set(BASE_FFLAGS "${BASE_FFLAGS} /fp:strict /Qfp-speculation:strict /Qopt-mem-layout-trans")
       set(BASE_FFLAGS "${BASE_FFLAGS} /Qmkl /c /gen-interfaces /Qm64")
       set(CMAKE_Fortran_FLAGS_RELEASE "/O2 /QxHost")
@@ -108,6 +108,14 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
       set(SMACOS_preprocessing_Definition CSMACOS NR_FFT MSWIN)
     else()
       set(BASE_FFLAGS "/fpp /nologo /extend-source:132 /align /names:uppercase /assume:underscore /warn:nointerfaces /DPGPLOT")
+      # /assume:noold_unit_star: WRITE(*,...) and PRINT go where unit 6 is
+      # connected (ifx's default sends them to the console whatever unit 6
+      # is).  The engine's console output can then be pointed at a file or
+      # the null device when it runs inside a host (MACOS_CONSOLE, read once
+      # by emsg_mod at the api's init), so a host that redirects or closes
+      # the console cannot kill the process on a failed console write
+      # (forrtl severe 38).  The same option is on the Linux ifx flags below.
+      set(BASE_FFLAGS "${BASE_FFLAGS} /assume:noold_unit_star")
       # /heap-arrays: automatic arrays and array temporaries go on the heap.
       # The Windows main-thread stack is small (python.exe reserves ~2.9 MB,
       # a linked exe 1 MB); at model 1024 the engine's stack arrays overflow
@@ -124,7 +132,9 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
     endif()
   else()
     # Linux Intel oneAPI (ifx/gcc)
-    set(BASE_FFLAGS "-fpp -extend-source 132 -align -warn nointerfaces -DPGPLOT -DLNXOS -fPIC")
+    # -assume noold_unit_star: WRITE(*,...) and PRINT follow unit 6 (see the
+    # Windows flags above; gfortran does this without an option).
+    set(BASE_FFLAGS "-fpp -extend-source 132 -align -warn nointerfaces -assume noold_unit_star -DPGPLOT -DLNXOS -fPIC")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O2 -fp-model strict -qmkl")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -traceback -check bounds")
     set(CMAKE_Fortran_FLAGS         "${BASE_FFLAGS}")

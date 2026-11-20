@@ -256,6 +256,28 @@ stdout is not visible to evalc).
 - The Zernike set / get family (`elt_srf_zrn_set` / `_get` / `_mode_set` beside `elt_srf_zrn_coef`)
   could be one set / get pair.
 
+## MACOS_CONSOLE: the engine's console output inside a host (emsg_mod, 2026-11-20)
+Every `WRITE(*,...)` in the engine writes to the process's console handle.  A host that closes
+or redirects that handle while the engine is loaded leaves the Fortran runtime with a write that
+fails, and the runtime ENDS THE PROCESS: `forrtl: severe (38): error during write, unit -1`.
+Seen at random under pytest's output capture on Windows (L. Marchen 2026-11-20, exit code 28
+after the CLOSE of unit 77 also failed); reproduced on Linux by `os.close(1)` under pymacos
+(exit code 38), and by writing to `/dev/full`.
+- `emsg_console_from_env` (emsg_mod.F90), called first thing in the api's `init`, reads
+  `MACOS_CONSOLE` ONCE per process: unset or `on` = the console; `off` = the null device
+  (`/dev/null`, else `NUL`); anything else = a file of that name, appended to.  It is an
+  environment setting, not an api routine, so no binding changed; set it before the first init.
+- It works by `OPEN(UNIT=6, ...)`, and **ifx sends `WRITE(*)` and `PRINT` to the console
+  whatever unit 6 is connected to unless compiled with `-assume noold_unit_star`** (measured,
+  ifx 2025.3.2: the default and `old_unit_star` both keep `*` on the console; `noold_unit_star`
+  makes `*` follow unit 6, and a CLOSE(6) returns it to the console).  The option is on the
+  engine's three ifx flag sets in the top-level CMakeLists.txt.  gfortran needs no option.  The
+  binding stubs (mmacos_mex.F, mmacos_gen.F, pymacos_f2py.f90) have no console writes; GMI.F has
+  three and is not covered.
+- The message buffer is unaffected: `emsg_put` keeps each line whether or not it is printed.
+- Gate: `app/pymacos/tests/test_console.py` (fresh process per leg; the negative control closes
+  descriptor 1 with the console on and must die).
+
 ## The engine's message buffer: emsg_mod + messages_count / _get / _clear (PLAN_CONSOLIDATION 1.2 (ee), 2026-10-22)
 The engine's notes, warnings and refusals are Fortran unit-6 text, and unit 6 does not reach file
 descriptor 1 across the FFI on macOS (CCMac's gates 4 and 6): a nested `matlab -batch` and pytest's

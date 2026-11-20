@@ -27,7 +27,7 @@
         IMPLICIT NONE
         PRIVATE
         PUBLIC :: emsgRec, emsg_put, emsg, emsg_clear, &
-                  emsg_stats, emsg_line
+                  emsg_stats, emsg_line, emsg_console_from_env
 
         INTEGER, PARAMETER :: lEMsgRec = 1024, nEMsgRec = 16
         CHARACTER(len=lEMsgRec) :: emsgRec(nEMsgRec) = CHAR(0)
@@ -38,6 +38,48 @@
         INTEGER :: nEMsgTot = 0
 
       CONTAINS
+
+!-->    Where the engine's console output goes when the engine is a library
+!       inside a host (pymacos, mmacos).  MACOS_CONSOLE, read once:
+!         unset or 'on'   the console, as always
+!         'off'           the null device
+!         anything else   a file of that name, appended to
+!       Why: every WRITE(*,...) in the engine is a write to the process's
+!       console handle.  A host that redirects or closes that handle while
+!       the engine is loaded (pytest's output capture, a notebook kernel)
+!       leaves the Fortran runtime with a write that fails, and the runtime
+!       ends the whole process: forrtl severe (38), reproduced on Linux by
+!       closing descriptor 1 under pymacos, and seen at random on Windows
+!       (L. Marchen, 2026-11-20).  With unit 6 connected to a file the
+!       engine never writes to the console handle.  ifx needs
+!       -assume noold_unit_star for WRITE(*) to follow unit 6 (it is on the
+!       engine's ifx flags); gfortran does it without an option.  The
+!       message buffer below is unaffected: lines are kept either way.
+        SUBROUTINE emsg_console_from_env()
+          CHARACTER(len=1024) :: v
+          INTEGER :: n, st, ios
+          LOGICAL, SAVE :: done = .FALSE.
+          IF (done) RETURN
+          done = .TRUE.
+          CALL GET_ENVIRONMENT_VARIABLE('MACOS_CONSOLE', v, n, st)
+          IF (st /= 0 .OR. n == 0) RETURN
+          IF (n == 2) THEN
+            IF (v(1:2) == 'on' .OR. v(1:2) == 'ON') RETURN
+          END IF
+          IF (n == 3 .AND. (v(1:3) == 'off' .OR. v(1:3) == 'OFF')) THEN
+            OPEN(UNIT=6, FILE='/dev/null', STATUS='OLD', ACTION='WRITE', &
+                 IOSTAT=ios)
+            IF (ios /= 0) OPEN(UNIT=6, FILE='NUL', ACTION='WRITE', IOSTAT=ios)
+          ELSE
+            OPEN(UNIT=6, FILE=v(1:n), STATUS='UNKNOWN', POSITION='APPEND', &
+                 ACTION='WRITE', IOSTAT=ios)
+          END IF
+          IF (ios /= 0) THEN
+            WRITE(*,'(A)') ' ** MACOS_CONSOLE='//v(1:MIN(n,200))// &
+              ': could not be opened; console output is unchanged.'
+          END IF
+        END SUBROUTINE emsg_console_from_env
+!<--
 
         SUBROUTINE emsg_put()
           INTEGER :: i

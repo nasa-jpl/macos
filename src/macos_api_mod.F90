@@ -7113,6 +7113,10 @@
 
         DATA ifInitOptics/.FALSE./
 
+        ! Before anything prints: where this host wants the engine's console
+        ! output (MACOS_CONSOLE; emsg_mod).  Read once per process.
+        CALL emsg_console_from_env()
+
         ! Initialize or reset SMACOS model
         firstEntry = modelsize /= curr_model_size
 
