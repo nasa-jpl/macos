@@ -93,6 +93,9 @@ a pty (readline needs a tty; the model-size prompt comes first) and writes RECOR
   committed; a committed list named another clone's decks, and on the machine that made
   it the gate then tested that other clone without saying so.)
 - `must_fail/` — the non-vacuity decks (§2.4), regenerated into `list.txt` each run.
+- `tools/eof_gate.sh <no-readline macos>` — end of input at a prompt stops the program with
+  status 1 and one line (2026-11-20).  Separate from the pty suite, which runs readline builds;
+  the script's header has the build line.
   `missing_value.in`: `nGridpts=` with no value — the validator refuses it.
   `segdemo3_broken.in`: the ZGD broken-deck fixture (excluded from the corpus lists
   so it counts once, here).  History: `short_zerncoef.in` (a `ZernCoef=` block one

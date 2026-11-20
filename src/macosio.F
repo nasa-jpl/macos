@@ -2866,7 +2866,14 @@ C       Read new statement to be parsed
 !         bare READ, or the program blocks on invisible input.
            CALL print_sub_prompt
 !<--
-           READ(*,6,END=200, ERR=300) VAR
+!-->      End of input (or a read error) at the console is final: there
+!         is nothing left to read, and labels 200 / 300 come back to
+!         this READ, so the prompt printed forever (Windows always, and
+!         any build without readline; L. Marchen 2026-11-20: 1.5 GB of
+!         prompts in three minutes).  Say so and stop, as the readline
+!         path (mhist.c, exit 1) and the model-size prompt do.
+           READ(*,6,END=210, ERR=210) VAR
+!<--
 #endif
         ELSE
 	  READ(ustack,6,END=100, ERR=300) VAR
@@ -2994,6 +3001,13 @@ c STACK empty
         GO TO 98
 c       RETURN
 
+!-->   the console has no more input (see the READ above)
+ 210    CONTINUE
+        WRITE(*,*) ' '
+        WRITE(*,*) '** MACOS: no answer (end of input); stopping.'
+        STOP 1
+!<--
+
 c sws    error RETURN in reading input
  300    CONTINUE
         WRITE(*,*) '[parse_loh]',
@@ -3044,7 +3058,9 @@ C       Read new statement to be parsed
 
 	IF (bat_task .EQ. 1) THEN
 c sws
-	   READ(*,6,END=200, ERR=300) VAR
+!-->      as PARSE_LOH: end of input at the console is final
+	   READ(*,6,END=210, ERR=210) VAR
+!<--
 	ELSE
 	  READ(ustack,6,END=100, ERR=300) VAR
 	END IF
@@ -3145,6 +3161,13 @@ c STACK empty
 
 	  GO TO 98
 c	  RETURN
+
+!-->   the console has no more input (see PARSE_LOH)
+ 210    CONTINUE
+	  WRITE(*,*) ' '
+	  WRITE(*,*) '** MACOS: no answer (end of input); stopping.'
+	  STOP 1
+!<--
 
 c sws    error RETURN in reading input
  300    CONTINUE

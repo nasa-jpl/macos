@@ -52,6 +52,20 @@ it. cmake now auto-builds the bundled readline when the .a is
 missing; `-DMACOS_FORCE_NO_READLINE=ON` is the test hook for the
 fallback path.
 
+## End of input at the console is final in a no-readline build (macosio.F, 2026-11-20)
+PARSE_LOH's bare `READ(*,6,END=200, ERR=300)` sent end of input to label 200, which is
+`GO TO 98`: prompt and read again.  A script whose input ran out at a prompt (`stop` is the
+aperture-stop command, not an exit, and asks "Stop at ELT or OBJect point?") printed the prompt
+without end: 1.5 GB in under three minutes on Windows (L. Marchen), 4 MB before a 5 s kill on
+Linux with `-DMACOS_FORCE_NO_READLINE=ON` (24,233 prompts; gfortran takes the ERR=300 branch on
+the second read, which also comes back).  The console READ now goes to label 210 on END or ERR:
+`** MACOS: no answer (end of input); stopping.` and `STOP 1`, as the readline path (mhist.c,
+exit 1) and the model-size prompt already did.  Journal-file reads keep END=100 / ERR=300
+(pop the stack, back to the console).  PARSE_LOH_SAVE has no caller and got the same two lines.
+Gate: `tests/cli/tools/eof_gate.sh <no-readline macos>` (three legs: at a sub-prompt, at the main
+prompt, and a script that ends with QUIT).  The pty-driven CLI suite cannot see this path: it
+runs readline builds.
+
 ## IACCEPT_S reprompt-loop sweep (macos_cmd_loop.inc, 2026-07-16)
 Interactive commands that validated an element/ray id and jumped BACK
 to their ACCEPT prompt on failure (`GO TO <prompt label>`) hang or
