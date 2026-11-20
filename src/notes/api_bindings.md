@@ -275,8 +275,22 @@ after the CLOSE of unit 77 also failed); reproduced on Linux by `os.close(1)` un
   binding stubs (mmacos_mex.F, mmacos_gen.F, pymacos_f2py.f90) have no console writes; GMI.F has
   three and is not covered.
 - The message buffer is unaffected: `emsg_put` keeps each line whether or not it is printed.
-- Gate: `app/pymacos/tests/test_console.py` (fresh process per leg; the negative control closes
-  descriptor 1 with the console on and must die).
+- **gfortran differs in three ways** (gfortran 13.3, measured 2026-11-20 with this routine linked
+  into a small driver, `tests/cli/tools/console_gate.sh`; the gate fails four legs on the
+  routine as first written):
+  - its runtime does NOT end the process on a failed console write, so in a gfortran host
+    (the Mac, the mmacos mex) the setting quiets or logs the engine and protects nothing;
+  - `OPEN(UNIT=6, ...)` while the host has already closed descriptor 1 fails "Error closing file
+    in OPEN statement" and then faults (SIGSEGV).  Hence the `CLOSE(UNIT=6, IOSTAT=)` ahead of
+    the OPEN; ifx does not need it and does not mind it;
+  - an `OPEN(UNIT=6, FILE=<a file that cannot be opened>)` fails AFTER closing unit 6, and
+    `WRITE(*)` then goes to a new file `fort.6`.  Hence the target is opened first on a unit of
+    its own (`NEWUNIT`), and unit 6 is touched only if that worked.
+- Gates: `tests/cli/tools/console_gate.sh [gfortran|ifx]` (the routine alone, ten legs per
+  compiler) and `app/pymacos/tests/test_console.py` (through the api, fresh process per leg).  The negative control closes
+  descriptor 1 with the console on: an ifx engine must die, a gfortran engine must survive (the
+  test reads which runtime the library is linked to).  The off leg runs with the descriptor
+  closed after init and before it.
 
 ## The engine's message buffer: emsg_mod + messages_count / _get / _clear (PLAN_CONSOLIDATION 1.2 (ee), 2026-10-22)
 The engine's notes, warnings and refusals are Fortran unit-6 text, and unit 6 does not reach file

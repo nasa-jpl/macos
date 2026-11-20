@@ -93,15 +93,17 @@ a pty (readline needs a tty; the model-size prompt comes first) and writes RECOR
   committed; a committed list named another clone's decks, and on the machine that made
   it the gate then tested that other clone without saying so.)
 - `must_fail/` — the non-vacuity decks (§2.4), regenerated into `list.txt` each run.
-- `tools/eof_gate.sh <no-readline macos>` — end of input at a prompt stops the program with
-  status 1 and one line (2026-11-20).  Separate from the pty suite, which runs readline builds;
-  the script's header has the build line.
   `missing_value.in`: `nGridpts=` with no value — the validator refuses it.
   `segdemo3_broken.in`: the ZGD broken-deck fixture (excluded from the corpus lists
   so it counts once, here).  History: `short_zerncoef.in` (a `ZernCoef=` block one
   value short) crashed both CLIs until TO's item 1 (`ReadCoefBlock`, macos 1d318ac)
   made it pad and warn; it moved to `tests/ZGD_test_files/tst_short_zerncoef.in` as a
   positive case the same day — the pattern for every must-fail deck a fix closes.
+- `tools/eof_gate.sh <no-readline macos>` — end of input at a prompt stops the program with
+  status 1 and one line (2026-11-20).  Separate from the pty suite, which runs readline builds;
+  the script's header has the build line.
+- `tools/console_gate.sh [gfortran|ifx]` — `MACOS_CONSOLE` at the compiler level: the engine's own
+  routine in a ten-line driver, every setting with the console open and already closed (ten legs).
 - `records/` — `<kind>_<compiler>_<sha>[+dirty].csv` + `.log`, `mustfail_*.csv`,
   `<kind>_<compiler>_latest.txt` (the last summary).  Committed: the records of
   tagged runs; the `.log` files are gitignored.

@@ -55,9 +55,15 @@
 !       -assume noold_unit_star for WRITE(*) to follow unit 6 (it is on the
 !       engine's ifx flags); gfortran does it without an option.  The
 !       message buffer below is unaffected: lines are kept either way.
+!       gfortran's runtime does not end the process on a failed console
+!       write (gfortran 13.3, measured), so in a gfortran host the setting
+!       quiets or logs the engine; it is ifx hosts it protects.
+!       Every case below was run with both compilers, the output
+!       descriptor open and already closed (2026-11-20).
         SUBROUTINE emsg_console_from_env()
-          CHARACTER(len=1024) :: v
-          INTEGER :: n, st, ios
+          CHARACTER(len=1024) :: v, f
+          INTEGER :: n, st, ios, u
+          LOGICAL :: ex, off
           LOGICAL, SAVE :: done = .FALSE.
           IF (done) RETURN
           done = .TRUE.
@@ -66,17 +72,41 @@
           IF (n == 2) THEN
             IF (v(1:2) == 'on' .OR. v(1:2) == 'ON') RETURN
           END IF
-          IF (n == 3 .AND. (v(1:3) == 'off' .OR. v(1:3) == 'OFF')) THEN
-            OPEN(UNIT=6, FILE='/dev/null', STATUS='OLD', ACTION='WRITE', &
+          off = .FALSE.
+          IF (n == 3) off = (v(1:3) == 'off' .OR. v(1:3) == 'OFF')
+!         Step 1: open the target on a unit of its own.  If that fails,
+!         unit 6 is not touched and the console is as it was.  (gfortran
+!         closes unit 6 before it tries the new file: an OPEN of unit 6
+!         that fails leaves WRITE(*) going to a new file fort.6.)
+          IF (off) THEN
+            f = '/dev/null'
+            INQUIRE(FILE=f, EXIST=ex)
+            IF (.NOT. ex) f = 'NUL'
+            OPEN(NEWUNIT=u, FILE=TRIM(f), STATUS='OLD', ACTION='WRITE', &
                  IOSTAT=ios)
-            IF (ios /= 0) OPEN(UNIT=6, FILE='NUL', ACTION='WRITE', IOSTAT=ios)
           ELSE
-            OPEN(UNIT=6, FILE=v(1:n), STATUS='UNKNOWN', POSITION='APPEND', &
-                 ACTION='WRITE', IOSTAT=ios)
+            f = v(1:n)
+            OPEN(NEWUNIT=u, FILE=TRIM(f), STATUS='UNKNOWN', &
+                 POSITION='APPEND', ACTION='WRITE', IOSTAT=ios)
           END IF
           IF (ios /= 0) THEN
             WRITE(*,'(A)') ' ** MACOS_CONSOLE='//v(1:MIN(n,200))// &
               ': could not be opened; console output is unchanged.'
+            RETURN
+          END IF
+          CLOSE(u)
+!         Step 2: close unit 6, then connect it to the target.  The CLOSE
+!         is needed with gfortran when the host has already closed the
+!         output descriptor: without it the OPEN fails "Error closing file
+!         in OPEN statement" and the process then faults.  ifx does not
+!         need it and does not mind it.  Its status is ignored on purpose.
+          CLOSE(UNIT=6, IOSTAT=ios)
+          IF (off) THEN
+            OPEN(UNIT=6, FILE=TRIM(f), STATUS='OLD', ACTION='WRITE', &
+                 IOSTAT=ios)
+          ELSE
+            OPEN(UNIT=6, FILE=TRIM(f), STATUS='UNKNOWN', &
+                 POSITION='APPEND', ACTION='WRITE', IOSTAT=ios)
           END IF
         END SUBROUTINE emsg_console_from_env
 !<--
