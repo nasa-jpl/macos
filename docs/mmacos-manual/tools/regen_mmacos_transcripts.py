@@ -131,7 +131,9 @@ def clean(line, work):
 
 def run_driver(name, repin):
     drv = DRIVERS / f"{name}.m"
-    work = tempfile.mkdtemp(prefix=f"mmman_{name}_")
+    # the RESOLVED path: on macOS the temporary directory (/var/folders/...) is a link into /private,
+    # MATLAB prints the resolved one, and a listing must read <work> on every machine
+    work = os.path.realpath(tempfile.mkdtemp(prefix=f"mmman_{name}_"))
     env = dict(os.environ)
     env.setdefault("MMACOS_ROOT", str(HERE.parents[2] / "app" / "mmacos"))
     env["MMMAN_WORK"] = work

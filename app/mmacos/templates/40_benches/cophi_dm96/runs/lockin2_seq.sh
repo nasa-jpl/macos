@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # the lock-in as a reading, with the MEDIAN annulus fill (a common phase stays a piston); then the sensors' rerun (the record's pupil)
-cd /home/dcr/dev/MACOS_resources/mmacos/templates/40_benches/cophi_dm96
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
 OAP="'bench.optics','oap','bench.polarizing',false,'cophi.iq',true,'cophi.annulus_fill','median'"
 LENS="'bench.polarizing',false,'cophi.iq',true,'cophi.annulus_fill','median'"
 ./cophi_batch.sh lockin_noise_lens  "$LENS,'stages',{'noise'},'cophi.noise_nreal',12"

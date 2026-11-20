@@ -50,10 +50,18 @@ classdef tCtbDm < matlab.unittest.TestCase
             tc.assumeTrue(isfile(fullfile(tc.bench, 'ctb_dcr.in')), ...
                 'bench_ctb decks not present');
             addpath(tc.bench);
+            % Work in a scratch folder.  The generator's default output is
+            % the tracked ctb_dm.in beside ctb_dcr.in, and ctb_dm_jacobian
+            % regenerates it there when it is not handed a deck; a test
+            % must not rewrite a library file.  The deck and its flat seed
+            % grid are emitted into the scratch folder, which is made the
+            % current folder (GridFile= resolves against cwd).
+            w = tempname;  mkdir(w);
+            tc.addTeardown(@() rmdir(w, 's'));
             prev = pwd;
             tc.addTeardown(@() cd(prev));
-            cd(tc.bench);                  % GridFile= resolves against cwd
-            tc.dm_rx = ctb_dm_rx();
+            cd(w);
+            tc.dm_rx = ctb_dm_rx('rx_out', fullfile(w, 'ctb_dm.in'));
             macos.init(tc.ModelSize);
         end
     end
@@ -186,7 +194,8 @@ classdef tCtbDm < matlab.unittest.TestCase
 
         % --- (g) EFC smoke ----------------------------------------------
         function test_efc_digs_the_dark_zone(tc)
-            J = ctb_dm_jacobian('model_size', tc.ModelSize, 'nact', 12, ...
+            J = ctb_dm_jacobian('dmrx', tc.dm_rx, ...
+                'model_size', tc.ModelSize, 'nact', 12, ...
                 'inner_lamD', 3, 'outer_lamD', 8, 'save', false, ...
                 'verbose', false);
             out = ctb_efc('jac', J, 'niter', 3, 'save', false);
@@ -279,6 +288,9 @@ classdef tCtbDm < matlab.unittest.TestCase
                 for k = 1:numel(d)
                     copyfile(fullfile(d(k).folder, d(k).name), w);
                 end
+            end
+            if ~isfile(fullfile(w, 'flat256.txt'))   % a fresh checkout has no flat grid in the library
+                copyfile(tc.dm_rx.gridfile, w);
             end
             tc.applyFixture(matlab.unittest.fixtures.CurrentFolderFixture(w));
         end

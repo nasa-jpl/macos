@@ -7,7 +7,7 @@
 #             tested only against a tail that should fail cannot see it.
 #   aoiseq    item 5: the AOI ladder at the angles each rig is built at.
 set -u
-T=/home/dcr/dev/MACOS_resources/mmacos/templates/40_benches/tg_psi_dm96_oap/runs
+T=$(cd "$(dirname "${BASH_SOURCE[0]}")/." && pwd)
 n=0
 while ! grep -q '\[item2seq\] done' "$T/item2seq.nohup" 2>/dev/null; do
     n=$((n+1)); [ $n -gt 960 ] && { echo "[closechain4] ABORT: item2seq never finished (8 h)"; exit 1; }

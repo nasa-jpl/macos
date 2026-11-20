@@ -100,7 +100,7 @@ APP      := GMI
 MEX_NAME := $(APP)
 
 # Per-compiler flags.  Both produce bit-identical numeric results
-# (verified by MACOS_resources/GMI/regression) and both exit MATLAB
+# (verified by app/GMI/regression) and both exit MATLAB
 # cleanly with the flags below.
 #
 # -check all removed from FFLAGS/LDFLAGS: it pulls in ifx's

@@ -24,9 +24,9 @@
 %
 % Run AFTER s2_instrument.m.
 
-addpath(fullfile(getenv('HOME'),'dev/MACOS_resources/mmacos/src'));
-addpath(fullfile(getenv('HOME'),'dev/MACOS_resources/mmacos/design/src'));
-addpath(fullfile(getenv('HOME'),'dev/MACOS_resources/mmacos/design/runners'));
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'src'));
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'design', 'src'));
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'design', 'runners'));
 P = e2e_params();
 here  = fileparts(mfilename('fullpath'));  if isempty(here), here = pwd; end
 parent = fullfile(here, 's2_instrument.in');

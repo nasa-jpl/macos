@@ -15,7 +15,7 @@
 % Run interactively:  >> run('.../example_telescope_align.m')
 % (Batch check: matlab -batch "run('.../example_telescope_align.m'); exit(0)")
 
-addpath('~/dev/MACOS_resources/mmacos/src');   % +macos on path
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'src'));   % +macos on path
 exdir = pwd;                                    % save artifacts here
 
 %% 1. Declare design intent (no engine calls) — a 1 m f/8 classical Cass.

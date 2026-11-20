@@ -2,7 +2,7 @@
     beam radius at DM: 22.47 mm
     fringe visibility (median in pupil): 0.858
     static (baseline) wrapped-phase rms in pupil: 1.22e-05 rad
-    PSI vs direct differential field phase (detector mode): 2.368e-05 pm rms
+    PSI vs direct differential field phase (detector mode): < 0.001 pm rms
     array sizes: OPDMat 63x63, WF 256x256
     PSI vs ray-traced OPD truth (disc-registered, axes +c+r): corr 1.000000, residual 0.000 nm rms
 

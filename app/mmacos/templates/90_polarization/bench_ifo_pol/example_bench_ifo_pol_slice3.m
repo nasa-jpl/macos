@@ -56,11 +56,11 @@
 %      RefSrf geometry, so the rig's OPD equals a Reference-TWIN's to round-
 %      off (the tPolElement/unpolarized-twin gate, at bench scale).
 %
-%  Run: cd ~/dev/MACOS_resources/mmacos/templates/90_polarization/bench_ifo_pol
+%  Run: cd <macos>/app/mmacos/templates/90_polarization/bench_ifo_pol
 %       matlab -batch "run('example_bench_ifo_pol_slice3.m')"
 % ========================================================================
 
-addpath('~/dev/MACOS_resources/mmacos/src');
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'src'));
 exdir = fileparts(mfilename('fullpath'));  if isempty(exdir), exdir = pwd; end
 cd(exdir);
 

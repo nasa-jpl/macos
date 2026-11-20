@@ -7,7 +7,7 @@
 # Called from the main CMakeLists.txt via add_subdirectory() when BUILD_GMI=ON:
 #
 #   if(BUILD_GMI)
-#     set(GMI_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../MACOS_resources/GMI"
+#     set(GMI_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/app/GMI"
 #         CACHE PATH "Directory containing GMI.F and GMIG.F")
 #     add_subdirectory("${GMI_SRC_DIR}" "${CMAKE_BINARY_DIR}/gmi")
 #   endif()

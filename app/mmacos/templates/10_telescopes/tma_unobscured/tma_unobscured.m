@@ -27,8 +27,8 @@
 %
 %  Run:  >> run('.../tma_unobscured/tma_unobscured.m')
 % =====================================================================
-addpath(fullfile(getenv('HOME'),'dev/MACOS_resources/mmacos/src'));
-addpath(fullfile(getenv('HOME'),'dev/MACOS_resources/mmacos/design/src'));
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'src'));
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'design', 'src'));
 exdir = fileparts(mfilename('fullpath'));  if isempty(exdir), exdir = pwd; end
 
 gfile = fullfile(exdir,'tma_unobscured_geometry.mat');

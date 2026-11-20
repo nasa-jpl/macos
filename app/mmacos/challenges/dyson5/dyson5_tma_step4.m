@@ -33,7 +33,7 @@ function OUT = dyson5_tma_step4(over)
     for k = 1:numel(fn), if ~isfield(opt, fn{k}), error('unknown option %s', fn{k}); end, opt.(fn{k}) = over.(fn{k}); end
     D = opt.EFL_m/opt.Fsys;
 
-    addpath('/Users/dcr/dev/MACOS_resources/mmacos/src');  macos.init(opt.model);
+    addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', 'src'));  macos.init(opt.model);
     fid = fopen(fullfile(here,[opt.tag '.txt']),'w');  pr = @(varargin) dp_(fid, opt.quiet, varargin{:});
     pr('dyson5 round 4 step 4 (CCMac) -- aspheres on the d205 section: plate scale AND blur (%s)\n', datestr(now,'yyyy-mm-dd HH:MM'));
     pr('restart = CC step-2b section (decenter %.0f mm, bias %g deg on the f=330/F1.8/D=183 Korsch); hook asph_elts=%s asph_terms=%s (h^4,h^6)\n', ...

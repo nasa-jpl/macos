@@ -4,7 +4,7 @@ function test_mmacos(rx_path)
 %   handful of commands, and prints pass/fail per check.
 
 if nargin < 1 || isempty(rx_path)
-    rx_path = fullfile(getenv('HOME'), 'dev', 'MACOS_resources', ...
+    rx_path = fullfile(fileparts(mfilename('fullpath')), '..', ...
         'pymacos', 'tests', 'Rx', 'Rx_Cass_FarField.in');
 end
 

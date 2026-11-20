@@ -19,7 +19,7 @@
 %  Run:  >> run('.../templates/10_telescopes/rc_onaxis/rc_onaxis.m')
 % =====================================================================
 
-addpath('~/dev/MACOS_resources/mmacos/src');
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'src'));
 exdir = fileparts(mfilename('fullpath'));  if isempty(exdir), exdir = pwd; end
 
 % ====================  USER DESIGN CHOICES  ==========================

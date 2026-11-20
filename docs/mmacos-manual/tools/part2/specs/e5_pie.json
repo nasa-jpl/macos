@@ -1,5 +1,8 @@
 {
  "section": "20_segmentation",
+ "res_links": [
+  "tools/segmirmaker"
+ ],
  "entry": "run(fullfile(pwd,'e5_pie.m'));",
  "knobs": {
   "file": "e5_pie.m",

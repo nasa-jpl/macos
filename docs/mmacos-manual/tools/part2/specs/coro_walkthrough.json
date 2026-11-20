@@ -1,5 +1,8 @@
 {
  "section": "30_instruments",
+ "res_links": [
+  "app/pymacos"
+ ],
  "entry": "coro_walkthrough();",
  "figure": "figures/coro_beforeafter.png",
  "run": {

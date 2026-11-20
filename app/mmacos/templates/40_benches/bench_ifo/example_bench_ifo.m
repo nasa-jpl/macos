@@ -69,7 +69,7 @@
 %  Run:  matlab -batch "run('.../example_bench_ifo.m')"
 % ===================================================================
 
-addpath('~/dev/MACOS_resources/mmacos/src');
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'src'));
 exdir = fileparts(mfilename('fullpath'));
 if isempty(exdir), exdir = pwd; end
 

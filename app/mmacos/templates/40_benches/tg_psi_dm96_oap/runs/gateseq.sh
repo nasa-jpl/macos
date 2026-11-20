@@ -3,7 +3,7 @@
 # arguments, so re-run the classes that cover twyman_green and the polarizing
 # rig.  Waits for the sweep chain's lock.
 set -u
-root=/home/dcr/dev/MACOS_resources/mmacos
+root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)
 cd "$root"
 for t in tBench tTgPol tTgPol2 tPropLayout tDmgLoop; do
     echo "=== $t ==="

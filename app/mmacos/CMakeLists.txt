@@ -473,11 +473,8 @@ enable_testing()
 
 set(RX_INPUT "" CACHE FILEPATH "Rx .in file for smoke test")
 if(RX_INPUT STREQUAL "")
-  if(WIN32)
-    set(RX_INPUT "C:/dev/MACOS_resources/pymacos/tests/Rx/Rx_Cass_FarField.in")
-  else()
-    set(RX_INPUT "$ENV{HOME}/dev/MACOS_resources/pymacos/tests/Rx/Rx_Cass_FarField.in")
-  endif()
+  # the deck shared with pymacos, in this repository (app/pymacos beside app/mmacos)
+  set(RX_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/../pymacos/tests/Rx/Rx_Cass_FarField.in")
 endif()
 
 add_test(

@@ -15,8 +15,8 @@
 # many times the sequencer was replaced.  Bounds are generous and every wait
 # says what it is waiting for when it gives up.
 set -u
-T=/home/dcr/dev/MACOS_resources/mmacos/templates/40_benches/tg_psi_dm96_oap/runs
-C=/home/dcr/dev/MACOS_resources/mmacos/templates/30_instruments/bench_ctb
+T=$(cd "$(dirname "${BASH_SOURCE[0]}")/." && pwd)
+C=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../30_instruments/bench_ctb" && pwd)
 
 wait_for () {                       # wait_for <log> <hours> <what>
     local log="$1" hrs="$2" what="$3" n=0 cap=$(( $2 * 120 ))

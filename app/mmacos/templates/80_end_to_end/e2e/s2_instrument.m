@@ -38,8 +38,8 @@
 %  Run AFTER s1_telescope.m:
 %    >> run('.../templates/80_end_to_end/e2e/s2_instrument.m')
 % =====================================================================
-addpath(fullfile(getenv('HOME'),'dev/MACOS_resources/mmacos/src'));
-addpath(fullfile(getenv('HOME'),'dev/MACOS_resources/mmacos/design/src'));
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'src'));
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'design', 'src'));
 exdir = fileparts(mfilename('fullpath'));  if isempty(exdir), exdir = pwd; end
 P = e2e_params();
 D = P.D_m;  LAM = P.lambda_m;

@@ -21,7 +21,7 @@ function out = oc_nonvacuity(model)
 %   engine for the film the achromatic treatment would have implied.
 %
 %   Usage:
-%     cd MACOS_resources/mmacos
+%     cd <macos>/app/mmacos
 %     matlab -batch "mmacos_setup; addpath('tools/pol_overcoat_chromatic'); oc_nonvacuity; exit(0)"
 %
 %   See also: oc_ladder, tPolContrast.

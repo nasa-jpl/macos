@@ -44,7 +44,7 @@ classdef tProperCompareCoroDMPhase < matlab.unittest.TestCase
                 'detector_elt', 6);
         end
         function dx = probe_dx_at_src(geom)
-            rx_path = fullfile(getenv('HOME'), 'dev', 'MACOS_resources', ...
+            rx_path = fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', ...
                 'pymacos', 'tests', 'Rx', geom.rx_filename);
             macos.init(geom.macos_size);
             macos.load_rx(rx_path);

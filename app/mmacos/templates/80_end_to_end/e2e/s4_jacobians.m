@@ -24,10 +24,10 @@
 %
 % Run AFTER s3_segmentation.m.
 
-addpath(fullfile(getenv('HOME'), 'dev/MACOS_resources/mmacos/src'));
-addpath(fullfile(getenv('HOME'), 'dev/MACOS_resources/mmacos/design/src'));
-addpath(fullfile(getenv('HOME'), 'dev/MACOS_resources/mmacos/design/runners'));
-addpath(fullfile(getenv('HOME'), 'dev/MACOS_resources/mmacos/sensitivities'));
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'src'));
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'design', 'src'));
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'design', 'runners'));
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'sensitivities'));
 P = e2e_params();
 here = fileparts(mfilename('fullpath'));  if isempty(here), here = pwd; end
 v  = char(P.seg.variant);

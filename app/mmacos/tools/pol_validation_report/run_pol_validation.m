@@ -8,9 +8,8 @@ function run_pol_validation(polvalDir, model)
 %   ever hand-copied.
 %
 %   POLVALDIR defaults to <macos repo>/docs/macos-manual/polval, resolved
-%   from this file's own location (mmacos and macos are siblings under
-%   ~/dev by convention): tools/pol_validation_report -> ../../.. = the
-%   MACOS_resources parent -> ../macos.  Pass an explicit path to override.
+%   from this file's own location (app/mmacos/tools/pol_validation_report,
+%   four levels below the repository root).  Pass an explicit path to override.
 %
 %   ONE model size per MATLAB session -- see mmacos/CLAUDE.md on
 %   macos_init_all() heap corruption across model_size transitions.  The
@@ -1404,9 +1403,9 @@ function p = capture_provenance(model)
     p = struct();
     p.generated     = char(datetime('now', 'Format', 'yyyy-MM-dd HH:mm:ss'));
     [p.engine_sha, p.engine_branch, p.engine_dirty] = ...
-        gitinfo(fullfile(getenv('HOME'), 'dev', 'macos'));
+        gitinfo(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', '..'));
     [p.resources_sha, p.resources_branch, p.resources_dirty] = ...
-        gitinfo(fullfile(getenv('HOME'), 'dev', 'MACOS_resources'));
+        gitinfo(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', '..'));   % the bindings are in the same repository
     p.matlab     = version('-release');
     p.model_size = model;
     [~, h] = system('hostname'); p.host = strtrim(h);
@@ -2067,8 +2066,8 @@ function p = polval_rx(name)
 %POLVAL_RX  Resolve an Rx fixture by name (mirrors tests/private/rx_fixture_path).
 %   The tests' resolver lives in a private/ folder and is not reachable
 %   from tools/, so the same two-root search is repeated here.
-    roots = { fullfile(getenv('HOME'), 'dev', 'MACOS_resources', 'pymacos', 'tests', 'Rx'), ...
-              fullfile(getenv('HOME'), 'dev', 'MACOS_resources', 'mmacos', 'tests', 'Rx') };
+    roots = { fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'pymacos', 'tests', 'Rx'), ...
+              fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'mmacos', 'tests', 'Rx') };
     for i = 1:numel(roots)
         p = fullfile(roots{i}, name);
         if exist(p, 'file'), return; end

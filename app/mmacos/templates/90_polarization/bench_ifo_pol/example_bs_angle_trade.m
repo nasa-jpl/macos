@@ -25,11 +25,11 @@
 %  macos/REVIEW_POL_IFO_SLICE2_2026-07-27.md.
 %
 %  EDIT THE "USER PARAMETERS" BLOCK, then:
-%      cd ~/dev/MACOS_resources/mmacos/templates/90_polarization/bench_ifo_pol
+%      cd <macos>/app/mmacos/templates/90_polarization/bench_ifo_pol
 %      matlab -batch "run('example_bs_angle_trade.m')"
 % ========================================================================
 
-addpath('~/dev/MACOS_resources/mmacos/src');
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'src'));
 exdir = fileparts(mfilename('fullpath'));
 if isempty(exdir), exdir = pwd; end
 cd(exdir);

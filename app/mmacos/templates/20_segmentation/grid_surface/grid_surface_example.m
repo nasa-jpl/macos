@@ -14,7 +14,7 @@
 %  Run:  >> run('.../templates/20_segmentation/grid_surface/grid_surface_example.m')
 % =====================================================================
 
-addpath('~/dev/MACOS_resources/mmacos/src');
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'src'));
 exdir = fileparts(mfilename('fullpath'));  if isempty(exdir), exdir = pwd; end
 rx    = fullfile(exdir, 'FFSegDemoAll.in');             % Rx + GridFile are local
 old   = cd(exdir);  cleanup = onCleanup(@() cd(old));   % GridFile resolves from cwd
