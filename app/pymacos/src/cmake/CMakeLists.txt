@@ -242,11 +242,10 @@ else()
   )
 endif()
 # -------------------------------------------------------
-if(WINx64)
-  set(f2py_flag "--no-lower")
-else()
-  set(f2py_flag "--lower")
-endif()
+# --lower on every OS: the generated stubs (pymacos/api_gen.py) and macos.py
+# use lowercase routine and argument names.  --no-lower on Windows kept the
+# Fortran spelling (elt_srf_zrn_FreeForm, nElt_out, N), which they do not find.
+set(f2py_flag "--lower")
 
 
 # Generate sources
