@@ -43,6 +43,7 @@ option(BUILD_SMACOS_LEAN "Build the SMACOS static library"     OFF)
 option(BUILD_SMACOS_DVR  "Build the smacos_dvr test driver"    OFF)
 option(BUILD_GMI         "Build the GMI Matlab mex interface"  OFF)
 option(BUILD_MMACOS      "Build the mmacos MATLAB MEX interface" OFF)
+option(BUILD_PYMACOS     "Build the pymacos Python extension (needs Python >= 3.13 with NumPy)" OFF)
 set(MMACOS_FC "" CACHE STRING
     "Fortran compiler for mmacos (gfortran or ifx). Empty = inherit parent compiler.")
 option(USE_NPSOL         "Build NPSOL-backed constrained optimization" OFF)
@@ -82,6 +83,7 @@ if(BUILD_SMACOS_LEAN)
   set(BUILD_SMACOS_DVR OFF)
   set(BUILD_GMI        OFF)
   set(BUILD_MMACOS     OFF)
+  set(BUILD_PYMACOS    OFF)
   set(CMAKE_BUILD_TYPE Debug)
   message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 endif()
@@ -636,4 +638,21 @@ Set -DMMACOS_SRC_DIR=<path> on the cmake command line.")
   endif()
 
   add_subdirectory("${MMACOS_SRC_DIR}" "${CMAKE_BINARY_DIR}/mmacos")
+endif()
+
+# ==============================================================================
+# pymacos Python extension (pymacosf90 .pyd / .so)
+# Build logic lives in app/pymacos/src/cmake/CMakeLists.txt, which also builds
+# standalone against a finished macos tree.  Included here, it links this
+# build's smacos target.  Build files go to <build>/pymacos; the extension
+# itself goes into app/pymacos/src/pymacos/, beside macos.py, where the tests
+# and `import pymacos` find it.
+# ==============================================================================
+if(BUILD_PYMACOS)
+  if(NOT BUILD_SMACOS)
+    message(FATAL_ERROR "BUILD_PYMACOS=ON needs BUILD_SMACOS=ON: pymacos links "
+                        "the smacos library and reads its mod_smacos modules.")
+  endif()
+  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/app/pymacos/src/cmake"
+                   "${CMAKE_BINARY_DIR}/pymacos")
 endif()

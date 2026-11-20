@@ -14,8 +14,21 @@
 #   
 # ------------------------------------------------------------------
 # Test:  python -c "import pymacosf90"
+#
+# Two ways in:
+#   standalone  -- cmake -S app/pymacos/src/cmake (above): links a macos tree
+#                  built earlier, found through MACOS_BUILD_DIR.
+#   included    -- the top-level CMakeLists.txt with -DBUILD_PYMACOS=ON: links
+#                  the smacos target of the same build, and inherits its
+#                  compilers and build type.
 # ------------------------------------------------------------------
 
+set(_pymacos_standalone OFF)
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+  set(_pymacos_standalone ON)
+endif()
+
+if(_pymacos_standalone)
 cmake_minimum_required(VERSION 3.31)
 include(CMakePrintHelpers)
 
@@ -33,9 +46,12 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
       "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there.\n"
   )
 endif()
+endif()
+
+set(pymacos_target pymacosf90)
 
 # --------------------------------------------- Module dir
-set(mod_dir "${CMAKE_BINARY_DIR}/mod")
+set(mod_dir "${CMAKE_CURRENT_BINARY_DIR}/mod")
 make_directory(${mod_dir})
 set(CMAKE_Fortran_MODULE_DIRECTORY ${mod_dir})
 
@@ -57,7 +73,9 @@ else() # if(CMAKE_SYSTEM_NAME STREQUAL "Linux")  # (CMAKE_HOST_UNIX)
 endif()
 
 # ------------------------------------------------------- Compiler
-if (MACOS64)
+# Included: the compilers are the top-level build's (set before its project()).
+if (NOT _pymacos_standalone)
+elseif (MACOS64)
   # Apple Silicon: gfortran only (ifx has no arm64); C stays Apple clang.
   # Use the versioned Homebrew gfortran if a bare `gfortran` isn't on PATH;
   # override with -DCMAKE_Fortran_COMPILER=... on the command line.
@@ -83,14 +101,20 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 # ------------------------------------------------------- Export
 # note: it will fail to create when pymacos DLL is still in use
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../pymacos)  # dump pyd file to pymacos
+# The .pyd goes into the pymacos package (beside macos.py), where the tests
+# and `import pymacos` look for it -- in both modes.
+set(pymacos_pkg_dir "${CMAKE_CURRENT_SOURCE_DIR}/../pymacos")
 
 
 # ------------------------------------------------------- Build Type
-# Set the Build type to Release  (Default is Debug)
+# Standalone: Release, forced (Default is Debug).  Included: the top-level
+# build's CMAKE_BUILD_TYPE -- forcing the cache there would turn a debug
+# build into release on the next configure.
+if(_pymacos_standalone)
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_BUILD_TYPE Release CACHE STRING " " FORCE)     # cache may require upd.
-message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+endif()
+message(STATUS "pymacos: CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
 
 # ------------------------------------------------------- Python > 3.13  (requires numpy > 2.2)
@@ -114,8 +138,8 @@ set_source_files_properties(PROPERTIES Fortran_PREPROCESS ON)
 
 
 # ------------------------------------------------------- Common definitions
-set(f2py_module_name      ${PROJECT_NAME})
-set(pymacos_src_dir      "${CMAKE_SOURCE_DIR}/source")
+set(f2py_module_name      ${pymacos_target})
+set(pymacos_src_dir      "${CMAKE_CURRENT_SOURCE_DIR}/source")
 
 # --- Two-file split ---------------------------------------------------
 # macos_api_mod.F90 : pure-Fortran language-neutral backbone (no !f2py).
@@ -131,6 +155,7 @@ set(f2py_module_c        "${f2py_module_name}module.c")
 set(f2py_wrapper_pyf     "${CMAKE_CURRENT_BINARY_DIR}/${f2py_module_name}.pyf")
 set(f2py_wrapper_f90     "${CMAKE_CURRENT_BINARY_DIR}/${f2py_module_name}-f2pywrappers2.f90")
 
+if(_pymacos_standalone)
 # Point at the macos build tree.  Default to ~/dev/macos/build_release;
 # override via -DMACOS_BUILD_DIR=... on the cmake command line.
 if(NOT DEFINED MACOS_BUILD_DIR)
@@ -158,6 +183,13 @@ else()
     list(APPEND SMACOS_Libs ${macos_lib_dir}/libslsqplib.a)
   endif()
 endif()
+else()
+# Included: the smacos and slsqplib targets of this same build (built first,
+# because they are link dependencies) and smacos's module directory.
+set(macos_mod_dir "${CMAKE_BINARY_DIR}/mod_smacos")
+set(macos_lib_dir "${CMAKE_BINARY_DIR}/lib")
+set(SMACOS_Libs smacos slsqplib)
+endif()
 
 # ------------------------------------------------------- Fortran Flags
 if(WINx64)
@@ -165,7 +197,11 @@ if(WINx64)
   set(FFlags  "${FFlags} /fp:strict /Qfp-speculation:strict")
   set(FFlags  "${FFlags} /Qm64 /Qmkl /Qparallel /Qopt-mem-layout-trans /QxHost")
   set(FFlags  "${FFlags} /traceback")
-  set(FFlags  "${FFlags} /names:uppercase /assume:nounderscore")
+  # Symbol names must match smacos.lib's: the top-level CMakeLists.txt builds
+  # it with /names:uppercase /assume:underscore (MACOS_API_MOD_mp_FOO_), and
+  # the GMI and mmacos stubs depend on that.  /assume:nounderscore here left
+  # all 169 macos_api_mod references unresolved at link time.
+  set(FFlags  "${FFlags} /names:uppercase /assume:underscore")
 elseif(MACOS64)
   # gfortran flag equivalents (the ifx flags below are Intel-only).
   # pymacos_f2py.f90 is free-form; -cpp for the .F preprocessing; f2py's
@@ -224,7 +260,7 @@ add_custom_command(
   OUTPUT ${f2py_wrapper_pyf}
 
   COMMAND ${Python_EXECUTABLE}  -m "numpy.f2py" -h ${f2py_wrapper_pyf}
-            -m ${PROJECT_NAME}
+            -m ${f2py_module_name}
                ${fortran_src_file_fpp}
                ${f2py_flag}  # --no-/lower
                --overwrite-signature
@@ -252,7 +288,7 @@ add_custom_command(
 # Set up target.  macos_api_mod's compiled object now lives inside
 # libsmacos.a; only the .mod is needed at compile time (taken from
 # the macos build's mod_smacos dir via target_include_directories).
-Python_add_library(${CMAKE_PROJECT_NAME} MODULE  WITH_SOABI  # SOABI (Shared Object Application Interface)
+Python_add_library(${pymacos_target} MODULE  WITH_SOABI  # SOABI (Shared Object Application Interface)
   ${f2py_module_c}                        # Generated
   ${f2py_wrapper_pyf}                     # Generated
   ${f2py_wrapper_f90}                     # Generated -- needed when modules are present in fortran file
@@ -261,10 +297,13 @@ Python_add_library(${CMAKE_PROJECT_NAME} MODULE  WITH_SOABI  # SOABI (Shared Obj
 )
 
 if(WINx64)
-  target_compile_options(${CMAKE_PROJECT_NAME} PUBLIC -DNO_APPEND_FORTRAN -DUPPERCASE_FORTRAN)
+  # f2py's C side names the Fortran routines with F_FUNC(f,F): with
+  # UPPERCASE_FORTRAN and no NO_APPEND_FORTRAN that is F##_, matching the
+  # /names:uppercase /assume:underscore Fortran flags above.
+  target_compile_options(${pymacos_target} PUBLIC -DUPPERCASE_FORTRAN)
 endif()
 
-target_include_directories(${CMAKE_PROJECT_NAME}
+target_include_directories(${pymacos_target}
         PRIVATE
         ${F2PY_INCLUDE_DIR}
         ${Python_NumPy_INCLUDE_DIRS}
@@ -275,10 +314,24 @@ target_include_directories(${CMAKE_PROJECT_NAME}
       )
 
 # Depend on sources
-target_link_libraries(${CMAKE_PROJECT_NAME}
+target_link_libraries(${pymacos_target}
         PRIVATE
         Python::NumPy
         ${SMACOS_Libs}
 )
 
-add_dependencies(${CMAKE_PROJECT_NAME} genpyf)
+add_dependencies(${pymacos_target} genpyf)
+
+# The .pyd/.so goes into the pymacos package.  The Windows debug database
+# (.pdb, not gitignored) stays in the build directory.
+set_target_properties(${pymacos_target} PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${pymacos_pkg_dir}"
+    PDB_OUTPUT_DIRECTORY     "${CMAKE_CURRENT_BINARY_DIR}"
+)
+foreach(_cfg Debug Release RelWithDebInfo MinSizeRel)
+  string(TOUPPER "${_cfg}" _CFG)
+  set_target_properties(${pymacos_target} PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY_${_CFG} "${pymacos_pkg_dir}"
+      PDB_OUTPUT_DIRECTORY_${_CFG}     "${CMAKE_CURRENT_BINARY_DIR}"
+  )
+endforeach()
