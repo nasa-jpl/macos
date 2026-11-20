@@ -21,7 +21,7 @@ function test_state_after_roundtrip()
 %   CPERTURB_PROG after the rotation, so the round-trip is bitwise
 %   identity and psi can't slowly drift under repeated perturbs.
 
-rx_path = fullfile(getenv('HOME'), 'dev', 'MACOS_resources', ...
+rx_path = fullfile(fileparts(mfilename('fullpath')), '..', ...
     'pymacos', 'tests', 'Rx', 'Rx_Cass_FarField.in');
 
 addpath(fileparts(mfilename('fullpath')));

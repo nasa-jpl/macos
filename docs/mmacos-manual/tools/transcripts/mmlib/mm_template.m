@@ -4,7 +4,7 @@ function [here, check] = mm_template(section, name)
 %   (<work>/templates/SECTION/NAME, with src, design, sensitivities and mmacos_setup.m LINKED beside
 %   it), so the template's '..'-relative paths resolve.  Returns HERE, the copy (cwd, on the path),
 %   and CHECK, a function the driver calls after its runs: it errors if `git status` of
-%   MACOS_resources (untracked files included) moved, i.e. if a run wrote into the library.
+%   the repository (untracked files included) moved, i.e. if a run wrote into the library.
 root = getenv('MMACOS_ROOT');  work = getenv('MMMAN_WORK');
 res  = fileparts(root);
 gs   = @() evalc(sprintf('!git -C %s status --porcelain --untracked-files=all', res));
@@ -17,5 +17,5 @@ end
 addpath(fullfile(root, 'src'));
 here = fullfile(dst, name);  addpath(here);  cd(here);
 check = @() assert(strcmp(gs(), before), 'mm_template:library', ...
-    '%s: a run changed MACOS_resources (git status moved)', name);
+    '%s: a run changed the repository (git status moved)', name);
 end

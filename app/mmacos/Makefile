@@ -201,7 +201,7 @@ clean:
 # Quick smoke target: build then exercise the mex from a MATLAB
 # batch session.  Requires Rx_Cass_FarField.in (or set RX=...) on
 # the path.
-RX ?= $(HOME)/dev/MACOS_resources/pymacos/tests/Rx/Rx_Cass_FarField.in
+RX ?= $(CURDIR)/../pymacos/tests/Rx/Rx_Cass_FarField.in
 # Explicit `exit(0)` after the test function — without it matlab -batch
 # on R2026a hangs at process exit when a mex is loaded (see
 # CLAUDE.md "clear mmacos hangs matlab -batch" note for the family).

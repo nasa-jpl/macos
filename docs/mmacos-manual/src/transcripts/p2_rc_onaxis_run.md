@@ -13,8 +13,8 @@
           WFE  (waves) : 0.002 0.001 0.010 0.024 0.045 0.072 0.107
           diffraction-limited (< 0.07 lambda) out to 2.7 arcmin
     [4] field-balanced (radius+conic over +-4'):
-          WFE  (waves) : 0.018 0.015 0.009 0.009 0.027 0.053 0.086
-          diffraction-limited out to 3.3 arcmin (was 2.7)
+          WFE  (waves) : 0.036 0.034 0.028 0.019 0.016 0.035 0.064
+          diffraction-limited out to 4.0 arcmin (was 2.7)
 
     [5] saved: <work>/templates/10_telescopes/rc_onaxis/rc_onaxis.in
                + <work>/templates/10_telescopes/rc_onaxis/rc_onaxis.mat
@@ -24,5 +24,5 @@
     --------------------------------------------------------------------
      D=1.00 m | f/10 | EFL 10.00 m | mag 5.0 | central obscuration 0.19
      aplanatic: diffraction-limited on-axis; field-limited by astigmatism
-     diffraction-limited out to 3.3 arcmin (field-balanced)
+     diffraction-limited out to 4.0 arcmin (field-balanced)
     ====================================================================

@@ -7,7 +7,7 @@
 %
 % ONE CUT from the template (asserted to match once, and said in the chapter): the script's last
 % block copies the optimized layout into the SHARED preset library (mmacos/design/runners/presets/),
-% a write into MACOS_resources the manual must not make.  Everything else runs as committed.
+% a write into the library the manual must not make.  Everything else runs as committed.
 %
 % Pinned as BOUNDS (numerical zeros), one line each:
 %   ch05_dldx_rel  < 1e-5   dldx engine-FD vs analytic, max relative difference (agreement = FD noise)

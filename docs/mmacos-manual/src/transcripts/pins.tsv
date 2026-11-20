@@ -203,12 +203,14 @@ p2_bench_ctb_spot	0.02713
 p2_bench_ifo_agree	< 1e-08
 p2_bench_ifo_vis	0.833
 p2_bench_ifo_resid	0.0014
+p2_bench_ifo_dm_psi_direct	< 0.001
 p2_bench_ifo_dm_corr	0.998426
 p2_bench_ifo_dm_truth	16.92
 p2_bench_ifo_dm_resid	0.969
 p2_bench_ifo_pol_fres	< 1e-12
 p2_bench_ifo_pol_dia	7.2133e-02
 p2_bench_ifo_pol_ret	8.3521e-02
+p2_cophi_dm96_linearity	< 1e-12
 p2_cophi_dm96_contrast	0.9825
 p2_cophi_dm96_overfill	33.9
 p2_cophi_dm96_magratio	0.998353
@@ -252,12 +254,12 @@ p2_offset_imager_s5max	12415.1
 p2_pdi_dm96_pgain	0.9808
 p2_pdi_dm96_pres	744.20
 p2_pdi_dm96_g5	4.508
-p2_pupil_id_df	2.735e-04
-p2_pupil_id_dfe	2.734e-04
-p2_pupil_id_dep	1.843e-07
+p2_pupil_id_df	2.738e-04
+p2_pupil_id_dfe	2.737e-04
+p2_pupil_id_dep	1.853e-07
 p2_rc_onaxis_obsc	0.19
 p2_rc_onaxis_dl0	2.7
-p2_rc_onaxis_dl1	3.3
+p2_rc_onaxis_dl1	4.0
 p2_rc_unobscured_dec	0.642
 p2_rc_unobscured_field	0.0281
 p2_singlet_xtb	0.7397

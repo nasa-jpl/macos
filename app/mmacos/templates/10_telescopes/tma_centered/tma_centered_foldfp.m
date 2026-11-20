@@ -20,8 +20,8 @@
 %
 %  Run:  >> run('.../tma_centered/tma_centered_foldfp.m')
 % =====================================================================
-addpath(fullfile(getenv('HOME'),'dev/MACOS_resources/mmacos/src'));
-addpath(fullfile(getenv('HOME'),'dev/MACOS_resources/mmacos/design/src'));
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'src'));
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'design', 'src'));
 exdir = fileparts(mfilename('fullpath'));  if isempty(exdir), exdir = pwd; end
 
 gfile = fullfile(exdir,'tma_centered_fold_geometry.mat');

@@ -281,7 +281,7 @@ L = {sprintf('budget %s from %s', name, src)};
 try
     here = fileparts(mfilename('fullpath'));
     [st, sha] = system(sprintf('git -C "%s" rev-parse --short HEAD', here));
-    if st == 0, L{end+1} = sprintf('MACOS_resources %s', strtrim(sha)); end
+    if st == 0, L{end+1} = sprintf('macos %s', strtrim(sha)); end
 catch
 end
 end

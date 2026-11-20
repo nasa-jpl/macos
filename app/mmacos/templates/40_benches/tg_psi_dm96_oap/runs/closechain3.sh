@@ -7,8 +7,8 @@
 #   gateseq3  item 3: the tail tuner's winner gate, two verifies
 #   item2seq  item 2: unwrapped ladder, lens control, loop, descent
 set -u
-Z=/home/dcr/dev/MACOS_resources/mmacos/templates/40_benches/zwfs_dm96/runs
-T=/home/dcr/dev/MACOS_resources/mmacos/templates/40_benches/tg_psi_dm96_oap/runs
+Z=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../zwfs_dm96/runs" && pwd)
+T=$(cd "$(dirname "${BASH_SOURCE[0]}")/." && pwd)
 n=0
 while ! grep -q '\[vfitseq\] done' "$Z/vfitseq.nohup" 2>/dev/null; do
     n=$((n+1)); [ $n -gt 240 ] && { echo "[closechain3] ABORT: vfitseq never finished (2 h)"; exit 1; }

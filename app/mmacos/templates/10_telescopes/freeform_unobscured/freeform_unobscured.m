@@ -24,8 +24,8 @@
 %  Run AFTER building mmacos:
 %    >> run('.../templates/10_telescopes/freeform_unobscured/freeform_unobscured.m')
 % =====================================================================
-addpath(fullfile(getenv('HOME'),'dev/MACOS_resources/mmacos/src'));
-addpath(fullfile(getenv('HOME'),'dev/MACOS_resources/mmacos/design/src'));
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'src'));
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'design', 'src'));
 exdir = fileparts(mfilename('fullpath'));  if isempty(exdir), exdir = pwd; end
 
 % ====================  KNOBS  ========================================

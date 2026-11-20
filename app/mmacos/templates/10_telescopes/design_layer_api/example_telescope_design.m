@@ -12,7 +12,7 @@
 %  downstream — evaluate, vary, optimize — is the same analysis surface
 %  an imported CodeV/Zemax prescription uses.
 %
-%  Reference (the optics): MACOS_resources/optical_design/
+%  Reference (the optics): optical_design/
 %      TELESCOPE_DESIGN_REFERENCE.md   (closed forms, families)
 %      fixtures/                       (regression ground truth)
 %  Plan: macos/PLAN_DESIGN_LAYER.md  §2 (this flow), §5 (the math).
@@ -27,7 +27,7 @@
 %   "run('.../example_telescope_design.m'); exit(0)".)
 % ===================================================================
 
-addpath('~/dev/MACOS_resources/mmacos/src');   % +macos on path
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'src'));   % +macos on path
 exdir = pwd;
 MODEL = 256;
 

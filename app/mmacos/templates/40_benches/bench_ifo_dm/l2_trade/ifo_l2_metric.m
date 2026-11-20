@@ -73,7 +73,7 @@ end
 
 LAM = 6.328e-4;                                    % mm (rig wavelength)
 if isempty(which('macos.init'))
-    addpath(fullfile(getenv('HOME'), 'dev/MACOS_resources/mmacos/src'));
+    addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', '..', 'src'));
 end
 here = fileparts(mfilename('fullpath'));
 if isempty(opts.workdir), opts.workdir = here; end
@@ -84,7 +84,9 @@ persistent booted
 if isempty(booted), macos.init(256); booted = true; end
 
 % ---- 1. DM surface from PROPER -> GridFile (cached per parameter set) ---
-PYBIN = fullfile(getenv('HOME'), 'dev/MACOS_resources/pymacos/.venv/bin/python');
+PYBIN = fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', '..', '..', 'pymacos', '.venv', 'bin', 'python');   % this repository's pymacos environment
+if ~isfile(PYBIN), PYBIN = fullfile(getenv('HOME'), '.venv', 'pymacos', 'bin', 'python'); end   % the Mac convention
+if ~isfile(PYBIN), PYBIN = 'python3'; end
 gen   = fullfile(here, '..', 'dm_map_gen.py');
 % NOTE: the engine's GridFile field truncates at 24 characters (GridInit
 % then reports "does not exist" and traces a FLAT surface) -- keep these

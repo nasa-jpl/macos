@@ -33,7 +33,7 @@
 %  (the design + figures land on disk; MATLAB stays open)
 % =====================================================================
 
-addpath(fullfile(getenv('HOME'),'dev/MACOS_resources/mmacos/src'));
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'src'));
 exdir = fileparts(mfilename('fullpath'));  if isempty(exdir), exdir = pwd; end
 
 % ====================  KNOBS  ========================================

@@ -44,7 +44,7 @@ classdef tProperCompareCoroApodizer < matlab.unittest.TestCase
 
             % Probe-load to discover dx_at(src_elt), then build the
             % mask at the matching pitch.
-            rx_path = fullfile(getenv('HOME'), 'dev', 'MACOS_resources', ...
+            rx_path = fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', ...
                 'pymacos', 'tests', 'Rx', geom.rx_filename);
             macos.init(geom.macos_size);
             macos.load_rx(rx_path);

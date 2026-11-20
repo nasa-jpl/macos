@@ -6,7 +6,11 @@ function P = lens_pupils(L, lambda_nm, opts)
 %   L is a macos.design.Lens.  The STOP is a plane at z_s (measured from
 %   surface 1's vertex along +z, in any gap or outside the lens) with
 %   semi-diameter a_s; give 'epd' instead of a_s and a_s is solved so the
-%   entrance pupil has that diameter.  'object' is the object distance in
+%   entrance pupil has that diameter.  A stop ON a surface's vertex gives
+%   the same layout whichever side of the surface it is on (the paraxial ray
+%   height is the same on both); the side matters only to the deck, and
+%   macos.design.lens_emit chooses it ('stop_after').  'object' is the
+%   object distance in
 %   front of surface 1 (Inf, the default = collimated); 'image' the image
 %   plane's z (NaN = the paraxial focus).  Everything is the textbook y-nu
 %   trace (Welford): the pupils are the stop's paraxial images, found from

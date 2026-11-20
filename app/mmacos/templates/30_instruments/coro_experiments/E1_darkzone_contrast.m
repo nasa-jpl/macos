@@ -27,7 +27,7 @@ function out = E1_darkzone_contrast()
     DZ_INNER     = 7;                    % dark-zone inner edge (lambda/D)
     DZ_OUTER     = 10;                   % dark-zone outer edge (lambda/D)
 
-    rxdir = fullfile(getenv('HOME'), 'dev', 'MACOS_resources', ...
+    rxdir = fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', '..', ...
                      'pymacos', 'tests', 'Rx');
     rx = @(n) fullfile(rxdir, n);
 

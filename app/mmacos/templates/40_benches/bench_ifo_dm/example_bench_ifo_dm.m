@@ -26,7 +26,7 @@
 %  pymacos venv python)
 % ===================================================================
 
-addpath('~/dev/MACOS_resources/mmacos/src');
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'src'));
 exdir = fileparts(mfilename('fullpath'));
 if isempty(exdir), exdir = pwd; end
 cd(exdir);                       % GridFile= resolves relative to the cwd
@@ -75,7 +75,9 @@ DO_ABERR     = false;            % phase 2 (staged)
 DO_NEARFIELD = false;            % phase 3 (staged)
 
 % ---- 1. DM surface from PROPER -> GridFile -------------------------
-PYBIN = fullfile(getenv('HOME'), 'dev/MACOS_resources/pymacos/.venv/bin/python');
+PYBIN = fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', '..', 'pymacos', '.venv', 'bin', 'python');   % this repository's pymacos environment
+if ~isfile(PYBIN), PYBIN = fullfile(getenv('HOME'), '.venv', 'pymacos', 'bin', 'python'); end   % the Mac convention
+if ~isfile(PYBIN), PYBIN = 'python3'; end
 gridfile = 'dm_map.txt';
 cmdline = sprintf('%s dm_map_gen.py %s %d %g %d %g %g %d %s', ...
     PYBIN, gridfile, N_G, DX_G, NACT, SPACING, POKE_NM, SEED, PATTERN);

@@ -2507,12 +2507,20 @@ classdef Telescope < handle
                 % over the design's realised CLEAR APERTURE (the vignetted
                 % pupil) -- the CODE V field-map convention (PACKET Sec 4a).
                 if ~isempty(v), wfe(j) = std(v) / lam; end
-                byz = macos.draw_rays('YZ', 0, nE);        % y-fan: V=Y, U=Z
-                bxz = macos.draw_rays('XZ', 0, nE);        % x-fan: V=X, U=Z
+                % The two meridian fans as GLOBAL 3-D crossings (draw_rays3d).
+                % macos.draw_rays returns the same fans PROJECTED on the
+                % source's own axes (DRAW: xDraw = zGrid, yDraw = yGrid), a
+                % frame the field angle rotates about the global origin, so
+                % reading its (U,V) as global (Z,Y) displaced every footprint
+                % by -z_elt*tan(field): none on axis or for an element at
+                % z = 0, 0.35 mm at rc_onaxis's focal plane at 4 arcmin (the
+                % square came out 3% short and that field lost every ray in
+                % the balance; 2026-11-18).
+                byz = macos.draw_rays3d('YZ', 0, nE);      % y-fan, global xyz
+                bxz = macos.draw_rays3d('XZ', 0, nE);      % x-fan, global xyz
+                Pyz = reshape(byz.P, 3, []);  Pxz = reshape(bxz.P, 3, []);
                 % Footprint in the element's APERTURE frame -- ApVec's frame:
-                % offsets from VptElt along xObs/yObs (obs_frame_).  Each fan
-                % point is made 3-D with the beam centre as its off-plane
-                % coordinate (exact for a meridian ray), then projected.  The
+                % offsets from VptElt along xObs/yObs (obs_frame_).  The
                 % old global-x,y box was right only for an element at the
                 % origin with psi = (0,0,-1); on a tilted fold the emitted
                 % stop landed metres off the beam (sz_tma lost every ray at
@@ -2521,10 +2529,7 @@ classdef Telescope < handle
                     my = (byz.elt == k);  mx = (bxz.elt == k);
                     if ~any(my(:)) && ~any(mx(:)), continue; end
                     e  = obj.spec.elt(k);
-                    cx = e.Vpt(1);  if any(mx(:)), cx = mean(bxz.V(mx)); end
-                    cy = e.Vpt(2);  if any(my(:)), cy = mean(byz.V(my)); end
-                    P  = [ [repmat(cx,1,nnz(my)); byz.V(my).'; byz.U(my).'], ...
-                           [bxz.V(mx).'; repmat(cy,1,nnz(mx)); bxz.U(mx).'] ];
+                    P  = [Pyz(:, my(:)), Pxz(:, mx(:))];
                     [xo, yo] = obj.obs_frame_(e.psi);
                     d  = P - e.Vpt(:);
                     u  = xo.' * d;  v = yo.' * d;

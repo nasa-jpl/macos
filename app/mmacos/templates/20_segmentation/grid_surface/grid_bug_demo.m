@@ -16,7 +16,7 @@
 %  Run (interactive, to SEE it):  >> run('.../grid_bug_demo.m')
 % =====================================================================
 
-addpath(fullfile(getenv('HOME'),'dev/MACOS_resources/mmacos/src'));
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'src'));
 
 % ====================  KNOBS (drive these)  ==========================
 ELT  = [];           % which FreeForm elt to perturb ([] = first grid elt)

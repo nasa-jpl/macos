@@ -32,7 +32,7 @@
 %  (Batch check: matlab -batch "run('.../example_tma_widefield.m'); exit(0)")
 % ===================================================================
 
-addpath('~/dev/MACOS_resources/mmacos/src');     % +macos on path
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'src'));     % +macos on path
 exdir = pwd;                                       % save artifacts here
 MODEL = 256;
 LAM   = 633e-9;                                    % HeNe, for waves

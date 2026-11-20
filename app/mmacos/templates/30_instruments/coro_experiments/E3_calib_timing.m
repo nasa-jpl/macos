@@ -21,7 +21,7 @@ function out = E3_calib_timing()
     MODEL_SIZE = 1024;
     DM_ELT     = 4;            % grid-data Reflector DM
     DET_ELT    = 21;
-    rxdir = fullfile(getenv('HOME'),'dev','MACOS_resources','pymacos','tests','Rx');
+    rxdir = fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', '..', 'pymacos','tests','Rx');
     rx = @(n) fullfile(rxdir, n);
 
     macos.init(MODEL_SIZE);

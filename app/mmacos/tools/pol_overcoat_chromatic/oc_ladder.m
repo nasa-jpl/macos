@@ -67,7 +67,7 @@ function out = oc_ladder(model, verbose)
 %   dominates the total -- see .qw_over_uncoated.
 %
 %   Usage:
-%     cd MACOS_resources/mmacos
+%     cd <macos>/app/mmacos
 %     matlab -batch "mmacos_setup; addpath('tools/pol_overcoat_chromatic'); oc_ladder; exit(0)"
 %
 %   OC_LADDER([]) skips macos.init -- for callers (the CI gate) that have
@@ -192,8 +192,8 @@ end
 % =======================================================================
 function p = oc_rx(name)
 %OC_RX  Resolve an Rx fixture by name (mirrors tests/private/rx_fixture_path).
-    roots = { fullfile(getenv('HOME'), 'dev', 'MACOS_resources', 'pymacos', 'tests', 'Rx'), ...
-              fullfile(getenv('HOME'), 'dev', 'MACOS_resources', 'mmacos', 'tests', 'Rx') };
+    roots = { fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'pymacos', 'tests', 'Rx'), ...
+              fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', 'mmacos', 'tests', 'Rx') };
     for i = 1:numel(roots)
         p = fullfile(roots{i}, name);
         if exist(p, 'file'), return; end

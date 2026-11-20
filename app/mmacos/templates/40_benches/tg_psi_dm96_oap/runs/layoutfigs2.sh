@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -u
-B=~/dev/MACOS_resources/mmacos/templates/40_benches
+B=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 say(){ echo "[$(date '+%F %T')] $*"; }
 cd "$B/zwfs_dm96"
 say "3/4 node figures + vector layout (retry: dm_gauge_lib on the path)"

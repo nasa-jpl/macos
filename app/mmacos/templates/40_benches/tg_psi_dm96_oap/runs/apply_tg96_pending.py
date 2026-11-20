@@ -19,8 +19,8 @@ Run, from THIS directory, once nothing is executing tg96_run.m:
 Editing tg96_run.m while an hour-class run is inside it is how a long job gets
 corrupted, which is why this is a staged patch and not an edit.
 """
-import io, sys, re
-p = '/home/dcr/dev/MACOS_resources/mmacos/templates/40_benches/tg_psi_dm96_oap/tg96_run.m'
+import io, os, sys, re
+p = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tg96_run.m')
 s = open(p, encoding='utf-8').read()
 
 # ---- 1. the ladder's meter -------------------------------------------

@@ -142,8 +142,15 @@ classdef tCtbProp < matlab.unittest.TestCase
             % chief distance, and only the full model could be pinned here.)
             d = fullfile(tempname); mkdir(d);
             restore = onCleanup(@() rmdir(d, 's'));
+            % The hand decks were generated from the bench geometry of
+            % 2026-08 (re-pinned to this generator 2026-10-28).  The
+            % library's ctb_planar_stageF.in is an output of example_ctb
+            % and was regenerated on 2026-10-29 (conics moved up to 7e-4);
+            % the generator is checked here on the source the hand decks
+            % came from, kept as a fixture.
+            src  = rx_fixture_path('ctb_planar_stageF_2026-08.in');
             info = ctb_prop_layout('outdir', d, 'model', tc.ModelSize, ...
-                                   'verify', false);
+                                   'src', src, 'verify', false);
             tc.verifyEqual(numel(info), 2);
             want = struct('compact', 31, 'full', 44);
             for k = 1:numel(info)

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # the converged-estimator re-score (2026-10-11): H then I, both rigs, est_mode 'both', rows only
 set -u
-B=/home/dcr/dev/MACOS_resources/mmacos/templates/40_benches
+B=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 EST="'battery.est_mode','both','battery.est_tol',1e-12,'battery.est_maxit',50,'battery.cap_ladder',30e-6,'battery.recap_surf',[]"
 OAP="'bench.optics','oap','bench.POL_IN','source','bench.D_RC_L2',125,'oap.OAP1_AOI',20,'oap.OAP2_AOI',25,'oap.OAP1_SIDE',1,'oap.OAP2_SIDE',-1"
 cd $B/cophi_dm96

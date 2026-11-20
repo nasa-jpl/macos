@@ -16,7 +16,7 @@
 %
 % Run:  matlab -batch "run('.../run_l2_trade.m'); exit(0)"
 
-addpath(fullfile(getenv('HOME'), 'dev/MACOS_resources/mmacos/src'));
+addpath(fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', '..', 'src'));
 here = fileparts(mfilename('fullpath'));
 if isempty(here), here = pwd; end
 cd(here);

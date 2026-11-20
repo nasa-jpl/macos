@@ -48,7 +48,7 @@ function out = E2_dm_modes_cost(mode_counts, metric)
     FD_STEP    = 1e-3;         % fmincon FD step (= 1e-3 wave DM stroke)
     MAXITER    = 2;            % cost probe: a couple iters times the loop
     ACT_STENCIL = 36;          % ~6x6 separable-poke coloring (E2 note)
-    rxdir = fullfile(getenv('HOME'),'dev','MACOS_resources','pymacos','tests','Rx');
+    rxdir = fullfile(fileparts(mfilename('fullpath')), '..', '..', '..', '..', 'pymacos','tests','Rx');
     rx = @(n) fullfile(rxdir, n);
 
     macos.init(MODEL_SIZE);
