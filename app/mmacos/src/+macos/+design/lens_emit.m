@@ -25,6 +25,16 @@ function E = lens_emit(L, P, path, opts)
 %     * The stop: Element= Reference, Surface= Flat, in the medium of its gap.
 %       opts.stop_clips false (default) = no aperture there (the beam is the
 %       paraxial entrance pupil); true = ApType= Circular at the stop radius.
+%       The elements are written in the order the light meets them, so a stop
+%       ON a surface's vertex (P.z_s equal to that surface's z, within 1e-9)
+%       has to be put on one side of it.  opts.stop_after = k says which: the
+%       stop follows lens surface k (0 = ahead of surface 1, N = behind the
+%       last surface).  Left out, the stop goes on the AIR side of that
+%       surface -- ahead of a front face, behind a rear face -- and when both
+%       sides are glass (a cemented interface) it goes ahead and a warning
+%       (macos:design:lens_emit:stopSide) asks for the side.  E.stop_after
+%       returns the side used.  Until 2026-11-20 the stop always went ahead,
+%       which put a stop on an element's rear vertex inside the glass.
 %     * Clear apertures: ApType= Circular from L.semidia when set
 %       (opts.apertures), else None.
 %     * The source: collimated (zSource 1e22, Aperture = P.D) for an infinite
@@ -54,6 +64,7 @@ arguments
     opts.nGridpts (1,1) double = 97
     opts.standoff (1,1) double = 100
     opts.stop_clips (1,1) logical = false
+    opts.stop_after (1,1) double = NaN
     opts.apertures = []
     opts.calib struct = struct()
     opts.title (1,:) char = ''
@@ -74,10 +85,9 @@ if do_opt
 end
 assert(~(do_opt && fin && any(cal.fields_deg ~= 0)), 'lens_emit: a finite-object CALIB deck is on axis only');
 
-% ---- elements in z order (the stop ahead of a surface at the same z)
-zs = [L.z, P.z_s];  kind = [ones(1, N), 0];  kk = [1:N, 0];
-[~, ord] = sort(zs + 1e-9 * kind);
-kind = kind(ord);  kk = kk(ord);  zs = zs(ord);
+% ---- elements in the order the light meets them: the stop follows lens surface js
+js = stop_gap_(L, P, opts.stop_after);
+kind = [ones(1, js), 0, ones(1, N - js)];  kk = [1:js, 0, js+1:N];
 
 z_img = P.z_img;
 z_xp0 = P.z_xp;  if ~isfinite(z_xp0), z_xp0 = z_img - 1e6; end
@@ -254,7 +264,43 @@ assert(ie + 3 == nElt, 'lens_emit: element count');
 sd = L.semidia;  if ~apert, sd = inf(1, N); end
 E = struct('iSurf', iSurf, 'iStop', iStop, 'iImgRet', ie + 1, 'iXP', ie + 2, 'iFP', ie + 3, ...
     'nElt', nElt, 'path', path, 'z_img', z_img, 'z_src', z_src, 'lambda_mm', P.lambda_nm * 1e-6, ...
-    'D', P.D, 'finite', fin, 'semidia', sd, 'standoff', z_front - z_src);
+    'D', P.D, 'finite', fin, 'semidia', sd, 'standoff', z_front - z_src, 'stop_after', js);
+end
+
+% -------------------------------------------------------------------------
+function js = stop_gap_(L, P, js_in)
+% The lens surface the stop follows (0 = ahead of surface 1, N = behind the last).
+% A stop strictly inside a gap has one answer.  A stop on a vertex (within TOL)
+% could go either side of that surface: the caller's stop_after decides, else
+% the air side, else (glass on both sides) ahead of the surface with a warning.
+TOL = 1e-9;
+N = L.N;  z = L.z;  z_s = P.z_s;
+if ~isnan(js_in)
+    js = js_in;
+    if ~(js == round(js) && js >= 0 && js <= N)
+        error('macos:design:lens_emit:stopAfter', 'lens_emit: stop_after must be a surface index 0 .. %d', N);
+    end
+    if ~((js == 0 || z(js) <= z_s + TOL) && (js == N || z_s <= z(js + 1) + TOL))
+        error('macos:design:lens_emit:stopAfter', ...
+            'lens_emit: stop_after = %d, but the stop at z = %.9g is not between surface %d and surface %d', ...
+            js, z_s, js, js + 1);
+    end
+    return
+end
+js0  = nnz(z < z_s - TOL);                  % surfaces wholly ahead of the stop
+ntie = nnz(abs(z - z_s) <= TOL);            % surfaces whose vertex the stop sits on
+js = js0;
+if ntie == 0, return; end
+cand = js0:(js0 + ntie);                    % the gaps the stop could be written in
+n_gap = [1, P.n, 1];                        % medium of gap j (after surface j), j = 0 .. N
+air = abs(n_gap(cand + 1) - 1) < 1e-9;
+if nnz(air) == 1
+    js = cand(air);
+elseif ~any(air)
+    warning('macos:design:lens_emit:stopSide', ...
+        ['lens_emit: the stop at z = %.9g sits on the vertex of surface %d, which has glass on both sides; ' ...
+         'it is written ahead of that surface.  Give ''stop_after'' to choose the side.'], z_s, js0 + 1);
+end
 end
 
 % -------------------------------------------------------------------------

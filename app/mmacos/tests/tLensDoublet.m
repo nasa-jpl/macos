@@ -24,8 +24,20 @@ classdef tLensDoublet < matlab.unittest.TestCase
 %                  to 2 %), a third of the paraxial achromat's 0.2672; CALIB at
 %                  d alone nulls d (0.0056) and leaves C at 0.127 (the reason
 %                  the template solves at three wavelengths)
+%     stop side    a stop ON a surface's vertex is written on the air side of
+%                  that surface (PAC095AR.14 at 632.8 nm, EPD 60 mm, the stop
+%                  clipping): on the rear vertex the stop follows surface 3,
+%                  and the deck gives the same RMS (1e-7 relative) and the same
+%                  lost rays at 0 and 5 deg as a stop 1e-6 mm behind the lens;
+%                  the order used before 2026-11-20 (the stop ahead, inside
+%                  the glass; still reachable with 'stop_after') loses more
+%                  rays and reads a different RMS (measured on axis: 60 lost
+%                  against 36 of 2,913, 0.0875 against 0.0912 waves); on the
+%                  front vertex the stop leads, as always; on the cemented
+%                  vertex it leads and warns; a side the stop is not on is
+%                  refused
 %
-%   Model 128 -> SUITE_FAST.  Runtime ~20 s.
+%   Model 128 -> SUITE_FAST.  Runtime ~25 s.
 
     properties
         tmp
@@ -105,6 +117,51 @@ classdef tLensDoublet < matlab.unittest.TestCase
             tc.verifyLessThan(max(out.rms_calib), max(out.rms_paraxial) / 3);
             tc.verifyLessThan(out.rms_calib_d(2), 0.01, 'd alone nulls d');
             tc.verifyGreaterThan(out.rms_calib_d(3), 2 * out.rms_calib(3), '... and lets C go');
+        end
+
+        function test_stop_on_a_vertex_goes_on_the_air_side(tc)
+            L = macos.design.lens_catalog('PAC095AR.14');
+            lam = 632.8;  EPD = 60;  N = L.N;  zr = L.z(N);
+            pup  = @(zs) macos.design.lens_pupils(L, lam, 'stop', [zs NaN], 'epd', EPD);
+            deck = @(P, tag, varargin) macos.design.lens_emit(L, P, fullfile(tc.tmp, [tag '.in']), ...
+                'nGridpts', 63, 'stop_clips', true, varargin{:});
+
+            % the rear vertex: air behind, so the stop follows the last surface
+            Pr = pup(zr);  Er = deck(Pr, 'rear');
+            tc.verifyEqual(Er.stop_after, N);
+            tc.verifyEqual(Er.iStop, Er.iSurf(N) + 1);
+            % the reference (a stop just behind the lens) and the old order (the stop inside the glass)
+            Pb = pup(zr + 1e-6);  Eb = deck(Pb, 'behind');
+            tc.verifyEqual(Eb.iStop, Eb.iSurf(N) + 1);
+            Eo = deck(Pr, 'inglass', 'stop_after', N - 1);
+            tc.verifyEqual(Eo.iStop, Eo.iSurf(N) - 1);
+            for th = [0 5]
+                macos.load_rx(Er.path);  Fr = macos.design.lens_eval(Er, Pr, th);
+                macos.load_rx(Eb.path);  Fb = macos.design.lens_eval(Eb, Pb, th);
+                macos.load_rx(Eo.path);  Fo = macos.design.lens_eval(Eo, Pr, th);
+                tc.verifyEqual(Fr.rms_waves, Fb.rms_waves, 'RelTol', 1e-7, sprintf('RMS at %g deg', th));
+                tc.verifyEqual(Fr.nLost, Fb.nLost, sprintf('lost rays at %g deg', th));
+                tc.verifyGreaterThan(Fo.nLost, Fr.nLost + 5, ...
+                    sprintf('the stop inside the glass clips more rays at %g deg', th));
+                tc.verifyGreaterThan(abs(Fo.rms_waves / Fr.rms_waves - 1), 1e-3, ...
+                    sprintf('... and reads a different RMS at %g deg', th));
+            end
+
+            % the front vertex: air ahead, the stop leads (the templates' case, unchanged)
+            Ef = deck(pup(0), 'front');
+            tc.verifyEqual(Ef.stop_after, 0);
+            tc.verifyEqual(Ef.iStop, 1);
+
+            % the cemented vertex: glass on both sides -> the stop leads, with a warning
+            Pc = pup(L.z(2));
+            Ec = tc.verifyWarning(@() deck(Pc, 'cemented'), 'macos:design:lens_emit:stopSide');
+            tc.verifyEqual(Ec.stop_after, 1);
+            Ec2 = tc.verifyWarningFree(@() deck(Pc, 'cemented2', 'stop_after', 2));
+            tc.verifyEqual(Ec2.iStop, Ec2.iSurf(2) + 1);
+
+            % must-fail: a side the stop is not on
+            tc.verifyError(@() deck(Pr, 'bad', 'stop_after', 1), 'macos:design:lens_emit:stopAfter');
+            tc.verifyError(@() deck(Pr, 'bad', 'stop_after', N + 1), 'macos:design:lens_emit:stopAfter');
         end
     end
 end
