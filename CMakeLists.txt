@@ -108,6 +108,11 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "IntelLLVM")
       set(SMACOS_preprocessing_Definition CSMACOS NR_FFT MSWIN)
     else()
       set(BASE_FFLAGS "/fpp /nologo /extend-source:132 /align /names:uppercase /assume:underscore /warn:nointerfaces /DPGPLOT")
+      # /heap-arrays: automatic arrays and array temporaries go on the heap.
+      # The Windows main-thread stack is small (python.exe reserves ~2.9 MB,
+      # a linked exe 1 MB); at model 1024 the engine's stack arrays overflow
+      # it (pymacos intensity(): 0xC00000FD).  Linux/macOS default to 8 MB.
+      set(BASE_FFLAGS "${BASE_FFLAGS} /heap-arrays")
       set(CMAKE_Fortran_FLAGS_RELEASE "/O2 /fp:strict /Qmkl")
       set(CMAKE_Fortran_FLAGS_DEBUG   "/Od /debug:full /traceback /check:bounds")
       set(CMAKE_Fortran_FLAGS         "${BASE_FFLAGS}")

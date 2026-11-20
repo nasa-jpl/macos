@@ -197,6 +197,7 @@ if(WINx64)
   set(FFlags  "${FFlags} /fp:strict /Qfp-speculation:strict")
   set(FFlags  "${FFlags} /Qm64 /Qmkl /Qparallel /Qopt-mem-layout-trans /QxHost")
   set(FFlags  "${FFlags} /traceback")
+  set(FFlags  "${FFlags} /heap-arrays")   # as smacos: the Windows stack is small
   # Symbol names must match smacos.lib's: the top-level CMakeLists.txt builds
   # it with /names:uppercase /assume:underscore (MACOS_API_MOD_mp_FOO_), and
   # the GMI and mmacos stubs depend on that.  /assume:nounderscore here left
