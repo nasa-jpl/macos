@@ -275,7 +275,8 @@ after the CLOSE of unit 77 also failed); reproduced on Linux by `os.close(1)` un
   binding stubs (mmacos_mex.F, mmacos_gen.F, pymacos_f2py.f90) have no console writes; GMI.F has
   three and is not covered.
 - The message buffer is unaffected: `emsg_put` keeps each line whether or not it is printed.
-- **gfortran differs in three ways** (gfortran 13.3, measured 2026-11-20 with this routine linked
+- **gfortran differs in three ways** (gfortran 13.3 on Linux, and the same on gfortran 16.1 on
+  arm64 macOS, CCMac's gate, ten legs of ten; measured 2026-11-20 with this routine linked
   into a small driver, `tests/cli/tools/console_gate.sh`; the gate fails four legs on the
   routine as first written):
   - its runtime does NOT end the process on a failed console write, so in a gfortran host
